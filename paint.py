@@ -87,6 +87,16 @@ class Tool(Enum):
         }[self]
 
 
+class ToolsBox(Container):
+    """Widget containing tool buttons"""
+
+    def compose(self) -> ComposeResult:
+        """Add our buttons."""
+        with Container(id="tools_box"):
+            # tool buttons
+            for tool in Tool:
+                yield Button(tool.get_icon(), id="tool_button_" + tool.name)
+
 class PaintApp(App):
     """MS Paint like image editor in the terminal."""
 
@@ -103,11 +113,10 @@ class PaintApp(App):
     #     self.query_one("#tools_box").display = not show_tools_box
 
     def compose(self) -> ComposeResult:
-        """Add our buttons."""
+        """Add our widgets."""
         with Container(id="paint"):
-            # tool buttons
-            for tool in Tool:
-                yield Button(tool.get_icon(), id="tool_button_" + tool.name)
+            # yield Static("Paint", id="title")
+            yield ToolsBox()
 
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
