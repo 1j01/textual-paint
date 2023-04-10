@@ -54,4 +54,6 @@ python paint.py
 ## See Also
 
 - [JavE](http://jave.de/), an advanced Java-based ASCII art editor
-- [Playscii](http://vectorpoem.com/playscii/), a beautiful ANSI art editor
+- [Playscii](http://vectorpoem.com/playscii/), a beautiful ASCII/ANSI art editor
+- [cmdpxl](https://github.com/knosmos/cmdpxl), a pixel art editor for the terminal using the keyboard
+- [pypixelart](https://github.com/douglascdev/pypixelart), a pixel art editor using vim-like keybindings, inspired by cmdpxl but not terminal-based
