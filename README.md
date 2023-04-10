@@ -53,6 +53,5 @@ python paint.py
 
 ## See Also
 
-- [JavE](), an advanced Java-based ASCII art editor
-- [Playscii](), a beautiful ANSI art editor
-
+- [JavE](http://jave.de/), an advanced Java-based ASCII art editor
+- [Playscii](http://vectorpoem.com/playscii/), a beautiful ANSI art editor
