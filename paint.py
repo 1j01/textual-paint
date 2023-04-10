@@ -107,7 +107,7 @@ class PaintApp(App):
         with Container(id="paint"):
             # tool buttons
             for tool in Tool:
-                yield Button(tool.get_icon(), id="tool_button_" + tool.name, variant="primary")
+                yield Button(tool.get_icon(), id="tool_button_" + tool.name)
 
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
