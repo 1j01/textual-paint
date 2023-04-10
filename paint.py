@@ -4,7 +4,7 @@ from textual import events
 from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.css.query import NoMatches
-from textual.reactive import var
+from textual.reactive import var, reactive
 from textual.widgets import Button, Static
 
 class Tool(Enum):
@@ -103,6 +103,7 @@ class PaintApp(App):
     CSS_PATH = "paint.css"
 
     # show_tools_box = var(True)
+    selected_tool = var(Tool.pencil)
 
     NAME_MAP = {
         # key to button id
@@ -112,10 +113,15 @@ class PaintApp(App):
     #     """Called when show_tools_box changes."""
     #     self.query_one("#tools_box").display = not show_tools_box
 
+    def watch_selected_tool(self, old_selected_tool: Tool, selected_tool: Tool) -> None:
+        """Called when selected_tool changes."""
+        # TODO: revert to default color defined by built-in style
+        self.query_one("#tool_button_" + old_selected_tool.name).styles.background = "#555"
+        self.query_one("#tool_button_" + selected_tool.name).styles.background = "#aaa"
+
     def compose(self) -> ComposeResult:
         """Add our widgets."""
         with Container(id="paint"):
-            # yield Static("Paint", id="title")
             yield ToolsBox()
 
     def on_key(self, event: events.Key) -> None:
@@ -139,8 +145,8 @@ class PaintApp(App):
         button_id = event.button.id
         assert button_id is not None
 
-        # if button_id.startswith("tool_button_"):
-        #     self.selected_tool = Tool[button_id[5:]]
+        if button_id.startswith("tool_button_"):
+            self.selected_tool = Tool[button_id[len("tool_button_") :]]
 
 
 if __name__ == "__main__":
