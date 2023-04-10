@@ -8,10 +8,10 @@ from textual.reactive import var
 from textual.widgets import Button, Static
 
 
-class CalculatorApp(App):
-    """A working 'desktop' calculator."""
+class PaintApp(App):
+    """MS Paint like image editor in the terminal."""
 
-    CSS_PATH = "calculator.css"
+    CSS_PATH = "paint.css"
 
     numbers = var("0")
     show_ac = var(True)
@@ -48,7 +48,7 @@ class CalculatorApp(App):
 
     def compose(self) -> ComposeResult:
         """Add our buttons."""
-        with Container(id="calculator"):
+        with Container(id="paint"):
             yield Static(id="numbers")
             yield Button("AC", id="ac", variant="primary")
             yield Button("C", id="c", variant="primary")
@@ -142,4 +142,4 @@ class CalculatorApp(App):
 
 
 if __name__ == "__main__":
-    CalculatorApp().run()
+    PaintApp().run()
