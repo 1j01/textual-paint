@@ -306,18 +306,19 @@ class PaintApp(App):
     def on_mount(self) -> None:
         """Called when the app is mounted."""
         self.image = AnsiArtDocument(80, 24)
-        self.query_one("#canvas").image = self.image
+        self.canvas = self.query_one("#canvas")
+        self.canvas.image = self.image
 
     def on_canvas_tool_start(self, event: Canvas.ToolStart) -> None:
         """Called when the user starts drawing on the canvas."""
         self.draw_dot(event.mouse_down_event.x, event.mouse_down_event.y)
-        self.query_one("#canvas").refresh()
+        self.canvas.refresh()
 
     def on_canvas_tool_update(self, event: Canvas.ToolUpdate) -> None:
         """Called when the user is drawing on the canvas."""
         mm = event.mouse_move_event
         bresenham_walk(mm.x - mm.delta_x, mm.y - mm.delta_y, mm.x, mm.y, lambda x, y: self.draw_dot(x, y))
-        self.query_one("#canvas").refresh()
+        self.canvas.refresh()
 
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
