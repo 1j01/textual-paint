@@ -103,11 +103,11 @@ class Canvas(Static):
     def __init__(self, **kwargs) -> None:
         """Initialize the canvas."""
         super().__init__(**kwargs)
-        self.width = 80
-        self.height = 24
-        self.image_ch = [["." for _ in range(self.width)] for _ in range(self.height)]
-        self.image_bg = [["#ffffff" for _ in range(self.width)] for _ in range(self.height)]
-        self.image_fg = [["#000000" for _ in range(self.width)] for _ in range(self.height)]
+        self.image_width = 80
+        self.image_height = 24
+        self.image_ch = [["." for _ in range(self.image_width)] for _ in range(self.image_height)]
+        self.image_bg = [["#ffffff" for _ in range(self.image_width)] for _ in range(self.image_height)]
+        self.image_fg = [["#000000" for _ in range(self.image_width)] for _ in range(self.image_height)]
         self.pointer_active = False
 
     def on_mount(self) -> None:
@@ -132,8 +132,8 @@ class Canvas(Static):
         """Update the content area."""
         # TODO: avoid generating insane amounts of markup that then has to be parsed
         text = ""
-        for y in range(self.height):
-            for x in range(self.width):
+        for y in range(self.image_height):
+            for x in range(self.image_width):
                 bg = self.image_bg[y][x]
                 fg = self.image_fg[y][x]
                 ch = self.image_ch[y][x]
