@@ -33,8 +33,8 @@ python paint.py
 
 ## Unicode Symbols and Emojis for Paint Tools
 
-- Free-Form Select:  ✂️📐🆓🕸✨⚝🫥🇫/🇸
-- Rectangular Select: ▧🔲
+- Free-Form Select:  ✂️📐🆓🕸✨⚝🫥🇫/🇸◌
+- Rectangular Select: ⬚▧🔲
 - Eraser: 🧼🧽🧹🚫👋🗑️
 - Fill Bucket (Flood Fill): 🌊💦💧🌈🎉🎊🪣🫗
 - Pick Color: 🎨💉
