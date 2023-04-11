@@ -1,0 +1,21 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "Run Textual App",
+			"type": "python",
+			"request": "launch",
+			// Replace this with the output of `which textual`
+			// TODO: is there a way to get this from the environment??
+			// or to use textual as "module" but still run the correct app?
+			// I tried a lot of variations of this, but none worked.
+            "program": "${userHome}/.local/bin/textual",
+			"args": ["run", "--dev", "paint.py"],
+			"console": "integratedTerminal",
+			"justMyCode": true
+		}
+	]
+}
