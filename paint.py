@@ -434,7 +434,7 @@ class PaintApp(App):
             self.redo()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Called when a button is pressed."""
+        """Called when a button is clicked or activated with the keyboard."""
 
         button_id = event.button.id
         assert button_id is not None
