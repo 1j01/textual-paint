@@ -114,10 +114,10 @@ class Canvas(Static):
         self.display_canvas()
 
     def on_mouse_down(self, event) -> None:
-        self.display_canvas()
         self.image_ch[event.y][event.x] = "X"
         self.image_bg[event.y][event.x] = "#ff0000"
         self.pointer_active = True
+        self.display_canvas()
     
     def on_mouse_move(self, event) -> None:
         if self.pointer_active:
