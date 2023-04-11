@@ -26,6 +26,12 @@ Screen {
     height: 100%;
 }
 
+#tools_box Button:focus {
+    /* disable focus highlight */
+    /* in the future it may be important to prevent focus instead */
+    text-style: none;
+}
+
 #tools_box Button.selected {
     background: #aaa;
 }
