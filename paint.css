@@ -6,7 +6,7 @@ Screen {
     layout: grid;
     grid-size: 1;
     grid-columns: 1fr;
-    grid-rows: 1fr 6;
+    grid-rows: 1fr 0;
 }
 
 #main-horizontal-split {
@@ -20,6 +20,10 @@ Screen {
 
 .show_tools_box #main-horizontal-split {
     grid-columns: 18 1fr;
+}
+
+.show_colors_box #paint {
+    grid-rows: 1fr 6;
 }
 
 #editing-area {

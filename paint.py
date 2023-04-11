@@ -261,6 +261,7 @@ class PaintApp(App):
     CSS_PATH = "paint.css"
 
     show_tools_box = var(True)
+    show_colors_box = var(True)
     selected_tool = var(Tool.pencil)
     selected_color = var(palette[0])
     selected_char = var(" ")
@@ -276,6 +277,14 @@ class PaintApp(App):
             self.remove_class("show_tools_box")
         else:
             self.add_class("show_tools_box")
+    
+    def watch_show_colors_box(self, show_colors_box: bool) -> None:
+        """Called when show_colors_box changes."""
+        self.query_one("#colors_box").display = show_colors_box
+        if self.has_class("show_colors_box"):
+            self.remove_class("show_colors_box")
+        else:
+            self.add_class("show_colors_box")
 
     def watch_selected_tool(self, old_selected_tool: Tool, selected_tool: Tool) -> None:
         """Called when selected_tool changes."""
@@ -341,6 +350,8 @@ class PaintApp(App):
             self.exit()
         elif key == "ctrl+t":
             self.show_tools_box = not self.show_tools_box
+        elif key == "ctrl+w":
+            self.show_colors_box = not self.show_colors_box
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is pressed."""
