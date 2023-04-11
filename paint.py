@@ -3,6 +3,7 @@ from enum import Enum
 from rich.segment import Segment
 from rich.style import Style
 from textual import events
+from textual.message import Message, MessageTarget
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.geometry import Size
@@ -170,25 +171,60 @@ class AnsiArtDocument:
             ansi += "\033[0m\r"
         return ansi
 
+def bresenham_walk(x0: int, y0: int, x1: int, y1: int, callback) -> None:
+    """Bresenham's line algorithm"""
+    dx = abs(x1 - x0)
+    dy = abs(y1 - y0)
+    sx = 1 if x0 < x1 else -1
+    sy = 1 if y0 < y1 else -1
+    err = dx - dy
+    while True:
+        callback(x0, y0)
+        if x0 == x1 and y0 == y1:
+            break
+        e2 = 2 * err
+        if e2 > -dy:
+            err = err - dy
+            x0 = x0 + sx
+        if e2 < dx:
+            err = err + dx
+            y0 = y0 + sy
+
 class Canvas(Widget):
     """The image document widget."""
+
+    # Is it kosher to include an event in a message?
+    # Is it better (and possible) to bubble up the event, even though I'm capturing the mouse?
+    # Or would it be better to just have Canvas own duplicate state for all tool parameters?
+    # That's what I was refactoring to avoid. So far I've made things more complicated,
+    # but I'm betting it will be good when implementing different tools.
+    class ToolStart(Message):
+        """Message when starting drawing."""
+
+        def __init__(self, mouse_down_event: events.MouseDown) -> None:
+            self.mouse_down_event = mouse_down_event
+            super().__init__()
+    
+    class ToolUpdate(Message):
+        """Message when dragging on the canvas."""
+
+        def __init__(self, mouse_move_event: events.MouseMove) -> None:
+            self.mouse_move_event = mouse_move_event
+            super().__init__()
 
     def __init__(self, **kwargs) -> None:
         """Initialize the canvas."""
         super().__init__(**kwargs)
-        self.image = AnsiArtDocument(80, 24)
+        self.image = None
         self.pointer_active = False
-        self.selected_color = "#000000"
-        self.selected_char = " "
 
     def on_mount(self) -> None:
         self.refresh()
 
     def on_mouse_down(self, event) -> None:
-        self.draw_dot(event.x, event.y)
+        self.post_message(self.ToolStart(event))
         self.pointer_active = True
         self.capture_mouse(True)
-        self.refresh()
     
     def on_mouse_move(self, event) -> None:
         # Hack to fix mouse coordinates, not needed for mouse down.
@@ -197,32 +233,7 @@ class Canvas(Widget):
         event.y += int(self.parent.scroll_y)
 
         if self.pointer_active:
-            self.bresenham_walk(event.x - event.delta_x, event.y - event.delta_y, event.x, event.y, lambda x, y: self.draw_dot(x, y))
-            self.refresh()
-
-    def bresenham_walk(self, x0: int, y0: int, x1: int, y1: int, callback) -> None:
-        """Bresenham's line algorithm"""
-        dx = abs(x1 - x0)
-        dy = abs(y1 - y0)
-        sx = 1 if x0 < x1 else -1
-        sy = 1 if y0 < y1 else -1
-        err = dx - dy
-        while True:
-            callback(x0, y0)
-            if x0 == x1 and y0 == y1:
-                break
-            e2 = 2 * err
-            if e2 > -dy:
-                err = err - dy
-                x0 = x0 + sx
-            if e2 < dx:
-                err = err + dx
-                y0 = y0 + sy
-
-    def draw_dot(self, x: int, y: int) -> None:
-        if x < self.image.width and y < self.image.height and x >= 0 and y >= 0:
-            self.image.ch[y][x] = self.selected_char
-            self.image.bg[y][x] = self.selected_color
+            self.post_message(self.ToolUpdate(event))
 
     def on_mouse_up(self, event) -> None:
         self.pointer_active = False
@@ -255,6 +266,7 @@ class PaintApp(App):
     # show_tools_box = var(True)
     selected_tool = var(Tool.pencil)
     selected_color = var(palette[0])
+    selected_char = var(" ")
 
     NAME_MAP = {
         # key to button id
@@ -272,8 +284,12 @@ class PaintApp(App):
     def watch_selected_color(self, old_selected_color: str, selected_color: str) -> None:
         """Called when selected_color changes."""
         self.query_one("#selected_color").styles.background = selected_color
-        self.query_one("#canvas").selected_color = selected_color
 
+    def draw_dot(self, x: int, y: int) -> None:
+        if x < self.image.width and y < self.image.height and x >= 0 and y >= 0:
+            self.image.ch[y][x] = self.selected_char
+            self.image.bg[y][x] = self.selected_color
+    
     def compose(self) -> ComposeResult:
         """Add our widgets."""
         with Container(id="paint"):
@@ -286,6 +302,22 @@ class PaintApp(App):
                 id="main-horizontal-split",
             )
             yield ColorsBox()
+
+    def on_mount(self) -> None:
+        """Called when the app is mounted."""
+        self.image = AnsiArtDocument(80, 24)
+        self.query_one("#canvas").image = self.image
+
+    def on_canvas_tool_start(self, event: Canvas.ToolStart) -> None:
+        """Called when the user starts drawing on the canvas."""
+        self.draw_dot(event.mouse_down_event.x, event.mouse_down_event.y)
+        self.query_one("#canvas").refresh()
+
+    def on_canvas_tool_update(self, event: Canvas.ToolUpdate) -> None:
+        """Called when the user is drawing on the canvas."""
+        mm = event.mouse_move_event
+        bresenham_walk(mm.x - mm.delta_x, mm.y - mm.delta_y, mm.x, mm.y, lambda x, y: self.draw_dot(x, y))
+        self.query_one("#canvas").refresh()
 
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
@@ -303,7 +335,6 @@ class PaintApp(App):
             press(self.NAME_MAP.get(key, key))
         elif key == "ctrl+q" or key == "meta+q":
             self.exit()
-
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is pressed."""
