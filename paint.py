@@ -149,6 +149,9 @@ class ColorsBox(Container):
                     button.styles.background = color
                     yield button
 
+
+debug_region_updates = True
+
 class AnsiArtDocument:
     """A document that can be rendered as ANSI."""
 
@@ -167,21 +170,22 @@ class AnsiArtDocument:
             target_region = Region(0, 0, source_region.width, source_region.height)
         source_offset = source_region.offset
         target_offset = target_region.offset
-        random_color = "rgb(" + str(randint(0, 255)) + "," + str(randint(0, 255)) + "," + str(randint(0, 255)) + ")"
+        if debug_region_updates:
+            random_color = "rgb(" + str(randint(0, 255)) + "," + str(randint(0, 255)) + "," + str(randint(0, 255)) + ")"
         for y in range(target_region.height):
             for x in range(target_region.width):
                 if source_region.contains(x + source_offset.x, y + source_offset.y):
                     self.ch[y + target_offset.y][x + target_offset.x] = source.ch[y + source_offset.y][x + source_offset.x]
                     self.bg[y + target_offset.y][x + target_offset.x] = source.bg[y + source_offset.y][x + source_offset.x]
                     self.fg[y + target_offset.y][x + target_offset.x] = source.fg[y + source_offset.y][x + source_offset.x]
-                    # debug
-                    # self.bg[y + target_offset.y][x + target_offset.x] = "rgb(" + str((x + source_offset.x) * 255 // self.width) + "," + str((y + source_offset.y) * 255 // self.height) + ",0)"
-                    self.bg[y + target_offset.y][x + target_offset.x] = random_color
+                    if debug_region_updates:
+                        # self.bg[y + target_offset.y][x + target_offset.x] = "rgb(" + str((x + source_offset.x) * 255 // self.width) + "," + str((y + source_offset.y) * 255 // self.height) + ",0)"
+                        self.bg[y + target_offset.y][x + target_offset.x] = random_color
                 else:
-                    # debug
-                    self.ch[y + target_offset.y][x + target_offset.x] = "?"
-                    self.bg[y + target_offset.y][x + target_offset.x] = "#ff00ff"
-                    self.fg[y + target_offset.y][x + target_offset.x] = "#000000"
+                    if debug_region_updates:
+                        self.ch[y + target_offset.y][x + target_offset.x] = "?"
+                        self.bg[y + target_offset.y][x + target_offset.x] = "#ff00ff"
+                        self.fg[y + target_offset.y][x + target_offset.x] = "#000000"
 
     def get_ansi(self) -> str:
         """Get the ANSI representation of the document. Untested. This is a freebie from the AI."""
