@@ -97,6 +97,30 @@ class ToolsBox(Container):
             for tool in Tool:
                 yield Button(tool.get_icon(), id="tool_button_" + tool.name)
 
+class Canvas(Static):
+    """The image document widget."""
+
+    def __init__(self, **kwargs) -> None:
+        """Initialize the canvas."""
+        super().__init__(**kwargs)
+        self.width = 80
+        self.height = 24
+        self.image = [["." for _ in range(self.width)] for _ in range(self.height)]
+
+    def on_mount(self) -> None:
+        self.display_canvas()
+
+    def on_click(self, event) -> None:
+        self.display_canvas()
+        self.image[event.y][event.x] = "X"
+
+    def display_canvas(self) -> None:
+        """Update the content area."""
+        text = ""
+        for row in self.image:
+            text += "".join(row) + "\n"
+        self.update(text)
+
 class PaintApp(App):
     """MS Paint like image editor in the terminal."""
 
@@ -122,6 +146,7 @@ class PaintApp(App):
         """Add our widgets."""
         with Container(id="paint"):
             yield ToolsBox()
+            yield Canvas()
 
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
