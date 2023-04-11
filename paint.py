@@ -105,7 +105,9 @@ class Canvas(Static):
         super().__init__(**kwargs)
         self.width = 80
         self.height = 24
-        self.image = [["." for _ in range(self.width)] for _ in range(self.height)]
+        self.image_ch = [["." for _ in range(self.width)] for _ in range(self.height)]
+        self.image_bg = [["#ffffff" for _ in range(self.width)] for _ in range(self.height)]
+        self.image_fg = [["#000000" for _ in range(self.width)] for _ in range(self.height)]
         self.pointer_active = False
 
     def on_mount(self) -> None:
@@ -113,12 +115,14 @@ class Canvas(Static):
 
     def on_mouse_down(self, event) -> None:
         self.display_canvas()
-        self.image[event.y][event.x] = "X"
+        self.image_ch[event.y][event.x] = "X"
+        self.image_bg[event.y][event.x] = "#ff0000"
         self.pointer_active = True
     
     def on_mouse_move(self, event) -> None:
         if self.pointer_active:
-            self.image[event.y][event.x] = "O"
+            self.image_ch[event.y][event.x] = "O"
+            self.image_bg[event.y][event.x] = "#ffff00"
             self.display_canvas()
 
     def on_mouse_up(self, event) -> None:
@@ -126,9 +130,15 @@ class Canvas(Static):
 
     def display_canvas(self) -> None:
         """Update the content area."""
+        # TODO: avoid generating insane amounts of markup that then has to be parsed
         text = ""
-        for row in self.image:
-            text += "".join(row) + "\n"
+        for y in range(self.height):
+            for x in range(self.width):
+                bg = self.image_bg[y][x]
+                fg = self.image_fg[y][x]
+                ch = self.image_ch[y][x]
+                text += "["+fg+" on "+bg+"]" + ch + "[/]"
+            text += "\n"
         self.update(text)
 
 class PaintApp(App):
