@@ -13,9 +13,13 @@ Screen {
     layout: grid;
     grid-size: 2;
     grid-gutter: 1 2;
-    grid-columns: 18 1fr;
+    grid-columns: 0 1fr;
     grid-rows: 1fr;
     margin: 0 0;
+}
+
+.show_tools_box #main-horizontal-split {
+    grid-columns: 18 1fr;
 }
 
 #editing-area {
