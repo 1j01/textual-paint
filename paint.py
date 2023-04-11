@@ -155,11 +155,12 @@ class Canvas(Widget):
         super().__init__(**kwargs)
         self.image_width = 80
         self.image_height = 24
-        self.image_ch = [["." for _ in range(self.image_width)] for _ in range(self.image_height)]
+        self.image_ch = [[" " for _ in range(self.image_width)] for _ in range(self.image_height)]
         self.image_bg = [["#ffffff" for _ in range(self.image_width)] for _ in range(self.image_height)]
         self.image_fg = [["#000000" for _ in range(self.image_width)] for _ in range(self.image_height)]
         self.pointer_active = False
         self.selected_color = "#000000"
+        self.selected_char = " "
 
     def on_mount(self) -> None:
         self.refresh()
@@ -196,7 +197,7 @@ class Canvas(Widget):
 
     def draw_dot(self, x: int, y: int) -> None:
         if x < self.image_width and y < self.image_height and x >= 0 and y >= 0:
-            self.image_ch[y][x] = "O"
+            self.image_ch[y][x] = self.selected_char
             self.image_bg[y][x] = self.selected_color
 
     def on_mouse_up(self, event) -> None:
