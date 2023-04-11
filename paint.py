@@ -165,18 +165,23 @@ class AnsiArtDocument:
             source_region = Region(0, 0, source.width, source.height)
         if target_region is None:
             target_region = Region(0, 0, source_region.width, source_region.height)
-        offset = Offset(target_region.x - source_region.x, target_region.y - source_region.y)
+        source_offset = source_region.offset
+        target_offset = target_region.offset
         random_color = "rgb(" + str(randint(0, 255)) + "," + str(randint(0, 255)) + "," + str(randint(0, 255)) + ")"
         for y in range(target_region.height):
             for x in range(target_region.width):
-                # for attr in ["ch", "bg", "fg"]:
-                #     self[attr][y + offset.y][x + offset.x] = source[attr][y - offset.y][x - offset.x]
-                self.ch[y + offset.y][x + offset.x] = source.ch[y - offset.y][x - offset.x]
-                self.bg[y + offset.y][x + offset.x] = source.bg[y - offset.y][x - offset.x]
-                self.fg[y + offset.y][x + offset.x] = source.fg[y - offset.y][x - offset.x]
-                # debug
-                # self.bg[y + offset.y][x + offset.x] = "rgb(" + str((x + offset.x) * 255 // self.width) + "," + str((y + offset.y) * 255 // self.height) + ",0)"
-                self.bg[y + offset.y][x + offset.x] = random_color
+                if source_region.contains(x + source_offset.x, y + source_offset.y):
+                    self.ch[y + target_offset.y][x + target_offset.x] = source.ch[y + source_offset.y][x + source_offset.x]
+                    self.bg[y + target_offset.y][x + target_offset.x] = source.bg[y + source_offset.y][x + source_offset.x]
+                    self.fg[y + target_offset.y][x + target_offset.x] = source.fg[y + source_offset.y][x + source_offset.x]
+                    # debug
+                    # self.bg[y + target_offset.y][x + target_offset.x] = "rgb(" + str((x + source_offset.x) * 255 // self.width) + "," + str((y + source_offset.y) * 255 // self.height) + ",0)"
+                    self.bg[y + target_offset.y][x + target_offset.x] = random_color
+                else:
+                    # debug
+                    self.ch[y + target_offset.y][x + target_offset.x] = "?"
+                    self.bg[y + target_offset.y][x + target_offset.x] = "#ff00ff"
+                    self.fg[y + target_offset.y][x + target_offset.x] = "#000000"
 
     def get_ansi(self) -> str:
         """Get the ANSI representation of the document. Untested. This is a freebie from the AI."""
@@ -193,18 +198,22 @@ class Action:
     """An action that can be undone efficiently using a region update."""
 
     def __init__(self, name, document: AnsiArtDocument, region: Region = None) -> None:
-        """Initialize the action."""
+        """Initialize the action using the document state before modification."""
         if region is None:
             region = Region(0, 0, document.width, document.height)
         self.name = name
-        self.document = document
+        self.live_document = document # only for undoing; TODO: move to parameter of undo()
         self.region = region
-        self.sub_image_before = AnsiArtDocument(region.width, region.height)
-        self.sub_image_before.copy_region(document, region)
+        self.update(document)
+
+    def update(self, document: AnsiArtDocument) -> None:
+        """Grabs the image data from the current region of the document."""
+        self.sub_image_before = AnsiArtDocument(self.region.width, self.region.height)
+        self.sub_image_before.copy_region(document, self.region)
 
     def undo(self) -> None:
         """Undo this action. Note that a canvas refresh is not performed here."""
-        self.document.copy_region(self.sub_image_before, target_region=self.region)
+        self.live_document.copy_region(self.sub_image_before, target_region=self.region)
 
 def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> None:
     """Bresenham's line algorithm"""
@@ -337,7 +346,7 @@ class PaintApp(App):
         """Called when selected_color changes."""
         self.query_one("#selected_color").styles.background = selected_color
 
-    def stamp_brush(self, x: int, y: int) -> None:
+    def stamp_brush(self, x: int, y: int, affected_region: Region) -> Region:
         brush_diameter = 1
         if self.selected_tool == Tool.brush:
             brush_diameter = 3
@@ -349,6 +358,9 @@ class PaintApp(App):
                 for j in range(brush_diameter):
                     if (i - brush_diameter // 2) ** 2 + (j - brush_diameter // 2) ** 2 <= (brush_diameter // 2) ** 2:
                         self.stamp_char(x + i - brush_diameter // 2, y + j - brush_diameter // 2)
+        # expand the affected region to include the brush
+        brush_diameter += 2 # safety margin
+        return affected_region.union(Region(x - brush_diameter // 2, y - brush_diameter // 2, brush_diameter, brush_diameter))
     
     def stamp_char(self, x: int, y: int) -> None:
         if x < self.image.width and y < self.image.height and x >= 0 and y >= 0:
@@ -395,20 +407,32 @@ class PaintApp(App):
         if self.selected_tool != Tool.pencil and self.selected_tool != Tool.brush:
             self.selected_tool = Tool.pencil
             # TODO: support other tools
-        # TODO: track region for undo state and only refresh same region
+        self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
+        self.image_at_start.copy_region(self.image)
+        region = Region(event.mouse_down_event.x, event.mouse_down_event.y, 1, 1)
         if len(self.redos) > 0:
             self.redos = []
-        self.undos.append(Action(self.selected_tool.get_name(), self.image))
-        self.stamp_brush(event.mouse_down_event.x, event.mouse_down_event.y)
-        self.canvas.refresh()
+        action = Action(self.selected_tool.get_name(), self.image)
+        self.undos.append(action)
+        region = self.stamp_brush(event.mouse_down_event.x, event.mouse_down_event.y, region)
+        action.region = region
+        action.update(self.image_at_start)
+        self.canvas.refresh(region)
         event.stop()
 
     def on_canvas_tool_update(self, event: Canvas.ToolUpdate) -> None:
         """Called when the user is drawing on the canvas."""
         mm = event.mouse_move_event
+        action = self.undos[-1]
+        affected_region = Region(mm.x, mm.y, 1, 1)
         for x, y in bresenham_walk(mm.x - mm.delta_x, mm.y - mm.delta_y, mm.x, mm.y):
-            self.stamp_brush(x, y)
-        self.canvas.refresh()
+            affected_region = self.stamp_brush(x, y, affected_region)
+        
+        # Update action region and image data
+        action.region = action.region.union(affected_region)
+        action.update(self.image_at_start)
+
+        self.canvas.refresh(affected_region)
         event.stop()
 
     def on_key(self, event: events.Key) -> None:
