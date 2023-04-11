@@ -295,7 +295,20 @@ class PaintApp(App):
         """Called when selected_color changes."""
         self.query_one("#selected_color").styles.background = selected_color
 
-    def draw_dot(self, x: int, y: int) -> None:
+    def stamp_brush(self, x: int, y: int) -> None:
+        brush_diameter = 1
+        if self.selected_tool == Tool.brush:
+            brush_diameter = 3
+        if brush_diameter == 1:
+            self.stamp_char(x, y)
+        else:
+            # plot points within a circle
+            for i in range(brush_diameter):
+                for j in range(brush_diameter):
+                    if (i - brush_diameter // 2) ** 2 + (j - brush_diameter // 2) ** 2 <= (brush_diameter // 2) ** 2:
+                        self.stamp_char(x + i - brush_diameter // 2, y + j - brush_diameter // 2)
+    
+    def stamp_char(self, x: int, y: int) -> None:
         if x < self.image.width and y < self.image.height and x >= 0 and y >= 0:
             self.image.ch[y][x] = self.selected_char
             self.image.bg[y][x] = self.selected_color
@@ -321,7 +334,7 @@ class PaintApp(App):
 
     def on_canvas_tool_start(self, event: Canvas.ToolStart) -> None:
         """Called when the user starts drawing on the canvas."""
-        self.draw_dot(event.mouse_down_event.x, event.mouse_down_event.y)
+        self.stamp_brush(event.mouse_down_event.x, event.mouse_down_event.y)
         self.canvas.refresh()
         event.stop()
 
@@ -329,7 +342,7 @@ class PaintApp(App):
         """Called when the user is drawing on the canvas."""
         mm = event.mouse_move_event
         for x, y in bresenham_walk(mm.x - mm.delta_x, mm.y - mm.delta_y, mm.x, mm.y):
-            self.draw_dot(x, y)
+            self.stamp_brush(x, y)
         self.canvas.refresh()
         event.stop()
 
