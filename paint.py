@@ -115,9 +115,8 @@ class PaintApp(App):
 
     def watch_selected_tool(self, old_selected_tool: Tool, selected_tool: Tool) -> None:
         """Called when selected_tool changes."""
-        # TODO: revert to default color defined by built-in style
-        self.query_one("#tool_button_" + old_selected_tool.name).styles.background = "#555"
-        self.query_one("#tool_button_" + selected_tool.name).styles.background = "#aaa"
+        self.query_one("#tool_button_" + old_selected_tool.name).classes = "tool_button"
+        self.query_one("#tool_button_" + selected_tool.name).classes = "tool_button selected"
 
     def compose(self) -> ComposeResult:
         """Add our widgets."""
