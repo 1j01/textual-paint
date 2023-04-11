@@ -33,7 +33,9 @@ Screen {
 }
 
 #tools_box Button.selected {
-    background: #aaa;
+    background: $panel-lighten-3;
+    border-bottom: tall $panel-lighten-2;
+    border-top: tall $panel-darken-2;
 }
 
 Button {
