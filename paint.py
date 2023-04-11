@@ -6,7 +6,7 @@ from textual import events
 from textual.message import Message, MessageTarget
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical
-from textual.geometry import Size
+from textual.geometry import Offset, Region, Size
 from textual.css.query import NoMatches
 from textual.reactive import var, reactive
 from textual.strip import Strip
@@ -160,6 +160,20 @@ class AnsiArtDocument:
         self.bg = [["#ffffff" for _ in range(width)] for _ in range(height)]
         self.fg = [["#000000" for _ in range(width)] for _ in range(height)]
 
+    def copy_region(self, source, source_region: Region = None, target_region: Region = None):
+        if source_region is None:
+            source_region = Region(0, 0, source.width, source.height)
+        if target_region is None:
+            target_region = Region(0, 0, source_region.width, source_region.height)
+        offset = Offset(target_region.x - source_region.x, target_region.y - source_region.y)
+        for y in range(target_region.height):
+            for x in range(target_region.width):
+                # for attr in ["ch", "bg", "fg"]:
+                #     self[attr][y + offset.y][x + offset.x] = source[attr][y - offset.y][x - offset.x]
+                self.ch[y + offset.y][x + offset.x] = source.ch[y - offset.y][x - offset.x]
+                self.bg[y + offset.y][x + offset.x] = source.bg[y - offset.y][x - offset.x]
+                self.fg[y + offset.y][x + offset.x] = source.fg[y - offset.y][x - offset.x]
+
     def get_ansi(self) -> str:
         """Get the ANSI representation of the document. Untested. This is a freebie from the AI."""
         ansi = ""
@@ -170,6 +184,23 @@ class AnsiArtDocument:
                 ansi += "\033[48;2;" + self.bg[y][x] + ";38;2;" + self.fg[y][x] + "m" + self.ch[y][x]
             ansi += "\033[0m\r"
         return ansi
+
+class Action:
+    """An action that can be undone efficiently using a region update."""
+
+    def __init__(self, name, document: AnsiArtDocument, region: Region = None) -> None:
+        """Initialize the action."""
+        if region is None:
+            region = Region(0, 0, document.width, document.height)
+        self.name = name
+        self.document = document
+        self.region = region
+        self.sub_image_before = AnsiArtDocument(region.width, region.height)
+        self.sub_image_before.copy_region(document, region)
+
+    def undo(self) -> None:
+        """Undo this action. Note that a canvas refresh is not performed here."""
+        self.document.copy_region(self.sub_image_before, target_region=self.region)
 
 def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> None:
     """Bresenham's line algorithm"""
@@ -198,6 +229,10 @@ class Canvas(Widget):
     # Or would it be better to just have Canvas own duplicate state for all tool parameters?
     # That's what I was refactoring to avoid. So far I've made things more complicated,
     # but I'm betting it will be good when implementing different tools.
+    # Maybe the PaintApp widget can capture the mouse events instead?
+    # Not sure if that would work as nicely when implementing selections.
+    # I'd have to think about it.
+    # But it would make the Canvas just be a widget for rendering, which seems good.
     class ToolStart(Message):
         """Message when starting drawing."""
 
@@ -266,6 +301,9 @@ class PaintApp(App):
     selected_color = var(palette[0])
     selected_char = var(" ")
 
+    undos = []
+    redos = []
+
     NAME_MAP = {
         # key to button id
     }
@@ -313,6 +351,19 @@ class PaintApp(App):
             self.image.ch[y][x] = self.selected_char
             self.image.bg[y][x] = self.selected_color
     
+    def undo(self) -> None:
+        if len(self.undos) > 0:
+            action = self.undos.pop()
+            redo_action = Action("Undo " + action.name, self.image, action.region)
+            action.undo()
+            self.redos.append(redo_action)
+            self.canvas.refresh()
+
+    # def redo(self) -> None:
+    #     if len(self.redos) > 0:
+    #         action = self.redos.pop()
+    #         action.redo()
+
     def compose(self) -> ComposeResult:
         """Add our widgets."""
         with Container(id="paint"):
@@ -337,6 +388,8 @@ class PaintApp(App):
         if self.selected_tool != Tool.pencil and self.selected_tool != Tool.brush:
             self.selected_tool = Tool.pencil
             # TODO: support other tools
+        # TODO: track region for undo state and only refresh same region
+        self.undos.append(Action(self.selected_tool.get_name(), self.image))
         self.stamp_brush(event.mouse_down_event.x, event.mouse_down_event.y)
         self.canvas.refresh()
         event.stop()
@@ -369,6 +422,10 @@ class PaintApp(App):
             self.show_tools_box = not self.show_tools_box
         elif key == "ctrl+w":
             self.show_colors_box = not self.show_colors_box
+        elif key == "ctrl+z":
+            self.undo()
+        elif key == "ctrl+shift+z" or key == "ctrl+y" or key == "f4":
+            self.redo()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is pressed."""
