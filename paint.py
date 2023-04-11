@@ -171,7 +171,7 @@ class AnsiArtDocument:
             ansi += "\033[0m\r"
         return ansi
 
-def bresenham_walk(x0: int, y0: int, x1: int, y1: int, callback) -> None:
+def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> None:
     """Bresenham's line algorithm"""
     dx = abs(x1 - x0)
     dy = abs(y1 - y0)
@@ -179,7 +179,7 @@ def bresenham_walk(x0: int, y0: int, x1: int, y1: int, callback) -> None:
     sy = 1 if y0 < y1 else -1
     err = dx - dy
     while True:
-        callback(x0, y0)
+        yield x0, y0
         if x0 == x1 and y0 == y1:
             break
         e2 = 2 * err
@@ -328,7 +328,8 @@ class PaintApp(App):
     def on_canvas_tool_update(self, event: Canvas.ToolUpdate) -> None:
         """Called when the user is drawing on the canvas."""
         mm = event.mouse_move_event
-        bresenham_walk(mm.x - mm.delta_x, mm.y - mm.delta_y, mm.x, mm.y, lambda x, y: self.draw_dot(x, y))
+        for x, y in bresenham_walk(mm.x - mm.delta_x, mm.y - mm.delta_y, mm.x, mm.y):
+            self.draw_dot(x, y)
         self.canvas.refresh()
         event.stop()
 
