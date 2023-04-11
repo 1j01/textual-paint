@@ -114,15 +114,17 @@ class Canvas(Static):
         self.display_canvas()
 
     def on_mouse_down(self, event) -> None:
-        self.image_ch[event.y][event.x] = "X"
-        self.image_bg[event.y][event.x] = "#ff0000"
+        if event.x < self.image_width and event.y < self.image_height and event.x >= 0 and event.y >= 0:
+            self.image_ch[event.y][event.x] = "X"
+            self.image_bg[event.y][event.x] = "#ff0000"
         self.pointer_active = True
         self.display_canvas()
     
     def on_mouse_move(self, event) -> None:
         if self.pointer_active:
-            self.image_ch[event.y][event.x] = "O"
-            self.image_bg[event.y][event.x] = "#ffff00"
+            if event.x < self.image_width and event.y < self.image_height and event.x >= 0 and event.y >= 0:
+                self.image_ch[event.y][event.x] = "O"
+                self.image_bg[event.y][event.x] = "#ffff00"
             self.display_canvas()
 
     def on_mouse_up(self, event) -> None:
