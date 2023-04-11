@@ -1,5 +1,5 @@
 from enum import Enum
-
+from random import randint
 from rich.segment import Segment
 from rich.style import Style
 from textual import events
@@ -166,6 +166,7 @@ class AnsiArtDocument:
         if target_region is None:
             target_region = Region(0, 0, source_region.width, source_region.height)
         offset = Offset(target_region.x - source_region.x, target_region.y - source_region.y)
+        random_color = "rgb(" + str(randint(0, 255)) + "," + str(randint(0, 255)) + "," + str(randint(0, 255)) + ")"
         for y in range(target_region.height):
             for x in range(target_region.width):
                 # for attr in ["ch", "bg", "fg"]:
@@ -173,6 +174,9 @@ class AnsiArtDocument:
                 self.ch[y + offset.y][x + offset.x] = source.ch[y - offset.y][x - offset.x]
                 self.bg[y + offset.y][x + offset.x] = source.bg[y - offset.y][x - offset.x]
                 self.fg[y + offset.y][x + offset.x] = source.fg[y - offset.y][x - offset.x]
+                # debug
+                # self.bg[y + offset.y][x + offset.x] = "rgb(" + str((x + offset.x) * 255 // self.width) + "," + str((y + offset.y) * 255 // self.height) + ",0)"
+                self.bg[y + offset.y][x + offset.x] = random_color
 
     def get_ansi(self) -> str:
         """Get the ANSI representation of the document. Untested. This is a freebie from the AI."""
@@ -299,7 +303,7 @@ class PaintApp(App):
     show_colors_box = var(True)
     selected_tool = var(Tool.pencil)
     selected_color = var(palette[0])
-    selected_char = var(" ")
+    selected_char = var("#")
 
     undos = []
     redos = []
