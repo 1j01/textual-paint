@@ -359,10 +359,13 @@ class PaintApp(App):
             self.redos.append(redo_action)
             self.canvas.refresh()
 
-    # def redo(self) -> None:
-    #     if len(self.redos) > 0:
-    #         action = self.redos.pop()
-    #         action.redo()
+    def redo(self) -> None:
+        if len(self.redos) > 0:
+            action = self.redos.pop()
+            undo_action = Action("Undo " + action.name, self.image, action.region)
+            action.undo()
+            self.undos.append(undo_action)
+            self.canvas.refresh()
 
     def compose(self) -> ComposeResult:
         """Add our widgets."""
@@ -389,6 +392,8 @@ class PaintApp(App):
             self.selected_tool = Tool.pencil
             # TODO: support other tools
         # TODO: track region for undo state and only refresh same region
+        if len(self.redos) > 0:
+            self.redos = []
         self.undos.append(Action(self.selected_tool.get_name(), self.image))
         self.stamp_brush(event.mouse_down_event.x, event.mouse_down_event.y)
         self.canvas.refresh()
@@ -424,7 +429,8 @@ class PaintApp(App):
             self.show_colors_box = not self.show_colors_box
         elif key == "ctrl+z":
             self.undo()
-        elif key == "ctrl+shift+z" or key == "ctrl+y" or key == "f4":
+        # Ctrl+Shift+Z doesn't seem to work on Ubuntu or VS Code terminal
+        elif key == "ctrl+shift+z" or key == "shift+ctrl+z" or key == "ctrl+y" or key == "f4":
             self.redo()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
