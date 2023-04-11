@@ -73,7 +73,7 @@ Screen {
     layout: grid;
     grid-size: 14;
     grid-gutter: 0 1;
-    grid-columns: 3;
+    grid-columns: 4;
     grid-rows: 2;
     /* padding: 1 1; */
     width: 100%;
