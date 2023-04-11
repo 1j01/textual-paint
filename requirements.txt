@@ -1,2 +1,3 @@
 rich==13.3.3
+stransi==0.3.0
 textual==0.19.1

@@ -10,9 +10,9 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, and buil
 
 ## Development
 
-Install Textual:
+Install Textual and Stransi:
 ```bash
-pip install "textual[dev]"
+pip install "textual[dev]" "stransi"
 ```
 
 Run supporting live-reloading CSS:

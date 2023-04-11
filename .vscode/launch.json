@@ -16,6 +16,15 @@
 			"args": ["run", "--dev", "paint.py"],
 			"console": "integratedTerminal",
 			"justMyCode": true
+		},
+		{
+			"name": "Open A File in App",
+			"type": "python",
+			"request": "launch",
+            "program": "paint.py",
+			"args": ["LICENSE.txt"],
+			"console": "integratedTerminal",
+			"justMyCode": true
 		}
 	]
 }

@@ -1,5 +1,8 @@
+import re
+import sys
 from enum import Enum
 from random import randint
+import stransi
 from rich.segment import Segment
 from rich.style import Style
 from textual import events
@@ -152,6 +155,8 @@ class ColorsBox(Container):
 
 debug_region_updates = False
 
+ansi_escape_pattern = re.compile(r"(\N{ESC}\[[\d;]*[a-zA-Z])")
+
 class AnsiArtDocument:
     """A document that can be rendered as ANSI."""
 
@@ -189,14 +194,116 @@ class AnsiArtDocument:
 
     def get_ansi(self) -> str:
         """Get the ANSI representation of the document. Untested. This is a freebie from the AI."""
+        
+        def color_to_rgb(color_code: str) -> str:
+            """Convert a color code to the RGB values format used for ANSI escape codes."""
+            if color_code.startswith('#'):
+                # Convert hex code to RGB values
+                color_code = color_code.lstrip('#')
+                rgb = tuple(int(color_code[i:i+2], 16) for i in (0, 2, 4))
+            elif color_code.startswith('rgb(') and color_code.endswith(')'):
+                # Convert "rgb(r,g,b)" style to RGB values
+                rgb_str = color_code[4:-1]
+                rgb = tuple(int(x.strip()) for x in rgb_str.split(','))
+            else:
+                raise ValueError("Invalid color code")
+            return f"{rgb[0]};{rgb[1]};{rgb[2]}"
+
         ansi = ""
         for y in range(self.height):
             for x in range(self.width):
                 if x == 0:
                     ansi += "\033[0m"
-                ansi += "\033[48;2;" + self.bg[y][x] + ";38;2;" + self.fg[y][x] + "m" + self.ch[y][x]
-            ansi += "\033[0m\r"
+                ansi += "\033[48;2;" + color_to_rgb(self.bg[y][x]) + ";38;2;" + color_to_rgb(self.fg[y][x]) + "m" + self.ch[y][x]
+            ansi += "\033[0m\r\n"
         return ansi
+
+    def get_html(self) -> str:
+        """Get the HTML representation of the document."""
+        html = ""
+        for y in range(self.height):
+            for x in range(self.width):
+                html += "<span style='background-color:" + self.bg[y][x] + ";color:" + self.fg[y][x] + "'>" + self.ch[y][x] + "</span>"
+            html += "<br>"
+        return html
+    
+    @staticmethod
+    def from_ascii(text: str) -> 'AnsiArtDocument':
+        """Creates a document from the given ASCII plain text."""
+        lines = text.splitlines()
+        width = 0
+        for line in lines:
+            width = max(len(line), width)
+        height = len(lines)
+        document = AnsiArtDocument(width, height)
+        for y, line in enumerate(lines):
+            for x, char in enumerate(line):
+                document.ch[y][x] = char
+        return document
+    
+    @staticmethod
+    def from_ansi(text: str) -> 'AnsiArtDocument':
+        """Creates a document from the given ANSI text."""
+        ansi = stransi.Ansi(text)
+        document = AnsiArtDocument(1, 1)
+        width = 1
+        height = 1
+
+        x = 0
+        y = 0
+        bg_color = "#000000"
+        fg_color = "#ffffff"
+        for instruction in ansi.instructions():
+            if isinstance(instruction, str):
+                # Text
+                for char in instruction:
+                    if char == '\r':
+                        x = 0
+                    elif char == '\n':
+                        x = 0
+                        y += 1
+                        height = max(y, height)
+                        if len(document.ch) <= y:
+                            document.ch.append([])
+                            document.bg.append([])
+                            document.fg.append([])
+                    else:
+                        x += 1
+                        width = max(x, width)
+                        document.ch[y].append(char)
+                        document.bg[y].append(bg_color)
+                        document.fg[y].append(fg_color)
+            elif isinstance(instruction, stransi.SetColor):
+                # Color
+                if instruction.role == stransi.color.ColorRole.FOREGROUND:
+                    rgb = instruction.color.rgb
+                    fg_color = "rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"
+                elif instruction.role == stransi.color.ColorRole.BACKGROUND:
+                    rgb = instruction.color.rgb
+                    bg_color = "rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"
+            elif isinstance(instruction, stransi.SetAttribute):
+                # Attribute
+                pass
+            else:
+                raise ValueError("Unknown instruction type")
+        document.width = width
+        document.height = height
+        # Fill in the rest of the lines
+        # just using the last color, not sure if that's correct...
+        for y in range(document.height):
+            for x in range(document.width - len(document.ch[y])):
+                document.ch[y].append(' ')
+                document.bg[y].append(bg_color)
+                document.fg[y].append(fg_color)
+        return document
+    
+    @staticmethod
+    def from_text(text: str) -> 'AnsiArtDocument':
+        """Creates a document from the given text, detecting if uses ANSI or not."""
+        if ansi_escape_pattern.search(text):
+            return AnsiArtDocument.from_ansi(text)
+        else:
+            return AnsiArtDocument.from_ascii(text)
 
 class Action:
     """An action that can be undone efficiently using a region update."""
@@ -317,6 +424,8 @@ class PaintApp(App):
     selected_tool = var(Tool.pencil)
     selected_color = var(palette[0])
     selected_char = var(" ")
+    filename = var(None)
+    image = var(None)
 
     undos = []
     redos = []
@@ -387,6 +496,27 @@ class PaintApp(App):
             self.undos.append(undo_action)
             self.canvas.refresh()
 
+    def file_save(self) -> None:
+        """Save the image to a file."""
+        if self.filename:
+            ansi = self.image.get_ansi()
+            with open(self.filename, "w") as f:
+                f.write(ansi)
+        # else:
+        #     self.file_save_as()
+    
+    def file_save_as(self) -> None:
+        """Save the image as a new file."""
+        raise NotImplementedError
+    
+    # def file_open(self) -> None:
+    #     """Open an image from a file."""
+    #     filename = self.query_one("#file_open").value
+    #     if filename:
+    #         with open(filename, "r") as f:
+    #             self.image = AnsiArtDocument.from_ansi(f.read())
+    #             self.canvas.image = self.image
+
     def compose(self) -> ComposeResult:
         """Add our widgets."""
         with Container(id="paint"):
@@ -402,7 +532,9 @@ class PaintApp(App):
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""
-        self.image = AnsiArtDocument(80, 24)
+        # Image can be set from the outside, via CLI
+        if self.image is None:
+            self.image = AnsiArtDocument(80, 24)
         self.canvas = self.query_one("#canvas")
         self.canvas.image = self.image
 
@@ -457,6 +589,16 @@ class PaintApp(App):
             press(self.NAME_MAP.get(key, key))
         elif key == "ctrl+q" or key == "meta+q":
             self.exit()
+        elif key == "ctrl+s":
+            self.file_save()
+        elif key == "ctrl+shift+s":
+            self.file_save_as()
+        # elif key == "ctrl+o":
+        #     self.file_open()
+        # elif key == "ctrl+n":
+        #     self.file_new()
+        # elif key == "ctrl+shift+n":
+        #     self.clear_image()
         elif key == "ctrl+t":
             self.show_tools_box = not self.show_tools_box
         elif key == "ctrl+w":
@@ -466,6 +608,8 @@ class PaintApp(App):
         # Ctrl+Shift+Z doesn't seem to work on Ubuntu or VS Code terminal
         elif key == "ctrl+shift+z" or key == "shift+ctrl+z" or key == "ctrl+y" or key == "f4":
             self.redo()
+        # elif key == "ctrl+d":
+        #     self.action_toggle_dark()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked or activated with the keyboard."""
@@ -480,4 +624,9 @@ class PaintApp(App):
 
 
 if __name__ == "__main__":
-    PaintApp().run()
+    app = PaintApp()
+    if len(sys.argv) > 1:
+        with open(sys.argv[1], 'r') as my_file:
+            app.image = AnsiArtDocument.from_text(my_file.read())
+            app.filename = sys.argv[1]
+    app.run()
