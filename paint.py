@@ -123,10 +123,32 @@ class Canvas(Static):
     
     def on_mouse_move(self, event) -> None:
         if self.pointer_active:
-            if event.x < self.image_width and event.y < self.image_height and event.x >= 0 and event.y >= 0:
-                self.image_ch[event.y][event.x] = "O"
-                self.image_bg[event.y][event.x] = "#ffff00"
+            self.bresenham_walk(event.x - event.delta_x, event.y - event.delta_y, event.x, event.y, lambda x, y: self.draw_dot(x, y))
             self.display_canvas()
+
+    def bresenham_walk(self, x0: int, y0: int, x1: int, y1: int, callback) -> None:
+        """Bresenham's line algorithm"""
+        dx = abs(x1 - x0)
+        dy = abs(y1 - y0)
+        sx = 1 if x0 < x1 else -1
+        sy = 1 if y0 < y1 else -1
+        err = dx - dy
+        while True:
+            callback(x0, y0)
+            if x0 == x1 and y0 == y1:
+                break
+            e2 = 2 * err
+            if e2 > -dy:
+                err = err - dy
+                x0 = x0 + sx
+            if e2 < dx:
+                err = err + dx
+                y0 = y0 + sy
+
+    def draw_dot(self, x: int, y: int) -> None:
+        if x < self.image_width and y < self.image_height and x >= 0 and y >= 0:
+            self.image_ch[y][x] = "O"
+            self.image_bg[y][x] = "#ffff00"
 
     def on_mouse_up(self, event) -> None:
         self.pointer_active = False
