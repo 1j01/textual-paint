@@ -191,6 +191,11 @@ class Canvas(Widget):
         self.refresh()
     
     def on_mouse_move(self, event) -> None:
+        # Hack to fix mouse coordinates, not needed for mouse down.
+        # This seems like a bug.
+        event.x += int(self.parent.scroll_x)
+        event.y += int(self.parent.scroll_y)
+
         if self.pointer_active:
             self.bresenham_walk(event.x - event.delta_x, event.y - event.delta_y, event.x, event.y, lambda x, y: self.draw_dot(x, y))
             self.refresh()
