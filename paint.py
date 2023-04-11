@@ -150,7 +150,7 @@ class ColorsBox(Container):
                     yield button
 
 
-debug_region_updates = True
+debug_region_updates = False
 
 class AnsiArtDocument:
     """A document that can be rendered as ANSI."""
@@ -316,7 +316,7 @@ class PaintApp(App):
     show_colors_box = var(True)
     selected_tool = var(Tool.pencil)
     selected_color = var(palette[0])
-    selected_char = var("#")
+    selected_char = var(" ")
 
     undos = []
     redos = []
