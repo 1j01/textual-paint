@@ -118,6 +118,7 @@ class Canvas(Static):
             self.image_ch[event.y][event.x] = "X"
             self.image_bg[event.y][event.x] = "#ff0000"
         self.pointer_active = True
+        self.capture_mouse(True)
         self.display_canvas()
     
     def on_mouse_move(self, event) -> None:
@@ -129,6 +130,7 @@ class Canvas(Static):
 
     def on_mouse_up(self, event) -> None:
         self.pointer_active = False
+        self.capture_mouse(False)
 
     def display_canvas(self) -> None:
         """Update the content area."""
