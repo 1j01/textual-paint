@@ -13,14 +13,19 @@ Screen {
     layout: grid;
     grid-size: 2;
     grid-gutter: 1 2;
-    grid-columns: 20 1fr;
+    grid-columns: 18 1fr;
     grid-rows: 1fr;
     margin: 0 0;
+}
+
+#editing-area {
+    background: $surface-lighten-3;
 }
 
 #canvas {
     width: auto;
     height: auto;
+    margin: 1 2;
 }
 
 #tools_box {
@@ -30,7 +35,6 @@ Screen {
     grid-columns: 6;
     grid-rows: 3;
     padding: 1 1;
-    width: 20;
     height: 100%;
     border-bottom: tall $panel-darken-2;
 }

@@ -274,7 +274,10 @@ class PaintApp(App):
         with Container(id="paint"):
             yield Container(
                 ToolsBox(),
-                Container(Canvas(id="canvas")),
+                Container(
+                    Canvas(id="canvas"),
+                    id="editing-area",
+                ),
                 id="main-horizontal-split",
             )
             yield ColorsBox()
