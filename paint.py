@@ -218,9 +218,6 @@ class Canvas(Widget):
         self.image = None
         self.pointer_active = False
 
-    def on_mount(self) -> None:
-        self.refresh()
-
     def on_mouse_down(self, event) -> None:
         self.post_message(self.ToolStart(event))
         self.pointer_active = True
