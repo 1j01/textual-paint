@@ -420,6 +420,7 @@ class PaintApp(App):
         self.undos.append(action)
         region = self.stamp_brush(event.mouse_down_event.x, event.mouse_down_event.y, region)
         action.region = region
+        action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
         action.update(self.image_at_start)
         self.canvas.refresh(region)
         event.stop()
@@ -434,6 +435,7 @@ class PaintApp(App):
         
         # Update action region and image data
         action.region = action.region.union(affected_region)
+        action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
         action.update(self.image_at_start)
 
         self.canvas.refresh(affected_region)
