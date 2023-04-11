@@ -313,12 +313,14 @@ class PaintApp(App):
         """Called when the user starts drawing on the canvas."""
         self.draw_dot(event.mouse_down_event.x, event.mouse_down_event.y)
         self.canvas.refresh()
+        event.stop()
 
     def on_canvas_tool_update(self, event: Canvas.ToolUpdate) -> None:
         """Called when the user is drawing on the canvas."""
         mm = event.mouse_move_event
         bresenham_walk(mm.x - mm.delta_x, mm.y - mm.delta_y, mm.x, mm.y, lambda x, y: self.draw_dot(x, y))
         self.canvas.refresh()
+        event.stop()
 
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
