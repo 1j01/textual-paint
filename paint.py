@@ -133,12 +133,15 @@ class ColorsBox(Container):
     """Color palette widget."""
 
     def compose(self) -> ComposeResult:
-        """Add our buttons."""
+        """Add our selected color and color well buttons."""
         with Container(id="colors_box"):
-            for color in palette:
-                button = Button("", id="color_well_" + color)
-                button.styles.background = color
-                yield button
+            with Container(id="selected_colors"):
+                yield Static(id="selected_color")
+            with Container(id="available_colors"):
+                for color in palette:
+                    button = Button("", id="color_well_" + color)
+                    button.styles.background = color
+                    yield button
 
 class Canvas(Static):
     """The image document widget."""
@@ -152,14 +155,13 @@ class Canvas(Static):
         self.image_bg = [["#ffffff" for _ in range(self.image_width)] for _ in range(self.image_height)]
         self.image_fg = [["#000000" for _ in range(self.image_width)] for _ in range(self.image_height)]
         self.pointer_active = False
+        self.selected_color = "#000000"
 
     def on_mount(self) -> None:
         self.display_canvas()
 
     def on_mouse_down(self, event) -> None:
-        if event.x < self.image_width and event.y < self.image_height and event.x >= 0 and event.y >= 0:
-            self.image_ch[event.y][event.x] = "X"
-            self.image_bg[event.y][event.x] = "#ff0000"
+        self.draw_dot(event.x, event.y)
         self.pointer_active = True
         self.capture_mouse(True)
         self.display_canvas()
@@ -191,7 +193,7 @@ class Canvas(Static):
     def draw_dot(self, x: int, y: int) -> None:
         if x < self.image_width and y < self.image_height and x >= 0 and y >= 0:
             self.image_ch[y][x] = "O"
-            self.image_bg[y][x] = "#ffff00"
+            self.image_bg[y][x] = self.selected_color
 
     def on_mouse_up(self, event) -> None:
         self.pointer_active = False
@@ -217,6 +219,7 @@ class PaintApp(App):
 
     # show_tools_box = var(True)
     selected_tool = var(Tool.pencil)
+    selected_color = var(palette[0])
 
     NAME_MAP = {
         # key to button id
@@ -231,12 +234,17 @@ class PaintApp(App):
         self.query_one("#tool_button_" + old_selected_tool.name).classes = "tool_button"
         self.query_one("#tool_button_" + selected_tool.name).classes = "tool_button selected"
 
+    def watch_selected_color(self, old_selected_color: str, selected_color: str) -> None:
+        """Called when selected_color changes."""
+        self.query_one("#selected_color").styles.background = selected_color
+        self.query_one("#canvas").selected_color = selected_color
+
     def compose(self) -> ComposeResult:
         """Add our widgets."""
         with Container(id="paint"):
             yield Container(
                 ToolsBox(),
-                Canvas(),
+                Canvas(id="canvas"),
                 id="main-horizontal-split",
             )
             yield ColorsBox()
@@ -264,6 +272,8 @@ class PaintApp(App):
 
         if button_id.startswith("tool_button_"):
             self.selected_tool = Tool[button_id[len("tool_button_") :]]
+        elif button_id.startswith("color_well_"):
+            self.selected_color = button_id[len("color_well_") :]
 
 
 if __name__ == "__main__":
