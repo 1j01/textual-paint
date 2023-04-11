@@ -106,13 +106,23 @@ class Canvas(Static):
         self.width = 80
         self.height = 24
         self.image = [["." for _ in range(self.width)] for _ in range(self.height)]
+        self.pointer_active = False
 
     def on_mount(self) -> None:
         self.display_canvas()
 
-    def on_click(self, event) -> None:
+    def on_mouse_down(self, event) -> None:
         self.display_canvas()
         self.image[event.y][event.x] = "X"
+        self.pointer_active = True
+    
+    def on_mouse_move(self, event) -> None:
+        if self.pointer_active:
+            self.image[event.y][event.x] = "O"
+            self.display_canvas()
+
+    def on_mouse_up(self, event) -> None:
+        self.pointer_active = False
 
     def display_canvas(self) -> None:
         """Update the content area."""
