@@ -268,6 +268,9 @@ class PaintApp(App):
         button_id = self.NAME_MAP.get(key)
         if button_id is not None:
             press(self.NAME_MAP.get(key, key))
+        elif key == "ctrl+q" or key == "meta+q":
+            self.exit()
+
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is pressed."""
