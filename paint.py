@@ -5,6 +5,7 @@ from rich.style import Style
 from textual import events
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical
+from textual.geometry import Size
 from textual.css.query import NoMatches
 from textual.reactive import var, reactive
 from textual.strip import Strip
@@ -221,6 +222,12 @@ class Canvas(Widget):
     def on_mouse_up(self, event) -> None:
         self.pointer_active = False
         self.capture_mouse(False)
+
+    def get_content_width(self, container: Size, viewport: Size) -> int:
+        return self.image.width
+
+    def get_content_height(self, container: Size, viewport: Size, width: int) -> int:
+        return self.image.height
 
     def render_line(self, y: int) -> Strip:
         """Render a line of the widget. y is relative to the top of the widget."""

@@ -18,6 +18,11 @@ Screen {
     margin: 0 0;
 }
 
+#canvas {
+    width: auto;
+    height: auto;
+}
+
 #tools_box {
     layout: grid;
     grid-size: 2;
