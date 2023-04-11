@@ -1,9 +1,12 @@
 Screen {
-    overflow: auto;
+    /* overflow: auto; */
 }
 
 #paint {
-    layout: vertical;
+    layout: grid;
+    grid-size: 1;
+    grid-columns: 1fr;
+    grid-rows: 1fr 6;
 }
 
 #main-horizontal-split {
@@ -13,9 +16,6 @@ Screen {
     grid-columns: 20 1fr;
     grid-rows: 1fr;
     margin: 0 0;
-    min-height: 25;
-    min-width: 26;
-    /* height: 100%; */
 }
 
 #tools_box {
