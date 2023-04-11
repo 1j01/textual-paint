@@ -147,17 +147,35 @@ class ColorsBox(Container):
                     button.styles.background = color
                     yield button
 
+class AnsiArtDocument:
+    """A document that can be rendered as ANSI."""
+
+    def __init__(self, width: int, height: int) -> None:
+        """Initialize the document."""
+        self.width = width
+        self.height = height
+        self.ch = [[" " for _ in range(width)] for _ in range(height)]
+        self.bg = [["#ffffff" for _ in range(width)] for _ in range(height)]
+        self.fg = [["#000000" for _ in range(width)] for _ in range(height)]
+
+    def get_ansi(self) -> str:
+        """Get the ANSI representation of the document. Untested. This is a freebie from the AI."""
+        ansi = ""
+        for y in range(self.height):
+            for x in range(self.width):
+                if x == 0:
+                    ansi += "\033[0m"
+                ansi += "\033[48;2;" + self.bg[y][x] + ";38;2;" + self.fg[y][x] + "m" + self.ch[y][x]
+            ansi += "\033[0m\r"
+        return ansi
+
 class Canvas(Widget):
     """The image document widget."""
 
     def __init__(self, **kwargs) -> None:
         """Initialize the canvas."""
         super().__init__(**kwargs)
-        self.image_width = 80
-        self.image_height = 24
-        self.image_ch = [[" " for _ in range(self.image_width)] for _ in range(self.image_height)]
-        self.image_bg = [["#ffffff" for _ in range(self.image_width)] for _ in range(self.image_height)]
-        self.image_fg = [["#000000" for _ in range(self.image_width)] for _ in range(self.image_height)]
+        self.image = AnsiArtDocument(80, 24)
         self.pointer_active = False
         self.selected_color = "#000000"
         self.selected_char = " "
@@ -196,9 +214,9 @@ class Canvas(Widget):
                 y0 = y0 + sy
 
     def draw_dot(self, x: int, y: int) -> None:
-        if x < self.image_width and y < self.image_height and x >= 0 and y >= 0:
-            self.image_ch[y][x] = self.selected_char
-            self.image_bg[y][x] = self.selected_color
+        if x < self.image.width and y < self.image.height and x >= 0 and y >= 0:
+            self.image.ch[y][x] = self.selected_char
+            self.image.bg[y][x] = self.selected_color
 
     def on_mouse_up(self, event) -> None:
         self.pointer_active = False
@@ -206,13 +224,13 @@ class Canvas(Widget):
 
     def render_line(self, y: int) -> Strip:
         """Render a line of the widget. y is relative to the top of the widget."""
-        if y >= self.image_height:
+        if y >= self.image.height:
             return Strip.blank(self.size.width)
         segments = []
-        for x in range(self.image_width):
-            bg = self.image_bg[y][x]
-            fg = self.image_fg[y][x]
-            ch = self.image_ch[y][x]
+        for x in range(self.image.width):
+            bg = self.image.bg[y][x]
+            fg = self.image.fg[y][x]
+            ch = self.image.ch[y][x]
             segments.append(Segment(ch, Style.parse(fg+" on "+bg)))
         return Strip(segments, self.size.width)
 
