@@ -334,6 +334,9 @@ class PaintApp(App):
 
     def on_canvas_tool_start(self, event: Canvas.ToolStart) -> None:
         """Called when the user starts drawing on the canvas."""
+        if self.selected_tool != Tool.pencil and self.selected_tool != Tool.brush:
+            self.selected_tool = Tool.pencil
+            # TODO: support other tools
         self.stamp_brush(event.mouse_down_event.x, event.mouse_down_event.y)
         self.canvas.refresh()
         event.stop()
