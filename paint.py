@@ -1,10 +1,14 @@
 from enum import Enum
 
+from rich.segment import Segment
+from rich.style import Style
 from textual import events
 from textual.app import App, ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.css.query import NoMatches
 from textual.reactive import var, reactive
+from textual.strip import Strip
+from textual.widget import Widget
 from textual.widgets import Button, Static
 
 class Tool(Enum):
@@ -143,7 +147,7 @@ class ColorsBox(Container):
                     button.styles.background = color
                     yield button
 
-class Canvas(Static):
+class Canvas(Widget):
     """The image document widget."""
 
     def __init__(self, **kwargs) -> None:
@@ -158,18 +162,18 @@ class Canvas(Static):
         self.selected_color = "#000000"
 
     def on_mount(self) -> None:
-        self.display_canvas()
+        self.refresh()
 
     def on_mouse_down(self, event) -> None:
         self.draw_dot(event.x, event.y)
         self.pointer_active = True
         self.capture_mouse(True)
-        self.display_canvas()
+        self.refresh()
     
     def on_mouse_move(self, event) -> None:
         if self.pointer_active:
             self.bresenham_walk(event.x - event.delta_x, event.y - event.delta_y, event.x, event.y, lambda x, y: self.draw_dot(x, y))
-            self.display_canvas()
+            self.refresh()
 
     def bresenham_walk(self, x0: int, y0: int, x1: int, y1: int, callback) -> None:
         """Bresenham's line algorithm"""
@@ -199,18 +203,18 @@ class Canvas(Static):
         self.pointer_active = False
         self.capture_mouse(False)
 
-    def display_canvas(self) -> None:
-        """Update the content area."""
-        # TODO: avoid generating insane amounts of markup that then has to be parsed
-        text = ""
-        for y in range(self.image_height):
-            for x in range(self.image_width):
-                bg = self.image_bg[y][x]
-                fg = self.image_fg[y][x]
-                ch = self.image_ch[y][x]
-                text += "["+fg+" on "+bg+"]" + ch + "[/]"
-            text += "\n"
-        self.update(text)
+    def render_line(self, y: int) -> Strip:
+        """Render a line of the widget. y is relative to the top of the widget."""
+        if y >= self.image_height:
+            return Strip.blank(self.size.width)
+        segments = []
+        for x in range(self.image_width):
+            bg = self.image_bg[y][x]
+            fg = self.image_fg[y][x]
+            ch = self.image_ch[y][x]
+            segments.append(Segment(ch, Style.parse(fg+" on "+bg)))
+        return Strip(segments, self.size.width)
+
 
 class PaintApp(App):
     """MS Paint like image editor in the terminal."""
