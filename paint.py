@@ -2,7 +2,7 @@ from enum import Enum
 
 from textual import events
 from textual.app import App, ComposeResult
-from textual.containers import Container
+from textual.containers import Container, Horizontal, Vertical
 from textual.css.query import NoMatches
 from textual.reactive import var, reactive
 from textual.widgets import Button, Static
@@ -87,6 +87,38 @@ class Tool(Enum):
         }[self]
 
 
+palette = [
+	"rgb(0,0,0)", # Black
+	"rgb(128,128,128)", # Dark Gray
+	"rgb(128,0,0)", # Dark Red
+	"rgb(128,128,0)", # Pea Green
+	"rgb(0,128,0)", # Dark Green
+	"rgb(0,128,128)", # Slate
+	"rgb(0,0,128)", # Dark Blue
+	"rgb(128,0,128)", # Lavender
+	"rgb(128,128,64)",
+	"rgb(0,64,64)",
+	"rgb(0,128,255)",
+	"rgb(0,64,128)",
+	"rgb(64,0,255)",
+	"rgb(128,64,0)",
+
+	"rgb(255,255,255)", # White
+	"rgb(192,192,192)", # Light Gray
+	"rgb(255,0,0)", # Bright Red
+	"rgb(255,255,0)", # Yellow
+	"rgb(0,255,0)", # Bright Green
+	"rgb(0,255,255)", # Cyan
+	"rgb(0,0,255)", # Bright Blue
+	"rgb(255,0,255)", # Magenta
+	"rgb(255,255,128)",
+	"rgb(0,255,128)",
+	"rgb(128,255,255)",
+	"rgb(128,128,255)",
+	"rgb(255,0,128)",
+	"rgb(255,128,64)",
+]
+
 class ToolsBox(Container):
     """Widget containing tool buttons"""
 
@@ -96,6 +128,17 @@ class ToolsBox(Container):
             # tool buttons
             for tool in Tool:
                 yield Button(tool.get_icon(), id="tool_button_" + tool.name)
+
+class ColorsBox(Container):
+    """Color palette widget."""
+
+    def compose(self) -> ComposeResult:
+        """Add our buttons."""
+        with Container(id="colors_box"):
+            for color in palette:
+                button = Button("", id="color_well_" + color)
+                button.styles.background = color
+                yield button
 
 class Canvas(Static):
     """The image document widget."""
@@ -191,8 +234,12 @@ class PaintApp(App):
     def compose(self) -> ComposeResult:
         """Add our widgets."""
         with Container(id="paint"):
-            yield ToolsBox()
-            yield Canvas()
+            yield Container(
+                ToolsBox(),
+                Canvas(),
+                id="main-horizontal-split",
+            )
+            yield ColorsBox()
 
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
