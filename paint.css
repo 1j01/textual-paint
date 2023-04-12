@@ -66,6 +66,11 @@ Screen {
     border-top: tall $panel-lighten-2;
 }
 
+.color_well {
+    border-top: tall $panel-darken-2;
+    border-bottom: tall $panel-lighten-3;
+}
+
 #selected_colors {
     max-height: 5;
     overflow: hidden;

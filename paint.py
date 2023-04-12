@@ -146,10 +146,10 @@ class ColorsBox(Container):
         """Add our selected color and color well buttons."""
         with Container(id="colors_box"):
             with Container(id="selected_colors"):
-                yield Static(id="selected_color")
+                yield Static(id="selected_color", classes="color_well")
             with Container(id="available_colors"):
                 for color in palette:
-                    button = Button("", id="color_well_" + color)
+                    button = Button("", id="color_button_" + color, classes="color_well")
                     button.styles.background = color
                     yield button
 
@@ -705,8 +705,8 @@ class PaintApp(App):
 
         if button_id.startswith("tool_button_"):
             self.selected_tool = Tool[button_id[len("tool_button_") :]]
-        elif button_id.startswith("color_well_"):
-            self.selected_color = button_id[len("color_well_") :]
+        elif button_id.startswith("color_button_"):
+            self.selected_color = button_id[len("color_button_") :]
 
 
 if __name__ == "__main__":
