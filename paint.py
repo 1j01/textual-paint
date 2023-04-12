@@ -345,6 +345,67 @@ def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> None:
             err = err + dx
             y0 = y0 + sy
 
+def midpoint_ellipse(xc: int, yc: int, rx: int, ry: int) -> None:
+    """Midpoint ellipse drawing algorithm. Yields points out of order."""
+    # Source: https://www.geeksforgeeks.org/midpoint-ellipse-drawing-algorithm/
+
+    x = 0
+    y = ry
+ 
+    # Initial decision parameter of region 1
+    d1 = ((ry * ry) - (rx * rx * ry) +
+                      (0.25 * rx * rx))
+    dx = 2 * ry * ry * x
+    dy = 2 * rx * rx * y
+ 
+    # For region 1
+    while (dx < dy):
+        # Yield points based on 4-way symmetry
+        yield x + xc, y + yc
+        yield -x + xc, y + yc
+        yield x + xc, -y + yc
+        yield -x + xc, -y + yc
+ 
+        # Checking and updating value of
+        # decision parameter based on algorithm
+        if (d1 < 0):
+            x += 1
+            dx = dx + (2 * ry * ry)
+            d1 = d1 + dx + (ry * ry)
+        else:
+            x += 1
+            y -= 1
+            dx = dx + (2 * ry * ry)
+            dy = dy - (2 * rx * rx)
+            d1 = d1 + dx - dy + (ry * ry)
+ 
+    # Decision parameter of region 2
+    d2 = (((ry * ry) * ((x + 0.5) * (x + 0.5))) +
+          ((rx * rx) * ((y - 1) * (y - 1))) -
+           (rx * rx * ry * ry))
+ 
+    # Plotting points of region 2
+    while (y >= 0):
+        # Yielding points based on 4-way symmetry
+        yield x + xc, y + yc
+        yield -x + xc, y + yc
+        yield x + xc, -y + yc
+        yield -x + xc, -y + yc
+ 
+        # Checking and updating parameter
+        # value based on algorithm
+        if (d2 > 0):
+            y -= 1
+            dy = dy - (2 * rx * rx)
+            d2 = d2 + (rx * rx) - dy
+        else:
+            y -= 1
+            x += 1
+            dx = dx + (2 * ry * ry)
+            dy = dy - (2 * rx * rx)
+            d2 = d2 + dx - dy + (rx * rx)
+
+
 class Canvas(Widget):
     """The image document widget."""
 
@@ -540,21 +601,23 @@ class PaintApp(App):
 
     def on_canvas_tool_start(self, event: Canvas.ToolStart) -> None:
         """Called when the user starts drawing on the canvas."""
-        if self.selected_tool != Tool.pencil and self.selected_tool != Tool.brush:
+        if self.selected_tool != Tool.pencil and self.selected_tool != Tool.brush and self.selected_tool != Tool.ellipse:
             self.selected_tool = Tool.pencil
             # TODO: support other tools
         self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
         self.image_at_start.copy_region(self.image)
+        self.mouse_at_start = (event.mouse_down_event.x, event.mouse_down_event.y)
         region = Region(event.mouse_down_event.x, event.mouse_down_event.y, 1, 1)
         if len(self.redos) > 0:
             self.redos = []
         action = Action(self.selected_tool.get_name(), self.image)
         self.undos.append(action)
-        region = self.stamp_brush(event.mouse_down_event.x, event.mouse_down_event.y, region)
-        action.region = region
-        action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
-        action.update(self.image_at_start)
-        self.canvas.refresh(region)
+        if self.selected_tool == Tool.pencil or self.selected_tool == Tool.brush:
+            region = self.stamp_brush(event.mouse_down_event.x, event.mouse_down_event.y, region)
+            action.region = region
+            action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
+            action.update(self.image_at_start)
+            self.canvas.refresh(region)
         event.stop()
 
     def on_canvas_tool_update(self, event: Canvas.ToolUpdate) -> None:
@@ -562,15 +625,38 @@ class PaintApp(App):
         mm = event.mouse_move_event
         action = self.undos[-1]
         affected_region = Region(mm.x, mm.y, 1, 1)
-        for x, y in bresenham_walk(mm.x - mm.delta_x, mm.y - mm.delta_y, mm.x, mm.y):
-            affected_region = self.stamp_brush(x, y, affected_region)
+
+        replace_action = self.selected_tool in [Tool.ellipse, Tool.rectangle, Tool.line, Tool.rounded_rectangle]
+        if replace_action:
+            old_action = self.undos.pop()
+            old_action.undo(self.image)
+            action = Action(self.selected_tool.get_name(), self.image, affected_region)
+            self.undos.append(action)
+        
+        if self.selected_tool == Tool.pencil or self.selected_tool == Tool.brush:
+            for x, y in bresenham_walk(mm.x - mm.delta_x, mm.y - mm.delta_y, mm.x, mm.y):
+                affected_region = self.stamp_brush(x, y, affected_region)
+        elif self.selected_tool == Tool.ellipse:
+            center_x = (self.mouse_at_start[0] + mm.x) // 2
+            center_y = (self.mouse_at_start[1] + mm.y) // 2
+            radius_x = abs(self.mouse_at_start[0] - mm.x) // 2
+            radius_y = abs(self.mouse_at_start[1] - mm.y) // 2
+            for x, y in midpoint_ellipse(center_x, center_y, radius_x, radius_y):
+                affected_region = self.stamp_brush(x, y, affected_region)
+        else:
+            raise NotImplementedError
         
         # Update action region and image data
         action.region = action.region.union(affected_region)
         action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
         action.update(self.image_at_start)
 
+        # Only for refreshing, include replaced action region
+        # (The new action is allowed to shrink the region compared to the old one)
+        if replace_action:
+            affected_region = affected_region.union(old_action.region)
         self.canvas.refresh(affected_region)
+
         event.stop()
 
     def on_key(self, event: events.Key) -> None:
