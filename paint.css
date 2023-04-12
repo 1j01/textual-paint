@@ -27,7 +27,8 @@ Screen {
 }
 
 #editing-area {
-    background: $surface-lighten-3;
+    /* background: $surface-lighten-3; */
+    background: $background;
 }
 
 #canvas {
