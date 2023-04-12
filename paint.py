@@ -285,8 +285,29 @@ class AnsiArtDocument:
             elif isinstance(instruction, stransi.SetAttribute):
                 # Attribute
                 pass
+            elif isinstance(instruction, stransi.SetCursor):
+                # Set cursor position
+                # Not sure if this is correct... is it actually supposed to affect where the next character is drawn?
+                if instruction.move.relative:
+                    x += instruction.move.x
+                    y += instruction.move.y
+                else:
+                    x = instruction.move.x
+                    y = instruction.move.y
+                width = max(x, width)
+                height = max(y, height)
+                while len(document.ch) <= y:
+                    document.ch.append([])
+                    document.bg.append([])
+                    document.fg.append([])
+                while len(document.ch[y]) <= x:
+                    document.ch[y].append(' ')
+                    document.bg[y].append(bg_color)
+                    document.fg[y].append(fg_color)
             else:
-                raise ValueError("Unknown instruction type")
+                # raise ValueError("Unknown instruction type")
+                print("Unknown instruction type: " + str(instruction))
+                pass
         document.width = width
         document.height = height
         # Fill in the rest of the lines
