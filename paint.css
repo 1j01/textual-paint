@@ -88,8 +88,8 @@ Screen {
     grid-gutter: 0 1;
     grid-columns: 4;
     grid-rows: 2;
-    /* padding: 1 1; */
-    width: 100%;
+    height: auto;
+    width: auto;
 }
 
 Button {
