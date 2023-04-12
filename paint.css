@@ -10,16 +10,7 @@ Screen {
 }
 
 #main-horizontal-split {
-    layout: grid;
-    grid-size: 2;
-    grid-gutter: 1 2;
-    grid-columns: 0 1fr;
-    grid-rows: 1fr;
-    margin: 0 0;
-}
-
-.show_tools_box #main-horizontal-split {
-    grid-columns: 18 1fr;
+    layout: horizontal;
 }
 
 .show_colors_box #paint {
@@ -28,6 +19,7 @@ Screen {
 
 #editing-area {
     background: $surface-lighten-3;
+    width: 1fr;
 }
 
 #canvas {
@@ -43,6 +35,7 @@ Screen {
     grid-columns: 6;
     grid-rows: 3;
     padding: 1 1;
+    width: 18;
     height: 100%;
     border-bottom: tall $panel-darken-2;
 }
