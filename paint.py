@@ -2,6 +2,7 @@ import re
 import sys
 from enum import Enum
 from random import randint
+from typing import List
 import stransi
 from rich.segment import Segment
 from rich.style import Style
@@ -426,8 +427,8 @@ class PaintApp(App):
     filename = var(None)
     image = var(None)
 
-    undos = []
-    redos = []
+    undos: List[Action] = []
+    redos: List[Action] = []
 
     NAME_MAP = {
         # key to button id
