@@ -27,9 +27,12 @@ Screen {
 }
 
 #editing-area {
-    /* background: $surface-lighten-3; */
-    background: $background;
+    background: rgb(128, 128, 128);
 }
+.-dark-mode #editing-area {
+    background: $surface-lighten-2;
+}
+
 
 #canvas {
     width: auto;
@@ -46,6 +49,7 @@ Screen {
     padding: 1 1;
     height: 100%;
     border-bottom: tall $panel-darken-2;
+    background: $panel-darken-1;
 }
 
 #tools_box Button:focus {
@@ -65,6 +69,7 @@ Screen {
     grid-size: 2;
     grid-columns: 10 1fr;
     border-top: tall $panel-lighten-2;
+    background: $panel-darken-1;
 }
 
 .color_well {
