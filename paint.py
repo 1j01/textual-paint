@@ -733,7 +733,7 @@ class PaintApp(App):
 if __name__ == "__main__":
     app = PaintApp()
     if len(sys.argv) > 1:
-        with open(sys.argv[1], 'r') as my_file:
+        with open(sys.argv[1], 'r', encoding="cp437") as my_file:
             app.image = AnsiArtDocument.from_text(my_file.read())
             app.filename = sys.argv[1]
     app.run()
