@@ -694,8 +694,8 @@ class PaintApp(App):
         # Ctrl+Shift+Z doesn't seem to work on Ubuntu or VS Code terminal
         elif key == "ctrl+shift+z" or key == "shift+ctrl+z" or key == "ctrl+y" or key == "f4":
             self.redo()
-        # elif key == "ctrl+d":
-        #     self.action_toggle_dark()
+        elif key == "ctrl+d":
+            self.action_toggle_dark()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked or activated with the keyboard."""
