@@ -313,7 +313,6 @@ class Action:
         if region is None:
             region = Region(0, 0, document.width, document.height)
         self.name = name
-        self.live_document = document # only for undoing; TODO: move to parameter of undo()
         self.region = region
         self.update(document)
 
@@ -322,9 +321,9 @@ class Action:
         self.sub_image_before = AnsiArtDocument(self.region.width, self.region.height)
         self.sub_image_before.copy_region(document, self.region)
 
-    def undo(self) -> None:
+    def undo(self, target_document: AnsiArtDocument) -> None:
         """Undo this action. Note that a canvas refresh is not performed here."""
-        self.live_document.copy_region(self.sub_image_before, target_region=self.region)
+        target_document.copy_region(self.sub_image_before, target_region=self.region)
 
 def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> None:
     """Bresenham's line algorithm"""
@@ -484,7 +483,7 @@ class PaintApp(App):
         if len(self.undos) > 0:
             action = self.undos.pop()
             redo_action = Action("Undo " + action.name, self.image, action.region)
-            action.undo()
+            action.undo(self.image)
             self.redos.append(redo_action)
             self.canvas.refresh()
 
@@ -492,7 +491,7 @@ class PaintApp(App):
         if len(self.redos) > 0:
             action = self.redos.pop()
             undo_action = Action("Undo " + action.name, self.image, action.region)
-            action.undo()
+            action.undo(self.image)
             self.undos.append(undo_action)
             self.canvas.refresh()
 
