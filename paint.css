@@ -12,7 +12,6 @@ Screen {
 #main-horizontal-split {
     layout: grid;
     grid-size: 2;
-    grid-gutter: 1 2;
     grid-columns: 0 1fr;
     grid-rows: 1fr;
     margin: 0 0;
