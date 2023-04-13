@@ -724,7 +724,12 @@ class PaintApp(App):
         """Called when the user starts drawing on the canvas."""
         event.stop()
 
-        if self.selected_tool in [Tool.free_form_select, Tool.select, Tool.pick_color, Tool.magnifier, Tool.text, Tool.curve, Tool.polygon]:
+        if self.selected_tool == Tool.pick_color:
+            self.selected_color = self.image.bg[event.mouse_down_event.y][event.mouse_down_event.x]
+            self.selected_char = self.image.ch[event.mouse_down_event.y][event.mouse_down_event.x]
+            return
+
+        if self.selected_tool in [Tool.free_form_select, Tool.select, Tool.magnifier, Tool.text, Tool.curve, Tool.polygon]:
             self.selected_tool = Tool.pencil
             # TODO: support other tools
         self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
@@ -751,7 +756,7 @@ class PaintApp(App):
         """Called when the user is drawing on the canvas."""
         event.stop()
 
-        if self.selected_tool == Tool.fill:
+        if self.selected_tool in [Tool.fill, Tool.pick_color]:
             return
         
         mm = event.mouse_move_event
