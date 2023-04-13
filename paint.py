@@ -544,7 +544,7 @@ class PaintApp(App):
         """Called when selected_color changes."""
         self.query_one("#selected_color").styles.background = selected_color
 
-    def stamp_brush(self, x: int, y: int, affected_region: Region) -> Region:
+    def stamp_brush(self, x: int, y: int, affected_region_base: Region = None) -> Region:
         brush_diameter = 1
         if self.selected_tool == Tool.brush:
             brush_diameter = 3
@@ -558,7 +558,11 @@ class PaintApp(App):
                         self.stamp_char(x + i - brush_diameter // 2, y + j - brush_diameter // 2)
         # expand the affected region to include the brush
         brush_diameter += 2 # safety margin
-        return affected_region.union(Region(x - brush_diameter // 2, y - brush_diameter // 2, brush_diameter, brush_diameter))
+        affected_region = Region(x - brush_diameter // 2, y - brush_diameter // 2, brush_diameter, brush_diameter)
+        if affected_region_base:
+            return affected_region_base.union(affected_region)
+        else:
+            return affected_region
     
     def stamp_char(self, x: int, y: int) -> None:
         if x < self.image.width and y < self.image.height and x >= 0 and y >= 0:
@@ -651,13 +655,12 @@ class PaintApp(App):
         self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
         self.image_at_start.copy_region(self.image)
         self.mouse_at_start = (event.mouse_down_event.x, event.mouse_down_event.y)
-        region = Region(event.mouse_down_event.x, event.mouse_down_event.y, 1, 1)
         if len(self.redos) > 0:
             self.redos = []
         action = Action(self.selected_tool.get_name(), self.image)
         self.undos.append(action)
         if self.selected_tool == Tool.pencil or self.selected_tool == Tool.brush:
-            region = self.stamp_brush(event.mouse_down_event.x, event.mouse_down_event.y, region)
+            region = self.stamp_brush(event.mouse_down_event.x, event.mouse_down_event.y)
             action.region = region
             action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
             action.update(self.image_at_start)
