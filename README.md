@@ -7,6 +7,36 @@ You need Paint in your terminal.
 
 This is a TUI (Text User Interface) image editor, inspired by MS Paint, and built with [Textual](https://textual.textualize.io/).
 
+## Features
+
+- Open and save images
+	- [ ] PNG (.png)
+	- [ ] Bitmap (.bmp)
+	- [x] ANSI (.ans)
+		- only supports loading files saved by this program; ANSI files can vary a lot and even encode animations
+	- no save dialog yet, you can only save a file opened via the command line
+- Tools
+    - [ ] Free-Form Select
+    - [ ] Rectangular Select
+    - [ ] Eraser/Color Eraser
+    - [x] Fill With Color
+    - [ ] Pick Color
+    - [ ] Magnifier
+    - [x] Pencil
+    - [x] Brush
+    - [ ] Airbrush
+    - [ ] Text
+    - [x] Line
+    - [ ] Curve
+    - [x] Rectangle
+    - [ ] Polygon
+    - [x] Ellipse
+    - [x] Rounded Rectangle
+- [x] Color palette
+- [x] Undo/Redo
+- [x] Efficient screen updates and undo/redo history, by tracking regions affected by each action
+	- You could totally use this program over SSH! Haha, this "what if" project could actually be useful. Of course, it should be mentioned that you can also run graphical programs over SSH, but this might be more responsive, or just fit your vibe better.
+- [x] Menu bar
 
 ## Development
 
