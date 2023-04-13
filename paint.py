@@ -42,8 +42,8 @@ class Tool(Enum):
         # Alternatives considered:
         # - Free-Form Select:  ✂️📐🆓🕸✨⚝🫥🇫/🇸◌
         # - Rectangular Select: ⬚▧🔲
-        # - Eraser: 🧼🧽🧹🚫👋🗑️
-        # - Fill Bucket (Flood Fill): 🌊💦💧🌈🎉🎊🪣🫗
+        # - Eraser/Color Eraser: 🧼🧽🧹🚫👋🗑️
+        # - Fill With Color: 🌊💦💧🌈🎉🎊🪣🫗
         # - Pick Color: 🎨💉💅💧📌📍⤤𝀃🝯🍶
         # - Magnifier: 🔍🔎👀🔬🔭🧐🕵️‍♂️🕵️‍♀️
         # - Pencil: ✏️✎✍️🖎🖊️🖋️✒️🖆📝🖍️
@@ -81,8 +81,8 @@ class Tool(Enum):
         return {
             Tool.free_form_select: "Free-Form Select",
             Tool.select: "Rectangular Select",
-            Tool.eraser: "Eraser",
-            Tool.fill: "Fill Bucket",
+            Tool.eraser: "Eraser/Color Eraser",
+            Tool.fill: "Fill With Color",
             Tool.pick_color: "Pick Color",
             Tool.magnifier: "Magnifier",
             Tool.pencil: "Pencil",
