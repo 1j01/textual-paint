@@ -102,10 +102,19 @@ Button {
     height: 100%;
 }
 
+.menu {
+    layout: vertical;
+    /* background: $panel; */
+    width: auto;
+    height: auto;
+    dock: top;
+    /* border: round $panel-darken-2; */
+}
 /* MenuBar { */
 .menu_bar {
     layout: horizontal;
     background: $panel;
+    width: 100%;
     height: auto;
     dock: top;
     /* border-bottom: hkey $panel-darken-2; */
