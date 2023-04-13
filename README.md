@@ -33,6 +33,12 @@ python paint.py
 
 ## Unicode Symbols and Emojis for Paint Tools
 
+The first thing I did in this project was to collect possible characters to represent all the tool icons in MS Paint, to test feasibility.
+In other words, I wanted to gauge how good of a recreation it would be possible to achieve, starting from looks.
+Unfortunately, I haven't run into any significant roadblocks, so I'm apparently recreating MS Paint. [Again.](https://jspaint.app)
+
+These are the symbols I've found so far:
+
 - Free-Form Select:  ✂️📐🆓🕸✨⚝🫥🇫/🇸◌
 - Rectangular Select: ⬚▧🔲
 - Eraser/Color Eraser: 🧼🧽🧹🚫👋🗑️
@@ -43,13 +49,24 @@ python paint.py
 - Brush: 🖌️🖌👨‍🎨🧑‍🎨💅
 - Airbrush: 💨ᖜ╔🧴🥤🫠
 - Text: 🆎📝📄📃🔤📜AＡ
-- Line: 📏📉📈⟍𝈏⧹
-- Curve: ↪️🪝🌙〰️◡◠~∼≈∽∿〜〰﹋﹏≈≋～
-- Rectangle: ▭▬▮▯◼️◻️⬜⬛🟧🟩
-- Polygon: ▙𝗟𝙇⬣⬟△▲🔺🔻🔷🔶
-- Ellipse: ⬭🔴🔵🔶🔷🔸🔹🟠🟡🟢🟣🫧
+- Line: 📏📉📈⟍𝈏╲⧹\⧵∖
+- Curve: ↪️🪝🌙〰️◡◠~∼≈∽∿〜〰﹋﹏≈≋～⁓
+- Rectangle: ▭▬▮▯🟥🟧🟨🟩🟦🟪🟫⬛⬜◼️◻️◾◽▪️▫️
+- Polygon: ▙𝗟𝙇﹄』⬣⬟🔶🔷🔸🔹🔺🔻△▲
+- Ellipse: ⬭⭕🔴🟠🟡🟢🔵🟣🟤⚫⚪🫧
 - Rounded Rectangle: ▢⬜⬛
 
+The default symbols used may not be the best on your particular system, so I may add some kind of configuration for this in the future.
+
+### Cursor
+
+A crosshair cursor could use one of `+✜✛✚╋╬`, but whilst that imitates the look, it might be better to show the pixel under the cursor, i.e. character cell, surrounded by dashes, like this:
+
+```
+ ╻
+╺█╸
+ ╹
+```
 
 ## See Also
 
