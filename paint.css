@@ -51,6 +51,9 @@ Screen {
     background: $panel-darken-1;
 }
 
+#tools_box Button {
+    text-style: none !important;
+}
 #tools_box Button:focus {
     /* disable focus highlight */
     /* in the future it may be important to prevent focus instead */
