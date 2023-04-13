@@ -61,7 +61,7 @@ class Tool(Enum):
             Tool.free_form_select: "⚝",
             Tool.select: "⬚",
             Tool.eraser: "🧼",
-            Tool.fill: "🫗",
+            Tool.fill: "🌊", # "🫗" causes jutting out in Ubuntu terminal, "🪣" causes the opposite in VS Code terminal
             Tool.pick_color: "💉",
             Tool.magnifier: "🔍",
             Tool.pencil: "✏️",
