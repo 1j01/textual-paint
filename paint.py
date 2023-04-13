@@ -720,13 +720,17 @@ class PaintApp(App):
         self.canvas = self.query_one("#canvas")
         self.canvas.image = self.image
 
+    def pick_color(self, x: int, y: int) -> None:
+        """Select a color from the image."""
+        self.selected_color = self.image.bg[y][x]
+        self.selected_char = self.image.ch[y][x]
+
     def on_canvas_tool_start(self, event: Canvas.ToolStart) -> None:
         """Called when the user starts drawing on the canvas."""
         event.stop()
 
         if self.selected_tool == Tool.pick_color:
-            self.selected_color = self.image.bg[event.mouse_down_event.y][event.mouse_down_event.x]
-            self.selected_char = self.image.ch[event.mouse_down_event.y][event.mouse_down_event.x]
+            self.pick_color(event.mouse_down_event.x, event.mouse_down_event.y)
             return
 
         if self.selected_tool in [Tool.free_form_select, Tool.select, Tool.magnifier, Tool.text, Tool.curve, Tool.polygon]:
@@ -756,7 +760,11 @@ class PaintApp(App):
         """Called when the user is drawing on the canvas."""
         event.stop()
 
-        if self.selected_tool in [Tool.fill, Tool.pick_color]:
+        if self.selected_tool == Tool.pick_color:
+            self.pick_color(event.mouse_move_event.x, event.mouse_move_event.y)
+            return
+
+        if self.selected_tool in [Tool.fill, Tool.magnifier]:
             return
         
         mm = event.mouse_move_event
