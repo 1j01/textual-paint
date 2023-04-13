@@ -1,5 +1,5 @@
 Screen {
-    /* overflow: auto; */
+    layers: overlay;
 }
 
 #paint {
@@ -103,17 +103,20 @@ Button {
 }
 
 .menu {
+    background: $panel;
+    /* border: round red; */
+}
+.menu_popup {
     layout: vertical;
-    /* background: $panel; */
+    dock: top;
+    layer: overlay;
+    offset: 5 3;
     width: auto;
     height: auto;
-    dock: top;
-    /* border: round $panel-darken-2; */
 }
 /* MenuBar { */
 .menu_bar {
     layout: horizontal;
-    background: $panel;
     width: 100%;
     height: auto;
     dock: top;

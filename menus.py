@@ -80,6 +80,7 @@ class Menu(Container):
         if len(self.items) > 0:
             self.items[0].focus()
         self.parent_menu = parent_menu
+        self.add_class("menu_popup")
     
     def close(self):
         for item in self.items:
