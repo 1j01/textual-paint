@@ -16,6 +16,7 @@ from textual.reactive import var, reactive
 from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import Button, Static
+from menus import MenuBar, Menu, MenuItem, Separator
 
 class Tool(Enum):
     """The tools available in the Paint app."""
@@ -581,6 +582,26 @@ class PaintApp(App):
     def compose(self) -> ComposeResult:
         """Add our widgets."""
         with Container(id="paint"):
+            yield MenuBar([
+                MenuItem("File", submenu=Menu([
+                    # MenuItem("New", self.file_new),
+                    # MenuItem("Open", self.file_open),
+                    MenuItem("Save", self.file_save),
+                    # MenuItem("Save As", self.file_save_as),
+                    # MenuItem("Exit", self.exit),
+                ])),
+                MenuItem("Edit", submenu=Menu([
+                    MenuItem("Undo", self.undo),
+                    MenuItem("Redo", self.redo),
+                ])),
+                MenuItem("View", submenu=Menu([
+                    # MenuItem("Tools", self.toggle_tools_box),
+                    # MenuItem("Colors", self.toggle_colors_box),
+                ])),
+                MenuItem("Image"),
+                MenuItem("Colors"),
+                MenuItem("Help"),
+            ])
             yield Container(
                 ToolsBox(),
                 Container(

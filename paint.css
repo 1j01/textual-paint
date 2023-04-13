@@ -101,3 +101,23 @@ Button {
     width: 100%;
     height: 100%;
 }
+
+/* MenuBar { */
+.menu_bar {
+    layout: horizontal;
+    background: $panel;
+    height: auto;
+    dock: top;
+    /* border-bottom: hkey $panel-darken-2; */
+}
+/* MenuItem { */
+.menu_item {
+    width: auto;
+    height: auto;
+}
+.menu Button {
+    border: none;
+    height: 3;
+    /* This seems to be the only way to get the button to shrink? */
+    max-width: 8;
+}
