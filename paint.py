@@ -542,7 +542,7 @@ class PaintApp(App):
             self.image.ch[y][x] = self.selected_char
             self.image.bg[y][x] = self.selected_color
     
-    def undo(self) -> None:
+    def action_undo(self) -> None:
         if len(self.undos) > 0:
             action = self.undos.pop()
             redo_action = Action("Undo " + action.name, self.image, action.region)
@@ -550,7 +550,7 @@ class PaintApp(App):
             self.redos.append(redo_action)
             self.canvas.refresh()
 
-    def redo(self) -> None:
+    def action_redo(self) -> None:
         if len(self.redos) > 0:
             action = self.redos.pop()
             undo_action = Action("Undo " + action.name, self.image, action.region)
@@ -558,20 +558,20 @@ class PaintApp(App):
             self.undos.append(undo_action)
             self.canvas.refresh()
 
-    def file_save(self) -> None:
+    def action_save(self) -> None:
         """Save the image to a file."""
         if self.filename:
             ansi = self.image.get_ansi()
             with open(self.filename, "w") as f:
                 f.write(ansi)
         # else:
-        #     self.file_save_as()
+        #     self.action_save_as()
     
-    def file_save_as(self) -> None:
+    def action_save_as(self) -> None:
         """Save the image as a new file."""
         raise NotImplementedError
     
-    # def file_open(self) -> None:
+    # def action_open(self) -> None:
     #     """Open an image from a file."""
     #     filename = self.query_one("#file_open").value
     #     if filename:
@@ -584,15 +584,15 @@ class PaintApp(App):
         with Container(id="paint"):
             yield MenuBar([
                 MenuItem("File", submenu=Menu([
-                    # MenuItem("New", self.file_new),
-                    # MenuItem("Open", self.file_open),
-                    MenuItem("Save", self.file_save),
-                    # MenuItem("Save As", self.file_save_as),
-                    # MenuItem("Exit", self.exit),
+                    # MenuItem("New", self.action_new),
+                    # MenuItem("Open", self.action_open),
+                    MenuItem("Save", self.action_save),
+                    # MenuItem("Save As", self.action_save_as),
+                    # MenuItem("Quit", self.action_quit),
                 ])),
                 MenuItem("Edit", submenu=Menu([
-                    MenuItem("Undo", self.undo),
-                    MenuItem("Redo", self.redo),
+                    MenuItem("Undo", self.action_undo),
+                    MenuItem("Redo", self.action_redo),
                 ])),
                 MenuItem("View", submenu=Menu([
                     # MenuItem("Tools", self.toggle_tools_box),
@@ -697,26 +697,32 @@ class PaintApp(App):
         elif key == "ctrl+q" or key == "meta+q":
             self.exit()
         elif key == "ctrl+s":
-            self.file_save()
+            self.action_save()
         elif key == "ctrl+shift+s":
-            self.file_save_as()
+            self.action_save_as()
         # elif key == "ctrl+o":
-        #     self.file_open()
+        #     self.action_open()
         # elif key == "ctrl+n":
-        #     self.file_new()
+        #     self.action_new()
         # elif key == "ctrl+shift+n":
-        #     self.clear_image()
+        #     self.action_clear_image()
         elif key == "ctrl+t":
-            self.show_tools_box = not self.show_tools_box
+            self.action_toggle_tools_box()
         elif key == "ctrl+w":
-            self.show_colors_box = not self.show_colors_box
+            self.action_toggle_colors_box()
         elif key == "ctrl+z":
-            self.undo()
+            self.action_undo()
         # Ctrl+Shift+Z doesn't seem to work on Ubuntu or VS Code terminal
         elif key == "ctrl+shift+z" or key == "shift+ctrl+z" or key == "ctrl+y" or key == "f4":
-            self.redo()
+            self.action_redo()
         elif key == "ctrl+d":
             self.action_toggle_dark()
+
+    def action_toggle_tools_box(self) -> None:
+        self.show_tools_box = not self.show_tools_box
+
+    def action_toggle_colors_box(self) -> None:
+        self.show_colors_box = not self.show_colors_box
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked or activated with the keyboard."""
