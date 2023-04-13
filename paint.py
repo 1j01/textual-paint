@@ -645,7 +645,7 @@ class PaintApp(App):
 
     def on_canvas_tool_start(self, event: Canvas.ToolStart) -> None:
         """Called when the user starts drawing on the canvas."""
-        if self.selected_tool != Tool.pencil and self.selected_tool != Tool.brush and self.selected_tool != Tool.ellipse:
+        if self.selected_tool in [Tool.free_form_select, Tool.select, Tool.eraser, Tool.fill, Tool.pick_color, Tool.magnifier, Tool.airbrush, Tool.text, Tool.curve, Tool.polygon]:
             self.selected_tool = Tool.pencil
             # TODO: support other tools
         self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
@@ -680,6 +680,37 @@ class PaintApp(App):
         if self.selected_tool == Tool.pencil or self.selected_tool == Tool.brush:
             for x, y in bresenham_walk(mm.x - mm.delta_x, mm.y - mm.delta_y, mm.x, mm.y):
                 affected_region = self.stamp_brush(x, y, affected_region)
+        elif self.selected_tool == Tool.line:
+            for x, y in bresenham_walk(self.mouse_at_start[0], self.mouse_at_start[1], mm.x, mm.y):
+                affected_region = self.stamp_brush(x, y, affected_region)
+        elif self.selected_tool == Tool.rectangle:
+            for x in range(min(self.mouse_at_start[0], mm.x), max(self.mouse_at_start[0], mm.x) + 1):
+                for y in range(min(self.mouse_at_start[1], mm.y), max(self.mouse_at_start[1], mm.y) + 1):
+                    if x in range(min(self.mouse_at_start[0], mm.x) + 1, max(self.mouse_at_start[0], mm.x)) and y in range(min(self.mouse_at_start[1], mm.y) + 1, max(self.mouse_at_start[1], mm.y)):
+                        continue
+                    affected_region = self.stamp_brush(x, y, affected_region)
+        elif self.selected_tool == Tool.rounded_rectangle:
+            arc_radius = min(2, abs(self.mouse_at_start[0] - mm.x) // 2, abs(self.mouse_at_start[1] - mm.y) // 2)
+            min_x = min(self.mouse_at_start[0], mm.x)
+            max_x = max(self.mouse_at_start[0], mm.x)
+            min_y = min(self.mouse_at_start[1], mm.y)
+            max_y = max(self.mouse_at_start[1], mm.y)
+            for x, y in midpoint_ellipse(0, 0, arc_radius, arc_radius):
+                if x < 0:
+                    x = min_x + x + arc_radius
+                else:
+                    x = max_x + x - arc_radius
+                if y < 0:
+                    y = min_y + y + arc_radius
+                else:
+                    y = max_y + y - arc_radius
+                affected_region = self.stamp_brush(x, y, affected_region)
+            for x in range(min_x + arc_radius, max_x - arc_radius + 1):
+                affected_region = self.stamp_brush(x, min_y, affected_region)
+                affected_region = self.stamp_brush(x, max_y, affected_region)
+            for y in range(min_y + arc_radius, max_y - arc_radius + 1):
+                affected_region = self.stamp_brush(min_x, y, affected_region)
+                affected_region = self.stamp_brush(max_x, y, affected_region)
         elif self.selected_tool == Tool.ellipse:
             center_x = (self.mouse_at_start[0] + mm.x) // 2
             center_y = (self.mouse_at_start[1] + mm.y) // 2
