@@ -110,7 +110,6 @@ Button {
     layout: vertical;
     dock: top;
     layer: overlay;
-    offset: 5 3;
     width: auto;
     height: auto;
 }
