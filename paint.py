@@ -320,8 +320,9 @@ class Action:
 
     def update(self, document: AnsiArtDocument) -> None:
         """Grabs the image data from the current region of the document."""
-        self.sub_image_before = AnsiArtDocument(self.region.width, self.region.height)
-        self.sub_image_before.copy_region(document, self.region)
+        if self.region:
+            self.sub_image_before = AnsiArtDocument(self.region.width, self.region.height)
+            self.sub_image_before.copy_region(document, self.region)
 
     def undo(self, target_document: AnsiArtDocument) -> None:
         """Undo this action. Note that a canvas refresh is not performed here."""
@@ -406,6 +407,70 @@ def midpoint_ellipse(xc: int, yc: int, rx: int, ry: int) -> None:
             dy = dy - (2 * rx * rx)
             d2 = d2 + dx - dy + (rx * rx)
 
+def flood_fill(document: AnsiArtDocument, x: int, y: int, fill_ch: str, fill_fg: str, fill_bg: str) -> None:
+    """Flood fill algorithm."""
+
+    # Get the original value of the cell.
+    # This is the color to be replaced.
+    original_fg = document.fg[y][x]
+    original_bg = document.bg[y][x]
+    original_ch = document.ch[y][x]
+
+    # Track the region affected by the fill.
+    min_x = x
+    min_y = y
+    max_x = x
+    max_y = y
+
+    def inside(x: int, y: int) -> bool:
+        """Returns true if the cell at the given coordinates matches the color to be replaced. Treats foreground color as equal if character is a space."""
+        if x < 0 or x >= document.width or y < 0 or y >= document.height:
+            return False
+        return (
+            document.ch[y][x] == original_ch and
+            document.bg[y][x] == original_bg and
+            (original_ch == " " or document.fg[y][x] == original_fg)
+        )
+
+    def set_cell(x: int, y: int) -> None:
+        """Sets the cell at the given coordinates to the fill color, and updates the region bounds."""
+        document.ch[y][x] = fill_ch
+        document.fg[y][x] = fill_fg
+        document.bg[y][x] = fill_bg
+        nonlocal min_x, min_y, max_x, max_y
+        min_x = min(min_x, x)
+        min_y = min(min_y, y)
+        max_x = max(max_x, x)
+        max_y = max(max_y, y)
+
+    # Simple translation of the "final, combined-scan-and-fill span filler"
+    # pseudo-code from https://en.wikipedia.org/wiki/Flood_fill
+    if not inside(x, y):
+        return
+    stack = [(x, x, y, 1), (x, x, y - 1, -1)]
+    while stack:
+        x1, x2, y, dy = stack.pop()
+        x = x1
+        if inside(x, y):
+            while inside(x - 1, y):
+                set_cell(x - 1, y)
+                x = x - 1
+        if x < x1:
+            stack.append((x, x1-1, y-dy, -dy))
+        while x1 <= x2:
+            while inside(x1, y):
+                set_cell(x1, y)
+                x1 = x1 + 1
+                stack.append((x, x1 - 1, y+dy, dy))
+                if x1 - 1 > x2:
+                    stack.append((x2 + 1, x1 - 1, y-dy, -dy))
+            x1 = x1 + 1
+            while x1 < x2 and not inside(x1, y):
+                x1 = x1 + 1
+            x = x1
+
+    # Return the affected region.
+    return Region(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
 
 class Canvas(Widget):
     """The image document widget."""
@@ -649,7 +714,9 @@ class PaintApp(App):
 
     def on_canvas_tool_start(self, event: Canvas.ToolStart) -> None:
         """Called when the user starts drawing on the canvas."""
-        if self.selected_tool in [Tool.free_form_select, Tool.select, Tool.eraser, Tool.fill, Tool.pick_color, Tool.magnifier, Tool.airbrush, Tool.text, Tool.curve, Tool.polygon]:
+        event.stop()
+
+        if self.selected_tool in [Tool.free_form_select, Tool.select, Tool.eraser, Tool.pick_color, Tool.magnifier, Tool.airbrush, Tool.text, Tool.curve, Tool.polygon]:
             self.selected_tool = Tool.pencil
             # TODO: support other tools
         self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
@@ -659,19 +726,29 @@ class PaintApp(App):
             self.redos = []
         action = Action(self.selected_tool.get_name(), self.image)
         self.undos.append(action)
+        
+        affected_region = None
         if self.selected_tool == Tool.pencil or self.selected_tool == Tool.brush:
-            region = self.stamp_brush(event.mouse_down_event.x, event.mouse_down_event.y)
-            action.region = region
+            affected_region = self.stamp_brush(event.mouse_down_event.x, event.mouse_down_event.y)
+        elif self.selected_tool == Tool.fill:
+            affected_region = flood_fill(self.image, event.mouse_down_event.x, event.mouse_down_event.y, self.selected_char, "#ffffff", self.selected_color)
+
+        if affected_region:
+            action.region = affected_region
             action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
             action.update(self.image_at_start)
-            self.canvas.refresh(region)
-        event.stop()
+            self.canvas.refresh(affected_region)
 
     def on_canvas_tool_update(self, event: Canvas.ToolUpdate) -> None:
         """Called when the user is drawing on the canvas."""
+        event.stop()
+
+        if self.selected_tool == Tool.fill:
+            return
+        
         mm = event.mouse_move_event
         action = self.undos[-1]
-        affected_region = Region(mm.x, mm.y, 1, 1)
+        affected_region = None
 
         replace_action = self.selected_tool in [Tool.ellipse, Tool.rectangle, Tool.line, Tool.rounded_rectangle]
         if replace_action:
@@ -725,17 +802,20 @@ class PaintApp(App):
             raise NotImplementedError
         
         # Update action region and image data
-        action.region = action.region.union(affected_region)
-        action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
-        action.update(self.image_at_start)
+        if action.region and affected_region:
+            action.region = action.region.union(affected_region)
+        elif affected_region:
+            action.region = affected_region
+        if action.region:
+            action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
+            action.update(self.image_at_start)
 
         # Only for refreshing, include replaced action region
         # (The new action is allowed to shrink the region compared to the old one)
-        if replace_action:
-            affected_region = affected_region.union(old_action.region)
-        self.canvas.refresh(affected_region)
-
-        event.stop()
+        if affected_region:
+            if replace_action:
+                affected_region = affected_region.union(old_action.region)
+            self.canvas.refresh(affected_region)
 
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
