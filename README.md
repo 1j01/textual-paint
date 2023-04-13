@@ -18,13 +18,14 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, and buil
 - Tools
     - [ ] Free-Form Select
     - [ ] Rectangular Select
-    - [ ] Eraser/Color Eraser
+    - [x] Eraser
+        - [ ] Color Eraser
     - [x] Fill With Color
     - [ ] Pick Color
     - [ ] Magnifier
     - [x] Pencil
     - [x] Brush
-    - [ ] Airbrush
+    - [x] Airbrush
     - [ ] Text
     - [x] Line
     - [ ] Curve

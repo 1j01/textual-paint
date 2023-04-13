@@ -1,7 +1,7 @@
 import re
 import sys
 from enum import Enum
-from random import randint
+from random import randint, random
 from typing import List
 import stransi
 from rich.segment import Segment
@@ -611,7 +611,7 @@ class PaintApp(App):
 
     def stamp_brush(self, x: int, y: int, affected_region_base: Region = None) -> Region:
         brush_diameter = 1
-        if self.selected_tool == Tool.brush:
+        if self.selected_tool == Tool.brush or self.selected_tool == Tool.airbrush or self.selected_tool == Tool.eraser:
             brush_diameter = 3
         if brush_diameter == 1:
             self.stamp_char(x, y)
@@ -630,9 +630,17 @@ class PaintApp(App):
             return affected_region
     
     def stamp_char(self, x: int, y: int) -> None:
+        char = self.selected_char
+        color = self.selected_color
+        if self.selected_tool == Tool.eraser:
+            char = " "
+            color = "#ffffff"
+        if self.selected_tool == Tool.airbrush:
+            if random() < 0.7:
+                return
         if x < self.image.width and y < self.image.height and x >= 0 and y >= 0:
-            self.image.ch[y][x] = self.selected_char
-            self.image.bg[y][x] = self.selected_color
+            self.image.ch[y][x] = char
+            self.image.bg[y][x] = color
     
     def action_undo(self) -> None:
         if len(self.undos) > 0:
@@ -716,7 +724,7 @@ class PaintApp(App):
         """Called when the user starts drawing on the canvas."""
         event.stop()
 
-        if self.selected_tool in [Tool.free_form_select, Tool.select, Tool.eraser, Tool.pick_color, Tool.magnifier, Tool.airbrush, Tool.text, Tool.curve, Tool.polygon]:
+        if self.selected_tool in [Tool.free_form_select, Tool.select, Tool.pick_color, Tool.magnifier, Tool.text, Tool.curve, Tool.polygon]:
             self.selected_tool = Tool.pencil
             # TODO: support other tools
         self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
@@ -757,7 +765,7 @@ class PaintApp(App):
             action = Action(self.selected_tool.get_name(), self.image, affected_region)
             self.undos.append(action)
         
-        if self.selected_tool == Tool.pencil or self.selected_tool == Tool.brush:
+        if self.selected_tool == Tool.pencil or self.selected_tool == Tool.brush or self.selected_tool == Tool.eraser or self.selected_tool == Tool.airbrush:
             for x, y in bresenham_walk(mm.x - mm.delta_x, mm.y - mm.delta_y, mm.x, mm.y):
                 affected_region = self.stamp_brush(x, y, affected_region)
         elif self.selected_tool == Tool.line:
