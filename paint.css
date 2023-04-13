@@ -18,7 +18,7 @@ Screen {
 }
 
 .show_tools_box #main-horizontal-split {
-    grid-columns: 18 1fr;
+    grid-columns: 15 1fr;
 }
 
 .show_colors_box #paint {
@@ -49,6 +49,7 @@ Screen {
     height: 100%;
     border-bottom: tall $panel-darken-2;
     background: $panel-darken-1;
+    overflow: hidden;
 }
 
 #tools_box Button {
@@ -98,6 +99,7 @@ Screen {
     grid-rows: 2;
     height: auto;
     width: auto;
+    overflow: hidden;
 }
 
 Button {
@@ -123,6 +125,7 @@ Button {
     height: auto;
     dock: top;
     /* border-bottom: hkey $panel-darken-2; */
+    overflow: hidden;
 }
 /* MenuItem { */
 .menu_item {
