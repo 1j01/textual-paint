@@ -481,6 +481,29 @@ class PaintApp(App):
 
     CSS_PATH = "paint.css"
 
+    # These call action_* methods on the widget.
+    # They can have parameters, if need be.
+    # https://textual.textualize.io/guide/actions/
+    BINDINGS = [
+        ("ctrl+q", "quit", "Quit"),
+        ("meta+q", "quit", "Quit"),
+        ("ctrl+s", "save", "Save"),
+        ("ctrl+shift+s", "save_as", "Save As"),
+        # ("ctrl+o", "open", "Open"),
+        # ("ctrl+n", "new", "New"),
+        # ("ctrl+shift+n", "clear_image", "Clear Image"),
+        ("ctrl+t", "toggle_tools_box", "Toggle Tools Box"),
+        ("ctrl+w", "toggle_colors_box", "Toggle Colors Box"),
+        ("ctrl+z", "undo", "Undo"),
+        # Ctrl+Shift+Z doesn't seem to work on Ubuntu or VS Code terminal
+        ("ctrl+shift+z", "redo", "Redo"),
+        ("shift+ctrl+z", "redo", "Redo"),
+        ("ctrl+y", "redo", "Redo"),
+        ("f4", "redo", "Redo"),
+        # action_toggle_dark is built in to App
+        ("ctrl+d", "toggle_dark", "Toggle Dark Mode"),
+    ]
+
     show_tools_box = var(True)
     show_colors_box = var(True)
     selected_tool = var(Tool.pencil)
@@ -694,29 +717,6 @@ class PaintApp(App):
         button_id = self.NAME_MAP.get(key)
         if button_id is not None:
             press(self.NAME_MAP.get(key, key))
-        elif key == "ctrl+q" or key == "meta+q":
-            self.exit()
-        elif key == "ctrl+s":
-            self.action_save()
-        elif key == "ctrl+shift+s":
-            self.action_save_as()
-        # elif key == "ctrl+o":
-        #     self.action_open()
-        # elif key == "ctrl+n":
-        #     self.action_new()
-        # elif key == "ctrl+shift+n":
-        #     self.action_clear_image()
-        elif key == "ctrl+t":
-            self.action_toggle_tools_box()
-        elif key == "ctrl+w":
-            self.action_toggle_colors_box()
-        elif key == "ctrl+z":
-            self.action_undo()
-        # Ctrl+Shift+Z doesn't seem to work on Ubuntu or VS Code terminal
-        elif key == "ctrl+shift+z" or key == "shift+ctrl+z" or key == "ctrl+y" or key == "f4":
-            self.action_redo()
-        elif key == "ctrl+d":
-            self.action_toggle_dark()
 
     def action_toggle_tools_box(self) -> None:
         self.show_tools_box = not self.show_tools_box
