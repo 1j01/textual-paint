@@ -1,5 +1,6 @@
 import re
 import sys
+import argparse
 from enum import Enum
 from random import randint, random
 from typing import List, Optional
@@ -934,8 +935,20 @@ class PaintApp(App):
 
 if __name__ == "__main__":
     app = PaintApp()
-    if len(sys.argv) > 1:
-        with open(sys.argv[1], 'r') as my_file:
+
+    parser = argparse.ArgumentParser(description='Paint in the terminal.')
+    parser.add_argument('--ascii-only-icons', action='store_true', help='Use only ASCII characters for tool icons')
+    parser.add_argument('filename', nargs='?', default=None, help='File to open')
+    args = parser.parse_args()
+    if args.ascii_only_icons:
+        ascii_only_icons = True
+    if args.filename:
+        # if args.filename == "-" and not sys.stdin.isatty():
+        #     app.image = AnsiArtDocument.from_text(sys.stdin.read())
+        #     app.filename = "<stdin>"
+        # else:
+        with open(args.filename, 'r') as my_file:
             app.image = AnsiArtDocument.from_text(my_file.read())
-            app.filename = sys.argv[1]
+            app.filename = args.filename
+
     app.run()
