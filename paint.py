@@ -657,6 +657,7 @@ class PaintApp(App):
             action = self.undos.pop()
             redo_action = Action("Undo " + action.name, self.image, action.region)
             action.undo(self.image)
+            self.image_before_preview.copy_region(self.image, action.region)
             self.redos.append(redo_action)
             self.canvas.refresh()
 
@@ -665,6 +666,7 @@ class PaintApp(App):
             action = self.redos.pop()
             undo_action = Action("Undo " + action.name, self.image, action.region)
             action.undo(self.image)
+            self.image_before_preview.copy_region(self.image, action.region)
             self.undos.append(undo_action)
             self.canvas.refresh()
 
@@ -727,6 +729,8 @@ class PaintApp(App):
         # Image can be set from the outside, via CLI
         if self.image is None:
             self.image = AnsiArtDocument(80, 24)
+            self.image_before_preview = AnsiArtDocument(self.image.width, self.image.height)
+            self.image_before_preview.copy_region(self.image)
         self.canvas = self.query_one("#canvas")
         self.canvas.image = self.image
 
@@ -766,6 +770,7 @@ class PaintApp(App):
             action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
             action.update(self.image_at_start)
             self.canvas.refresh(affected_region)
+            self.image_before_preview.copy_region(self.image, affected_region)
 
     def cancel_preview(self) -> None:
         """Revert the currently previewed action."""
@@ -780,12 +785,10 @@ class PaintApp(App):
         self.cancel_preview()
 
         if self.selected_tool in [Tool.brush, Tool.pencil, Tool.eraser]:
-            image_before = AnsiArtDocument(self.image.width, self.image.height)
-            image_before.copy_region(self.image)
             affected_region = self.stamp_brush(event.mouse_move_event.x, event.mouse_move_event.y)
             if affected_region:
                 self.preview_action = Action(self.selected_tool.get_name(), self.image)
-                self.preview_action.update(image_before)
+                self.preview_action.update(self.image_before_preview)
                 self.preview_action.region = affected_region.intersection(Region(0, 0, self.image.width, self.image.height))
                 self.canvas.refresh(affected_region)
 
@@ -816,6 +819,7 @@ class PaintApp(App):
         if replace_action:
             old_action = self.undos.pop()
             old_action.undo(self.image)
+            self.image_before_preview.copy_region(self.image, old_action.region)
             action = Action(self.selected_tool.get_name(), self.image, affected_region)
             self.undos.append(action)
         
