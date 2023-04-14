@@ -585,7 +585,7 @@ class PaintApp(App):
         ("ctrl+s", "save", "Save"),
         ("ctrl+shift+s", "save_as", "Save As"),
         # ("ctrl+o", "open", "Open"),
-        # ("ctrl+n", "new", "New"),
+        ("ctrl+n", "new", "New"),
         # ("ctrl+shift+n", "clear_image", "Clear Image"),
         ("ctrl+t", "toggle_tools_box", "Toggle Tools Box"),
         ("ctrl+w", "toggle_colors_box", "Toggle Colors Box"),
@@ -710,12 +710,27 @@ class PaintApp(App):
     #             self.image = AnsiArtDocument.from_ansi(f.read())
     #             self.canvas.image = self.image
 
+    def action_new(self) -> None:
+        """Create a new image."""
+        # TODO: prompt to save if there are unsaved changes
+        self.image = AnsiArtDocument(80, 24)
+        self.canvas.image = self.image
+        self.canvas.refresh()
+        self.filename = None
+        self.undos = []
+        self.redos = []
+        self.preview_action = None
+        # Following MS Paint's lead and resetting the color (but not the tool.)
+        # It probably has to do with color modes.
+        self.selected_color = palette[0]
+        self.selected_char = " "
+
     def compose(self) -> ComposeResult:
         """Add our widgets."""
         with Container(id="paint"):
             yield MenuBar([
                 MenuItem("File", submenu=Menu([
-                    # MenuItem("New", self.action_new),
+                    MenuItem("New", self.action_new),
                     # MenuItem("Open", self.action_open),
                     MenuItem("Save", self.action_save),
                     # MenuItem("Save As", self.action_save_as),
