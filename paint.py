@@ -2,7 +2,7 @@ import re
 import sys
 from enum import Enum
 from random import randint, random
-from typing import List
+from typing import List, Optional
 import stransi
 from rich.segment import Segment
 from rich.style import Style
@@ -498,6 +498,13 @@ class Canvas(Widget):
             self.mouse_move_event = mouse_move_event
             super().__init__()
 
+    class ToolPreviewUpdate(Message):
+        """Message when moving the mouse while the mouse is up."""
+
+        def __init__(self, mouse_move_event: events.MouseMove) -> None:
+            self.mouse_move_event = mouse_move_event
+            super().__init__()
+
     def __init__(self, **kwargs) -> None:
         """Initialize the canvas."""
         super().__init__(**kwargs)
@@ -517,6 +524,8 @@ class Canvas(Widget):
 
         if self.pointer_active:
             self.post_message(self.ToolUpdate(event))
+        else:
+            self.post_message(self.ToolPreviewUpdate(event))
 
     def on_mouse_up(self, event) -> None:
         self.pointer_active = False
@@ -579,6 +588,7 @@ class PaintApp(App):
 
     undos: List[Action] = []
     redos: List[Action] = []
+    preview_action: Optional[Action] = None
 
     NAME_MAP = {
         # key to button id
@@ -728,6 +738,7 @@ class PaintApp(App):
     def on_canvas_tool_start(self, event: Canvas.ToolStart) -> None:
         """Called when the user starts drawing on the canvas."""
         event.stop()
+        self.cancel_preview()
 
         if self.selected_tool == Tool.pick_color:
             self.pick_color(event.mouse_down_event.x, event.mouse_down_event.y)
@@ -756,9 +767,32 @@ class PaintApp(App):
             action.update(self.image_at_start)
             self.canvas.refresh(affected_region)
 
+    def cancel_preview(self) -> None:
+        """Revert the currently previewed action."""
+        if self.preview_action:
+            self.preview_action.undo(self.image)
+            self.canvas.refresh(self.preview_action.region)
+            self.preview_action = None
+
+    def on_canvas_tool_preview_update(self, event: Canvas.ToolPreviewUpdate) -> None:
+        """Called when the user is hovering over the canvas but not drawing yet."""
+        event.stop()
+        self.cancel_preview()
+
+        if self.selected_tool in [Tool.brush, Tool.pencil, Tool.eraser]:
+            image_before = AnsiArtDocument(self.image.width, self.image.height)
+            image_before.copy_region(self.image)
+            affected_region = self.stamp_brush(event.mouse_move_event.x, event.mouse_move_event.y)
+            if affected_region:
+                self.preview_action = Action(self.selected_tool.get_name(), self.image)
+                self.preview_action.region = affected_region.intersection(Region(0, 0, self.image.width, self.image.height))
+                self.preview_action.update(image_before)
+                self.canvas.refresh(affected_region)
+
     def on_canvas_tool_update(self, event: Canvas.ToolUpdate) -> None:
         """Called when the user is drawing on the canvas."""
         event.stop()
+        self.cancel_preview()
 
         if self.selected_tool == Tool.pick_color:
             self.pick_color(event.mouse_move_event.x, event.mouse_move_event.y)
@@ -767,6 +801,13 @@ class PaintApp(App):
         if self.selected_tool in [Tool.fill, Tool.magnifier]:
             return
         
+        if len(self.undos) == 0:
+            # This can happen if you undo while drawing.
+            # Ideally we'd stop getting events in this case.
+            # This might be buggy if there were multiple undos.
+            # It might replace the action instead of doing nothing.
+            return
+
         mm = event.mouse_move_event
         action = self.undos[-1]
         affected_region = None
