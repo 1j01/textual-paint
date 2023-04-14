@@ -776,6 +776,7 @@ class PaintApp(App):
         """Revert the currently previewed action."""
         if self.preview_action:
             self.preview_action.undo(self.image)
+            self.preview_action.undo(self.image_before_preview)
             self.canvas.refresh(self.preview_action.region)
             self.preview_action = None
 
