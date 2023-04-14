@@ -12,7 +12,7 @@
 			// TODO: is there a way to get this from the environment??
 			// or to use textual as "module" but still run the correct app?
 			// I tried a lot of variations of this, but none worked.
-            "program": "${userHome}/.local/bin/textual",
+			"program": "${userHome}/.local/bin/textual",
 			"args": ["run", "--dev", "paint.py"],
 			"console": "integratedTerminal",
 			"justMyCode": true
@@ -21,7 +21,7 @@
 			"name": "Open A File in App",
 			"type": "python",
 			"request": "launch",
-            "program": "paint.py",
+			"program": "paint.py",
 			"args": ["LICENSE.txt"],
 			"console": "integratedTerminal",
 			"justMyCode": true
