@@ -18,6 +18,8 @@ from textual.widget import Widget
 from textual.widgets import Button, Static
 from menus import MenuBar, Menu, MenuItem, Separator
 
+ascii_only_icons = False
+
 class Tool(Enum):
     """The tools available in the Paint app."""
     free_form_select = 1
@@ -56,7 +58,25 @@ class Tool(Enum):
         # - Polygon: ▙𝗟𝙇﹄』⬣⬟🔶🔷🔸🔹🔺🔻△▲
         # - Ellipse: ⬭⭕🔴🟠🟡🟢🔵🟣🟤⚫⚪🫧
         # - Rounded Rectangle: ▢⬜⬛
-        
+        if ascii_only_icons:
+            return {
+                Tool.free_form_select: "<[u]^[/]7", # "*" "<^>" "<[u]^[/]7"
+                Tool.select: "::", # "#" "::" ":_:" ":[u]:[/]:" ":[u]'[/]:"
+                Tool.eraser: "[u]/[/]7", # "47" "27" "/_/" "[u]/[/]7"
+                Tool.fill: "[u i]H[/]?", # "#?" "H?" "[u i]F[/]?"
+                Tool.pick_color: "[u i] P[/]", # "[u].[/]" "[u i]\\P[/]"
+                Tool.magnifier: ",O", # ",O" "o-" "O-" "o=" "O=" "Q"
+                Tool.pencil: "-==", # "c==>" "==-"
+                Tool.brush: "E)=", # "[u],h.[/u]" "[u],|.[/u]" "[u]h[/u]"
+                Tool.airbrush: "[u i]H[/]`<", # "H`" "H`<" "[u i]H[/]`<" "[u i]6[/]<"
+                Tool.text: "A", # "Abc"
+                Tool.line: "\\",
+                Tool.curve: "~", # "~" "S" "s"
+                Tool.rectangle: "[_]", # "[]"
+                Tool.polygon: "[b]L[/b]", # "L"
+                Tool.ellipse: "O", # "()"
+                Tool.rounded_rectangle: "(_)",
+            }[self]
         return {
             Tool.free_form_select: "⚝",
             Tool.select: "⬚",
