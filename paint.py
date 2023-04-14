@@ -675,6 +675,7 @@ class PaintApp(App):
     
     def action_undo(self) -> None:
         if len(self.undos) > 0:
+            self.cancel_preview()
             action = self.undos.pop()
             redo_action = Action("Undo " + action.name, self.image, action.region)
             action.undo(self.image)
@@ -683,6 +684,7 @@ class PaintApp(App):
 
     def action_redo(self) -> None:
         if len(self.redos) > 0:
+            self.cancel_preview()
             action = self.redos.pop()
             undo_action = Action("Undo " + action.name, self.image, action.region)
             action.undo(self.image)
