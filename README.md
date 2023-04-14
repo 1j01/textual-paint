@@ -7,6 +7,14 @@ You need Paint in your terminal.
 
 This is a TUI (Text User Interface) image editor, inspired by MS Paint, and built with [Textual](https://textual.textualize.io/).
 
+<!-- GitHub doesn't support figure/figcaption in markdown. -->
+<table>
+<tr><td align="center">
+<img src="screenshot.svg" alt="MS Paint like interface" />
+</td></tr>
+<tr><td align="center">Textual Paint terminal screen buffer in HTML in SVG in HTML.<br>This might not render correctly in your browser.</tr></td>
+</table>
+
 ## Features
 
 - Open and save images
