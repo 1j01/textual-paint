@@ -6,7 +6,8 @@
 	"ignorePaths": [
 		".git",
 		"*.(bmp|png|jpg|jpeg|gif|svg|ico|tiff|tif)",
-		"*.log"
+		"*.log",
+		"__pycache__"
 	],
 	"words": [
 		"Bresenham",
@@ -17,6 +18,7 @@
 		"𝗟𝙇",
 		"Odhner",
 		"Playscii",
+		"pycache",
 		"pypixelart",
 		"stransi",
 		"undos",
