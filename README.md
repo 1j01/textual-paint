@@ -37,6 +37,7 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, and buil
 - [x] Undo/Redo
 - [x] Efficient screen updates and undo/redo history, by tracking regions affected by each action
 	- You could totally use this program over SSH! Haha, this "what if" project could actually be useful. Of course, it should be mentioned that you can also run graphical programs over SSH, but this might be more responsive, or just fit your vibe better.
+- [x] Brush previews
 - [x] Menu bar
 
 ## Development
