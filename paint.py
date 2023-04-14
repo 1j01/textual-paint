@@ -726,8 +726,8 @@ class PaintApp(App):
                     MenuItem("Redo", self.action_redo),
                 ])),
                 MenuItem("View", submenu=Menu([
-                    # MenuItem("Tools", self.toggle_tools_box),
-                    # MenuItem("Colors", self.toggle_colors_box),
+                    MenuItem("Tool Box", self.action_toggle_tools_box),
+                    MenuItem("Color Box", self.action_toggle_colors_box),
                 ])),
                 MenuItem("Image"),
                 MenuItem("Colors"),
