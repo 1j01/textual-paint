@@ -728,11 +728,23 @@ class PaintApp(App):
             title="Save As",
         )
         window.content.mount(
-            Static(filename + " already exists.", markup=False),
-            Static("Do you want to replace it?"),
             Horizontal(
-                Button("Yes", id="overwrite_yes_button"),
-                Button("No", id="overwrite_no_button"),
+                Static("""[#ffff00]
+    _
+   / \\
+  / | \\
+ /  .  \\
+/_______\\
+[/]""", classes="warning_icon"),
+                Vertical(
+                    Static(filename + " already exists.", markup=False),
+                    Static("Do you want to replace it?"),
+                    Horizontal(
+                        Button("Yes", id="overwrite_yes_button"),
+                        Button("No", id="overwrite_no_button"),
+                    ),
+                    classes="main_content"
+                )
             )
         )
         self.mount(window)

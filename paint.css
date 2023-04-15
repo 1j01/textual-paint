@@ -199,12 +199,21 @@ Button {
 }
 
 #overwrite_dialog .window_content {
-    padding: 2 4;
-    width: 40;
+    width: 50;
     height: 15;
 }
 #overwrite_dialog .window_content Button {
     width: auto;
     height: auto;
+    margin-right: 1;
+    margin-top: 1;
 }
-
+#overwrite_dialog .warning_icon {
+    width: auto;
+    height: auto;
+    padding-left: 2;
+}
+#overwrite_dialog .main_content {
+    padding: 2 2;
+    width: 1fr;
+}
