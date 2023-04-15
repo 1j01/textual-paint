@@ -142,7 +142,7 @@ Button {
 .window {
     dock: top;
     layer: window;
-    background: $surface;
+    background: red;
     border: thick $panel-darken-2;
     layout: vertical;
     align: center middle;
@@ -173,6 +173,9 @@ Button {
     overflow: auto;
     max-height: 80vh;
     max-width: 80vw;
+    width: 100%;
+    height: 1fr;
+    background: $background;
 }
 
 .save_as_dialog Button {
