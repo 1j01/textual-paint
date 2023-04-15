@@ -182,14 +182,18 @@ Button {
 
 #save_as_dialog .window_content {
     padding: 2 4;
-    width: 40;
-    height: auto;
+    width: 80;
+    height: 30;
 }
 #save_as_dialog .window_content Input {
     width: 100%;
     margin-bottom: 1;
 }
-#save_as_dialog Button {
+#save_as_dialog .window_content DirectoryTree {
+    height: 15;
+    margin-bottom: 1;
+}
+#save_as_dialog .window_content Button {
     width: auto;
     height: auto;
 }

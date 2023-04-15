@@ -1,3 +1,4 @@
+import os
 import re
 import sys
 import argparse
@@ -16,7 +17,7 @@ from textual.css.query import NoMatches
 from textual.reactive import var, reactive
 from textual.strip import Strip
 from textual.widget import Widget
-from textual.widgets import Button, Static, Input
+from textual.widgets import Button, Static, Input, DirectoryTree
 from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window
 
@@ -711,6 +712,7 @@ class PaintApp(App):
             title="Save As",
         )
         window.content.mount(
+            DirectoryTree(id="save_as_directory_tree", path=os.getcwd()),
             Input(id="save_as_filename_input", placeholder="Filename"),
             Button("Save", id="save_as_save_button", variant="primary"),
             Button("Cancel", id="save_as_cancel_button"),
@@ -964,12 +966,29 @@ class PaintApp(App):
         elif button_id == "save_as_save_button":
             name = self.query_one("#save_as_filename_input", Input).value
             if name:
+                if self.directory_tree_selected_path:
+                    name = os.path.join(self.directory_tree_selected_path, name)
                 self.filename = name
                 self.action_save()
                 self.query_one("#save_as_dialog", Window).close()
         elif button_id == "save_as_cancel_button":
             self.query_one("#save_as_dialog", Window).close()
 
+    def on_tree_node_highlighted(self, event: DirectoryTree.FileSelected) -> None:
+        """
+        Called when a file/folder is selected in the DirectoryTree.
+        
+        This message comes from Tree.
+        DirectoryTree gives FileSelected but only for files.
+        """
+        if event.node.data.is_dir:
+            self.directory_tree_selected_path = event.node.data.path
+        elif event.node.parent:
+            self.directory_tree_selected_path = event.node.parent.data.path
+            name = os.path.basename(event.node.data.path)
+            self.query_one("#save_as_filename_input", Input).value = name
+        else:
+            self.directory_tree_selected_path = None
 
 if __name__ == "__main__":
     app = PaintApp()
