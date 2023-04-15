@@ -1,5 +1,5 @@
 Screen {
-    layers: overlay;
+    layers: menu-popup;
 }
 
 #paint {
@@ -114,7 +114,7 @@ Button {
 .menu_popup {
     layout: vertical;
     dock: top;
-    layer: overlay;
+    layer: menu-popup;
     width: auto;
     height: auto;
 }
