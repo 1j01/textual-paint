@@ -704,11 +704,13 @@ class PaintApp(App):
     def action_save_as(self) -> None:
         """Save the image as a new file."""
         window = Window(
+            classes="dialog save_as_dialog",
+            title="Save As",
+        )
+        window.content.mount(
             Input(id="file_save_as", placeholder="Filename"),
             Button("Save", id="save_as_button", classes="primary"),
             Button("Cancel", id="cancel_save_as_button"),
-            classes="dialog save_as_dialog",
-            title="Save As",
         )
         self.mount(window)
     

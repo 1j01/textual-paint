@@ -48,15 +48,22 @@ class Window(Container):
         self.title = title
         self.mouse_at_drag_start = None
         self.offset_at_drag_start = None
+        self.title_bar = WindowTitleBar(title=self.title)
+        self.content = Container(classes="window_content")
 
-    def compose(self) -> ComposeResult:
-        """Add our widgets."""
-        self.title_bar = yield WindowTitleBar(title=self.title)
-        self.content = yield Container(classes="window_content")
+    def on_mount(self) -> None:
+        """Called when the widget is mounted."""
+        self.mount(self.title_bar)
+        self.mount(self.content)
 
-    def compose_add_child(self, widget):
-        """When using the context manager compose syntax, we want to attach nodes to the content container."""
-        self.content.mount(widget)
+    # def compose(self) -> ComposeResult:
+    #     """Add our widgets."""
+    #     self.title_bar = yield WindowTitleBar(title=self.title)
+    #     self.content = yield Container(classes="window_content")
+
+    # def compose_add_child(self, widget):
+    #     """When using the context manager compose syntax, we want to attach nodes to the content container."""
+    #     self.content.mount(widget)
 
     # def watch_title(self, old_title, new_title: str) -> None:
     #     """Called when title is changed."""
