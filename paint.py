@@ -722,7 +722,21 @@ class PaintApp(App):
     def confirm_overwrite(self, filename: str, callback) -> None:
         for old_window in self.query("#overwrite_dialog").nodes:
             old_window.close()
-        window = Window(
+
+        class OverwriteWindow(Window):
+            """
+            A window that asks the user if they want to overwrite a file.
+            
+            This subclass only exists to listen for the button presses.
+            Is there a better way to do this?
+            Dynamically assigning on_button_pressed to the instance didn't work.
+            """
+            def on_button_pressed(self, event):
+                if event.button.id == "overwrite_yes_button":
+                    callback()
+                window.close()
+
+        window = OverwriteWindow(
             classes="dialog",
             id="overwrite_dialog",
             title="Save As",
@@ -748,11 +762,6 @@ class PaintApp(App):
             )
         )
         self.mount(window)
-        def on_button_pressed(event):
-            if event.button.id == "overwrite_yes_button":
-                callback()
-            window.close()
-        window.on_button_pressed = on_button_pressed
             
 
     # def action_open(self) -> None:
