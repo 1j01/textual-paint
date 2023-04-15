@@ -45,11 +45,12 @@ class Window(Container):
         """Initialize a window."""
         super().__init__(*children, **kwargs)
         self.add_class("window")
-        self.title = title
         self.mouse_at_drag_start = None
         self.offset_at_drag_start = None
-        self.title_bar = WindowTitleBar(title=self.title)
+        self.title_bar = WindowTitleBar(title=title)
         self.content = Container(classes="window_content")
+        # must be after title_bar is defined
+        self.title = title
 
     def on_mount(self) -> None:
         """Called when the widget is mounted."""
@@ -65,9 +66,9 @@ class Window(Container):
     #     """When using the context manager compose syntax, we want to attach nodes to the content container."""
     #     self.content.mount(widget)
 
-    # def watch_title(self, old_title, new_title: str) -> None:
-    #     """Called when title is changed."""
-    #     self.title_bar.title = new_title
+    def watch_title(self, old_title, new_title: str) -> None:
+        """Called when title is changed."""
+        self.title_bar.title = new_title
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked or activated with the keyboard."""

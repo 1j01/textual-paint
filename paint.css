@@ -142,13 +142,12 @@ Button {
 .window {
     dock: top;
     layer: window;
-    background: red;
+    background: $panel-darken-2;
     border: thick $panel-darken-2;
     layout: vertical;
     align: center middle;
-    /* width: auto;
-    height: auto; */
-    /* overflow: hidden; */
+    width: auto;
+    height: auto;
 }
 .window_title_bar {
     layout: horizontal;
@@ -171,13 +170,20 @@ Button {
 .window_content {
     layout: vertical;
     overflow: auto;
-    max-height: 80vh;
+    max-height: 60vh;
     max-width: 80vw;
-    width: 100%;
-    height: 1fr;
+    width: auto;
+    height: auto;
     background: $background;
 }
 
+.save_as_dialog .window_content {
+    padding: 2 4;
+}
+.save_as_dialog .window_content Input {
+    width: 30;
+    margin-bottom: 1;
+}
 .save_as_dialog Button {
     width: auto;
     height: auto;

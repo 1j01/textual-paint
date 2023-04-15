@@ -709,7 +709,7 @@ class PaintApp(App):
         )
         window.content.mount(
             Input(id="file_save_as", placeholder="Filename"),
-            Button("Save", id="save_as_button", classes="primary"),
+            Button("Save", id="save_as_button", variant="primary"),
             Button("Cancel", id="cancel_save_as_button"),
         )
         self.mount(window)
