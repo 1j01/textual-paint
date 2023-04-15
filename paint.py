@@ -16,8 +16,9 @@ from textual.css.query import NoMatches
 from textual.reactive import var, reactive
 from textual.strip import Strip
 from textual.widget import Widget
-from textual.widgets import Button, Static
+from textual.widgets import Button, Static, Input
 from menus import MenuBar, Menu, MenuItem, Separator
+from windows import Window
 
 ascii_only_icons = False
 
@@ -697,12 +698,24 @@ class PaintApp(App):
             ansi = self.image.get_ansi()
             with open(self.filename, "w") as f:
                 f.write(ansi)
-        # else:
-        #     self.action_save_as()
+        else:
+            self.action_save_as()
     
     def action_save_as(self) -> None:
         """Save the image as a new file."""
-        raise NotImplementedError
+        for old_window in self.query("#save_as_dialog").nodes:
+            old_window.close()
+        window = Window(
+            classes="dialog",
+            id="save_as_dialog",
+            title="Save As",
+        )
+        window.content.mount(
+            Input(id="save_as_filename_input", placeholder="Filename"),
+            Button("Save", id="save_as_save_button", variant="primary"),
+            Button("Cancel", id="save_as_cancel_button"),
+        )
+        self.mount(window)
     
     # def action_open(self) -> None:
     #     """Open an image from a file."""
@@ -735,7 +748,7 @@ class PaintApp(App):
                     MenuItem("New", self.action_new),
                     # MenuItem("Open", self.action_open),
                     MenuItem("Save", self.action_save),
-                    # MenuItem("Save As", self.action_save_as),
+                    MenuItem("Save As", self.action_save_as),
                     # MenuItem("Quit", self.action_quit),
                 ])),
                 MenuItem("Edit", submenu=Menu([
@@ -942,12 +955,20 @@ class PaintApp(App):
         """Called when a button is clicked or activated with the keyboard."""
 
         button_id = event.button.id
-        assert button_id is not None
+        # button_classes = event.button.classes
 
         if button_id.startswith("tool_button_"):
             self.selected_tool = Tool[button_id[len("tool_button_") :]]
         elif button_id.startswith("color_button_"):
             self.selected_color = button_id[len("color_button_") :]
+        elif button_id == "save_as_save_button":
+            name = self.query_one("#save_as_filename_input", Input).value
+            if name:
+                self.filename = name
+                self.action_save()
+                self.query_one("#save_as_dialog", Window).close()
+        elif button_id == "save_as_cancel_button":
+            self.query_one("#save_as_dialog", Window).close()
 
 
 if __name__ == "__main__":

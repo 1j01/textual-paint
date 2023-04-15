@@ -1,5 +1,5 @@
 Screen {
-    layers: menu-popup;
+    layers: window menu-popup;
 }
 
 #paint {
@@ -137,4 +137,59 @@ Button {
     height: 3;
     /* This seems to be the only way to get the button to shrink? */
     max-width: 8;
+}
+
+.window {
+    dock: top;
+    layer: window;
+    background: $surface;
+    border: outer $panel-darken-2;
+    layout: vertical;
+    align: center middle;
+    width: auto;
+    height: auto;
+}
+.window_title_bar {
+    layout: horizontal;
+    width: 100%;
+    height: auto;
+    background: $accent;
+    color: auto;
+    text-style: bold;
+}
+.window_title_bar Button {
+    max-width: 6;
+    max-height: 3;
+}
+.window_title {
+    width: 1fr;
+    height: 100%;
+    content-align: left middle;
+    padding-left: 1;
+}
+.window_content {
+    layout: vertical;
+    overflow: auto;
+    max-height: 60vh;
+    max-width: 80vw;
+    width: auto;
+    height: auto;
+    background: $background;
+}
+.dialog .window_content {
+    background: $surface;
+}
+
+#save_as_dialog .window_content {
+    padding: 2 4;
+    width: 40;
+    height: auto;
+}
+#save_as_dialog .window_content Input {
+    width: 100%;
+    margin-bottom: 1;
+}
+#save_as_dialog Button {
+    width: auto;
+    height: auto;
 }

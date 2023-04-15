@@ -22,7 +22,6 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
 	- [ ] Bitmap (.bmp)
 	- [x] ANSI (.ans)
 		- only supports loading files saved by this program; ANSI files can vary a lot and even encode animations
-	- no save dialog yet, you can only save a file opened via the command line
 - Tools
     - [ ] Free-Form Select
     - [ ] Rectangular Select
