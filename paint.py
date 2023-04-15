@@ -719,6 +719,30 @@ class PaintApp(App):
         )
         self.mount(window)
     
+    def confirm_overwrite(self, filename: str, callback) -> None:
+        for old_window in self.query("#overwrite_dialog").nodes:
+            old_window.close()
+        window = Window(
+            classes="dialog",
+            id="overwrite_dialog",
+            title="Save As",
+        )
+        window.content.mount(
+            Static(filename + " already exists.", markup=False),
+            Static("Do you want to replace it?"),
+            Horizontal(
+                Button("Yes", id="overwrite_yes_button"),
+                Button("No", id="overwrite_no_button"),
+            )
+        )
+        self.mount(window)
+        def on_button_pressed(event):
+            if event.button.id == "overwrite_yes_button":
+                callback()
+            window.close()
+        window.on_button_pressed = on_button_pressed
+            
+
     # def action_open(self) -> None:
     #     """Open an image from a file."""
     #     filename = self.query_one("#file_open").value
@@ -968,9 +992,15 @@ class PaintApp(App):
             if name:
                 if self.directory_tree_selected_path:
                     name = os.path.join(self.directory_tree_selected_path, name)
-                self.filename = name
-                self.action_save()
-                self.query_one("#save_as_dialog", Window).close()
+                def on_save_confirmed():
+                    self.query_one("#save_as_dialog", Window).close()
+                    self.filename = name
+                    self.action_save()
+                if os.path.exists(name):
+                    self.confirm_overwrite(name, on_save_confirmed)
+                else:
+                    on_save_confirmed()
+                    
         elif button_id == "save_as_cancel_button":
             self.query_one("#save_as_dialog", Window).close()
 

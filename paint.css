@@ -197,3 +197,14 @@ Button {
     width: auto;
     height: auto;
 }
+
+#overwrite_dialog .window_content {
+    padding: 2 4;
+    width: 40;
+    height: 15;
+}
+#overwrite_dialog .window_content Button {
+    width: auto;
+    height: auto;
+}
+
