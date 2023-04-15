@@ -1,18 +1,18 @@
 
-textual-paint
+Textual Paint
 =============
 
-What if MS Paint isn't retro enough?
-You need Paint in your terminal.
+MS Paint in your terminal.
 
-This is a TUI (Text User Interface) image editor, inspired by MS Paint, and built with [Textual](https://textual.textualize.io/).
+This is a TUI (Text User Interface) image editor, inspired by MS Paint, built with [Textual](https://textual.textualize.io/).
 
-<!-- GitHub doesn't support figure/figcaption in markdown. -->
+<!-- GitHub doesn't support line-height style in markdown, so I can't use inline HTML for the screenshot without seams between rows of text. But I can include the HTML inside <foreignObject> in an SVG file and include that as an <img> element. -->
+<!-- GitHub doesn't support figure/figcaption in markdown, so I have to use a table. -->
 <table>
 <tr><td align="center">
 <img src="screenshot.svg" alt="MS Paint like interface" />
 </td></tr>
-<tr><td align="center">Textual Paint terminal screen buffer in HTML in SVG in HTML.<br>This might not render correctly in your browser.</tr></td>
+<tr><td align="center">This screenshot of Textual Paint is the terminal's screen buffer copied as HTML, wrapped in SVG, placed in HTML inside Markdown.<br>This might not render correctly in your browser.</tr></td>
 </table>
 
 ## Features
@@ -73,8 +73,7 @@ python paint.py
 
 ## Unicode Symbols and Emojis for Paint Tools
 
-The first thing I did in this project was to collect possible characters to represent all the tool icons in MS Paint, to test feasibility.
-In other words, I wanted to gauge how good of a recreation it would be possible to achieve, starting from looks.
+The first thing I did in this project was to collect possible characters to represent all the tool icons in MS Paint, to gauge how good of a recreation it would be possible to achieve, starting from looks.
 Unfortunately, I haven't run into any significant roadblocks, so I'm apparently recreating MS Paint. [Again.](https://jspaint.app)
 
 These are the symbols I've found so far:
