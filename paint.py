@@ -16,8 +16,9 @@ from textual.css.query import NoMatches
 from textual.reactive import var, reactive
 from textual.strip import Strip
 from textual.widget import Widget
-from textual.widgets import Button, Static
+from textual.widgets import Button, Static, Input
 from menus import MenuBar, Menu, MenuItem, Separator
+from windows import Window
 
 ascii_only_icons = False
 
@@ -697,12 +698,19 @@ class PaintApp(App):
             ansi = self.image.get_ansi()
             with open(self.filename, "w") as f:
                 f.write(ansi)
-        # else:
-        #     self.action_save_as()
+        else:
+            self.action_save_as()
     
     def action_save_as(self) -> None:
         """Save the image as a new file."""
-        raise NotImplementedError
+        window = Window(
+            Input(id="file_save_as", placeholder="Filename"),
+            Button("Save", id="save_as_button", classes="primary"),
+            Button("Cancel", id="cancel_save_as_button"),
+            classes="dialog save_as_dialog",
+            title="Save As",
+        )
+        self.mount(window)
     
     # def action_open(self) -> None:
     #     """Open an image from a file."""
@@ -735,7 +743,7 @@ class PaintApp(App):
                     MenuItem("New", self.action_new),
                     # MenuItem("Open", self.action_open),
                     MenuItem("Save", self.action_save),
-                    # MenuItem("Save As", self.action_save_as),
+                    MenuItem("Save As", self.action_save_as),
                     # MenuItem("Quit", self.action_quit),
                 ])),
                 MenuItem("Edit", submenu=Menu([

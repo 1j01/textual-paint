@@ -1,5 +1,5 @@
 Screen {
-    layers: menu-popup;
+    layers: window menu-popup;
 }
 
 #paint {
@@ -137,4 +137,22 @@ Button {
     height: 3;
     /* This seems to be the only way to get the button to shrink? */
     max-width: 8;
+}
+
+.window {
+    dock: top;
+    layer: window;
+    background: $surface;
+    border: thick $panel-darken-2;
+    layout: vertical;
+    align: center middle;
+    /* width: auto;
+    height: auto; */
+    /* overflow: hidden; */
+}
+.window-content {
+    layout: vertical;
+    overflow: auto;
+    max-height: 80vh;
+    max-width: 80vw;
 }
