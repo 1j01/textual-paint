@@ -546,10 +546,12 @@ class Canvas(Widget):
         self.capture_mouse(True)
     
     def on_mouse_move(self, event) -> None:
-        # Hack to fix mouse coordinates, not needed for mouse down.
+        # Hack to fix mouse coordinates, not needed for mouse down,
+        # or while the mouse is up.
         # This seems like a bug.
-        event.x += int(self.parent.scroll_x)
-        event.y += int(self.parent.scroll_y)
+        if self.pointer_active:
+            event.x += int(self.parent.scroll_x)
+            event.y += int(self.parent.scroll_y)
 
         if self.pointer_active:
             self.post_message(self.ToolUpdate(event))
