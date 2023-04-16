@@ -85,12 +85,11 @@ class Window(Container):
     
     def on_mouse_down(self, event: events.MouseDown) -> None:
         """Called when the user presses the mouse button."""
-        # TODO: detect if the mouse is over the title bar,
-        # and not window content or title bar buttons,
-        # then re-enable dragging.
-        # May need to add on_mouse_down to a container
-        # around the title, and send a message to the window.
-        return
+        # detect if the mouse is over the title bar,
+        # and not window content or title bar buttons
+        widget, _ = self.screen.get_widget_at(*event.screen_offset)
+        if widget not in [self.title_bar, self.title_bar.query_one(".window_title")]:
+            return
 
         if event.button != 1:
             return
