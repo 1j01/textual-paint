@@ -645,8 +645,8 @@ class PaintApp(App):
 
     def watch_selected_tool(self, old_selected_tool: Tool, selected_tool: Tool) -> None:
         """Called when selected_tool changes."""
-        self.query_one("#tool_button_" + old_selected_tool.name).classes = "tool_button"
-        self.query_one("#tool_button_" + selected_tool.name).classes = "tool_button selected"
+        self.query_one("#tool_button_" + old_selected_tool.name).remove_class("selected")
+        self.query_one("#tool_button_" + selected_tool.name).add_class("selected")
 
     def watch_selected_color(self, old_selected_color: str, selected_color: str) -> None:
         """Called when selected_color changes."""
