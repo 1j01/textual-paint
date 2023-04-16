@@ -1125,22 +1125,39 @@ class PaintApp(App):
         else:
             self.directory_tree_selected_path = None
 
-if __name__ == "__main__":
-    app = PaintApp()
+# `textual run --dev paint.py` will search for a 
+# global variable named `app`, and fallback to
+# anything that is an instance of `App`, or
+# a subclass of `App`.
+# Creating the app and parsing arguments must not be within an if __name__ == "__main__" block,
+# since __name__ will be "<run_path>" when running with the textual CLI,
+# and it would create a new app instance, and all arguments would be ignored.
+app = PaintApp()
 
-    parser = argparse.ArgumentParser(description='Paint in the terminal.')
-    parser.add_argument('--ascii-only-icons', action='store_true', help='Use only ASCII characters for tool icons')
-    parser.add_argument('filename', nargs='?', default=None, help='File to open')
+parser = argparse.ArgumentParser(description='Paint in the terminal.')
+parser.add_argument('--ascii-only-icons', action='store_true', help='Use only ASCII characters for tool icons')
+parser.add_argument('filename', nargs='?', default=None, help='File to open')
+if __name__ == "<run_path>":
+    # Arguments have to be passed like `textual run --dev "paint.py LICENSE.txt"`
+    # so we need to look for an argument starting with "paint.py",
+    # and parse the rest of the string as arguments.
+    args = None
+    for arg in sys.argv:
+        if arg.startswith("paint.py"):
+            args = parser.parse_args(arg[len("paint.py") :].split())
+            break
+else:
     args = parser.parse_args()
-    if args.ascii_only_icons:
-        ascii_only_icons = True
-    if args.filename:
-        # if args.filename == "-" and not sys.stdin.isatty():
-        #     app.image = AnsiArtDocument.from_text(sys.stdin.read())
-        #     app.filename = "<stdin>"
-        # else:
-        with open(args.filename, 'r') as my_file:
-            app.image = AnsiArtDocument.from_text(my_file.read())
-            app.filename = args.filename
+if args.ascii_only_icons:
+    ascii_only_icons = True
+if args.filename:
+    # if args.filename == "-" and not sys.stdin.isatty():
+    #     app.image = AnsiArtDocument.from_text(sys.stdin.read())
+    #     app.filename = "<stdin>"
+    # else:
+    with open(args.filename, 'r') as my_file:
+        app.image = AnsiArtDocument.from_text(my_file.read())
+        app.filename = args.filename
 
+if __name__ == "__main__":
     app.run()
