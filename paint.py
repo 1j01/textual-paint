@@ -855,6 +855,7 @@ class PaintApp(App):
             DirectoryTree(id="open_dialog_directory_tree", path="/"),
             Input(id="open_dialog_filename_input", placeholder="Filename"),
             Button("Open", classes="dialog_window_submit", variant="primary"),
+            Button("Cancel", classes="dialog_window_cancel"),
         )
         self.mount(window)
         self.expand_directory_tree(window.content.query_one("#open_dialog_directory_tree"))
