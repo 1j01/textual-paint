@@ -52,7 +52,8 @@ class Menu(Container):
                 self.focus_index = 0
         elif event.key == "escape":
             self.close()
-            self.parent_menu.focus()
+            if self.parent_menu:
+                self.parent_menu.focus()
     
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked or activated with the keyboard."""
