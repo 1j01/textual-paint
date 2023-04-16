@@ -813,6 +813,8 @@ class PaintApp(App):
 
         def open_clicked():
             filename = window.content.query_one("#open_dialog_filename_input").value
+            if self.directory_tree_selected_path:
+                filename = os.path.join(self.directory_tree_selected_path, filename)
             if filename:
                 with open(filename, "r") as f:
                     self.action_new()
