@@ -593,6 +593,8 @@ class PaintApp(App):
     # These call action_* methods on the widget.
     # They can have parameters, if need be.
     # https://textual.textualize.io/guide/actions/
+    #
+    # KEEP IN SYNC with the README.md Usage section, please.
     BINDINGS = [
         ("ctrl+q", "quit", "Quit"),
         ("meta+q", "quit", "Quit"),

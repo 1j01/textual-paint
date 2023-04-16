@@ -47,6 +47,55 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
 - [x] Brush previews
 - [x] Menu bar
 
+## Usage
+
+<!-- ### Installation
+
+```bash
+pip install textual-paint
+```
+
+### Running
+
+```bash
+textual-paint
+``` -->
+
+### Command Line Options
+
+```
+$ python3 paint.py --help
+usage: paint.py [-h] [--ascii-only-icons] [--clear-screen] [filename]
+
+Paint in the terminal.
+
+positional arguments:
+  filename            File to open
+
+options:
+  -h, --help          show this help message and exit
+  --ascii-only-icons  Use only ASCII characters for tool icons
+  --clear-screen      Clear the screen before starting; useful for development, to avoid seeing fixed errors
+```
+
+### Keyboard Shortcuts
+
+- <kbd>Ctrl</kbd>+<kbd>D</kbd>: Toggle Dark Mode
+- <kbd>Ctrl</kbd>+<kbd>Q</kbd>: Quit
+- <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>: Save As **IF SHIFT IS DETECTED** — might trigger Save instead, and overwrite the open file! ⚠️
+- <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd>: Redo **IF SHIFT IS DETECTED** — might trigger Undo instead.
+
+The rest match MS Paint's keyboard shortcuts:
+
+- <kbd>Ctrl</kbd>+<kbd>S</kbd>: Save
+- <kbd>Ctrl</kbd>+<kbd>O</kbd>: Open
+- <kbd>Ctrl</kbd>+<kbd>N</kbd>: New
+- <kbd>Ctrl</kbd>+<kbd>T</kbd>: Toggle Tools Box
+- <kbd>Ctrl</kbd>+<kbd>W</kbd>: Toggle Colors Box
+- <kbd>Ctrl</kbd>+<kbd>Z</kbd>: Undo
+- <kbd>Ctrl</kbd>+<kbd>Y</kbd>: Redo
+- <kbd>F4</kbd>: Redo
+
 ## Development
 
 Install Textual and Stransi:
