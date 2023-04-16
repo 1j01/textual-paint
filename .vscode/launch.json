@@ -13,7 +13,7 @@
 			// or to use textual as "module" but still run the correct app?
 			// I tried a lot of variations of this, but none worked.
 			"program": "${userHome}/.local/bin/textual",
-			"args": ["run", "--dev", "paint.py"],
+			"args": ["run", "--dev", "paint.py --clear-screen"],
 			"console": "integratedTerminal",
 			"justMyCode": false
 		},
@@ -24,7 +24,7 @@
 			// "program": "paint.py",
 			// "args": ["LICENSE.txt"],
 			"program": "${userHome}/.local/bin/textual",
-			"args": ["run", "--dev", "paint.py LICENSE.txt"],
+			"args": ["run", "--dev", "paint.py --clear-screen LICENSE.txt"],
 			"console": "integratedTerminal",
 			"justMyCode": false
 		}

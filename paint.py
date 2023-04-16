@@ -1136,6 +1136,12 @@ app = PaintApp()
 
 parser = argparse.ArgumentParser(description='Paint in the terminal.')
 parser.add_argument('--ascii-only-icons', action='store_true', help='Use only ASCII characters for tool icons')
+# This flag is for development, because it's very confusing
+# to see the error message from the previous run,
+# when a problem is actually solved.
+# There are enough ACTUAL "that should have worked!!" moments to deal with.
+# I really don't want false ones mixed in. You want to reward your brain for finding good solutions, after all.
+parser.add_argument('--clear-screen', action='store_true', help='Clear the screen before starting; useful for development, to avoid seeing fixed errors')
 parser.add_argument('filename', nargs='?', default=None, help='File to open')
 if __name__ == "<run_path>":
     # Arguments have to be passed like `textual run --dev "paint.py LICENSE.txt"`
@@ -1158,6 +1164,8 @@ if args.filename:
     with open(args.filename, 'r') as my_file:
         app.image = AnsiArtDocument.from_text(my_file.read())
         app.filename = args.filename
+if args.clear_screen:
+    os.system("cls||clear")
 
 if __name__ == "__main__":
     app.run()
