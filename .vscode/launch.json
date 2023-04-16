@@ -15,7 +15,7 @@
 			"program": "${userHome}/.local/bin/textual",
 			"args": ["run", "--dev", "paint.py"],
 			"console": "integratedTerminal",
-			"justMyCode": true
+			"justMyCode": false
 		},
 		{
 			"name": "Open A File in App",
@@ -24,7 +24,7 @@
 			"program": "paint.py",
 			"args": ["LICENSE.txt"],
 			"console": "integratedTerminal",
-			"justMyCode": true
+			"justMyCode": false
 		}
 	]
 }
