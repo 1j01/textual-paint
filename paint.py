@@ -840,7 +840,10 @@ class PaintApp(App):
                     # MenuItem("Open", self.action_open),
                     MenuItem("Save", self.action_save),
                     MenuItem("Save As", self.action_save_as),
-                    # MenuItem("Quit", self.action_quit),
+                    # self.action_quit doesn't work, even though it seems to just call self.exit?
+                    # action_quit is async, whereas exit is not. Is that somehow causing the problem?
+                    # At any rate, exit works fine.
+                    MenuItem("Exit", self.exit),
                 ])),
                 MenuItem("Edit", submenu=Menu([
                     MenuItem("Undo", self.action_undo),
