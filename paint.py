@@ -719,6 +719,8 @@ class PaintApp(App):
         )
         self.mount(window)
         self.expand_directory_tree(window.content.query_one("#save_as_directory_tree"))
+        # Fix for incorrect layout that would only resolve on mouse over
+        self.set_timer(0.01, lambda: self.app.update_styles(window))
 
     def expand_directory_tree(self, tree: DirectoryTree) -> None:
         """Expand the directory tree to the target directory, either the folder of the open file or the current working directory."""
@@ -806,7 +808,8 @@ class PaintApp(App):
             )
         )
         self.mount(window)
-            
+        # Fix for incorrect layout that would only resolve on mouse over
+        self.set_timer(0.01, lambda: self.app.update_styles(window))
 
     def action_open(self) -> None:
         """Open an image from a file."""
@@ -849,6 +852,8 @@ class PaintApp(App):
         )
         self.mount(window)
         self.expand_directory_tree(window.content.query_one("#open_dialog_directory_tree"))
+        # Fix for incorrect layout that would only resolve on mouse over
+        self.set_timer(0.01, lambda: self.app.update_styles(window))
 
     def action_new(self) -> None:
         """Create a new image."""
