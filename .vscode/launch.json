@@ -21,8 +21,10 @@
 			"name": "Open A File in App",
 			"type": "python",
 			"request": "launch",
-			"program": "paint.py",
-			"args": ["LICENSE.txt"],
+			// "program": "paint.py",
+			// "args": ["LICENSE.txt"],
+			"program": "${userHome}/.local/bin/textual",
+			"args": ["run", "--dev", "paint.py LICENSE.txt"],
 			"console": "integratedTerminal",
 			"justMyCode": false
 		}
