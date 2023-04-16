@@ -778,7 +778,9 @@ class PaintApp(App):
             def on_button_pressed(self, event):
                 if event.button.id == "overwrite_yes_button":
                     callback()
-                window.close()
+                    self.close()
+                elif event.button.id == "overwrite_no_button":
+                    self.close()
 
         window = OverwriteWindow(
             classes="dialog",
@@ -832,7 +834,9 @@ class PaintApp(App):
             def on_button_pressed(self, event):
                 if event.button.id == "open_dialog_open_button":
                     open_clicked()
-                window.close()
+                    self.close()
+                elif event.button.id == "open_dialog_cancel_button":
+                    self.close()
 
         for old_window in self.query("#save_as_dialog, #open_dialog").nodes:
             old_window.close()
