@@ -56,6 +56,10 @@ class Window(Container):
         """Called when the widget is mounted."""
         self.mount(self.title_bar)
         self.mount(self.content)
+        # Fix for incorrect layout that would only resolve on mouse over
+        # (I peaked into mouse over handling and it calls update_styles.)
+        # This can still briefly show the incorrect layout, since it relies on a timer.
+        self.set_timer(0.01, lambda: self.app.update_styles(self))
 
     # def compose(self) -> ComposeResult:
     #     """Add our widgets."""
