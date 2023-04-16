@@ -586,7 +586,7 @@ class PaintApp(App):
         ("meta+q", "quit", "Quit"),
         ("ctrl+s", "save", "Save"),
         ("ctrl+shift+s", "save_as", "Save As"),
-        # ("ctrl+o", "open", "Open"),
+        ("ctrl+o", "open", "Open"),
         ("ctrl+n", "new", "New"),
         # ("ctrl+shift+n", "clear_image", "Clear Image"),
         ("ctrl+t", "toggle_tools_box", "Toggle Tools Box"),
@@ -704,7 +704,7 @@ class PaintApp(App):
     
     def action_save_as(self) -> None:
         """Save the image as a new file."""
-        for old_window in self.query("#save_as_dialog").nodes:
+        for old_window in self.query("#save_as_dialog, #open_dialog").nodes:
             old_window.close()
         window = Window(
             classes="dialog",
@@ -808,13 +808,45 @@ class PaintApp(App):
         self.mount(window)
             
 
-    # def action_open(self) -> None:
-    #     """Open an image from a file."""
-    #     filename = self.query_one("#file_open").value
-    #     if filename:
-    #         with open(filename, "r") as f:
-    #             self.image = AnsiArtDocument.from_ansi(f.read())
-    #             self.canvas.image = self.image
+    def action_open(self) -> None:
+        """Open an image from a file."""
+
+        def open_clicked():
+            filename = window.content.query_one("#open_dialog_filename_input").value
+            if filename:
+                with open(filename, "r") as f:
+                    self.action_new()
+                    self.image = AnsiArtDocument.from_ansi(f.read())
+                    self.canvas.image = self.image
+                    self.canvas.refresh()
+                    self.filename = filename
+
+        class OpenWindow(Window):
+            """
+            A window that prompts the user for a file to open.
+
+            This subclass only exists to listen for the button presses.
+            I could make a DialogWindow class, which would probably be reasonably clean.
+            """
+            def on_button_pressed(self, event):
+                if event.button.id == "open_dialog_open_button":
+                    open_clicked()
+                window.close()
+
+        for old_window in self.query("#save_as_dialog, #open_dialog").nodes:
+            old_window.close()
+        window = OpenWindow(
+            classes="dialog",
+            id="open_dialog",
+            title="Open",
+        )
+        window.content.mount(
+            DirectoryTree(id="open_dialog_directory_tree", path="/"),
+            Input(id="open_dialog_filename_input", placeholder="Filename"),
+            Button("Open", id="open_dialog_open_button", variant="primary"),
+        )
+        self.mount(window)
+        self.expand_directory_tree(window.content.query_one("#open_dialog_directory_tree"))
 
     def action_new(self) -> None:
         """Create a new image."""
@@ -837,7 +869,7 @@ class PaintApp(App):
             yield MenuBar([
                 MenuItem("File", submenu=Menu([
                     MenuItem("New", self.action_new),
-                    # MenuItem("Open", self.action_open),
+                    MenuItem("Open", self.action_open),
                     MenuItem("Save", self.action_save),
                     MenuItem("Save As", self.action_save_as),
                     # self.action_quit doesn't work, even though it seems to just call self.exit?
@@ -1084,7 +1116,7 @@ class PaintApp(App):
         elif event.node.parent:
             self.directory_tree_selected_path = event.node.parent.data.path
             name = os.path.basename(event.node.data.path)
-            self.query_one("#save_as_filename_input", Input).value = name
+            self.query_one("#save_as_filename_input, #open_dialog_filename_input", Input).value = name
         else:
             self.directory_tree_selected_path = None
 
