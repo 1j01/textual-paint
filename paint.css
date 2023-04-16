@@ -45,9 +45,10 @@ Screen {
     grid-gutter: 0 1;
     grid-columns: 6;
     grid-rows: 3;
-    padding: 1 1;
+    padding: 0 1;
     height: 100%;
-    border-bottom: tall $panel-darken-2;
+    /* can't have a border without taking up a whole cell, and it's more important to show as much of the tools as possible */
+    /* border-bottom: tall $panel-darken-2; */
     background: $panel-darken-1;
     overflow: hidden;
 }
