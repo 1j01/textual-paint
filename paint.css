@@ -165,7 +165,7 @@ Button {
 }
 .window_title_bar Button {
     max-width: 6;
-    max-height: 3;
+    height: 3;
 }
 .window_title {
     width: 1fr;
