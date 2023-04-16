@@ -114,3 +114,26 @@ class Window(Container):
     def close(self) -> None:
         self.remove()
         self.post_message(self.Closed())
+
+
+class DialogWindow(Window):
+    """A window that can be submitted like a form."""
+
+    def __init__(self, *children, on_submit, **kwargs) -> None:
+        """Initialize a dialog window."""
+        super().__init__(*children, **kwargs)
+        self.add_class("dialog_window")
+        self.on_submit = on_submit
+
+    def on_key(self, event: events.Key) -> None:
+        """Called when a key is pressed."""
+        # TODO: submit with enter, but not if a button has focus
+        # if event.key == "enter":
+        #     self.on_submit()
+    
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Called when a button is clicked or activated with the keyboard."""
+        if event.button.has_class("dialog_window_submit"):
+            self.on_submit()
+        elif event.button.has_class("dialog_window_cancel"):
+            self.close()

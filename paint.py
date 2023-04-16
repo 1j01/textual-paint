@@ -19,7 +19,7 @@ from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import Button, Static, Input, DirectoryTree
 from menus import MenuBar, Menu, MenuItem, Separator
-from windows import Window
+from windows import Window, DialogWindow
 
 ascii_only_icons = False
 
@@ -716,16 +716,32 @@ class PaintApp(App):
         """Save the image as a new file."""
         for old_window in self.query("#save_as_dialog, #open_dialog").nodes:
             old_window.close()
-        window = Window(
+        
+        def on_submit():
+            name = self.query_one("#save_as_dialog_filename_input", Input).value
+            if name:
+                if self.directory_tree_selected_path:
+                    name = os.path.join(self.directory_tree_selected_path, name)
+                def on_save_confirmed():
+                    self.filename = name
+                    self.action_save()
+                    window.close()
+                if os.path.exists(name):
+                    self.confirm_overwrite(name, on_save_confirmed)
+                else:
+                    on_save_confirmed()
+
+        window = DialogWindow(
             classes="dialog",
             id="save_as_dialog",
             title="Save As",
+            on_submit=on_submit,
         )
         window.content.mount(
             DirectoryTree(id="save_as_dialog_directory_tree", path="/"),
             Input(id="save_as_dialog_filename_input", placeholder="Filename"),
-            Button("Save", id="save_as_dialog_save_button", variant="primary"),
-            Button("Cancel", id="save_as_dialog_cancel_button"),
+            Button("Save", classes="dialog_window_submit", variant="primary"),
+            Button("Cancel", classes="dialog_window_cancel"),
         )
         self.mount(window)
         self.expand_directory_tree(window.content.query_one("#save_as_dialog_directory_tree"))
@@ -779,25 +795,15 @@ class PaintApp(App):
         
         self.bell()
 
-        class OverwriteWindow(Window):
-            """
-            A window that asks the user if they want to overwrite a file.
-            
-            This subclass only exists to listen for the button presses.
-            Is there a better way to do this?
-            Dynamically assigning on_button_pressed to the instance didn't work.
-            """
-            def on_button_pressed(self, event):
-                if event.button.id == "overwrite_yes_button":
-                    callback()
-                    self.close()
-                elif event.button.id == "overwrite_no_button":
-                    self.close()
+        def on_submit():
+            callback()
+            window.close()
 
-        window = OverwriteWindow(
+        window = DialogWindow(
             classes="dialog",
             id="overwrite_dialog",
             title="Save As",
+            on_submit=on_submit,
         )
         window.content.mount(
             Horizontal(
@@ -812,8 +818,8 @@ class PaintApp(App):
                     Static(filename + " already exists.", markup=False),
                     Static("Do you want to replace it?"),
                     Horizontal(
-                        Button("Yes", id="overwrite_yes_button"),
-                        Button("No", id="overwrite_no_button"),
+                        Button("Yes", classes="dialog_window_submit"),
+                        Button("No", classes="dialog_window_cancel"),
                     ),
                     classes="main_content"
                 )
@@ -835,32 +841,20 @@ class PaintApp(App):
                     self.canvas.image = self.image
                     self.canvas.refresh()
                     self.filename = filename
-
-        class OpenWindow(Window):
-            """
-            A window that prompts the user for a file to open.
-
-            This subclass only exists to listen for the button presses.
-            I could make a DialogWindow class, which would probably be reasonably clean.
-            """
-            def on_button_pressed(self, event):
-                if event.button.id == "open_dialog_open_button":
-                    open_clicked()
-                    self.close()
-                elif event.button.id == "open_dialog_cancel_button":
-                    self.close()
+                    window.close()
 
         for old_window in self.query("#save_as_dialog, #open_dialog").nodes:
             old_window.close()
-        window = OpenWindow(
+        window = DialogWindow(
             classes="dialog",
             id="open_dialog",
             title="Open",
+            on_submit=open_clicked,
         )
         window.content.mount(
             DirectoryTree(id="open_dialog_directory_tree", path="/"),
             Input(id="open_dialog_filename_input", placeholder="Filename"),
-            Button("Open", id="open_dialog_open_button", variant="primary"),
+            Button("Open", classes="dialog_window_submit", variant="primary"),
         )
         self.mount(window)
         self.expand_directory_tree(window.content.query_one("#open_dialog_directory_tree"))
@@ -1105,26 +1099,11 @@ class PaintApp(App):
         button_id = event.button.id
         # button_classes = event.button.classes
 
-        if button_id.startswith("tool_button_"):
-            self.selected_tool = Tool[button_id[len("tool_button_") :]]
-        elif button_id.startswith("color_button_"):
-            self.selected_color = button_id[len("color_button_") :]
-        elif button_id == "save_as_dialog_save_button":
-            name = self.query_one("#save_as_dialog_filename_input", Input).value
-            if name:
-                if self.directory_tree_selected_path:
-                    name = os.path.join(self.directory_tree_selected_path, name)
-                def on_save_confirmed():
-                    self.query_one("#save_as_dialog", Window).close()
-                    self.filename = name
-                    self.action_save()
-                if os.path.exists(name):
-                    self.confirm_overwrite(name, on_save_confirmed)
-                else:
-                    on_save_confirmed()
-                    
-        elif button_id == "save_as_dialog_cancel_button":
-            self.query_one("#save_as_dialog", Window).close()
+        if button_id:
+            if button_id.startswith("tool_button_"):
+                self.selected_tool = Tool[button_id[len("tool_button_") :]]
+            elif button_id.startswith("color_button_"):
+                self.selected_color = button_id[len("color_button_") :]
 
     def on_tree_node_highlighted(self, event: DirectoryTree.FileSelected) -> None:
         """
