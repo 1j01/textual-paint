@@ -54,16 +54,21 @@ Install Textual and Stransi:
 pip install "textual[dev]" "stransi"
 ```
 
-Run supporting live-reloading CSS:
+Run via Textual's CLI for live-reloading CSS support:
 ```bash
-textual run --dev paint.py
+textual run --dev "paint.py --clear-screen"
 ```
 
-Or run normally:
+Or run more basically:
 ```bash
-python paint.py
+python paint.py --clear-screen
 ```
 
+`--clear-screen` is useful for development, because it's sometimes jarring to see error messages that have actually been fixed, when exiting the program.
+
+There are also launch tasks configured for VS Code, so you can run the program from the Run and Debug panel.
+
+I tried running via `modd` to automatically reload the program when (non-CSS) files change, but it doesn't handle ANSI escape sequences well. I wonder if it would work better now with the `--clear-screen` option. (I could also look for another tool that's more part of the Python ecosystem.)
 
 ## License
 
