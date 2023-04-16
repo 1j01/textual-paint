@@ -705,6 +705,7 @@ class PaintApp(App):
 
     def action_save(self) -> None:
         """Save the image to a file."""
+        self.cancel_preview()
         if self.filename:
             ansi = self.image.get_ansi()
             with open(self.filename, "w") as f:
