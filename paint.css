@@ -135,8 +135,14 @@ Button {
 .menu Button {
     border: none;
     height: 3;
+}
+.menu_bar Button {
     /* This seems to be the only way to get the button to shrink? */
     max-width: 8;
+}
+.menu_popup Button {
+    min-width: 20;
+    text-align: left;
 }
 
 .window {
