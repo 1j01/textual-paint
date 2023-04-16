@@ -528,6 +528,12 @@ class Canvas(Widget):
             self.mouse_move_event = mouse_move_event
             super().__init__()
 
+    class ToolPreviewStop(Message):
+        """Message when the mouse leaves the canvas while previewing (not while drawing)."""
+
+        def __init__(self) -> None:
+            super().__init__()
+
     def __init__(self, **kwargs) -> None:
         """Initialize the canvas."""
         super().__init__(**kwargs)
@@ -553,6 +559,10 @@ class Canvas(Widget):
     def on_mouse_up(self, event) -> None:
         self.pointer_active = False
         self.capture_mouse(False)
+
+    def on_leave(self, event) -> None:
+        if not self.pointer_active:
+            self.post_message(self.ToolPreviewStop())
 
     def get_content_width(self, container: Size, viewport: Size) -> int:
         return self.image.width
@@ -972,6 +982,11 @@ class PaintApp(App):
                 self.preview_action.region = affected_region.intersection(Region(0, 0, self.image.width, self.image.height))
                 self.preview_action.update(image_before)
                 self.canvas.refresh(affected_region)
+
+    def on_canvas_tool_preview_stop(self, event: Canvas.ToolPreviewStop) -> None:
+        """Called when the user stops hovering over the canvas (while previewing, not drawing)."""
+        event.stop()
+        self.cancel_preview()
 
     def on_canvas_tool_update(self, event: Canvas.ToolUpdate) -> None:
         """Called when the user is drawing on the canvas."""
