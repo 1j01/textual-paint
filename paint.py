@@ -766,6 +766,8 @@ class PaintApp(App):
     def confirm_overwrite(self, filename: str, callback) -> None:
         for old_window in self.query("#overwrite_dialog").nodes:
             old_window.close()
+        
+        self.bell()
 
         class OverwriteWindow(Window):
             """
