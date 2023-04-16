@@ -127,10 +127,10 @@ class DialogWindow(Window):
 
     def on_key(self, event: events.Key) -> None:
         """Called when a key is pressed."""
-        # TODO: submit with enter, but not if a button has focus
-        # if event.key == "enter":
-        #     self.on_submit()
-        if event.key == "escape":
+        # submit with enter, but not if a button has focus
+        if event.key == "enter" and self.app.focused not in self.query("Button").nodes:
+            self.on_submit()
+        elif event.key == "escape":
             self.close()
     
     def on_button_pressed(self, event: Button.Pressed) -> None:
