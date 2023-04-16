@@ -718,51 +718,51 @@ class PaintApp(App):
             Button("Cancel", id="save_as_cancel_button"),
         )
         self.mount(window)
-        def expand_directory_tree():
-            """Expand the directory tree to the target directory, either the folder of the open file or the current working directory."""
-            target_dirs = (self.filename or os.getcwd()).split(os.path.sep)
-            tree = window.content.query_one("#save_as_directory_tree")
-            node = tree.root
-            def get_node_name(node):
-                return os.path.basename(node.data.path.rstrip(os.path.sep))
-            for dir_name in target_dirs:
-                # Find the child node with the right name.
-                for child in node.children:
-                    if get_node_name(child) == dir_name:
-                        node = child
-                        break
-                if get_node_name(node) == dir_name:
-                    if node.data.is_dir:
-                        if not node.is_expanded and not node.data.loaded:
-                            # load_directory also calls node.expand()
-                            tree.load_directory(node)
-                    else:
-                        # Found file.
-                        break
-                else:
-                    # Directory or file not found.
-                    break
-            # Timer is needed to wait for the new nodes to mount, I think.
-            # tree.select_node(node)
-            self.set_timer(0.01, lambda: tree.select_node(node))
-            # widget.scroll_to_region supports a `top` argument,
-            # but tree.scroll_to_node doesn't.
-            # A simple workaround is to scroll to the bottom first.
-            # tree.scroll_to_line(tree.last_line)
-            # tree.scroll_to_node(node)
-            # That would work if scroll_to_node and scroll_to_line didn't animate,
-            # but the animations conflicts with each other and it ends up in the wrong spot.
-            # They don't support widget.scroll_to_region's `animate` argument either.
-            # Oh but I can use scroll_visible instead.
-            # node.scroll_visible(animate=False, top=True)
-            # That is, if node was a widget!
-            # Ugh. OK, I'm going to use some internals, and replicate how scroll_to_node works.
-            # tree.scroll_to_region(tree._get_label_region(node._line), animate=False, top=True)
-            # Timer is needed to wait for the new nodes to mount, I think.
-            self.set_timer(0.01, lambda: tree.scroll_to_region(tree._get_label_region(node._line), animate=False, top=True))
+        self.expand_directory_tree(window.content.query_one("#save_as_directory_tree"))
 
-        expand_directory_tree()
-    
+    def expand_directory_tree(self, tree: DirectoryTree) -> None:
+        """Expand the directory tree to the target directory, either the folder of the open file or the current working directory."""
+        # TODO: os.path.normcase, and maybe os.path.samefile check
+        target_dir = (self.filename or os.getcwd()).rstrip(os.path.sep)
+        node = tree.root
+        def get_node_name(node):
+            return os.path.basename(node.data.path.rstrip(os.path.sep))
+        for dir_name in target_dir.split(os.path.sep):
+            # Find the child node with the right name.
+            for child in node.children:
+                if get_node_name(child) == dir_name:
+                    node = child
+                    break
+            if get_node_name(node) == dir_name:
+                if node.data.is_dir:
+                    if not node.is_expanded and not node.data.loaded:
+                        # load_directory also calls node.expand()
+                        tree.load_directory(node)
+                else:
+                    # Found a file.
+                    break
+            else:
+                # Directory or file not found.
+                break
+        # Timer is needed to wait for the new nodes to mount, I think.
+        # tree.select_node(node)
+        self.set_timer(0.01, lambda: tree.select_node(node))
+        # widget.scroll_to_region supports a `top` argument,
+        # but tree.scroll_to_node doesn't.
+        # A simple workaround is to scroll to the bottom first.
+        # tree.scroll_to_line(tree.last_line)
+        # tree.scroll_to_node(node)
+        # That would work if scroll_to_node and scroll_to_line didn't animate,
+        # but the animations conflicts with each other and it ends up in the wrong spot.
+        # They don't support widget.scroll_to_region's `animate` argument either.
+        # Oh but I can use scroll_visible instead.
+        # node.scroll_visible(animate=False, top=True)
+        # That is, if node was a widget!
+        # Ugh. OK, I'm going to use some internals, and replicate how scroll_to_node works.
+        # tree.scroll_to_region(tree._get_label_region(node._line), animate=False, top=True)
+        # Timer is needed to wait for the new nodes to mount, I think.
+        self.set_timer(0.01, lambda: tree.scroll_to_region(tree._get_label_region(node._line), animate=False, top=True))
+
     def confirm_overwrite(self, filename: str, callback) -> None:
         for old_window in self.query("#overwrite_dialog").nodes:
             old_window.close()
