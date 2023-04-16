@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		},
+		{
+			"path": "../../../.local/lib/python3.10/site-packages/textual"
+		}
+	],
+	"settings": {}
+}
