@@ -117,7 +117,12 @@ A crosshair cursor could use one of `+✜✛✚╋╬`, but whilst that imitates
 
 ## Notes
 
-save dialog
+share here: https://github.com/1j01/jspaint/issues/151
+
+on_button_pressed: check only known buttons
+save dialog ids: match open dialog
+try making a class DialogWindow(Window)
+bell()
 
 Action constructor: remove document param, in favor of a update/grab() method
 
@@ -126,6 +131,9 @@ toolsbox/colorsbox:
 	refactor to send message for selected tool
 	invalid ids for colors because of #
 
+-----------------
+
+when saving .ans file
 use Rich API code like
 	segments = []
 	for x in range(self.image.width):
@@ -134,7 +142,8 @@ use Rich API code like
 		ch = self.image.ch[y][x]
 		segments.append(Segment(ch, Style.parse(fg+" on "+bg)))
 	return Strip(segments, self.size.width) 
-when saving .ans file
+self.screen.get_style_at(*screen_offset)
+
 
 ------------------------
 Textual
@@ -152,6 +161,10 @@ Docs:
 - `"""Called when a button is pressed."""` -> `"""Called when a button widget is pressed."""` or otherwise disambiguate with on_key
 	- `"""Called when a button is clicked or activated with the keyboard."""`
 - "toggle attribute" (or similar) confusing for dark mode; I don't know how to do that. toggle_class isn't it. action_toggle_dark seems to work though...
+- set_timer: units please
+- process_label vs render_label is confusing, they're described very similarly
+- Are focus/highlight/selection concepts the same or distinct?
 
 Other Feedback:
-- layouts are hard to use, auto width doesn't work
+- layouts are hard to use, auto width doesn't work in some cases
+
