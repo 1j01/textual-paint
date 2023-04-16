@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import argparse
+import asyncio
 from enum import Enum
 from random import randint, random
 from typing import List, Optional
@@ -598,8 +599,12 @@ class PaintApp(App):
     #
     # KEEP IN SYNC with the README.md Usage section, please.
     BINDINGS = [
-        ("ctrl+q", "quit", "Quit"),
-        ("meta+q", "quit", "Quit"),
+        # There is a built-in "quit" action, but it will quit without asking to save.
+        # It's also bound to Ctrl+C by default, so for now I'll rebind it,
+        # but eventually Ctrl+C will become Edit > Copy.
+        ("ctrl+q", "exit", "Quit"),
+        ("meta+q", "exit", "Quit"),
+        ("ctrl+c", "exit", "Quit"),
         ("ctrl+s", "save", "Save"),
         ("ctrl+shift+s", "save_as", "Save As"),
         ("ctrl+o", "open", "Open"),
@@ -627,7 +632,10 @@ class PaintApp(App):
 
     undos: List[Action] = []
     redos: List[Action] = []
+    # temporary undo state for brush previews
     preview_action: Optional[Action] = None
+    # file modification tracking
+    saved_undo_count = 0
 
     NAME_MAP = {
         # key to button id
@@ -719,29 +727,51 @@ class PaintApp(App):
             self.canvas.refresh()
 
     def action_save(self) -> None:
+        """Start the save action, but don't wait for the Save As dialog to close if it's a new file."""
+        self._not_garbage1 = asyncio.create_task(self.save())
+
+    async def save(self) -> None:
         """Save the image to a file."""
         self.cancel_preview()
         if self.filename:
             ansi = self.image.get_ansi()
             with open(self.filename, "w") as f:
                 f.write(ansi)
+            self.saved_undo_count = len(self.undos)
         else:
-            self.action_save_as()
+            await self.save_as()
     
     def action_save_as(self) -> None:
+        """Show the save as dialog, without waiting for it to close."""
+        # Action must not await the dialog closing,
+        # or else you'll never see the dialog in the first place!
+        self._not_garbage2 = asyncio.create_task(self.save_as())
+
+    async def save_as(self) -> None:
         """Save the image as a new file."""
         for old_window in self.query("#save_as_dialog, #open_dialog").nodes:
             old_window.close()
         
-        def on_submit():
+        saved_future = asyncio.Future()
+
+        def handle_button(button):
+            if not button.has_class("save"):
+                window.close()
+                return
             name = self.query_one("#save_as_dialog_filename_input", Input).value
             if name:
                 if self.directory_tree_selected_path:
                     name = os.path.join(self.directory_tree_selected_path, name)
                 def on_save_confirmed():
-                    self.filename = name
-                    self.action_save()
-                    window.close()
+                    async def async_on_save_confirmed():
+                        self.filename = name
+                        await self.save()
+                        window.close()
+                        saved_future.set_result(None)
+                    # asyncio.run() cannot be called from a running event loop
+                    # asyncio.create_task() result must be saved to a variable to avoid garbage collection.
+                    # https://textual.textualize.io/blog/2023/02/11/the-heisenbug-lurking-in-your-async-code/
+                    self._not_garbage_to_collect123 = asyncio.create_task(async_on_save_confirmed())
                 if os.path.exists(name):
                     self.confirm_overwrite(name, on_save_confirmed)
                 else:
@@ -751,16 +781,17 @@ class PaintApp(App):
             classes="dialog",
             id="save_as_dialog",
             title="Save As",
-            on_submit=on_submit,
+            handle_button=handle_button,
         )
         window.content.mount(
             DirectoryTree(id="save_as_dialog_directory_tree", path="/"),
             Input(id="save_as_dialog_filename_input", placeholder="Filename"),
-            Button("Save", classes="dialog_window_submit", variant="primary"),
-            Button("Cancel", classes="dialog_window_cancel"),
+            Button("Save", classes="save submit", variant="primary"),
+            Button("Cancel", classes="cancel"),
         )
         self.mount(window)
         self.expand_directory_tree(window.content.query_one("#save_as_dialog_directory_tree"))
+        await saved_future
 
     def expand_directory_tree(self, tree: DirectoryTree) -> None:
         """Expand the directory tree to the target directory, either the folder of the open file or the current working directory."""
@@ -804,22 +835,56 @@ class PaintApp(App):
         # tree.scroll_to_region(tree._get_label_region(node._line), animate=False, top=True)
         # Timer is needed to wait for the new nodes to mount, I think.
         self.set_timer(0.01, lambda: tree.scroll_to_region(tree._get_label_region(node._line), animate=False, top=True))
-
+    
     def confirm_overwrite(self, filename: str, callback) -> None:
-        for old_window in self.query("#overwrite_dialog").nodes:
+        message = filename + " already exists.\nDo you want to replace it?"
+        def handle_button(button):
+            if not button.has_class("yes"):
+                return
+            callback()
+        self.warning_message_box("Save As", Static(message, markup=False), handle_button)
+
+    def prompt_save_changes(self, filename: str, callback) -> None:
+        filename = os.path.basename(filename)
+        message = "Save changes to " + filename + "?"
+        def handle_button(button):
+            if not button.has_class("yes") and not button.has_class("no"):
+                return
+            async def async_handle_button(button):
+                if button.has_class("yes"):
+                    await self.save()
+                callback()
+            # asyncio.run() cannot be called from a running event loop
+            # asyncio.create_task() result must be saved to a variable to avoid garbage collection.
+            # https://textual.textualize.io/blog/2023/02/11/the-heisenbug-lurking-in-your-async-code/
+            self._not_garbage_to_collect = asyncio.create_task(async_handle_button(button))
+        self.warning_message_box("Paint", Static(message, markup=False), handle_button, ync=True)
+
+    def is_document_modified(self) -> bool:
+        return len(self.undos) != self.saved_undo_count
+
+    def action_exit(self) -> None:
+        if self.is_document_modified():
+            self.prompt_save_changes(self.filename or "Untitled", self.exit)
+        else:
+            self.exit()
+
+    def warning_message_box(self, title: str, message_widget: Widget, callback, ync = False) -> None:
+
+        for old_window in self.query("#message_box").nodes:
             old_window.close()
         
         self.bell()
 
-        def on_submit():
-            callback()
+        def handle_button(button):
+            callback(button)
             window.close()
 
         window = DialogWindow(
             classes="dialog",
-            id="overwrite_dialog",
+            id="message_box",
             title="Save As",
-            on_submit=on_submit,
+            handle_button=handle_button,
         )
         # ASCII line art version:
 #         warning_icon = Static("""[#ffff00]
@@ -869,11 +934,14 @@ class PaintApp(App):
             Horizontal(
                 warning_icon,
                 Vertical(
-                    Static(filename + " already exists.", markup=False),
-                    Static("Do you want to replace it?"),
+                    message_widget,
                     Horizontal(
-                        Button("Yes", classes="dialog_window_submit"),
-                        Button("No", classes="dialog_window_cancel"),
+                        Button("Yes", classes="yes submit"),
+                        Button("No", classes="no"),
+                        Button("Cancel", classes="cancel"),
+                    ) if ync else Horizontal(
+                        Button("Yes", classes="yes submit"),
+                        Button("No", classes="no"),
                     ),
                     classes="main_content"
                 )
@@ -882,20 +950,29 @@ class PaintApp(App):
         self.mount(window)
 
     def action_open(self) -> None:
-        """Open an image from a file."""
+        """Show dialog to open an image from a file."""
 
-        def open_clicked():
+        def handle_button(button):
+            if not button.has_class("open"):
+                window.close()
+                return
             filename = window.content.query_one("#open_dialog_filename_input").value
             if self.directory_tree_selected_path:
                 filename = os.path.join(self.directory_tree_selected_path, filename)
             if filename:
                 with open(filename, "r") as f:
-                    self.action_new()
-                    self.image = AnsiArtDocument.from_ansi(f.read())
-                    self.canvas.image = self.image
-                    self.canvas.refresh()
-                    self.filename = filename
-                    window.close()
+                    content = f.read() # f is out of scope in go_ahead()
+                    def go_ahead():
+                        self.action_new(force=True)
+                        self.image = AnsiArtDocument.from_ansi(content)
+                        self.canvas.image = self.image
+                        self.canvas.refresh()
+                        self.filename = filename
+                        window.close()
+                    if self.is_document_modified():
+                        self.prompt_save_changes(self.filename or "Untitled", go_ahead)
+                    else:
+                        go_ahead()
 
         for old_window in self.query("#save_as_dialog, #open_dialog").nodes:
             old_window.close()
@@ -903,24 +980,34 @@ class PaintApp(App):
             classes="dialog",
             id="open_dialog",
             title="Open",
-            on_submit=open_clicked,
+            handle_button=handle_button,
         )
         window.content.mount(
             DirectoryTree(id="open_dialog_directory_tree", path="/"),
             Input(id="open_dialog_filename_input", placeholder="Filename"),
-            Button("Open", classes="dialog_window_submit", variant="primary"),
-            Button("Cancel", classes="dialog_window_cancel"),
+            Button("Open", classes="open submit", variant="primary"),
+            Button("Cancel", classes="cancel"),
         )
         self.mount(window)
         self.expand_directory_tree(window.content.query_one("#open_dialog_directory_tree"))
 
-    def action_new(self) -> None:
+    def action_new(self, *, force=False) -> None:
         """Create a new image."""
-        # TODO: prompt to save if there are unsaved changes
+        if self.is_document_modified() and not force:
+            def go_ahead():
+                # Cancel doesn't call this callback.
+                # Yes or No has been selected.
+                # If Yes, a save dialog should already have been shown,
+                # or the open file saved.
+                # Go ahead and create a new image.
+                self.action_new(force=True)
+            self.prompt_save_changes(self.filename or "Untitled", go_ahead)
+            return
         self.image = AnsiArtDocument(80, 24)
         self.canvas.image = self.image
         self.canvas.refresh()
         self.filename = None
+        self.saved_undo_count = 0
         self.undos = []
         self.redos = []
         self.preview_action = None
@@ -939,10 +1026,7 @@ class PaintApp(App):
                     MenuItem("Open", self.action_open),
                     MenuItem("Save", self.action_save),
                     MenuItem("Save As", self.action_save_as),
-                    # self.action_quit doesn't work, even though it seems to just call self.exit?
-                    # action_quit is async, whereas exit is not. Is that somehow causing the problem?
-                    # At any rate, exit works fine.
-                    MenuItem("Exit", self.exit),
+                    MenuItem("Exit", self.action_exit),
                 ])),
                 MenuItem("Edit", submenu=Menu([
                     MenuItem("Undo", self.action_undo),

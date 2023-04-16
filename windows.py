@@ -5,6 +5,7 @@ from textual.containers import Container
 from textual.geometry import Offset, Region, Size
 from textual.reactive import var, reactive
 from textual.widgets import Button, Static
+from textual.css.query import NoMatches
 
 class WindowTitleBar(Container):
     """A title bar widget."""
@@ -78,15 +79,16 @@ class Window(Container):
         """Called when a button is clicked or activated with the keyboard."""
 
         if event.button.has_class("window_close"):
-            close_request = self.CloseRequest()
-            self.post_message(close_request)
-            if not close_request.prevent_close:
-                self.close()
+            self.request_close()
     
     def on_mouse_down(self, event: events.MouseDown) -> None:
         """Called when the user presses the mouse button."""
         # detect if the mouse is over the title bar,
         # and not window content or title bar buttons
+        if not self.parent:
+            # I got NoScreen error accessing self.screen once while closing a window,
+            # so I added this check.
+            return
         widget, _ = self.screen.get_widget_at(*event.screen_offset)
         if widget not in [self.title_bar, self.title_bar.query_one(".window_title")]:
             return
@@ -112,30 +114,45 @@ class Window(Container):
         self.release_mouse()
 
     def close(self) -> None:
+        """Force close the window."""
         self.remove()
         self.post_message(self.Closed())
+    
+    def request_close(self) -> None:
+        """Request to close the window."""
+        close_request = self.CloseRequest()
+        self.post_message(close_request)
+        if not close_request.prevent_close:
+            self.close()
 
 
 class DialogWindow(Window):
     """A window that can be submitted like a form."""
 
-    def __init__(self, *children, on_submit, **kwargs) -> None:
+    def __init__(self, *children, handle_button, **kwargs) -> None:
         """Initialize a dialog window."""
         super().__init__(*children, **kwargs)
         self.add_class("dialog_window")
-        self.on_submit = on_submit
+        self.handle_button = handle_button
 
     def on_key(self, event: events.Key) -> None:
         """Called when a key is pressed."""
         # submit with enter, but not if a button has focus
+        # (not even if it's a submit button, because that would double submit)
+        # TODO: Use on_input_submitted instead
         if event.key == "enter" and self.app.focused not in self.query("Button").nodes:
-            self.on_submit()
+            try:
+                submit_button = self.query_one(".submit", Button)
+            except NoMatches:
+                return
+            self.handle_button(submit_button)
         elif event.key == "escape":
-            self.close()
+            # Like the title bar close button,
+            # this doesn't call handle_button...
+            self.request_close()
     
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked or activated with the keyboard."""
-        if event.button.has_class("dialog_window_submit"):
-            self.on_submit()
-        elif event.button.has_class("dialog_window_cancel"):
-            self.close()
+        # Make sure the button is in the window content
+        if event.button in self.content.query("Button").nodes:
+            self.handle_button(event.button)
