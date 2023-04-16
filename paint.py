@@ -712,13 +712,13 @@ class PaintApp(App):
             title="Save As",
         )
         window.content.mount(
-            DirectoryTree(id="save_as_directory_tree", path="/"),
-            Input(id="save_as_filename_input", placeholder="Filename"),
-            Button("Save", id="save_as_save_button", variant="primary"),
-            Button("Cancel", id="save_as_cancel_button"),
+            DirectoryTree(id="save_as_dialog_directory_tree", path="/"),
+            Input(id="save_as_dialog_filename_input", placeholder="Filename"),
+            Button("Save", id="save_as_dialog_save_button", variant="primary"),
+            Button("Cancel", id="save_as_dialog_cancel_button"),
         )
         self.mount(window)
-        self.expand_directory_tree(window.content.query_one("#save_as_directory_tree"))
+        self.expand_directory_tree(window.content.query_one("#save_as_dialog_directory_tree"))
 
     def expand_directory_tree(self, tree: DirectoryTree) -> None:
         """Expand the directory tree to the target directory, either the folder of the open file or the current working directory."""
@@ -1088,8 +1088,8 @@ class PaintApp(App):
             self.selected_tool = Tool[button_id[len("tool_button_") :]]
         elif button_id.startswith("color_button_"):
             self.selected_color = button_id[len("color_button_") :]
-        elif button_id == "save_as_save_button":
-            name = self.query_one("#save_as_filename_input", Input).value
+        elif button_id == "save_as_dialog_save_button":
+            name = self.query_one("#save_as_dialog_filename_input", Input).value
             if name:
                 if self.directory_tree_selected_path:
                     name = os.path.join(self.directory_tree_selected_path, name)
@@ -1102,7 +1102,7 @@ class PaintApp(App):
                 else:
                     on_save_confirmed()
                     
-        elif button_id == "save_as_cancel_button":
+        elif button_id == "save_as_dialog_cancel_button":
             self.query_one("#save_as_dialog", Window).close()
 
     def on_tree_node_highlighted(self, event: DirectoryTree.FileSelected) -> None:
@@ -1117,7 +1117,7 @@ class PaintApp(App):
         elif event.node.parent:
             self.directory_tree_selected_path = event.node.parent.data.path
             name = os.path.basename(event.node.data.path)
-            self.query_one("#save_as_filename_input, #open_dialog_filename_input", Input).value = name
+            self.query_one("#save_as_dialog_filename_input, #open_dialog_filename_input", Input).value = name
         else:
             self.directory_tree_selected_path = None
 
