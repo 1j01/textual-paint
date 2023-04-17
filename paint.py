@@ -821,15 +821,33 @@ class PaintApp(App):
             title="Save As",
             on_submit=on_submit,
         )
+        # ASCII line art version:
+#         warning_icon = Static("""[#ffff00]
+#     _
+#    / \\
+#   / | \\
+#  /  .  \\
+# /_______\\
+# [/]""", classes="warning_icon")
+        # Unicode solid version:
+#         warning_icon = Static("""[#ffff00 on #000000]
+#     _
+#    ◢█◣
+#   ◢[#000000 on #ffff00] ▼ [/]◣
+#  ◢[#000000 on #ffff00]  ●  [/]◣
+# ◢███████◣
+# [/]""", classes="warning_icon")
+        # Unicode line art version:
+        warning_icon = Static("""[#ffff00]
+    _
+   ╱ ╲
+  ╱ │ ╲
+ ╱  .  ╲
+╰───────╯
+""", classes="warning_icon")
         window.content.mount(
             Horizontal(
-                Static("""[#ffff00]
-    _
-   / \\
-  / | \\
- /  .  \\
-/_______\\
-[/]""", classes="warning_icon"),
+                warning_icon,
                 Vertical(
                     Static(filename + " already exists.", markup=False),
                     Static("Do you want to replace it?"),
