@@ -49,7 +49,7 @@ class Tool(Enum):
         # Alternatives considered:
         # - Free-Form Select:  ✂️📐🆓🕸✨⚝🫥🇫/🇸◌⁛⁘ ⢼⠮
         # - Rectangular Select: ⬚▧🔲 ⣏⣹
-        # - Eraser/Color Eraser: 🧼🧽🧹🚫👋🗑️
+        # - Eraser/Color Eraser: 🧼🧽🧹🚫👋🗑️▰▱
         # - Fill With Color: 🌊💦💧🌈🎉🎊🪣🫗
         # - Pick Color: 🎨💉💅💧📌📍⤤𝀃🝯🍶
         # - Magnifier: 🔍🔎👀🔬🔭🧐🕵️‍♂️🕵️‍♀️
