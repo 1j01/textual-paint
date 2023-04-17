@@ -829,7 +829,7 @@ class PaintApp(App):
 #  /  .  \\
 # /_______\\
 # [/]""", classes="warning_icon")
-        # Unicode solid version:
+        # Unicode solid version 1:
 #         warning_icon = Static("""[#ffff00 on #000000]
 #     _
 #    ◢█◣
@@ -837,13 +837,33 @@ class PaintApp(App):
 #  ◢[#000000 on #ffff00]  ●  [/]◣
 # ◢███████◣
 # [/]""", classes="warning_icon")
-        # Unicode line art version:
-        warning_icon = Static("""[#ffff00]
-    _
-   ╱ ╲
-  ╱ │ ╲
- ╱  .  ╲
-╰───────╯
+        # Unicode line art version (' might be a better than ╰/╯):
+#         warning_icon = Static("""[#ffff00]
+#     _
+#    ╱ ╲
+#   ╱ │ ╲
+#  ╱  .  ╲
+# ╰───────╯
+# """, classes="warning_icon")
+        # Unicode solid version 2:
+#         warning_icon = Static("""[#ffff00 on #000000]
+#      🭯
+#     🭅[#000000 on #ffff00]🭯[/]🭐
+#    🭅[#000000 on #ffff00] ▼ [/]🭐
+#   🭅[#000000 on #ffff00]  ●  [/]🭐
+#  🭅███████🭐
+# [/]""", classes="warning_icon")
+        # Unicode solid version 3, now with a border:
+        # VS Code's terminal seems unsure of the width of these characters (like it's rendering 2 wide but advancing by 1), and has gaps/seams.
+        # Ubuntu's terminal looks better, and the graphics have less gaps, but the overall shape is worse.
+        # I guess a lot of this comes down to the font as well.
+        warning_icon = Static("""
+    [#000000]🭋[#ffff00 on #000000]🭯[/]🭀[/]
+   [#000000]🭋[#ffff00 on #000000]🭅█🭐[/]🭀[/]
+  [#000000]🭋[#ffff00 on #000000]🭅[#000000 on #ffff00] ▼ [/]🭐[/]🭀[/]
+ [#000000]🭋[#ffff00 on #000000]🭅[#000000 on #ffff00]  ●  [/]🭐[/]🭀[/]
+[#000000]🭋[#ffff00 on #000000]🭅███████🭐[/]🭀[/]
+[#000000]🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃[/]
 """, classes="warning_icon")
         window.content.mount(
             Horizontal(
