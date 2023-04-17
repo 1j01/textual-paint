@@ -638,7 +638,7 @@ class PaintApp(App):
         if filename is None:
             self.sub_title = "Untitled"
         else:
-            self.sub_title = filename
+            self.sub_title = os.path.basename(filename)
 
     def watch_show_tools_box(self, show_tools_box: bool) -> None:
         """Called when show_tools_box changes."""
