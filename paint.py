@@ -1200,13 +1200,14 @@ class PaintApp(App):
             for i, widget in enumerate(leaf_widget.ancestors_with_self):
                 self.debug_highlight.append((widget, widget.styles.background, widget.styles.border, widget.border_title if hasattr(widget, "border_title") else None))
                 widget.styles.background = Color.from_hsl(i / 10, 1, 0.3)
-                widget.styles.border = ("round", Color.from_hsl(i / 10, 1, 0.5))
-                title = widget.__class__.__name__
-                if widget.id:
-                    title += "#" + widget.id
-                if widget.classes:
-                    title += "." + ".".join(widget.classes)
-                widget.border_title = title
+                if not event.ctrl:
+                    widget.styles.border = ("round", Color.from_hsl(i / 10, 1, 0.5))
+                    title = widget.__class__.__name__
+                    if widget.id:
+                        title += "#" + widget.id
+                    if widget.classes:
+                        title += "." + ".".join(widget.classes)
+                    widget.border_title = title
 
 # `textual run --dev paint.py` will search for a 
 # global variable named `app`, and fallback to
