@@ -1136,7 +1136,10 @@ class PaintApp(App):
 # and it would create a new app instance, and all arguments would be ignored.
 app = PaintApp()
 
+# Command line arguments
+# Please keep in sync with the README
 parser = argparse.ArgumentParser(description='Paint in the terminal.')
+parser.add_argument('--theme', default='light', help='Theme to use, either "light" or "dark"')
 parser.add_argument('--ascii-only-icons', action='store_true', help='Use only ASCII characters for tool icons')
 # This flag is for development, because it's very confusing
 # to see the error message from the previous run,
@@ -1168,6 +1171,10 @@ if args.filename:
         app.filename = args.filename
 if args.clear_screen:
     os.system("cls||clear")
+if args.theme not in ["light", "dark"]:
+    print("Invalid theme. Must be either 'light' or 'dark'.")
+    sys.exit(1)
+app.dark = args.theme == "dark"
 
 if __name__ == "__main__":
     app.run()

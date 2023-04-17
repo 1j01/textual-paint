@@ -65,7 +65,7 @@ textual-paint
 
 ```
 $ python3 paint.py --help
-usage: paint.py [-h] [--ascii-only-icons] [--clear-screen] [filename]
+usage: paint.py [-h] [--theme THEME] [--ascii-only-icons] [--clear-screen] [filename]
 
 Paint in the terminal.
 
@@ -74,6 +74,7 @@ positional arguments:
 
 options:
   -h, --help          show this help message and exit
+  --theme THEME       Theme to use, either "light" or "dark"
   --ascii-only-icons  Use only ASCII characters for tool icons
   --clear-screen      Clear the screen before starting; useful for development, to avoid seeing fixed errors
 ```
