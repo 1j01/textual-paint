@@ -17,7 +17,7 @@ from textual.css.query import NoMatches
 from textual.reactive import var, reactive
 from textual.strip import Strip
 from textual.widget import Widget
-from textual.widgets import Button, Static, Input, DirectoryTree
+from textual.widgets import Button, Static, Input, DirectoryTree, Header
 from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow
 
@@ -631,6 +631,15 @@ class PaintApp(App):
         # key to button id
     }
 
+    TITLE = "Paint"
+
+    def watch_filename(self, filename: Optional[str]) -> None:
+        """Called when filename changes."""
+        if filename is None:
+            self.sub_title = "Untitled"
+        else:
+            self.sub_title = filename
+
     def watch_show_tools_box(self, show_tools_box: bool) -> None:
         """Called when show_tools_box changes."""
         self.query_one("#tools_box").display = show_tools_box
@@ -882,6 +891,7 @@ class PaintApp(App):
 
     def compose(self) -> ComposeResult:
         """Add our widgets."""
+        yield Header()
         with Container(id="paint"):
             yield MenuBar([
                 MenuItem("File", submenu=Menu([
