@@ -1178,7 +1178,7 @@ if args.filename:
     # else:
     with open(args.filename, 'r') as my_file:
         app.image = AnsiArtDocument.from_text(my_file.read())
-        app.filename = args.filename
+        app.filename = os.path.abspath(args.filename)
 if args.clear_screen:
     os.system("cls||clear")
 if args.theme not in ["light", "dark"]:
