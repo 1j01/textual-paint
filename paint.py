@@ -18,10 +18,12 @@ from textual.reactive import var, reactive
 from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import Button, Static, Input, DirectoryTree, Header
+from textual.color import Color
 from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow
 
 ascii_only_icons = False
+inspect_layout = False
 
 class Tool(Enum):
     """The tools available in the Paint app."""
@@ -1137,6 +1139,37 @@ class PaintApp(App):
         else:
             self.directory_tree_selected_path = None
 
+    def on_mouse_down(self, event: events.MouseDown) -> None:
+        """Called when the mouse button gets pressed."""
+        # This is a dev helper to inspect the layout
+        # by highlighting the elements under the mouse in different colors, and labeling them on their borders.
+        # debug_highlight is a list of tuples of (element, original_color, original_border, original_border_title)
+        if not inspect_layout:
+            return
+        # Trigger only with middle mouse button.
+        # This is before the reset, so you have to middle click on the root element to reset.
+        # I didn't like it resetting on every click.
+        if event.button != 2:
+            return
+        if hasattr(self, "debug_highlight"):
+            for element, original_color, original_border, original_border_title in self.debug_highlight:
+                element.styles.background = original_color
+                element.styles.border = original_border
+                element.border_title = original_border_title
+        self.debug_highlight = []
+        leaf_widget, _ = self.get_widget_at(*event.screen_offset)
+        if leaf_widget and leaf_widget is not self.screen:
+            for i, widget in enumerate(leaf_widget.ancestors_with_self):
+                self.debug_highlight.append((widget, widget.styles.background, widget.styles.border, widget.border_title if hasattr(widget, "border_title") else None))
+                widget.styles.background = Color.from_hsl(i / 10, 1, 0.3)
+                widget.styles.border = ("round", Color.from_hsl(i / 10, 1, 0.5))
+                title = widget.__class__.__name__
+                if widget.id:
+                    title += "#" + widget.id
+                if widget.classes:
+                    title += "." + ".".join(widget.classes)
+                widget.border_title = title
+
 # `textual run --dev paint.py` will search for a 
 # global variable named `app`, and fallback to
 # anything that is an instance of `App`, or
@@ -1151,6 +1184,7 @@ app = PaintApp()
 parser = argparse.ArgumentParser(description='Paint in the terminal.')
 parser.add_argument('--theme', default='light', help='Theme to use, either "light" or "dark"')
 parser.add_argument('--ascii-only-icons', action='store_true', help='Use only ASCII characters for tool icons')
+parser.add_argument('--inspect-layout', action='store_true', help='Inspect the layout with middle click, for development')
 # This flag is for development, because it's very confusing
 # to see the error message from the previous run,
 # when a problem is actually solved.
@@ -1171,6 +1205,8 @@ else:
     args = parser.parse_args()
 if args.ascii_only_icons:
     ascii_only_icons = True
+if args.inspect_layout:
+    inspect_layout = True
 if args.filename:
     # if args.filename == "-" and not sys.stdin.isatty():
     #     app.image = AnsiArtDocument.from_text(sys.stdin.read())
