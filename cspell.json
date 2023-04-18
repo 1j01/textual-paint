@@ -7,6 +7,7 @@
 		".git",
 		"*.(bmp|png|jpg|jpeg|gif|svg|ico|tiff|tif)",
 		"*.log",
+		"localization/*/**/*",
 		"__pycache__"
 	],
 	"words": [
