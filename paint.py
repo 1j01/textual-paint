@@ -22,6 +22,7 @@ from textual.widgets import Button, Static, Input, DirectoryTree, Header
 from textual.color import Color
 from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow
+from localization.i18n import get as _
 
 ascii_only_icons = False
 inspect_layout = False
