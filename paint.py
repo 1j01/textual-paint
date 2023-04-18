@@ -24,8 +24,34 @@ from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow
 from localization.i18n import get as _
 
+# These can go away now that args are parsed up top
 ascii_only_icons = False
 inspect_layout = False
+
+# Command line arguments
+# Please keep in sync with the README
+parser = argparse.ArgumentParser(description='Paint in the terminal.')
+parser.add_argument('--theme', default='light', help='Theme to use, either "light" or "dark"', choices=['light', 'dark'])
+parser.add_argument('--ascii-only-icons', action='store_true', help='Use only ASCII characters for tool icons')
+parser.add_argument('--inspect-layout', action='store_true', help='Inspect the layout with middle click, for development')
+# This flag is for development, because it's very confusing
+# to see the error message from the previous run,
+# when a problem is actually solved.
+# There are enough ACTUAL "that should have worked!!" moments to deal with.
+# I really don't want false ones mixed in. You want to reward your brain for finding good solutions, after all.
+parser.add_argument('--clear-screen', action='store_true', help='Clear the screen before starting; useful for development, to avoid seeing fixed errors')
+parser.add_argument('filename', nargs='?', default=None, help='File to open')
+if __name__ == "<run_path>":
+    # Arguments have to be passed like `textual run --dev "paint.py LICENSE.txt"`
+    # so we need to look for an argument starting with "paint.py",
+    # and parse the rest of the string as arguments.
+    args = None
+    for arg in sys.argv:
+        if arg.startswith("paint.py"):
+            args = parser.parse_args(arg[len("paint.py") :].split())
+            break
+else:
+    args = parser.parse_args()
 
 class Tool(Enum):
     """The tools available in the Paint app."""
@@ -1319,30 +1345,6 @@ class PaintApp(App):
 # and it would create a new app instance, and all arguments would be ignored.
 app = PaintApp()
 
-# Command line arguments
-# Please keep in sync with the README
-parser = argparse.ArgumentParser(description='Paint in the terminal.')
-parser.add_argument('--theme', default='light', help='Theme to use, either "light" or "dark"', choices=['light', 'dark'])
-parser.add_argument('--ascii-only-icons', action='store_true', help='Use only ASCII characters for tool icons')
-parser.add_argument('--inspect-layout', action='store_true', help='Inspect the layout with middle click, for development')
-# This flag is for development, because it's very confusing
-# to see the error message from the previous run,
-# when a problem is actually solved.
-# There are enough ACTUAL "that should have worked!!" moments to deal with.
-# I really don't want false ones mixed in. You want to reward your brain for finding good solutions, after all.
-parser.add_argument('--clear-screen', action='store_true', help='Clear the screen before starting; useful for development, to avoid seeing fixed errors')
-parser.add_argument('filename', nargs='?', default=None, help='File to open')
-if __name__ == "<run_path>":
-    # Arguments have to be passed like `textual run --dev "paint.py LICENSE.txt"`
-    # so we need to look for an argument starting with "paint.py",
-    # and parse the rest of the string as arguments.
-    args = None
-    for arg in sys.argv:
-        if arg.startswith("paint.py"):
-            args = parser.parse_args(arg[len("paint.py") :].split())
-            break
-else:
-    args = parser.parse_args()
 if args.ascii_only_icons:
     ascii_only_icons = True
 if args.inspect_layout:
