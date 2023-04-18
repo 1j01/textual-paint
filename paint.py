@@ -825,7 +825,7 @@ class PaintApp(App):
         )
         window.content.mount(
             DirectoryTree(id="save_as_dialog_directory_tree", path="/"),
-            Input(id="save_as_dialog_filename_input", placeholder="Filename"),
+            Input(id="save_as_dialog_filename_input", placeholder=_("Filename")),
             Button(_("Save"), classes="save submit", variant="primary"),
             Button(_("Cancel"), classes="cancel"),
         )
@@ -877,7 +877,7 @@ class PaintApp(App):
         self.set_timer(0.01, lambda: tree.scroll_to_region(tree._get_label_region(node._line), animate=False, top=True))
     
     def confirm_overwrite(self, filename: str, callback) -> None:
-        message = filename + " already exists.\nDo you want to replace it?"
+        message = _("%1 already exists.\nDo you want to replace it?").replace("%1", filename)
         def handle_button(button):
             if not button.has_class("yes"):
                 return
@@ -1054,7 +1054,7 @@ class PaintApp(App):
         )
         window.content.mount(
             DirectoryTree(id="open_dialog_directory_tree", path="/"),
-            Input(id="open_dialog_filename_input", placeholder="Filename"),
+            Input(id="open_dialog_filename_input", placeholder=_("Filename")),
             Button(_("Open"), classes="open submit", variant="primary"),
             Button(_("Cancel"), classes="cancel"),
         )

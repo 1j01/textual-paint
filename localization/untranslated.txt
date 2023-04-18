@@ -2,3 +2,8 @@ Quit
 Toggle Tools Box
 Toggle Colors Box
 Toggle Dark Mode
+Yes
+No
+Filename
+%1 already exists.
+Do you want to replace it?
