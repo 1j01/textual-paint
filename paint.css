@@ -103,11 +103,6 @@ Screen {
     overflow: hidden;
 }
 
-Button {
-    width: 100%;
-    height: 100%;
-}
-
 .menu {
     background: $panel;
     /* border: round red; */
