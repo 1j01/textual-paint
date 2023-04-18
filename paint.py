@@ -769,8 +769,8 @@ class PaintApp(App):
         """Save the image to a file."""
         self.cancel_preview()
         if self.filename:
-            ansi = self.image.get_ansi()
             try:
+                ansi = self.image.get_ansi()
                 with open(self.filename, "w") as f:
                     f.write(ansi)
                 self.saved_undo_count = len(self.undos)
@@ -1018,9 +1018,16 @@ class PaintApp(App):
                     with open(filename, "r") as f:
                         content = f.read() # f is out of scope in go_ahead()
                         def go_ahead():
+                            try:
+                                new_image = AnsiArtDocument.from_ansi(content)
+                            except Exception as e:
+                                # "This is not a valid bitmap file, or its format is not currently supported."
+                                # string from MS Paint doesn't apply well here,
+                                # at least not until we support bitmap files.
+                                self.warning_message_box(_("Open"), Static(_("Paint cannot open this file.") + "\n\n" + str(e)), "ok")
+                                return
                             self.action_new(force=True)
-                            self.image = AnsiArtDocument.from_ansi(content)
-                            self.canvas.image = self.image
+                            self.canvas.image = self.image = new_image
                             self.canvas.refresh()
                             self.filename = filename
                             window.close()
@@ -1035,7 +1042,7 @@ class PaintApp(App):
                 except PermissionError:
                     self.warning_message_box(_("Open"), Static(_("Access denied.")), "ok")
                 except Exception as e:
-                    self.warning_message_box(_("Open"), Static(str(e)), "ok")
+                    self.warning_message_box(_("Open"), Static(_("An unexpected error occurred while reading %1.").replace("%1", filename) + "\n\n" + str(e)), "ok")
 
         for old_window in self.query("#save_as_dialog, #open_dialog").nodes:
             old_window.close()
