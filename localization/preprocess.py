@@ -76,11 +76,11 @@ for target_lang in target_langs:
         options.sort(key=lambda x: x["fudgedness"])
         unique_strings = list(set(option["target_string"] for option in options))
         if len(unique_strings) > 1:
-            unique_strings_json = json.dumps(unique_strings, indent="\t")
+            unique_strings_json = json.dumps(unique_strings, ensure_ascii=False, indent="\t")
             print(f'Collision for "{base_string}": {unique_strings_json}')
         localizations[base_string] = unique_strings[0]
 
-    localizations_json = json.dumps(localizations, indent="\t")
+    localizations_json = json.dumps(localizations, ensure_ascii=False, indent="\t")
     js = f"""
 //
 // NOTE: This is a generated file! Don't edit it directly.
@@ -97,7 +97,7 @@ loaded_localizations("{target_lang}", {localizations_json});
 # file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "index.html"))
 # with open(file_path, "r") as f:
 #     code = f.read()
-# available_langs_json = json.dumps(available_langs).replace('","', '", "')
+# available_langs_json = json.dumps(available_langs, ensure_ascii=False).replace('","', '", "')
 # code = re.sub(r"(available_languages\s*=\s*)\[[^\]]*\]", f"$1{available_langs_json}]", code)
 # with open(file_path, "w") as f:
 #     f.write(code)
