@@ -17,14 +17,17 @@ print("Target languages:", target_langs)
 def index_of_hotkey(text):
 	# Returns the index of the ampersand that defines a hotkey, or -1 if not present.
 	# The space here handles beginning-of-string matching and counteracts the offset for the [^&] so it acts like a negative lookbehind
-    return f" {text}".find(re.compile(r"[^&]&[^&\s]"))
+    m = re.search(r"[^&]&[^&\s]", f" {text}")
+    return m.start() if m else -1
 
 def has_hotkey(text):
     return index_of_hotkey(text) != -1
 
 
 def remove_hotkey(text):
-    return re.sub(r"\s?\(&.\)", "", text).replace(re.compile(r"([^&]|^)&([^&\s])"), r"\1\2")
+    text = re.sub(r"\s?\(&.\)", "", text)
+    text = re.sub(r"([^&]|^)&([^&\s])", r"\1\2", text)
+    return text
 
 
 def remove_ellipsis(string):
@@ -36,12 +39,15 @@ def only_unique(value, index, self):
 
 
 def get_strings(lang):
-    return [parse_rc_file(open(rc_file, "r", encoding="utf16").read().replace("\ufeff", "")) for rc_file in glob.glob(f"{os.path.dirname(__file__)}/{lang}/**/*.rc")]
+    rc_files = glob.glob(f"{os.path.dirname(__file__)}/{lang}/**/*.rc", recursive=True)
+    for rc_file in rc_files:
+        with open(rc_file, "r", encoding="utf16") as f:
+            yield from parse_rc_file(f.read().replace("\ufeff", ""))
 
 
-base_strings = get_strings(base_lang)
+base_strings = list(get_strings(base_lang))
 for target_lang in target_langs:
-    target_strings = get_strings(target_lang)
+    target_strings = list(get_strings(target_lang))
     localizations = {}
 
     def add_localization(base_string, target_string, fudgedness):
@@ -56,7 +62,7 @@ for target_lang in target_langs:
                 # and "Fills an area with the current drawing color.\nFill With Color"
                 splitter = re.compile(r"\t|\r?\n")
                 if splitter.search(base_string):
-                    add_localizations(base_string.split(splitter), target_string.split(splitter))
+                    add_localizations(re.split(splitter, base_string), re.split(splitter, target_string))
                 else:
                     add_localization(remove_ellipsis(base_string), remove_ellipsis(target_string), 1)
                     if has_hotkey(base_string):

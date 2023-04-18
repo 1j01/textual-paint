@@ -1,6 +1,8 @@
 # Based on https://github.com/1j01/jspaint/blob/4a9163fb6dbb321ef07ed85bb5d5ce980e1a4866/localization/parse-rc-file.js
 # Originally based on https://github.com/evernote/serge/blob/master/lib/Serge/Engine/Plugin/parse_rc.pm
 
+import re
+
 def parse_rc_file(rc_file_text, callback=None, lang=None):
     strings = []
     menu = dialog = stringtable = False
@@ -8,7 +10,8 @@ def parse_rc_file(rc_file_text, callback=None, lang=None):
     id_str = dialog_id = hint = orig_str = None
 
     for line in rc_file_text.splitlines():
-        norm_line = line.strip().replace(r'[\t ]+', ' ').replace(r'\/\/.*$', '')
+        norm_line = re.sub(r'[\t ]+', ' ', line.strip())
+        norm_line = re.sub(r'\/\/.*$', '', norm_line)
 
         if norm_line.endswith(' MENU'):
             menu = True
