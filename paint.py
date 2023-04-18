@@ -886,7 +886,7 @@ class PaintApp(App):
         window = DialogWindow(
             classes="dialog",
             id="message_box",
-            title="Save As",
+            title=title,
             handle_button=handle_button,
         )
 
