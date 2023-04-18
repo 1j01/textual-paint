@@ -8,6 +8,7 @@
 		"*.(bmp|png|jpg|jpeg|gif|svg|ico|tiff|tif)",
 		"*.log",
 		"localization/*/**/*",
+		"localization/*.sh",
 		"__pycache__"
 	],
 	"words": [
