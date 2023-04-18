@@ -842,7 +842,7 @@ class PaintApp(App):
             if not button.has_class("yes"):
                 return
             callback()
-        self.warning_message_box("Save As", Static(message, markup=False), handle_button)
+        self.warning_message_box("Save As", Static(message, markup=False), "yes/no", handle_button)
 
     def prompt_save_changes(self, filename: str, callback) -> None:
         filename = os.path.basename(filename)
@@ -858,7 +858,7 @@ class PaintApp(App):
             # asyncio.create_task() result must be saved to a variable to avoid garbage collection.
             # https://textual.textualize.io/blog/2023/02/11/the-heisenbug-lurking-in-your-async-code/
             self._not_garbage_to_collect = asyncio.create_task(async_handle_button(button))
-        self.warning_message_box("Paint", Static(message, markup=False), handle_button, ync=True)
+        self.warning_message_box("Paint", Static(message, markup=False), "yes/no/cancel", handle_button)
 
     def is_document_modified(self) -> bool:
         return len(self.undos) != self.saved_undo_count
@@ -869,7 +869,7 @@ class PaintApp(App):
         else:
             self.exit()
 
-    def warning_message_box(self, title: str, message_widget: Widget, callback, ync = False) -> None:
+    def warning_message_box(self, title: str, message_widget: Widget, button_types: str = "ok", callback = None) -> None:
 
         for old_window in self.query("#message_box").nodes:
             old_window.close()
@@ -886,6 +886,23 @@ class PaintApp(App):
             title="Save As",
             handle_button=handle_button,
         )
+
+        if button_types == "ok":
+            buttons = [Button("OK", classes="ok submit", variant="primary")]
+        elif button_types == "yes/no":
+            buttons = [
+                Button("Yes", classes="yes submit"), #, variant="primary"),
+                Button("No", classes="no"),
+            ]
+        elif button_types == "yes/no/cancel":
+            buttons = [
+                Button("Yes", classes="yes submit", variant="primary"),
+                Button("No", classes="no"),
+                Button("Cancel", classes="cancel"),
+            ]
+        else:
+            raise ValueError("Invalid button_types: " + repr(button_types))
+        
         # ASCII line art version:
 #         warning_icon = Static("""[#ffff00]
 #     _
@@ -935,14 +952,7 @@ class PaintApp(App):
                 warning_icon,
                 Vertical(
                     message_widget,
-                    Horizontal(
-                        Button("Yes", classes="yes submit"),
-                        Button("No", classes="no"),
-                        Button("Cancel", classes="cancel"),
-                    ) if ync else Horizontal(
-                        Button("Yes", classes="yes submit"),
-                        Button("No", classes="no"),
-                    ),
+                    Horizontal(*buttons, classes="buttons"),
                     classes="main_content"
                 )
             )
