@@ -1,0 +1,5 @@
+Quit
+Toggle Tools Box
+Toggle Colors Box
+Toggle Dark Mode
+Rectangular Select
