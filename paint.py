@@ -649,10 +649,10 @@ class PaintApp(App):
         ("ctrl+w", "toggle_colors_box", _("Toggle Colors Box")),
         ("ctrl+z", "undo", _("Undo")),
         # Ctrl+Shift+Z doesn't seem to work on Ubuntu or VS Code terminal
-        ("ctrl+shift+z", "redo", _("Redo")),
-        ("shift+ctrl+z", "redo", _("Redo")),
-        ("ctrl+y", "redo", _("Redo")),
-        ("f4", "redo", _("Redo")),
+        ("ctrl+shift+z", "redo", _("Repeat")),
+        ("shift+ctrl+z", "redo", _("Repeat")),
+        ("ctrl+y", "redo", _("Repeat")),
+        ("f4", "redo", _("Repeat")),
         # action_toggle_dark is built in to App
         ("ctrl+d", "toggle_dark", _("Toggle Dark Mode")),
     ]
@@ -1078,7 +1078,7 @@ class PaintApp(App):
                 ])),
                 MenuItem(_("Edit"), submenu=Menu([
                     MenuItem(_("Undo"), self.action_undo),
-                    MenuItem(_("Redo"), self.action_redo),
+                    MenuItem(_("Repeat"), self.action_redo),
                 ])),
                 MenuItem(_("View"), submenu=Menu([
                     MenuItem(_("Tool Box"), self.action_toggle_tools_box),
