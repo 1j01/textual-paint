@@ -27,7 +27,7 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
 		  - Note that while it can load the files that it saves, you may have limited success loading other ANSI files that you find. ANSI files can vary a lot and even encode animations!
 - Tools
     - [ ] Free-Form Select
-    - [ ] Rectangular Select
+    - [ ] Select
     - [x] Eraser
         - [ ] Color Eraser
     - [x] Fill With Color
@@ -142,7 +142,7 @@ Unfortunately, I haven't run into any significant roadblocks, so I'm apparently 
 These are the symbols I've found so far:
 
 - Free-Form Select:  ✂️📐🆓🕸✨⚝🫥🇫/🇸◌⁛⁘ ⢼⠮
-- Rectangular Select: ⬚▧🔲 ⣏⣹
+- Select: ⬚▧🔲 ⣏⣹
 - Eraser/Color Eraser: 🧼🧽🧹🚫👋🗑️▰▱
 - Fill With Color: 🌊💦💧🌈🎉🎊🪣🫗
 - Pick Color: 🎨💉💅💧📌📍⤤𝀃🝯🍶

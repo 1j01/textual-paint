@@ -81,7 +81,7 @@ class Tool(Enum):
         """Get the icon for this tool."""
         # Alternatives considered:
         # - Free-Form Select:  ✂️📐🆓🕸✨⚝🫥🇫/🇸◌⁛⁘ ⢼⠮
-        # - Rectangular Select: ⬚▧🔲 ⣏⣹
+        # - Select: ⬚▧🔲 ⣏⣹
         # - Eraser/Color Eraser: 🧼🧽🧹🚫👋🗑️▰▱
         # - Fill With Color: 🌊💦💧🌈🎉🎊🪣🫗
         # - Pick Color: 🎨💉💅💧📌📍⤤𝀃🝯🍶
@@ -138,7 +138,7 @@ class Tool(Enum):
         """Get the name of this tool."""
         return {
             Tool.free_form_select: _("Free-Form Select"),
-            Tool.select: _("Rectangular Select"),
+            Tool.select: _("Select"),
             Tool.eraser: _("Eraser/Color Eraser"),
             Tool.fill: _("Fill With Color"),
             Tool.pick_color: _("Pick Color"),
