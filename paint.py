@@ -912,7 +912,8 @@ class PaintApp(App):
         self.bell()
 
         def handle_button(button):
-            callback(button)
+            if callback:
+                callback(button)
             window.close()
 
         window = DialogWindow(
