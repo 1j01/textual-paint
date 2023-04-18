@@ -221,8 +221,9 @@ class AnsiArtDocument:
                         self.fg[y + target_offset.y][x + target_offset.x] = "#000000"
 
     def get_ansi(self) -> str:
-        """Get the ANSI representation of the document. Untested. This is a freebie from the AI."""
-        
+        """Get the ANSI representation of the document."""
+        # TODO: try using Rich API to generate ANSI, like how the Canvas renders to the screen
+        # TODO: generate more efficient ANSI, e.g. don't repeat the same color codes
         def color_to_rgb(color_code: str) -> str:
             """Convert a color code to the RGB values format used for ANSI escape codes."""
             if color_code.startswith('#'):
@@ -272,6 +273,8 @@ class AnsiArtDocument:
     @staticmethod
     def from_ansi(text: str) -> 'AnsiArtDocument':
         """Creates a document from the given ANSI text."""
+        # TODO: use Rich API to render ANSI to a virtual screen,
+        # and remove dependency on stransi
         ansi = stransi.Ansi(text)
         document = AnsiArtDocument(1, 1)
         width = 1
