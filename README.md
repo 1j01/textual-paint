@@ -17,11 +17,14 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
 
 ## Features
 
-- Open and save images
-	- [ ] PNG (.png)
-	- [ ] Bitmap (.bmp)
-	- [x] ANSI (.ans)
-		- only supports loading files saved by this program; ANSI files can vary a lot and even encode animations
+- [x] Open and save images
+  - [x] Fancy file dialogs
+  - [x] Warnings when overwriting an existing file, or closing with unsaved changes
+  - File formats:
+    - [ ] PNG (.png)
+    - [ ] Bitmap (.bmp)
+    - [x] ANSI (.ans)
+		  - Note that while it can load the files that it saves, you may have limited success loading other ANSI files that you find. ANSI files can vary a lot and even encode animations!
 - Tools
     - [ ] Free-Form Select
     - [ ] Rectangular Select
@@ -46,6 +49,7 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
 	- You could totally use this program over SSH! Haha, this "what if" project could actually be useful. Of course, it should be mentioned that you can also run graphical programs over SSH, but this might be more responsive, or just fit your vibe better.
 - [x] Brush previews
 - [x] Menu bar
+- [x] Localization into several languages: Arabic, Czech, Danish, German, Greek, English, Spanish, Finnish, French, Hebrew, Hungarian, Italian, Japanese, Korean, Dutch, Norwegian, Polish, Portuguese, Brazilian Portuguese, Russian, Slovak, Slovenian, Swedish, Turkish, Chinese, Simplified Chinese
 
 ## Usage
 
@@ -65,7 +69,9 @@ textual-paint
 
 ```
 $ python3 paint.py --help
-usage: paint.py [-h] [--theme {light,dark}] [--ascii-only-icons] [--inspect-layout] [--clear-screen] [filename]
+usage: paint.py [-h] [--theme {light,dark}] [--language {ar,cs,da,de,el,en,es,fi,fr,he,hu,it,ja,ko,nl,no,pl,pt,pt-br,ru,sk,sl,sv,tr,zh,zh-simplified}]
+                [--ascii-only-icons] [--inspect-layout] [--clear-screen]
+                [filename]
 
 Paint in the terminal.
 
@@ -75,6 +81,8 @@ positional arguments:
 options:
   -h, --help            show this help message and exit
   --theme {light,dark}  Theme to use, either "light" or "dark"
+  --language {ar,cs,da,de,el,en,es,fi,fr,he,hu,it,ja,ko,nl,no,pl,pt,pt-br,ru,sk,sl,sv,tr,zh,zh-simplified}
+                        Language to use
   --ascii-only-icons    Use only ASCII characters for tool icons
   --inspect-layout      Inspect the layout with middle click, for development
   --clear-screen        Clear the screen before starting; useful for development, to avoid seeing fixed errors
