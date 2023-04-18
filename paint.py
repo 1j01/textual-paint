@@ -22,7 +22,7 @@ from textual.widgets import Button, Static, Input, DirectoryTree, Header
 from textual.color import Color
 from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow
-from localization.i18n import get as _
+from localization.i18n import get as _, load_language
 
 # These can go away now that args are parsed up top
 ascii_only_icons = False
@@ -32,6 +32,7 @@ inspect_layout = False
 # Please keep in sync with the README
 parser = argparse.ArgumentParser(description='Paint in the terminal.')
 parser.add_argument('--theme', default='light', help='Theme to use, either "light" or "dark"', choices=['light', 'dark'])
+parser.add_argument('--language', default='en', help='Language to use', choices=['ar', 'cs', 'da', 'de', 'el', 'en', 'es', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko', 'nl', 'no', 'pl', 'pt', 'pt-br', 'ru', 'sk', 'sl', 'sv', 'tr', 'zh', 'zh-simplified'])
 parser.add_argument('--ascii-only-icons', action='store_true', help='Use only ASCII characters for tool icons')
 parser.add_argument('--inspect-layout', action='store_true', help='Inspect the layout with middle click, for development')
 # This flag is for development, because it's very confusing
@@ -52,6 +53,10 @@ if __name__ == "<run_path>":
             break
 else:
     args = parser.parse_args()
+
+load_language(args.language)
+
+# Most arguments are handled at the end of the file.
 
 class Tool(Enum):
     """The tools available in the Paint app."""
