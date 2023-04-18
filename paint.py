@@ -1008,19 +1008,28 @@ class PaintApp(App):
                 if self.filename and os.path.samefile(filename, self.filename):
                     window.close()
                     return
-                with open(filename, "r") as f:
-                    content = f.read() # f is out of scope in go_ahead()
-                    def go_ahead():
-                        self.action_new(force=True)
-                        self.image = AnsiArtDocument.from_ansi(content)
-                        self.canvas.image = self.image
-                        self.canvas.refresh()
-                        self.filename = filename
-                        window.close()
-                    if self.is_document_modified():
-                        self.prompt_save_changes(self.filename or _("Untitled"), go_ahead)
-                    else:
-                        go_ahead()
+                try:
+                    with open(filename, "r") as f:
+                        content = f.read() # f is out of scope in go_ahead()
+                        def go_ahead():
+                            self.action_new(force=True)
+                            self.image = AnsiArtDocument.from_ansi(content)
+                            self.canvas.image = self.image
+                            self.canvas.refresh()
+                            self.filename = filename
+                            window.close()
+                        if self.is_document_modified():
+                            self.prompt_save_changes(self.filename or _("Untitled"), go_ahead)
+                        else:
+                            go_ahead()
+                except FileNotFoundError:
+                    self.warning_message_box(_("Open"), Static(_("File not found.") + "\n" + _("Please verify that the correct path and file name are given.")), "ok")
+                except IsADirectoryError:
+                    self.warning_message_box(_("Open"), Static(_("Invalid file.")), "ok")
+                except PermissionError:
+                    self.warning_message_box(_("Open"), Static(_("Access denied.")), "ok")
+                except Exception as e:
+                    self.warning_message_box(_("Open"), Static(str(e)), "ok")
 
         for old_window in self.query("#save_as_dialog, #open_dialog").nodes:
             old_window.close()
