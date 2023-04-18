@@ -68,9 +68,11 @@ for target_lang in target_langs:
         options.sort(key=lambda x: x["fudgedness"])
         unique_strings = list(set(option["target_string"] for option in options))
         if len(unique_strings) > 1:
-            print(f'Collision for "{base_string}": {json.dumps(unique_strings, indent="\t")}')
+            unique_strings_json = json.dumps(unique_strings, indent="\t")
+            print(f'Collision for "{base_string}": {unique_strings_json}')
         localizations[base_string] = unique_strings[0]
 
+    localizations_json = json.dumps(localizations, indent="\t")
     js = f"""
 //
 // NOTE: This is a generated file! Don't edit it directly.
@@ -78,7 +80,7 @@ for target_lang in target_langs:
 // 
 // Generated with: npm run update-localization
 //
-loaded_localizations("{target_lang}", {json.dumps(localizations, indent="\t")});
+loaded_localizations("{target_lang}", {localizations_json});
 """
 
     with open(f"{os.path.dirname(__file__)}/{target_lang}/localizations.js", "w", encoding="utf8") as f:
@@ -87,7 +89,8 @@ loaded_localizations("{target_lang}", {json.dumps(localizations, indent="\t")});
 file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "index.html"))
 with open(file_path, "r") as f:
     code = f.read()
-code = re.sub(r"(available_languages\s*=\s*)\[[^\]]*\]", f"$1{json.dumps(available_langs).replace('","', '", "')}]", code)
+available_langs_json = json.dumps(available_langs).replace('","', '", "')
+code = re.sub(r"(available_languages\s*=\s*)\[[^\]]*\]", f"$1{available_langs_json}]", code)
 with open(file_path, "w") as f:
     f.write(code)
 print(f'Updated available_languages list in "{file_path}"')
