@@ -765,19 +765,24 @@ class PaintApp(App):
         """Start the save action, but don't wait for the Save As dialog to close if it's a new file."""
         self._not_garbage1 = asyncio.create_task(self.save())
 
-    async def save(self) -> None:
+    async def save(self, from_save_as=False) -> None:
         """Save the image to a file."""
         self.cancel_preview()
+        dialog_title = _("Save As") if from_save_as else _("Save")
         if self.filename:
             try:
                 ansi = self.image.get_ansi()
                 with open(self.filename, "w") as f:
                     f.write(ansi)
                 self.saved_undo_count = len(self.undos)
+            except PermissionError:
+                self.warning_message_box(dialog_title, _("Access denied."), "ok")
+            except FileNotFoundError: 
+                self.warning_message_box(dialog_title, _("%1 contains an invalid path.").replace("%1", self.filename), "ok")
             except OSError as e:
-                self.warning_message_box(_("Save"), _("Failed to save document."), str(e))
+                self.warning_message_box(dialog_title, _("Failed to save document.") + "\n\n" + str(e), "ok")
             except Exception as e:
-                self.warning_message_box(_("Save"),_("An unexpected error occurred while writing %1.").replace("%1", self.filename), str(e))
+                self.warning_message_box(dialog_title, _("An unexpected error occurred while writing %1.").replace("%1", self.filename) + "\n\n" + str(e), "ok")
         else:
             await self.save_as()
     
@@ -805,7 +810,7 @@ class PaintApp(App):
                 def on_save_confirmed():
                     async def async_on_save_confirmed():
                         self.filename = name
-                        await self.save()
+                        await self.save(from_save_as=True)
                         window.close()
                         saved_future.set_result(None)
                     # asyncio.run() cannot be called from a running event loop
@@ -910,6 +915,9 @@ class PaintApp(App):
             self.exit()
 
     def warning_message_box(self, title: str, message_widget: Widget, button_types: str = "ok", callback = None) -> None:
+
+        if isinstance(message_widget, str):
+            message_widget = Static(message_widget, markup=False)
 
         for old_window in self.query("#message_box").nodes:
             old_window.close()
