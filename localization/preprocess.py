@@ -56,6 +56,8 @@ for target_lang in target_langs:
 
     def add_localizations(base_strings, target_strings):
         for i, target_string in enumerate(target_strings):
+            if len(base_strings) <= i:
+                break
             base_string = base_strings[i]
             if base_string != target_string and base_string and target_string:
                 # Split strings like "&Attributes...\tCtrl+E"
