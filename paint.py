@@ -1318,7 +1318,7 @@ app = PaintApp()
 # Command line arguments
 # Please keep in sync with the README
 parser = argparse.ArgumentParser(description='Paint in the terminal.')
-parser.add_argument('--theme', default='light', help='Theme to use, either "light" or "dark"')
+parser.add_argument('--theme', default='light', help='Theme to use, either "light" or "dark"', choices=['light', 'dark'])
 parser.add_argument('--ascii-only-icons', action='store_true', help='Use only ASCII characters for tool icons')
 parser.add_argument('--inspect-layout', action='store_true', help='Inspect the layout with middle click, for development')
 # This flag is for development, because it's very confusing
@@ -1353,9 +1353,7 @@ if args.filename:
         app.filename = os.path.abspath(args.filename)
 if args.clear_screen:
     os.system("cls||clear")
-if args.theme not in ["light", "dark"]:
-    print("Invalid theme. Must be either 'light' or 'dark'.")
-    sys.exit(1)
+
 app.dark = args.theme == "dark"
 
 if __name__ == "__main__":
