@@ -149,7 +149,7 @@ Screen {
     min-width: 0;
 }
 .menu_popup Button {
-    min-width: 20;
+    min-width: 1fr;
     text-align: left;
 }
 
