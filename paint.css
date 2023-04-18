@@ -113,12 +113,13 @@ Screen {
     layer: menu-popup;
     width: auto;
     height: auto;
+    min-width: 30;
     overflow-y: auto;
     /* calc isn't supported, and this should be determined by the y position anyways, which is set in python */
     /* max-height: calc(100vh - 3); */
     max-height: 90vh;
     /* width: auto doesn't account for the scrollbar... */
-    /* This cuts off a character, but it's not as ugly as having a horizontal scrollbar */
+    /* This can cut off a character, but it's not as ugly as having a horizontal scrollbar */
     overflow-x: hidden;
 }
 /* MenuBar { */
