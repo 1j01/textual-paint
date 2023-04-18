@@ -770,9 +770,14 @@ class PaintApp(App):
         self.cancel_preview()
         if self.filename:
             ansi = self.image.get_ansi()
-            with open(self.filename, "w") as f:
-                f.write(ansi)
-            self.saved_undo_count = len(self.undos)
+            try:
+                with open(self.filename, "w") as f:
+                    f.write(ansi)
+                self.saved_undo_count = len(self.undos)
+            except OSError as e:
+                self.warning_message_box(_("Save"), _("Failed to save document."), str(e))
+            except Exception as e:
+                self.warning_message_box(_("Save"),_("An unexpected error occurred while writing %1.").replace("%1", self.filename), str(e))
         else:
             await self.save_as()
     
