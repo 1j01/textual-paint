@@ -106,22 +106,22 @@ class Tool(Enum):
     def get_name(self) -> str:
         """Get the name of this tool."""
         return {
-            Tool.free_form_select: "Free-Form Select",
-            Tool.select: "Rectangular Select",
-            Tool.eraser: "Eraser/Color Eraser",
-            Tool.fill: "Fill With Color",
-            Tool.pick_color: "Pick Color",
-            Tool.magnifier: "Magnifier",
-            Tool.pencil: "Pencil",
-            Tool.brush: "Brush",
-            Tool.airbrush: "Airbrush",
-            Tool.text: "Text",
-            Tool.line: "Line",
-            Tool.curve: "Curve",
-            Tool.rectangle: "Rectangle",
-            Tool.polygon: "Polygon",
-            Tool.ellipse: "Ellipse",
-            Tool.rounded_rectangle: "Rounded Rectangle",
+            Tool.free_form_select: _("Free-Form Select"),
+            Tool.select: _("Rectangular Select"),
+            Tool.eraser: _("Eraser/Color Eraser"),
+            Tool.fill: _("Fill With Color"),
+            Tool.pick_color: _("Pick Color"),
+            Tool.magnifier: _("Magnifier"),
+            Tool.pencil: _("Pencil"),
+            Tool.brush: _("Brush"),
+            Tool.airbrush: _("Airbrush"),
+            Tool.text: _("Text"),
+            Tool.line: _("Line"),
+            Tool.curve: _("Curve"),
+            Tool.rectangle: _("Rectangle"),
+            Tool.polygon: _("Polygon"),
+            Tool.ellipse: _("Ellipse"),
+            Tool.rounded_rectangle: _("Rounded Rectangle"),
         }[self]
 
 
@@ -606,24 +606,24 @@ class PaintApp(App):
         # There is a built-in "quit" action, but it will quit without asking to save.
         # It's also bound to Ctrl+C by default, so for now I'll rebind it,
         # but eventually Ctrl+C will become Edit > Copy.
-        ("ctrl+q", "exit", "Quit"),
-        ("meta+q", "exit", "Quit"),
-        ("ctrl+c", "exit", "Quit"),
-        ("ctrl+s", "save", "Save"),
-        ("ctrl+shift+s", "save_as", "Save As"),
-        ("ctrl+o", "open", "Open"),
-        ("ctrl+n", "new", "New"),
-        # ("ctrl+shift+n", "clear_image", "Clear Image"),
-        ("ctrl+t", "toggle_tools_box", "Toggle Tools Box"),
-        ("ctrl+w", "toggle_colors_box", "Toggle Colors Box"),
-        ("ctrl+z", "undo", "Undo"),
+        ("ctrl+q", "exit", _("Quit")),
+        ("meta+q", "exit", _("Quit")),
+        ("ctrl+c", "exit", _("Quit")),
+        ("ctrl+s", "save", _("Save")),
+        ("ctrl+shift+s", "save_as", _("Save As")),
+        ("ctrl+o", "open", _("Open")),
+        ("ctrl+n", "new", _("New")),
+        # ("ctrl+shift+n", "clear_image", _("Clear Image")),
+        ("ctrl+t", "toggle_tools_box", _("Toggle Tools Box")),
+        ("ctrl+w", "toggle_colors_box", _("Toggle Colors Box")),
+        ("ctrl+z", "undo", _("Undo")),
         # Ctrl+Shift+Z doesn't seem to work on Ubuntu or VS Code terminal
-        ("ctrl+shift+z", "redo", "Redo"),
-        ("shift+ctrl+z", "redo", "Redo"),
-        ("ctrl+y", "redo", "Redo"),
-        ("f4", "redo", "Redo"),
+        ("ctrl+shift+z", "redo", _("Redo")),
+        ("shift+ctrl+z", "redo", _("Redo")),
+        ("ctrl+y", "redo", _("Redo")),
+        ("f4", "redo", _("Redo")),
         # action_toggle_dark is built in to App
-        ("ctrl+d", "toggle_dark", "Toggle Dark Mode"),
+        ("ctrl+d", "toggle_dark", _("Toggle Dark Mode")),
     ]
 
     show_tools_box = var(True)
@@ -645,12 +645,12 @@ class PaintApp(App):
         # key to button id
     }
 
-    TITLE = "Paint"
+    TITLE = _("Paint")
 
     def watch_filename(self, filename: Optional[str]) -> None:
         """Called when filename changes."""
         if filename is None:
-            self.sub_title = "Untitled"
+            self.sub_title = _("Untitled")
         else:
             self.sub_title = os.path.basename(filename)
 
@@ -716,7 +716,7 @@ class PaintApp(App):
         if len(self.undos) > 0:
             self.cancel_preview()
             action = self.undos.pop()
-            redo_action = Action("Undo " + action.name, self.image, action.region)
+            redo_action = Action(_("Undo") + " " + action.name, self.image, action.region)
             action.undo(self.image)
             self.redos.append(redo_action)
             self.canvas.refresh()
@@ -725,7 +725,7 @@ class PaintApp(App):
         if len(self.redos) > 0:
             self.cancel_preview()
             action = self.redos.pop()
-            undo_action = Action("Undo " + action.name, self.image, action.region)
+            undo_action = Action(_("Undo") + " " + action.name, self.image, action.region)
             action.undo(self.image)
             self.undos.append(undo_action)
             self.canvas.refresh()
@@ -784,14 +784,14 @@ class PaintApp(App):
         window = DialogWindow(
             classes="dialog",
             id="save_as_dialog",
-            title="Save As",
+            title=_("Save As"),
             handle_button=handle_button,
         )
         window.content.mount(
             DirectoryTree(id="save_as_dialog_directory_tree", path="/"),
             Input(id="save_as_dialog_filename_input", placeholder="Filename"),
-            Button("Save", classes="save submit", variant="primary"),
-            Button("Cancel", classes="cancel"),
+            Button(_("Save"), classes="save submit", variant="primary"),
+            Button(_("Cancel"), classes="cancel"),
         )
         self.mount(window)
         self.expand_directory_tree(window.content.query_one("#save_as_dialog_directory_tree"))
@@ -846,7 +846,7 @@ class PaintApp(App):
             if not button.has_class("yes"):
                 return
             callback()
-        self.warning_message_box("Save As", Static(message, markup=False), "yes/no", handle_button)
+        self.warning_message_box(_("Save As"), Static(message, markup=False), "yes/no", handle_button)
 
     def prompt_save_changes(self, filename: str, callback) -> None:
         filename = os.path.basename(filename)
@@ -862,14 +862,14 @@ class PaintApp(App):
             # asyncio.create_task() result must be saved to a variable to avoid garbage collection.
             # https://textual.textualize.io/blog/2023/02/11/the-heisenbug-lurking-in-your-async-code/
             self._not_garbage_to_collect = asyncio.create_task(async_handle_button(button))
-        self.warning_message_box("Paint", Static(message, markup=False), "yes/no/cancel", handle_button)
+        self.warning_message_box(_("Paint"), Static(message, markup=False), "yes/no/cancel", handle_button)
 
     def is_document_modified(self) -> bool:
         return len(self.undos) != self.saved_undo_count
 
     def action_exit(self) -> None:
         if self.is_document_modified():
-            self.prompt_save_changes(self.filename or "Untitled", self.exit)
+            self.prompt_save_changes(self.filename or _("Untitled"), self.exit)
         else:
             self.exit()
 
@@ -892,17 +892,17 @@ class PaintApp(App):
         )
 
         if button_types == "ok":
-            buttons = [Button("OK", classes="ok submit", variant="primary")]
+            buttons = [Button(_("OK"), classes="ok submit", variant="primary")]
         elif button_types == "yes/no":
             buttons = [
-                Button("Yes", classes="yes submit"), #, variant="primary"),
-                Button("No", classes="no"),
+                Button(_("Yes"), classes="yes submit"), #, variant="primary"),
+                Button(_("No"), classes="no"),
             ]
         elif button_types == "yes/no/cancel":
             buttons = [
-                Button("Yes", classes="yes submit", variant="primary"),
-                Button("No", classes="no"),
-                Button("Cancel", classes="cancel"),
+                Button(_("Yes"), classes="yes submit", variant="primary"),
+                Button(_("No"), classes="no"),
+                Button(_("Cancel"), classes="cancel"),
             ]
         else:
             raise ValueError("Invalid button_types: " + repr(button_types))
@@ -987,7 +987,7 @@ class PaintApp(App):
                         self.filename = filename
                         window.close()
                     if self.is_document_modified():
-                        self.prompt_save_changes(self.filename or "Untitled", go_ahead)
+                        self.prompt_save_changes(self.filename or _("Untitled"), go_ahead)
                     else:
                         go_ahead()
 
@@ -996,14 +996,14 @@ class PaintApp(App):
         window = DialogWindow(
             classes="dialog",
             id="open_dialog",
-            title="Open",
+            title=_("Open"),
             handle_button=handle_button,
         )
         window.content.mount(
             DirectoryTree(id="open_dialog_directory_tree", path="/"),
             Input(id="open_dialog_filename_input", placeholder="Filename"),
-            Button("Open", classes="open submit", variant="primary"),
-            Button("Cancel", classes="cancel"),
+            Button(_("Open"), classes="open submit", variant="primary"),
+            Button(_("Cancel"), classes="cancel"),
         )
         self.mount(window)
         self.expand_directory_tree(window.content.query_one("#open_dialog_directory_tree"))
@@ -1018,7 +1018,7 @@ class PaintApp(App):
                 # or the open file saved.
                 # Go ahead and create a new image.
                 self.action_new(force=True)
-            self.prompt_save_changes(self.filename or "Untitled", go_ahead)
+            self.prompt_save_changes(self.filename or _("Untitled"), go_ahead)
             return
         self.image = AnsiArtDocument(80, 24)
         self.canvas.image = self.image
@@ -1038,24 +1038,24 @@ class PaintApp(App):
         yield Header()
         with Container(id="paint"):
             yield MenuBar([
-                MenuItem("File", submenu=Menu([
-                    MenuItem("New", self.action_new),
-                    MenuItem("Open", self.action_open),
-                    MenuItem("Save", self.action_save),
-                    MenuItem("Save As", self.action_save_as),
-                    MenuItem("Exit", self.action_exit),
+                MenuItem(_("File"), submenu=Menu([
+                    MenuItem(_("New"), self.action_new),
+                    MenuItem(_("Open"), self.action_open),
+                    MenuItem(_("Save"), self.action_save),
+                    MenuItem(_("Save As"), self.action_save_as),
+                    MenuItem(_("Exit"), self.action_exit),
                 ])),
-                MenuItem("Edit", submenu=Menu([
-                    MenuItem("Undo", self.action_undo),
-                    MenuItem("Redo", self.action_redo),
+                MenuItem(_("Edit"), submenu=Menu([
+                    MenuItem(_("Undo"), self.action_undo),
+                    MenuItem(_("Redo"), self.action_redo),
                 ])),
-                MenuItem("View", submenu=Menu([
-                    MenuItem("Tool Box", self.action_toggle_tools_box),
-                    MenuItem("Color Box", self.action_toggle_colors_box),
+                MenuItem(_("View"), submenu=Menu([
+                    MenuItem(_("Tool Box"), self.action_toggle_tools_box),
+                    MenuItem(_("Color Box"), self.action_toggle_colors_box),
                 ])),
-                MenuItem("Image"),
-                MenuItem("Colors"),
-                MenuItem("Help"),
+                MenuItem(_("Image")),
+                MenuItem(_("Colors")),
+                MenuItem(_("Help")),
             ])
             yield Container(
                 ToolsBox(),
