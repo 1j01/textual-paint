@@ -12,11 +12,12 @@ target_langs = [lang for lang in available_langs if lang != base_lang]
 
 print("Target languages:", target_langs)
 
-
+# & defines accelerators (hotkeys) in menus and buttons and things, which get underlined in the UI.
+# & can be escaped by doubling it, e.g. "&Taskbar && Start Menu"
 def index_of_hotkey(text):
-    # Returns the index of the ampersand that defines a hotkey, or -1 if not present.
+	# Returns the index of the ampersand that defines a hotkey, or -1 if not present.
+	# The space here handles beginning-of-string matching and counteracts the offset for the [^&] so it acts like a negative lookbehind
     return f" {text}".find(re.compile(r"[^&]&[^&\s]"))
-
 
 def has_hotkey(text):
     return index_of_hotkey(text) != -1
@@ -51,6 +52,8 @@ for target_lang in target_langs:
         for i, target_string in enumerate(target_strings):
             base_string = base_strings[i]
             if base_string != target_string and base_string and target_string:
+                # Split strings like "&Attributes...\tCtrl+E"
+                # and "Fills an area with the current drawing color.\nFill With Color"
                 splitter = re.compile(r"\t|\r?\n")
                 if splitter.search(base_string):
                     add_localizations(base_string.split(splitter), target_string.split(splitter))

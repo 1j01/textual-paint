@@ -1,3 +1,6 @@
+# Based on https://github.com/1j01/jspaint/blob/4a9163fb6dbb321ef07ed85bb5d5ce980e1a4866/localization/parse-rc-file.js
+# Originally based on https://github.com/evernote/serge/blob/master/lib/Serge/Engine/Plugin/parse_rc.pm
+
 def parse_rc_file(rc_file_text, callback=None, lang=None):
     strings = []
     menu = dialog = stringtable = False
