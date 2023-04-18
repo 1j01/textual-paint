@@ -1085,6 +1085,69 @@ class PaintApp(App):
         # It probably has to do with color modes.
         self.selected_color = palette[0]
         self.selected_char = " "
+    
+    def action_print_preview(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_page_setup(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_print(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_send(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_set_as_wallpaper_tiled(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_set_as_wallpaper_centered(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_recent_file(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_cut(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_copy(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_paste(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_clear_selection(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_select_all(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_copy_to(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_paste_from(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_toggle_status_bar(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_text_toolbar(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_normal_size(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_large_size(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_custom_zoom(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_show_grid(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_show_thumbnail(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_view_bitmap(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_flip_rotate(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_stretch_skew(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_invert_colors(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_attributes(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_clear_image(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_draw_opaque(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_edit_colors(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_help_topics(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    def action_about_paint(self) -> None:
+        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
 
     def compose(self) -> ComposeResult:
         """Add our widgets."""
@@ -1092,23 +1155,69 @@ class PaintApp(App):
         with Container(id="paint"):
             yield MenuBar([
                 MenuItem(_("File"), submenu=Menu([
-                    MenuItem(_("New"), self.action_new),
-                    MenuItem(_("Open"), self.action_open),
-                    MenuItem(_("Save"), self.action_save),
-                    MenuItem(_("Save As"), self.action_save_as),
-                    MenuItem(_("Exit"), self.action_exit),
+                    MenuItem(_("New"), self.action_new, 57600),
+                    MenuItem(_("Open"), self.action_open, 57601),
+                    MenuItem(_("Save"), self.action_save, 57603),
+                    MenuItem(_("Save As"), self.action_save_as, 57604),
+                    Separator(),
+                    MenuItem(_("Print Preview"), self.action_print_preview, 57609),
+                    MenuItem(_("Page Setup..."), self.action_page_setup, 57605),
+                    MenuItem(_("Print..."), self.action_print, 57607),
+                    Separator(),
+                    MenuItem(_("Send..."), self.action_send, 37662),
+                    Separator(),
+                    MenuItem(_("Set As Wallpaper (Tiled)"), self.action_set_as_wallpaper_tiled, 57677),
+                    MenuItem(_("Set As Wallpaper (Centered)"), self.action_set_as_wallpaper_centered, 57675),
+                    Separator(),
+                    MenuItem(_("Recent File"), self.action_recent_file, 57616, grayed=True),
+                    Separator(),
+                    MenuItem(_("Exit"), self.action_exit, 57665),
                 ])),
                 MenuItem(_("Edit"), submenu=Menu([
-                    MenuItem(_("Undo"), self.action_undo),
-                    MenuItem(_("Repeat"), self.action_redo),
+                    MenuItem(_("Undo"), self.action_undo, 57643),
+                    MenuItem(_("Repeat"), self.action_redo, 57644),
+                    Separator(),
+                    MenuItem(_("Cut"), self.action_cut, 57635),
+                    MenuItem(_("Copy"), self.action_copy, 57634),
+                    MenuItem(_("Paste"), self.action_paste, 57637),
+                    MenuItem(_("Clear Selection"), self.action_clear_selection, 57632),
+                    MenuItem(_("Select All"), self.action_select_all, 57642),
+                    Separator(),
+                    MenuItem(_("Copy To..."), self.action_copy_to, 37663),
+                    MenuItem(_("Paste From..."), self.action_paste_from, 37664),
                 ])),
                 MenuItem(_("View"), submenu=Menu([
-                    MenuItem(_("Tool Box"), self.action_toggle_tools_box),
-                    MenuItem(_("Color Box"), self.action_toggle_colors_box),
+                    MenuItem(_("Tool Box"), self.action_toggle_tools_box, 59415),
+                    MenuItem(_("Color Box"), self.action_toggle_colors_box, 59416),
+                    MenuItem(_("Status Bar"), self.action_toggle_status_bar, 59393),
+                    MenuItem(_("Text Toolbar"), self.action_text_toolbar, 37678),
+                    Separator(),
+                    MenuItem(_("Zoom"), submenu=Menu([
+                        MenuItem(_("Normal Size"), self.action_normal_size, 37670),
+                        MenuItem(_("Large Size"), self.action_large_size, 37671),
+                        MenuItem(_("Custom..."), self.action_custom_zoom, 37672),
+                        Separator(),
+                        MenuItem(_("Show Grid"), self.action_show_grid, 37677),
+                        MenuItem(_("Show Thumbnail"), self.action_show_thumbnail, 37676),
+                    ])),
+                    MenuItem(_("View Bitmap"), self.action_view_bitmap, 37673),
                 ])),
-                MenuItem(_("Image")),
-                MenuItem(_("Colors")),
-                MenuItem(_("Help")),
+                MenuItem(_("Image"), submenu=Menu([
+                    MenuItem(_("Flip/Rotate..."), self.action_flip_rotate, 37680),
+                    MenuItem(_("Stretch/Skew..."), self.action_stretch_skew, 37681),
+                    MenuItem(_("Invert Colors"), self.action_invert_colors, 37682),
+                    MenuItem(_("Attributes..."), self.action_attributes, 37683),
+                    MenuItem(_("Clear Image"), self.action_clear_image, 37684),
+                    MenuItem(_("Draw Opaque"), self.action_draw_opaque, 6868),
+                ])),
+                MenuItem(_("Colors"), submenu=Menu([
+                    MenuItem(_("Edit Colors..."), self.action_edit_colors, 6869),
+                ])),
+                MenuItem(_("Help"), submenu=Menu([
+                    MenuItem(_("Help Topics"), self.action_help_topics, 57670),
+                    Separator(),
+                    MenuItem(_("About Paint"), self.action_about_paint, 57664),
+                ])),
             ])
             yield Container(
                 ToolsBox(),

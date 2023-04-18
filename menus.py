@@ -58,10 +58,7 @@ class Menu(Container):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked or activated with the keyboard."""
 
-        button_id = event.button.id
-        assert button_id is not None
-
-        if button_id.startswith("menu_item_"):
+        if isinstance(event.button, MenuItem):
             if event.button.action:
                 event.button.action()
                 root_menu = self
@@ -109,21 +106,30 @@ class MenuBar(Menu):
 class MenuItem(Button):
     """A menu item widget."""
 
-    def __init__(self, name: str, action = None, id: str = None, submenu = None, **kwargs) -> None:
+    def __init__(self, name: str, action = None, id: str = None, submenu = None, grayed = False, **kwargs) -> None:
         """Initialize a menu item."""
         super().__init__(name, **kwargs)
         self.add_class("menu_item")
+        self.disabled = grayed
         self.action = action
         self.submenu = submenu
-        if id:
+        if isinstance(id, str):
             self.id = id
+        elif id:
+            self.id = "rc_" + str(id)
         else:
             self.id = "menu_item_" + to_snake_case(name)
 
+
+mid_line = "─" * 100
 class Separator(Static):
     """A menu separator widget."""
 
+
     def __init__(self, **kwargs) -> None:
         """Initialize a separator."""
-        super().__init__("", **kwargs)
+        super().__init__(mid_line, **kwargs)
         self.add_class("separator")
+        self.disabled = True
+        self.action = None
+        self.submenu = None
