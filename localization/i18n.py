@@ -3,7 +3,8 @@ import json
 import re
 
 translations = {}
-current_language = "en"
+base_language = "en"
+current_language = base_language
 
 def get_direction() -> str:
 	"""Get the text direction for the current language."""
@@ -15,6 +16,8 @@ def load_language(language_code: str):
 	"""Load a language from the translations directory."""
 	global translations
 	translations = {}
+	if language_code == base_language:
+		return
 	try:
 		with open(f"localization/{language_code}/localizations.js", "r") as f:
 			# find the JSON object
@@ -67,7 +70,7 @@ def get(base_language_str: str, *interpolations: str) -> str:
 		if base_language_str[-3:] == "...":
 			return find_localization(base_language_str[:-3]) + "..."
 
-		if base_language_str not in untranslated:
+		if base_language_str not in untranslated and current_language != base_language:
 			untranslated.add(base_language_str)
 			# append to untranslated strings file
 			with open("localization/untranslated.txt", "a") as f:
