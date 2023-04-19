@@ -40,7 +40,7 @@ def restart_program():
         # if you exit the app after reloading, since the new process will pick up the old terminal state.
         app._driver.stop_application_mode()
     except Exception as e:
-        print("Error stopping application mode. The command line may not work as expected.", e)
+        print("Error stopping application mode. The command line may not work as expected. The `reset` command should restore it on Linux.", e)
 
     try:
         observer.stop()
