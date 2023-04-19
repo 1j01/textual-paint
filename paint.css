@@ -118,8 +118,9 @@ Screen {
     /* calc isn't supported, and this should be determined by the y position anyways, which is set in python */
     /* max-height: calc(100vh - 3); */
     max-height: 90vh;
-    /* width: auto doesn't account for the scrollbar... */
-    /* This can cut off a character, but it's not as ugly as having a horizontal scrollbar */
+    /* width: auto doesn't account for the vertical scrollbar... */
+    /* which means it would make a horizontal scrollbar or cut off a character on the right, */
+    /* but I'm accounting for this with padding-right inside the menu item */
     overflow-x: hidden;
 }
 /* MenuBar { */
@@ -152,6 +153,8 @@ Screen {
 .menu_popup Button {
     min-width: 1fr;
     text-align: left;
+    /* This compensates for the scrollbar, so text isn't cut off (though it also applies when there's no scrollbar) */
+    padding-right: 1;
 }
 
 .window {
