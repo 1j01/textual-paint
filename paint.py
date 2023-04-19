@@ -642,6 +642,8 @@ def flood_fill(document: AnsiArtDocument, x: int, y: int, fill_ch: str, fill_fg:
 class Canvas(Widget):
     """The image document widget."""
 
+    magnification = reactive(1, layout=True)
+
     # Is it kosher to include an event in a message?
     # Is it better (and possible) to bubble up the event, even though I'm capturing the mouse?
     # Or would it be better to just have Canvas own duplicate state for all tool parameters?
@@ -685,6 +687,8 @@ class Canvas(Widget):
         self.pointer_active = False
 
     def on_mouse_down(self, event) -> None:
+        event.x //= self.magnification
+        event.y //= self.magnification
         self.post_message(self.ToolStart(event))
         self.pointer_active = True
         self.capture_mouse(True)
@@ -696,6 +700,11 @@ class Canvas(Widget):
         if self.pointer_active:
             event.x += int(self.parent.scroll_x)
             event.y += int(self.parent.scroll_y)
+
+        event.x //= self.magnification
+        event.y //= self.magnification
+        event.delta_x //= self.magnification
+        event.delta_y //= self.magnification
 
         if self.pointer_active:
             self.post_message(self.ToolUpdate(event))
@@ -711,22 +720,35 @@ class Canvas(Widget):
             self.post_message(self.ToolPreviewStop())
 
     def get_content_width(self, container: Size, viewport: Size) -> int:
-        return self.image.width
+        return self.image.width * self.magnification
 
     def get_content_height(self, container: Size, viewport: Size, width: int) -> int:
-        return self.image.height
+        return self.image.height * self.magnification
 
     def render_line(self, y: int) -> Strip:
         """Render a line of the widget. y is relative to the top of the widget."""
-        if y >= self.image.height:
+        # self.size.width/height already is multiplied by self.magnification.
+        if y >= self.size.height:
             return Strip.blank(self.size.width)
         segments = []
-        for x in range(self.image.width):
-            bg = self.image.bg[y][x]
-            fg = self.image.fg[y][x]
-            ch = self.image.ch[y][x]
+        for x in range(self.size.width):
+            bg = self.image.bg[y // self.magnification][x // self.magnification]
+            fg = self.image.fg[y // self.magnification][x // self.magnification]
+            ch = self.image.ch[y // self.magnification][x // self.magnification]
             segments.append(Segment(ch, Style.parse(fg+" on "+bg)))
         return Strip(segments, self.size.width)
+    
+    def refresh_scaled_region(self, region: Region) -> None:
+        """Refresh a region of the widget, scaled by the magnification."""
+        if self.magnification == 1:
+            self.refresh(region)
+            return
+        self.refresh(Region(
+            (region.x - 1) * self.magnification,
+            (region.y - 1) * self.magnification,
+            (region.width + 2) * self.magnification,
+            (region.height + 2) * self.magnification,
+        ))
 
 
 class PaintApp(App):
@@ -774,6 +796,8 @@ class PaintApp(App):
     selected_char = var(" ")
     filename = var(None)
     image = var(None)
+    magnification = var(1)
+    return_to_magnification = var(4)
 
     undos: List[Action] = []
     redos: List[Action] = []
@@ -1359,13 +1383,38 @@ class PaintApp(App):
         # Image can be set from the outside, via CLI
         if self.image is None:
             self.image = AnsiArtDocument(80, 24)
-        self.canvas = self.query_one("#canvas")
+        self.canvas = self.query_one("#canvas", Canvas)
         self.canvas.image = self.image
+        self.editing_area = self.query_one("#editing-area", Container)
 
     def pick_color(self, x: int, y: int) -> None:
         """Select a color from the image."""
         self.selected_color = self.image.bg[y][x]
         self.selected_char = self.image.ch[y][x]
+
+    def get_prospective_magnification(self) -> float:
+        """Returns the magnification result on click with the Magnifier tool."""
+        return self.return_to_magnification if self.magnification == 1 else 1
+
+    def magnifier_click(self, x: int, y: int) -> None:
+        """Zooms in or out on the image."""
+        
+        prev_magnification = self.magnification
+        prospective_magnification = self.get_prospective_magnification()
+
+        # This had other code in a set_magnification function in JS Paint, not sure yet if it's important
+        self.magnification = prospective_magnification
+
+        if self.magnification > prev_magnification:
+            w = self.editing_area.size.width / self.magnification
+            h = self.editing_area.size.height / self.magnification
+            self.editing_area.scroll_to(
+                (x - w / 2) * self.magnification / prev_magnification,
+                (y - h / 2) * self.magnification / prev_magnification,
+                animate=False,
+            )
+        
+        self.canvas.magnification = self.magnification
 
     def on_canvas_tool_start(self, event: Canvas.ToolStart) -> None:
         """Called when the user starts drawing on the canvas."""
@@ -1376,9 +1425,14 @@ class PaintApp(App):
             self.pick_color(event.mouse_down_event.x, event.mouse_down_event.y)
             return
 
-        if self.selected_tool in [Tool.free_form_select, Tool.select, Tool.magnifier, Tool.text, Tool.curve, Tool.polygon]:
+        if self.selected_tool == Tool.magnifier:
+            self.magnifier_click(event.mouse_down_event.x, event.mouse_down_event.y)
+            return
+
+        if self.selected_tool in [Tool.free_form_select, Tool.select, Tool.text, Tool.curve, Tool.polygon]:
             self.selected_tool = Tool.pencil
-            # TODO: support other tools
+            # TODO: support remaining tools
+
         self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
         self.image_at_start.copy_region(self.image)
         self.mouse_at_start = (event.mouse_down_event.x, event.mouse_down_event.y)
@@ -1397,13 +1451,13 @@ class PaintApp(App):
             action.region = affected_region
             action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
             action.update(self.image_at_start)
-            self.canvas.refresh(affected_region)
+            self.canvas.refresh_scaled_region(affected_region)
 
     def cancel_preview(self) -> None:
         """Revert the currently previewed action."""
         if self.preview_action:
             self.preview_action.undo(self.image)
-            self.canvas.refresh(self.preview_action.region)
+            self.canvas.refresh_scaled_region(self.preview_action.region)
             self.preview_action = None
 
     def on_canvas_tool_preview_update(self, event: Canvas.ToolPreviewUpdate) -> None:
@@ -1419,7 +1473,7 @@ class PaintApp(App):
                 self.preview_action = Action(self.selected_tool.get_name(), self.image)
                 self.preview_action.region = affected_region.intersection(Region(0, 0, self.image.width, self.image.height))
                 self.preview_action.update(image_before)
-                self.canvas.refresh(affected_region)
+                self.canvas.refresh_scaled_region(affected_region)
 
     def on_canvas_tool_preview_stop(self, event: Canvas.ToolPreviewStop) -> None:
         """Called when the user stops hovering over the canvas (while previewing, not drawing)."""

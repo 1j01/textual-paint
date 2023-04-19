@@ -32,7 +32,7 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
         - [ ] Color Eraser
     - [x] Fill With Color
     - [x] Pick Color
-    - [ ] Magnifier
+    - [x] Magnifier
     - [x] Pencil
     - [x] Brush
     - [x] Airbrush
