@@ -2,3 +2,4 @@ psutil==5.9.0
 rich==13.3.4
 stransi==0.3.0
 textual==0.20.1
+watchdog==3.0.0

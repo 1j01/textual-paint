@@ -27,6 +27,15 @@
 			"args": ["run", "--dev", "paint.py --clear-screen --inspect-layout LICENSE.txt"],
 			"console": "integratedTerminal",
 			"justMyCode": false
+		},
+		{
+			"name": "Debug --restart-on-changes file matching",
+			"type": "python",
+			"request": "launch",
+			"program": "${userHome}/.local/bin/textual",
+			"args": ["run", "--dev", "paint.py --clear-screen --restart-on-changes"],
+			"console": "integratedTerminal",
+			"justMyCode": false
 		}
 	]
 }

@@ -69,8 +69,8 @@ textual-paint
 
 ```
 $ python3 paint.py --help
-usage: paint.py [-h] [--theme {light,dark}] [--language {ar,cs,da,de,el,en,es,fi,fr,he,hu,it,ja,ko,nl,no,pl,pt,pt-br,ru,sk,sl,sv,tr,zh,zh-simplified}]
-                [--ascii-only-icons] [--inspect-layout] [--clear-screen]
+usage: paint.py [-h] [--theme {light,dark}] [--language {ar,cs,da,de,el,en,es,fi,fr,he,hu,it,ja,ko,nl,no,pl,pt,pt-br,ru,sk,sl,sv,tr,zh,zh-simplified}] [--ascii-only-icons]
+                [--inspect-layout] [--clear-screen] [--restart-on-changes]
                 [filename]
 
 Paint in the terminal.
@@ -86,6 +86,7 @@ options:
   --ascii-only-icons    Use only ASCII characters for tool icons
   --inspect-layout      Inspect the layout with middle click, for development
   --clear-screen        Clear the screen before starting; useful for development, to avoid seeing fixed errors
+  --restart-on-changes  Restart the app when the source code is changed, for development
 ```
 
 ### Keyboard Shortcuts
@@ -113,21 +114,30 @@ Install Textual and other dependencies:
 pip install "textual[dev]" stransi psutil
 ```
 
-Run via Textual's CLI for live-reloading CSS support:
+Run via Textual's CLI for live-reloading CSS support, and enable other development features:
 ```bash
-textual run --dev "paint.py --clear-screen"
+textual run --dev "paint.py --clear-screen --inspect-layout --restart-on-changes"
 ```
 
 Or run more basically:
 ```bash
-python paint.py --clear-screen
+python paint.py
 ```
 
 `--clear-screen` is useful for development, because it's sometimes jarring to see error messages that have actually been fixed, when exiting the program.
 
+`--inspect-layout` lets you middle click to visualize the layout breakdown by labeling each widget in the hierarchy, and coloring their regions. The labels affect the layout, so you can also hold Ctrl to only colorize, and you can remember how the colors correspond to the labels.
+
+`--restart-on-changes` automatically restarts the program when any Python files change. This works by the program restarting itself directly. (Programs like `modd` or `nodemon` that run your program in a subprocess don't work well with Textual's escape sequences.)
+
 There are also launch tasks configured for VS Code, so you can run the program from the Run and Debug panel.
 
-I tried running via `modd` to automatically reload the program when (non-CSS) files change, but it doesn't handle ANSI escape sequences well. I wonder if it would work better now with the `--clear-screen` option. (I could also look for another tool that's more part of the Python ecosystem.)
+### Update Dependencies
+
+```bash
+python -m pipreqs.pipreqs --ignore .history --force
+```
+
 
 ## License
 

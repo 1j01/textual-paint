@@ -7,6 +7,8 @@ import asyncio
 from enum import Enum
 from random import randint, random
 from typing import List, Optional
+from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
+from watchdog.observers import Observer
 import stransi
 from rich.segment import Segment
 from rich.style import Style
@@ -52,6 +54,36 @@ def restart_program():
     # os.execl(python, python, *sys.argv)
     os.execl(sys.executable, *sys.orig_argv)
 
+class RestartHandler(PatternMatchingEventHandler):
+    """A handler for file changes"""
+    def on_any_event(self, event: FileSystemEvent):
+        if event.event_type in (EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED):
+            # These seem like they'd just cause trouble... they're not changes, are they?
+            return
+        restart_program()
+
+def restart_on_changes():
+    """Restarts the current program when a file is changed"""
+    observer = Observer()
+    observer.schedule(RestartHandler(
+        # Don't need to restart on changes to .css, since Textual will reload them in --dev mode
+        # Could include localization files, but I'm not actively localizing this app at this point.
+        # WET: WatchDog doesn't match zero directories for **, so we have to split up any patterns that use it.
+        patterns=[
+            "**/*.py", "*.py"
+        ],
+        ignore_patterns=[
+            ".history/**/*", ".history/*",
+            ".vscode/**/*", ".vscode/*",
+            ".git/**/*", ".git/*",
+            "node_modules/**/*", "node_modules/*",
+            "__pycache__/**/*", "__pycache__/*",
+            "venv/**/*", "venv/*",
+        ],
+        ignore_directories=True,
+    ), path='.', recursive=True)
+    observer.start()
+
 
 # These can go away now that args are parsed up top
 ascii_only_icons = False
@@ -70,7 +102,9 @@ parser.add_argument('--inspect-layout', action='store_true', help='Inspect the l
 # There are enough ACTUAL "that should have worked!!" moments to deal with.
 # I really don't want false ones mixed in. You want to reward your brain for finding good solutions, after all.
 parser.add_argument('--clear-screen', action='store_true', help='Clear the screen before starting; useful for development, to avoid seeing fixed errors')
+parser.add_argument('--restart-on-changes', action='store_true', help='Restart the app when the source code is changed, for development')
 parser.add_argument('filename', nargs='?', default=None, help='File to open')
+
 if __name__ == "<run_path>":
     # Arguments have to be passed like `textual run --dev "paint.py LICENSE.txt"`
     # so we need to look for an argument starting with "paint.py",
@@ -84,6 +118,9 @@ else:
     args = parser.parse_args()
 
 load_language(args.language)
+
+if args.restart_on_changes:
+    restart_on_changes()
 
 # Most arguments are handled at the end of the file.
 
