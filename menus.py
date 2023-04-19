@@ -80,12 +80,7 @@ class Menu(Container):
         self.parent_menu = parent_menu
         self.parent_menu_item = parent_menu_item
         self.add_class("menu_popup")
-        # I don't see any way to get the position of widgets on screen.
-        # self.style.offset = (parent_menu.x, parent_menu.y + parent_menu.height)
-        # So, guess it based on the position in the list of items, works for one level.
-        menu_bar_height = 3
-        menu_bar_item_width = 8
-        self.styles.offset = (menu_bar_item_width * parent_menu.items.index(self.parent_menu_item), menu_bar_height)
+        self.styles.offset = (parent_menu_item.region.x, parent_menu_item.region.y + parent_menu_item.region.height)
     
     def close(self):
         for item in self.items:
