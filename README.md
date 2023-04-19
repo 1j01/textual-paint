@@ -131,6 +131,10 @@ python paint.py
 `--restart-on-changes` automatically restarts the program when any Python files change. This works by the program restarting itself directly. (Programs like `modd` or `nodemon` that run your program in a subprocess don't work well with Textual's escape sequences.)
 
 There are also launch tasks configured for VS Code, so you can run the program from the Run and Debug panel.
+Note that it runs slower in VS Code's debugger.
+
+To see logs, run [`textual console`](https://textual.textualize.io/guide/devtools/#console) and then run the program via `textual run --dev`.
+This also makes it run slower.
 
 ### Update Dependencies
 
