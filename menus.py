@@ -188,6 +188,7 @@ class Separator(Static):
         """Initialize a separator."""
         super().__init__(mid_line, **kwargs)
         self.add_class("separator")
-        self.disabled = True
+        # self.disabled = True # This breaks scroll wheel over the separator, as of Textual 0.20.1
+        self.disabled = False
         self.action = None
         self.submenu = None
