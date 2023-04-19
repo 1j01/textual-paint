@@ -9,6 +9,7 @@ from textual.geometry import Offset, Region, Size
 from textual.reactive import var, reactive
 from textual.widget import Widget
 from textual.widgets import Button, Static
+from localization.i18n import markup_hotkey
 
 def to_snake_case(name):
     name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
@@ -81,6 +82,20 @@ class Menu(Container):
         self.parent_menu_item = parent_menu_item
         self.add_class("menu_popup")
         self.styles.offset = (parent_menu_item.region.x, parent_menu_item.region.y + parent_menu_item.region.height)
+
+        # Find the widest label
+        max_width = 0
+        for item in self.items:
+            if isinstance(item, MenuItem):
+                if len(item.label.plain) > max_width:
+                    max_width = len(item.label.plain)
+        # Split on tab character and align the shortcuts
+        for item in self.items:
+            if isinstance(item, MenuItem):
+                markup_parts = item.label.markup.split("\t")
+                plain_parts = item.label.plain.split("\t")
+                if len(markup_parts) > 1:
+                    item.label = markup_parts[0] + " " * (max_width - len(plain_parts[0])) + markup_parts[1]
     
     def close(self):
         for item in self.items:
@@ -103,7 +118,7 @@ class MenuItem(Button):
 
     def __init__(self, name: str, action = None, id: str = None, submenu = None, grayed = False, **kwargs) -> None:
         """Initialize a menu item."""
-        super().__init__(name, **kwargs)
+        super().__init__(markup_hotkey(name), **kwargs)
         self.add_class("menu_item")
         self.disabled = grayed
         self.action = action

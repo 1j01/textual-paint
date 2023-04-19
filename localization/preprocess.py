@@ -23,20 +23,13 @@ def index_of_hotkey(text):
 def has_hotkey(text):
     return index_of_hotkey(text) != -1
 
-
 def remove_hotkey(text):
     text = re.sub(r"\s?\(&.\)", "", text)
     text = re.sub(r"([^&]|^)&([^&\s])", r"\1\2", text)
     return text
 
-
 def remove_ellipsis(string):
     return string.replace("...", "")
-
-
-def only_unique(value, index, self):
-    return self.index(value) == index
-
 
 def get_strings(lang):
     rc_files = glob.glob(f"{os.path.dirname(__file__)}/{lang}/**/*.rc", recursive=True)
