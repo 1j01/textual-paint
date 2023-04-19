@@ -686,9 +686,8 @@ class PaintApp(App):
         ("ctrl+d", "toggle_dark", _("Toggle Dark Mode")),
         # dev helper
         # f5 would be more traditional, but I need something not bound to anything
-        # in the context of the terminal in VS Code.
-        # f4 is close to f5, and has a connotation of closing because of alt+f4.
-        ("f4", "reload", _("Reload")),
+        # in the context of the terminal in VS Code, and not used by this app, like Ctrl+R, and detectable in the terminal.
+        ("f2", "reload", _("Reload")),
     ]
 
     show_tools_box = var(True)
