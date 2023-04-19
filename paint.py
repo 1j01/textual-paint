@@ -70,7 +70,36 @@ class RestartHandler(PatternMatchingEventHandler):
         if event.event_type in (EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED):
             # These seem like they'd just cause trouble... they're not changes, are they?
             return
-        restart_program()
+        print("Reloading due to FS change:", event.event_type, event.src_path)
+        app.screen.styles.background = "red"
+        # Doesn't include save prompt
+        # restart_program()
+        # Includes save prompt
+        try:
+            # None of these work:
+            # app.action_reload()
+            # app.run_action("reload")
+            # app.set_timer(0.1, app.action_reload)
+            # app.set_timer(0.1, lambda: app.run_action("reload"))
+            # This works when there are no unsaved changes,
+            # but fails to show a dialog:
+            # app._dont_gc = asyncio.create_task(app.action_reload())
+            # This works if there ARE unsaved changes,
+            # but fails to restart immediately if there aren't:
+            # app.call_from_thread(app.action_reload)
+            # So... just do both?
+            try:
+                app._dont_gc = asyncio.create_task(app.action_reload())
+            except Exception as e:
+                print("Error reloading (A):", e)
+            try:
+                app.call_from_thread(app.action_reload)
+            except Exception as e:
+                print("Error reloading (B):", e)
+            # I mean... it works, but this clearly sucks.
+        except Exception as e:
+            print("Error reloading:", e)
+        app.screen.styles.background = "yellow"
 
 def restart_on_changes():
     """Restarts the current program when a file is changed"""
