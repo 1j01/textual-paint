@@ -1179,7 +1179,8 @@ class PaintApp(App):
                     Separator(),
                     MenuItem(_("Recent File"), self.action_recent_file, 57616, grayed=True),
                     Separator(),
-                    MenuItem(_("E&xit\tAlt+F4"), self.action_exit, 57665),
+                    # MenuItem(_("E&xit\tAlt+F4"), self.action_exit, 57665),
+                    MenuItem(_("E&xit\tCtrl+Q"), self.action_exit, 57665),
                 ])),
                 MenuItem(_("&Edit"), submenu=Menu([
                     MenuItem(_("&Undo\tCtrl+Z"), self.action_undo, 57643),
