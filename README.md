@@ -108,9 +108,9 @@ The rest match MS Paint's keyboard shortcuts:
 
 ## Development
 
-Install Textual and Stransi:
+Install Textual and other dependencies:
 ```bash
-pip install "textual[dev]" "stransi"
+pip install "textual[dev]" stransi psutil
 ```
 
 Run via Textual's CLI for live-reloading CSS support:
