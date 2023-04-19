@@ -28,6 +28,16 @@ from localization.i18n import get as _, load_language
 
 def restart_program():
     """Restarts the current program, after file objects and descriptors cleanup"""
+
+    try:
+        app.exit()
+        # It's meant to eventually call this, but we need it immediately (unless we delay with asyncio perhaps)
+        # Otherwise the terminal will be left in a state where you can't (visibly) type anything
+        # if you exit the app after reloading, since the new process will pick up the old terminal state.
+        app._driver.stop_application_mode()
+    except Exception as e:
+        print("Error stopping application mode. The command line may not work as expected.", e)
+
     try:
         p = psutil.Process(os.getpid())
         for handler in p.open_files() + p.connections():
