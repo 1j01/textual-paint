@@ -3,6 +3,13 @@ import json
 import re
 
 translations = {}
+current_language = "en"
+
+def get_direction() -> str:
+	"""Get the text direction for the current language."""
+	if current_language in ["ar", "he"]:
+		return "rtl"
+	return "ltr"
 
 def load_language(language_code: str):
 	"""Load a language from the translations directory."""
@@ -16,6 +23,7 @@ def load_language(language_code: str):
 			end = js.rfind("}")
 			# parse the JSON object
 			translations = json.loads(js[start:end + 1])
+			current_language = language_code
 	except FileNotFoundError:
 		print(f"Could not find language file for '{language_code}'.")
 	except json.decoder.JSONDecodeError as e:
