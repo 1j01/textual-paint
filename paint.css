@@ -188,8 +188,6 @@ Screen {
 .window_content {
     layout: vertical;
     overflow: auto;
-    max-height: 60vh;
-    max-width: 80vw;
     width: auto;
     height: auto;
     background: $background;
