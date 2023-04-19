@@ -28,6 +28,8 @@ from windows import Window, DialogWindow
 from localization.i18n import get as _, load_language
 
 
+observer = None
+
 def restart_program():
     """Restarts the current program, after file objects and descriptors cleanup"""
 
@@ -39,6 +41,14 @@ def restart_program():
         app._driver.stop_application_mode()
     except Exception as e:
         print("Error stopping application mode. The command line may not work as expected.", e)
+
+    try:
+        observer.stop()
+        observer.join(timeout=1)
+        if observer.is_alive:
+            print("Timed out waiting for file change observer thread to stop.")
+    except Exception as e:
+        print("Error stopping file change observer:", e)
 
     try:
         p = psutil.Process(os.getpid())
@@ -64,6 +74,7 @@ class RestartHandler(PatternMatchingEventHandler):
 
 def restart_on_changes():
     """Restarts the current program when a file is changed"""
+    global observer
     observer = Observer()
     observer.schedule(RestartHandler(
         # Don't need to restart on changes to .css, since Textual will reload them in --dev mode
