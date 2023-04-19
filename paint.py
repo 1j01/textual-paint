@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import psutil
 import argparse
 import asyncio
 from enum import Enum
@@ -23,6 +24,24 @@ from textual.color import Color
 from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow
 from localization.i18n import get as _, load_language
+
+
+def restart_program():
+    """Restarts the current program, after file objects and descriptors cleanup"""
+    try:
+        p = psutil.Process(os.getpid())
+        for handler in p.open_files() + p.connections():
+            try:
+                os.close(handler.fd)
+            except Exception as e:
+                print("Error closing file descriptor", handler.fd, e)
+    except Exception as e:
+        print("Error closing file descriptors", e)
+
+    # python = sys.executable
+    # os.execl(python, python, *sys.argv)
+    os.execl(sys.executable, *sys.orig_argv)
+
 
 # These can go away now that args are parsed up top
 ascii_only_icons = False
@@ -655,6 +674,11 @@ class PaintApp(App):
         ("f4", "redo", _("Repeat")),
         # action_toggle_dark is built in to App
         ("ctrl+d", "toggle_dark", _("Toggle Dark Mode")),
+        # dev helper
+        # f5 would be more traditional, but I need something not bound to anything
+        # in the context of the terminal in VS Code.
+        # f4 is close to f5, and has a connotation of closing because of alt+f4.
+        ("f4", "reload", _("Reload")),
     ]
 
     show_tools_box = var(True)
@@ -913,6 +937,12 @@ class PaintApp(App):
             self.prompt_save_changes(self.filename or _("Untitled"), self.exit)
         else:
             self.exit()
+    
+    def action_reload(self) -> None:
+        if self.is_document_modified():
+            self.prompt_save_changes(self.filename or _("Untitled"), restart_program)
+        else:
+            restart_program()
 
     def warning_message_box(self, title: str, message_widget: Widget, button_types: str = "ok", callback = None) -> None:
 
