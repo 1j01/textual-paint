@@ -1392,8 +1392,19 @@ class PaintApp(App):
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_edit_colors(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    
     def action_help_topics(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        for old_window in self.query("#help_dialog").nodes:
+            old_window.close()
+        window = DialogWindow(
+            id="help_dialog",
+            title=_("Help"), # _("Help Topics"),
+            handle_button=lambda button: window.close(),
+        )
+        help_text = parser.format_usage()
+        window.content.mount(Static(help_text,  classes="help_text"))
+        window.content.mount(Button(_("OK"), classes="ok submit"))
+        self.mount(window)
     
     def action_about_paint(self) -> None:
         """Show the About Paint dialog."""

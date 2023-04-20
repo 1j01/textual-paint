@@ -247,6 +247,15 @@ Screen {
     height: auto;
 }
 
+#help_dialog .window_content {
+    padding: 2 4;
+}
+#help_dialog .help_text {
+    width: 80;
+    height: auto;
+    overflow-y: auto;
+}
+
 #message_box .window_content {
     width: 50;
     height: auto;
