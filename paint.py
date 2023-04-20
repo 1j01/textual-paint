@@ -95,7 +95,9 @@ class RestartHandler(PatternMatchingEventHandler):
             # app.call_from_thread(app.action_reload)
             # So... just do both?
             try:
-                app._dont_gc = asyncio.create_task(app.action_reload())
+                task = asyncio.create_task(app.action_reload())
+                app.background_tasks.add(task)
+                task.add_done_callback(app.background_tasks.discard)
             except Exception as e:
                 print("Error reloading (A):", e)
             try:
@@ -883,6 +885,8 @@ class PaintApp(App):
     # flag to prevent setting the filename input when initially expanding the directory tree
     expanding_directory_tree = False
 
+    background_tasks = set()
+
     NAME_MAP = {
         # key to button id
     }
@@ -978,7 +982,9 @@ class PaintApp(App):
 
     def action_save(self) -> None:
         """Start the save action, but don't wait for the Save As dialog to close if it's a new file."""
-        self._not_garbage1 = asyncio.create_task(self.save())
+        task = asyncio.create_task(self.save())
+        self.background_tasks.add(task)
+        task.add_done_callback(self.background_tasks.discard)
 
     async def save(self, from_save_as=False) -> None:
         """Save the image to a file."""
@@ -1005,7 +1011,9 @@ class PaintApp(App):
         """Show the save as dialog, without waiting for it to close."""
         # Action must not await the dialog closing,
         # or else you'll never see the dialog in the first place!
-        self._not_garbage2 = asyncio.create_task(self.save_as())
+        task = asyncio.create_task(self.save_as())
+        self.background_tasks.add(task)
+        task.add_done_callback(self.background_tasks.discard)
 
     async def save_as(self) -> None:
         """Save the image as a new file."""
@@ -1028,10 +1036,10 @@ class PaintApp(App):
                         await self.save(from_save_as=True)
                         window.close()
                         saved_future.set_result(None)
-                    # asyncio.run() cannot be called from a running event loop
-                    # asyncio.create_task() result must be saved to a variable to avoid garbage collection.
                     # https://textual.textualize.io/blog/2023/02/11/the-heisenbug-lurking-in-your-async-code/
-                    self._not_garbage_to_collect123 = asyncio.create_task(async_on_save_confirmed())
+                    task = asyncio.create_task(async_on_save_confirmed())
+                    self.background_tasks.add(task)
+                    task.add_done_callback(self.background_tasks.discard)
                 if os.path.exists(name):
                     self.confirm_overwrite(name, on_save_confirmed)
                 else:
@@ -1120,10 +1128,11 @@ class PaintApp(App):
                 if button.has_class("yes"):
                     await self.save()
                 callback()
-            # asyncio.run() cannot be called from a running event loop
-            # asyncio.create_task() result must be saved to a variable to avoid garbage collection.
             # https://textual.textualize.io/blog/2023/02/11/the-heisenbug-lurking-in-your-async-code/
-            self._not_garbage_to_collect = asyncio.create_task(async_handle_button(button))
+            task = asyncio.create_task(async_handle_button(button))
+            self.background_tasks.add(task)
+            task.add_done_callback(self.background_tasks.discard)
+
         self.warning_message_box(_("Paint"), Static(message, markup=False), "yes/no/cancel", handle_button)
 
     def is_document_modified(self) -> bool:
