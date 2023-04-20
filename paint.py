@@ -774,6 +774,8 @@ class Canvas(Widget):
             bg = self.image.bg[y // self.magnification][x // self.magnification]
             fg = self.image.fg[y // self.magnification][x // self.magnification]
             ch = self.image.ch[y // self.magnification][x // self.magnification]
+            if self.magnification > 1:
+                ch = self.big_ch(ch, x % self.magnification, y % self.magnification)
             style = Style.parse(fg+" on "+bg)
             if self.magnifier_preview_region and self.magnifier_preview_region.contains(x, y) and not inner_magnifier_preview_region.contains(x, y):
                 # invert the colors
@@ -793,6 +795,39 @@ class Canvas(Widget):
             (region.width + 2) * self.magnification,
             (region.height + 2) * self.magnification,
         ))
+    
+    def big_ch(self, ch: str, x: int, y: int) -> str:
+        """Return a character part of a meta-glyph."""
+        if ch == " ":
+            return " "
+        if ch == "█":
+            return "█"
+        if ch == "▄":
+            if y < self.magnification // 2:
+                return " "
+            else:
+                return "█"
+        if ch == "▀":
+            if y < self.magnification // 2:
+                return "█"
+            else:
+                return " "
+        if ch == "▌":
+            if x < self.magnification // 2:
+                return "█"
+            else:
+                return " "
+        if ch == "▐":
+            if x < self.magnification // 2:
+                return " "
+            else:
+                return "█"
+        # Fall back to showing the character for a single cell.
+        # if x == 0 and y == 0:
+        if x == self.magnification // 2 and y == self.magnification // 2:
+            return ch
+        else:
+            return " "
 
 
 class PaintApp(App):
