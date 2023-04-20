@@ -1513,9 +1513,9 @@ class PaintApp(App):
                 ToolsBox(),
                 Container(
                     Canvas(id="canvas"),
-                    id="editing-area",
+                    id="editing_area",
                 ),
-                id="main-horizontal-split",
+                id="main_horizontal_split",
             )
             yield ColorsBox()
 
@@ -1526,7 +1526,7 @@ class PaintApp(App):
             self.image = AnsiArtDocument(80, 24)
         self.canvas = self.query_one("#canvas", Canvas)
         self.canvas.image = self.image
-        self.editing_area = self.query_one("#editing-area", Container)
+        self.editing_area = self.query_one("#editing_area", Container)
 
     def pick_color(self, x: int, y: int) -> None:
         """Select a color from the image."""

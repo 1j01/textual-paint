@@ -9,7 +9,7 @@ Screen {
     grid-rows: 1fr 0;
 }
 
-#main-horizontal-split {
+#main_horizontal_split {
     layout: grid;
     grid-size: 2;
     grid-columns: 0 1fr;
@@ -17,7 +17,7 @@ Screen {
     margin: 0 0;
 }
 
-.show_tools_box #main-horizontal-split {
+.show_tools_box #main_horizontal_split {
     grid-columns: 15 1fr;
 }
 
@@ -25,10 +25,10 @@ Screen {
     grid-rows: 1fr 6;
 }
 
-#editing-area {
+#editing_area {
     background: rgb(128, 128, 128);
 }
-.-dark-mode #editing-area {
+.-dark-mode #editing_area {
     background: $surface-lighten-2;
 }
 
