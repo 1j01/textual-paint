@@ -874,6 +874,9 @@ class PaintApp(App):
     # file modification tracking
     saved_undo_count = 0
 
+    # flag to prevent setting the filename input when initially expanding the directory tree
+    expanding_directory_tree = False
+
     NAME_MAP = {
         # key to button id
     }
@@ -1033,9 +1036,10 @@ class PaintApp(App):
             title=_("Save As"),
             handle_button=handle_button,
         )
+        filename = os.path.basename(self.filename) if self.filename else _("Untitled")
         window.content.mount(
             DirectoryTree(id="save_as_dialog_directory_tree", path="/"),
-            Input(id="save_as_dialog_filename_input", placeholder=_("Filename")),
+            Input(id="save_as_dialog_filename_input", placeholder=_("Filename"), value=filename),
             Button(_("Save"), classes="save submit", variant="primary"),
             Button(_("Cancel"), classes="cancel"),
         )
@@ -1046,6 +1050,7 @@ class PaintApp(App):
     def expand_directory_tree(self, tree: DirectoryTree) -> None:
         """Expand the directory tree to the target directory, either the folder of the open file or the current working directory."""
         # TODO: os.path.normcase, and maybe os.path.samefile check
+        self.expanding_directory_tree = True
         target_dir = (self.filename or os.getcwd()).rstrip(os.path.sep)
         node = tree.root
         def get_node_name(node):
@@ -1067,8 +1072,6 @@ class PaintApp(App):
             else:
                 # Directory or file not found.
                 break
-        # NOTE: There is a 0.02s timer meant to run after the directory tree is expanded,
-        # externally, compounding this mess.
         # Timer is needed to wait for the new nodes to mount, I think.
         # tree.select_node(node)
         self.set_timer(0.01, lambda: tree.select_node(node))
@@ -1087,6 +1090,10 @@ class PaintApp(App):
         # tree.scroll_to_region(tree._get_label_region(node._line), animate=False, top=True)
         # Timer is needed to wait for the new nodes to mount, I think.
         self.set_timer(0.01, lambda: tree.scroll_to_region(tree._get_label_region(node._line), animate=False, top=True))
+
+        def done_expanding():
+            self.expanding_directory_tree = False
+        self.set_timer(0.02, done_expanding)
     
     def confirm_overwrite(self, filename: str, callback) -> None:
         message = _("%1 already exists.\nDo you want to replace it?").replace("%1", filename)
@@ -1279,16 +1286,7 @@ class PaintApp(App):
             Button(_("Cancel"), classes="cancel"),
         )
         self.mount(window)
-        # This context manager doesn't work because it's a child widget, not self.
-        # ...and/or because it uses a timer to select the file node in the tree.
-        # I might be able to do prevent on the widget itself, if not for the timer.
-        # with self.prevent(DirectoryTree.FileSelected):
         self.expand_directory_tree(window.content.query_one("#open_dialog_directory_tree"))
-        # Reset the filename input, which gets set to the selected file name.
-        def reset_filename_input():
-            window.content.query_one("#open_dialog_filename_input").value = ""
-        # Ugh, expand_directory_tree uses set_timer already.
-        self.set_timer(0.02, reset_filename_input)
 
     def action_new(self, *, force=False) -> None:
         """Create a new image."""
@@ -1751,7 +1749,8 @@ class PaintApp(App):
         elif event.node.parent:
             self.directory_tree_selected_path = event.node.parent.data.path
             name = os.path.basename(event.node.data.path)
-            self.query_one("#save_as_dialog_filename_input, #open_dialog_filename_input", Input).value = name
+            if not self.expanding_directory_tree:
+                self.query_one("#save_as_dialog_filename_input, #open_dialog_filename_input", Input).value = name
         else:
             self.directory_tree_selected_path = None
 
