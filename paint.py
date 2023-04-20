@@ -1305,10 +1305,13 @@ class PaintApp(App):
     
     def action_open_character_selector(self) -> None:
         """Show dialog to select a character."""
+        for old_window in self.query("#character_selector_dialog").nodes:
+            old_window.close()
         def handle_selected_character(character):
             self.selected_char = character
             window.close()
         window = CharacterSelectorDialog(
+            id="character_selector_dialog",
             handle_selected_character=handle_selected_character,
             selected_character=self.selected_char,
             title=_("Choose Character"),
