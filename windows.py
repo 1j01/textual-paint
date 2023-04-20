@@ -1,3 +1,4 @@
+from typing import Union, Optional, Callable
 from textual import events
 from textual.message import Message
 from textual.app import ComposeResult
@@ -226,90 +227,90 @@ class CharacterSelectorDialogWindow(DialogWindow):
         self.content.mount(container)
         self.content.mount(Button("Cancel", classes="cancel"))
 
-
-def create_warning_message_box(title: str, message_widget: Widget, button_types: str = "ok", callback = None) -> None:
-    if isinstance(message_widget, str):
-        message_widget = Static(message_widget, markup=False)
-
-    def handle_button(button):
-        if callback:
-            callback(button)
-        window.close()
-
-    window = DialogWindow(
-        id="message_box",
-        title=title,
-        handle_button=handle_button,
-    )
-
-    if button_types == "ok":
-        buttons = [Button(_("OK"), classes="ok submit", variant="primary")]
-    elif button_types == "yes/no":
-        buttons = [
-            Button(_("Yes"), classes="yes submit"), #, variant="primary"),
-            Button(_("No"), classes="no"),
-        ]
-    elif button_types == "yes/no/cancel":
-        buttons = [
-            Button(_("Yes"), classes="yes submit", variant="primary"),
-            Button(_("No"), classes="no"),
-            Button(_("Cancel"), classes="cancel"),
-        ]
-    else:
-        raise ValueError("Invalid button_types: " + repr(button_types))
-    
-    # ASCII line art version:
-#     warning_icon = Static("""[#ffff00]
+# ASCII line art version:
+# warning_icon = Static("""[#ffff00]
 #     _
 #    / \\
 #   / | \\
 #  /  .  \\
 # /_______\\
-# [/]""", classes="warning_icon")
-    # Unicode solid version 1:
-#     warning_icon = Static("""[#ffff00 on #000000]
+# [/]""", classes="warning_icon message_box_icon")
+# Unicode solid version 1:
+# warning_icon = Static("""[#ffff00 on #000000]
 #     _
 #    ◢█◣
 #   ◢[#000000 on #ffff00] ▼ [/]◣
 #  ◢[#000000 on #ffff00]  ●  [/]◣
 # ◢███████◣
-# [/]""", classes="warning_icon")
-    # Unicode line art version (' might be a better than ╰/╯):
-#     warning_icon = Static("""[#ffff00]
+# [/]""", classes="warning_icon message_box_icon")
+# Unicode line art version (' might be a better than ╰/╯):
+# warning_icon = Static("""[#ffff00]
 #     _
 #    ╱ ╲
 #   ╱ │ ╲
 #  ╱  .  ╲
 # ╰───────╯
-# """, classes="warning_icon")
-    # Unicode solid version 2:
-#     warning_icon = Static("""[#ffff00 on #000000]
+# """, classes="warning_icon message_box_icon")
+# Unicode solid version 2:
+# warning_icon = Static("""[#ffff00 on #000000]
 #      🭯
 #     🭅[#000000 on #ffff00]🭯[/]🭐
 #    🭅[#000000 on #ffff00] ▼ [/]🭐
 #   🭅[#000000 on #ffff00]  ●  [/]🭐
 #  🭅███████🭐
-# [/]""", classes="warning_icon")
-    # Unicode solid version 3, now with a border:
-    # VS Code's terminal seems unsure of the width of these characters (like it's rendering 2 wide but advancing by 1), and has gaps/seams.
-    # Ubuntu's terminal looks better, and the graphics have less gaps, but the overall shape is worse.
-    # I guess a lot of this comes down to the font as well.
-    warning_icon = Static("""
+# [/]""", classes="warning_icon message_box_icon")
+# Unicode solid version 3, now with a border:
+# VS Code's terminal seems unsure of the width of these characters (like it's rendering 2 wide but advancing by 1), and has gaps/seams.
+# Ubuntu's terminal looks better, and the graphics have less gaps, but the overall shape is worse.
+# I guess a lot of this comes down to the font as well.
+warning_icon = Static("""
     [#000000]🭋[#ffff00 on #000000]🭯[/]🭀[/]
    [#000000]🭋[#ffff00 on #000000]🭅█🭐[/]🭀[/]
   [#000000]🭋[#ffff00 on #000000]🭅[#000000 on #ffff00] ▼ [/]🭐[/]🭀[/]
  [#000000]🭋[#ffff00 on #000000]🭅[#000000 on #ffff00]  ●  [/]🭐[/]🭀[/]
 [#000000]🭋[#ffff00 on #000000]🭅███████🭐[/]🭀[/]
 [#000000]🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃[/]
-""", classes="warning_icon")
-    window.content.mount(
-        Horizontal(
-            warning_icon,
-            Vertical(
-                message_widget,
-                Horizontal(*buttons, classes="buttons"),
-                classes="main_content"
+""", classes="warning_icon message_box_icon")
+
+class MessageBox(DialogWindow):
+    """A simple dialog window that displays a message, a group of buttons, and an optional icon."""
+    def __init__(self, *args, message_widget: Union[Widget, str], button_types: str = "ok", icon_widget: Optional[Widget], handle_button: Optional[Callable] = None, **kwargs) -> None:
+        """Initialize the message box."""
+        super().__init__(*args, handle_button=handle_button, **kwargs)
+        if isinstance(message_widget, str):
+            message_widget = Static(message_widget, markup=False)
+        if not icon_widget:
+            icon_widget = Static("")
+        self.message_widget = message_widget
+        self.icon_widget = icon_widget
+        self.button_types = button_types
+
+    def on_mount(self):
+        """Called when the window is mounted."""
+
+        if self.button_types == "ok":
+            buttons = [Button(_("OK"), classes="ok submit", variant="primary")]
+        elif self.button_types == "yes/no":
+            buttons = [
+                Button(_("Yes"), classes="yes submit"), #, variant="primary"),
+                Button(_("No"), classes="no"),
+            ]
+        elif self.button_types == "yes/no/cancel":
+            buttons = [
+                Button(_("Yes"), classes="yes submit", variant="primary"),
+                Button(_("No"), classes="no"),
+                Button(_("Cancel"), classes="cancel"),
+            ]
+        else:
+            raise ValueError("Invalid button_types: " + repr(self.button_types))
+
+        self.content.mount(
+            Horizontal(
+                self.icon_widget,
+                Vertical(
+                    self.message_widget,
+                    Horizontal(*buttons, classes="buttons"),
+                    classes="main_content"
+                )
             )
         )
-    )
-    return window

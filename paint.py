@@ -24,7 +24,7 @@ from textual.widget import Widget
 from textual.widgets import Button, Static, Input, DirectoryTree, Header
 from textual.color import Color
 from menus import MenuBar, Menu, MenuItem, Separator
-from windows import Window, DialogWindow, CharacterSelectorDialogWindow, create_warning_message_box
+from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, warning_icon
 from localization.i18n import get as _, load_language
 
 
@@ -1151,13 +1151,27 @@ class PaintApp(App):
             restart_program()
 
     def warning_message_box(self, title: str, message_widget: Widget, button_types: str = "ok", callback = None) -> None:
-        
+        """Show a warning message box with the given title, message, and buttons."""
         for old_window in self.query("#message_box").nodes:
             old_window.close()
         
         self.bell()
 
-        window = create_warning_message_box(title, message_widget, button_types, callback)
+        def handle_button(button):
+            # TODO: this is not different or useful enough from DialogWindow's
+            # handle_button to justify
+            # It's a difference in name, and an automatic close
+            if callback:
+                callback(button)
+            window.close()
+        window = MessageBox(
+            id="message_box",
+            title=title,
+            icon_widget=warning_icon,
+            message_widget=message_widget,
+            button_types=button_types,
+            handle_button=handle_button,
+        )
         self.mount(window)
 
     def action_open(self) -> None:
