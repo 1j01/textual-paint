@@ -1502,8 +1502,13 @@ class PaintApp(App):
         prev_magnification = self.magnification
         prospective_magnification = self.get_prospective_magnification()
 
-        # This had other code in a set_magnification function in JS Paint, not sure yet if it's important
+        # TODO: fix flickering.
+        # The canvas resize and scroll each cause a repaint.
+        # I tried using a batch_update, but it prevented the layout recalculation
+        # needed for the scroll to work correctly.
+        # with self.batch_update():
         self.magnification = prospective_magnification
+        self.canvas.magnification = self.magnification
 
         if self.magnification > prev_magnification:
             w = self.editing_area.size.width / self.magnification
@@ -1513,8 +1518,16 @@ class PaintApp(App):
                 (y - h / 2) * self.magnification / prev_magnification,
                 animate=False,
             )
+            # The same thing but without call_after_refresh...
+            # Doesn't work correctly, because the layout isn't updated yet.
+            # And if I call self.screen._refresh_layout() here,
+            # it's back to the flickering.
+            # self.editing_area._scroll_to(
+            #     (x - w / 2) * self.magnification / prev_magnification,
+            #     (y - h / 2) * self.magnification / prev_magnification,
+            #     animate=False,
+            # )
         
-        self.canvas.magnification = self.magnification
 
     def on_canvas_tool_start(self, event: Canvas.ToolStart) -> None:
         """Called when the user starts drawing on the canvas."""
