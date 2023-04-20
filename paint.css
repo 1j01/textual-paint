@@ -192,7 +192,7 @@ Screen {
     height: auto;
     background: $background;
 }
-.dialog .window_content {
+.dialog_window .window_content {
     background: $surface;
 }
 

@@ -971,7 +971,6 @@ class PaintApp(App):
                     on_save_confirmed()
 
         window = DialogWindow(
-            classes="dialog",
             id="save_as_dialog",
             title=_("Save As"),
             handle_button=handle_button,
@@ -1084,7 +1083,6 @@ class PaintApp(App):
             window.close()
 
         window = DialogWindow(
-            classes="dialog",
             id="message_box",
             title=title,
             handle_button=handle_button,
@@ -1209,7 +1207,6 @@ class PaintApp(App):
         for old_window in self.query("#save_as_dialog, #open_dialog").nodes:
             old_window.close()
         window = DialogWindow(
-            classes="dialog",
             id="open_dialog",
             title=_("Open"),
             handle_button=handle_button,
