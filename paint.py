@@ -56,9 +56,9 @@ def restart_program():
             try:
                 os.close(handler.fd)
             except Exception as e:
-                print("Error closing file descriptor", handler.fd, e)
+                print(f"Error closing file descriptor ({handler.fd}):", e)
     except Exception as e:
-        print("Error closing file descriptors", e)
+        print("Error closing file descriptors:", e)
 
     # python = sys.executable
     # os.execl(python, python, *sys.argv)
