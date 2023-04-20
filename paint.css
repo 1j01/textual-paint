@@ -87,8 +87,9 @@ Screen {
 }
 
 #selected_color {
-    width: 8;
+    width: 9;
     height: 4;
+    padding-left: 3;
     margin-left: 1;
 }
 
