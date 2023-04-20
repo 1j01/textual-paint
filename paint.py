@@ -1253,7 +1253,7 @@ class PaintApp(App):
                         content = f.read() # f is out of scope in go_ahead()
                         def go_ahead():
                             try:
-                                new_image = AnsiArtDocument.from_ansi(content)
+                                new_image = AnsiArtDocument.from_text(content)
                             except Exception as e:
                                 # "This is not a valid bitmap file, or its format is not currently supported."
                                 # string from MS Paint doesn't apply well here,
