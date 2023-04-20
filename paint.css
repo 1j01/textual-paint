@@ -197,24 +197,20 @@ Screen {
     background: $surface;
 }
 
-#save_as_dialog .window_content,
-#open_dialog .window_content {
+.file_dialog_window .window_content {
     padding: 2 4;
     width: 80;
     height: 30;
 }
-#save_as_dialog .window_content Input,
-#open_dialog .window_content Input {
+.file_dialog_window .window_content Input {
     width: 100%;
     margin-bottom: 1;
 }
-#save_as_dialog .window_content DirectoryTree,
-#open_dialog .window_content DirectoryTree {
+.file_dialog_window .window_content DirectoryTree {
     height: 15;
     margin-bottom: 1;
 }
-#save_as_dialog .window_content Button,
-#open_dialog .window_content Button {
+.file_dialog_window .window_content Button {
     width: auto;
     height: auto;
 }

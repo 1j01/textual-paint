@@ -1039,6 +1039,7 @@ class PaintApp(App):
 
         window = DialogWindow(
             id="save_as_dialog",
+            classes="file_dialog_window",
             title=_("Save As"),
             handle_button=handle_button,
         )
@@ -1282,6 +1283,7 @@ class PaintApp(App):
             old_window.close()
         window = DialogWindow(
             id="open_dialog",
+            classes="file_dialog_window",
             title=_("Open"),
             handle_button=handle_button,
         )
