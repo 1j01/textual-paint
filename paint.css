@@ -218,6 +218,29 @@ Screen {
     height: auto;
 }
 
+.character_selector_dialog .character_buttons {
+    layout: grid;
+    grid-size: 8;
+    grid-columns: 6;
+    grid-rows: 3;
+    grid-gutter: 1 1;
+    width: auto;
+    height: auto;
+    max-height: 30;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+.character_selector_dialog .character_buttons Button {
+    /* compensate for scrollbar */
+    margin-right: 3;
+    /* balance */
+    margin-left: 1;
+}
+.character_selector_dialog .cancel {
+    margin: 2;
+}
+
+
 #message_box .window_content {
     width: 50;
     height: auto;

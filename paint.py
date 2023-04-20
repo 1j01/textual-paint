@@ -24,7 +24,7 @@ from textual.widget import Widget
 from textual.widgets import Button, Static, Input, DirectoryTree, Header
 from textual.color import Color
 from menus import MenuBar, Menu, MenuItem, Separator
-from windows import Window, DialogWindow
+from windows import Window, DialogWindow, CharacterSelectorDialog
 from localization.i18n import get as _, load_language
 
 
@@ -310,6 +310,33 @@ class ToolsBox(Container):
             for tool in Tool:
                 yield Button(tool.get_icon(), id="tool_button_" + tool.name)
 
+class CharInput(Input):
+    """Widget for entering a single character."""
+    
+    def validate_value(self, value: str) -> str:
+        """Limit the value to a single character."""
+        return value[-1] if value else " "
+    
+    def watch_value(self, value: str) -> None:
+        """Update the cursor position when the value changes."""
+        # TODO: use a Message instead of accessing the app directly
+        self.app.selected_char = value
+
+    def validate_cursor_position(self, position: int) -> int:
+        """Force the cursor position to 0 so that it's over the character."""
+        return 0
+    
+    def insert_text_at_cursor(self, text: str) -> None:
+        """Override to limit the value to a single character."""
+        self.value = text[-1] if text else " "
+
+    last_click_time = 0
+    def on_click(self, event: events.Click) -> None:
+        """Detect double click and open character selector dialog."""
+        if event.time - self.last_click_time < 0.8:
+            self.app.action_open_character_selector()
+        self.last_click_time = event.time
+
 class ColorsBox(Container):
     """Color palette widget."""
 
@@ -317,7 +344,10 @@ class ColorsBox(Container):
         """Add our selected color and color well buttons."""
         with Container(id="colors_box"):
             with Container(id="selected_colors"):
-                yield Static(id="selected_color", classes="color_well")
+                # This widget is doing double duty, showing the current color
+                # and showing/editing the current character.
+                # I haven't settled on naming for this yet.
+                yield CharInput(id="selected_color", classes="color_well")
             with Container(id="available_colors"):
                 for color in palette:
                     button = Button("", id="color_button_" + color, classes="color_well")
@@ -858,6 +888,10 @@ class PaintApp(App):
         """Called when selected_color changes."""
         self.query_one("#selected_color").styles.background = selected_color
 
+    def watch_selected_char(self, old_selected_char: str, selected_char: str) -> None:
+        """Called when selected_char changes."""
+        self.query_one("#selected_color").value = selected_char
+
     def stamp_brush(self, x: int, y: int, affected_region_base: Region = None) -> Region:
         brush_diameter = 1
         if self.selected_tool == Tool.brush or self.selected_tool == Tool.airbrush or self.selected_tool == Tool.eraser:
@@ -1245,6 +1279,18 @@ class PaintApp(App):
         self.selected_color = palette[0]
         self.selected_char = " "
     
+    def action_open_character_selector(self) -> None:
+        """Show dialog to select a character."""
+        def handle_selected_character(character):
+            self.selected_char = character
+            window.close()
+        window = CharacterSelectorDialog(
+            handle_selected_character=handle_selected_character,
+            selected_character=self.selected_char,
+            title=_("Choose Character"),
+        )
+        self.mount(window)
+
     def action_print_preview(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_page_setup(self) -> None:

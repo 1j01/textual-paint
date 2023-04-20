@@ -156,3 +156,61 @@ class DialogWindow(Window):
         # Make sure the button is in the window content
         if event.button in self.content.query("Button").nodes:
             self.handle_button(event.button)
+
+
+class CharacterSelectorDialog(DialogWindow):
+    """A dialog window that lets the user select a character."""
+    
+    # class CharacterSelected(Message):
+    #     """Sent when a character is selected."""
+    #     def __init__(self, character: str) -> None:
+    #         """Initialize the message."""
+    #         self.character = character
+
+    # TODO: fact check this string
+    # spell-checker: disable
+    code_page_437 = "☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼ !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~⌂ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▀▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ "
+    # spell-checker: enable
+    char_list = [char for char in code_page_437]
+
+    # char_list = ["A", "b", "c"] * 4
+
+    def __init__(self, *args, selected_character=None, handle_selected_character=None, **kwargs) -> None:
+        """Initialize the dialog window."""
+        super().__init__(handle_button=self.handle_button, *args, **kwargs)
+        self.add_class("character_selector_dialog")
+        # TODO: can't I ditch the class names and just use the python class names in selectors?
+        self._char_to_highlight = selected_character
+        self.handle_selected_character = handle_selected_character
+    
+    def handle_button(self, button: Button) -> None:
+        """Called when a button is clicked or activated with the keyboard."""
+        if button.id == "cancel":
+            self.request_close()
+        else:
+            # self.post_message(self.CharacterSelected(button.char))
+            # self.close()
+            self.handle_selected_character(button.char)
+
+    # def compose(self) -> ComposeResult:
+    #     """Add our buttons."""
+    #     with Container(classes="character_buttons"):
+    #         for char in self.char_list:
+    #             button = Button(char, variant="primary" if char is self._char_to_highlight else "default")
+    #             button.char = char
+    #             # if char is self._char_to_highlight:
+    #             #     button.add_class("selected")
+    #             yield button
+    #     yield Button("Cancel", id="cancel")
+
+    def on_mount(self) -> None:
+        """Called when the window is mounted."""
+        container = Container(classes="character_buttons")
+        for char in self.char_list:
+            button = Button(char, variant="primary" if char is self._char_to_highlight else "default")
+            button.char = char
+            # if char is self._char_to_highlight:
+            #     button.add_class("selected")
+            container.mount(button)
+        self.content.mount(container)
+        self.content.mount(Button("Cancel", classes="cancel"))
