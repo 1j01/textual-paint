@@ -1708,7 +1708,7 @@ class PaintApp(App):
         if affected_region:
             if replace_action:
                 affected_region = affected_region.union(old_action.region)
-            self.canvas.refresh(affected_region)
+            self.canvas.refresh_scaled_region(affected_region)
 
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
