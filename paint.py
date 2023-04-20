@@ -798,30 +798,19 @@ class Canvas(Widget):
     
     def big_ch(self, ch: str, x: int, y: int) -> str:
         """Return a character part of a meta-glyph."""
-        if ch == " ":
-            return " "
-        if ch == "█":
-            return "█"
-        if ch == "▄":
-            if y < self.magnification // 2:
+        match ch:
+            case " ":
                 return " "
-            else:
+            case "█":
                 return "█"
-        if ch == "▀":
-            if y < self.magnification // 2:
-                return "█"
-            else:
-                return " "
-        if ch == "▌":
-            if x < self.magnification // 2:
-                return "█"
-            else:
-                return " "
-        if ch == "▐":
-            if x < self.magnification // 2:
-                return " "
-            else:
-                return "█"
+            case "▄":
+                return "█" if y >= self.magnification // 2 else " "
+            case "▀":
+                return "█" if y < self.magnification // 2 else " "
+            case "▌":
+                return "█" if x < self.magnification // 2 else " "
+            case "▐":
+                return "█" if x >= self.magnification // 2 else " "
         # Fall back to showing the character for a single cell.
         # if x == 0 and y == 0:
         if x == self.magnification // 2 and y == self.magnification // 2:
