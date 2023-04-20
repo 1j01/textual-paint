@@ -27,6 +27,7 @@ Screen {
 
 #editing-area {
     background: rgb(128, 128, 128);
+    /* layers: magnifier_preview; */
 }
 .-dark-mode #editing-area {
     background: $surface-lighten-2;

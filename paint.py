@@ -685,6 +685,7 @@ class Canvas(Widget):
         super().__init__(**kwargs)
         self.image = None
         self.pointer_active = False
+        self.magnifier_preview_region: Optional[Region] = None
 
     def on_mouse_down(self, event) -> None:
         event.x //= self.magnification
@@ -731,11 +732,19 @@ class Canvas(Widget):
         if y >= self.size.height:
             return Strip.blank(self.size.width)
         segments = []
+        if self.magnifier_preview_region:
+            inner_magnifier_preview_region = self.magnifier_preview_region.shrink((1, 1, 1, 1))
         for x in range(self.size.width):
             bg = self.image.bg[y // self.magnification][x // self.magnification]
             fg = self.image.fg[y // self.magnification][x // self.magnification]
             ch = self.image.ch[y // self.magnification][x // self.magnification]
-            segments.append(Segment(ch, Style.parse(fg+" on "+bg)))
+            style = Style.parse(fg+" on "+bg)
+            if self.magnifier_preview_region and self.magnifier_preview_region.contains(x, y) and not inner_magnifier_preview_region.contains(x, y):
+                # invert the colors
+                # style.bgcolor = rich.Color.from_rgb(255 - style.bgcolor.triplet.red, 255 - style.bgcolor.triplet.green, 255 - style.bgcolor.triplet.blue)
+                # style.color = rich.Color.from_rgb(255 - style.color.triplet.red, 255 - style.color.triplet.green, 255 - style.color.triplet.blue)
+                style = Style.parse(f"rgb({255 - style.color.triplet.red},{255 - style.color.triplet.green},{255 - style.color.triplet.blue}) on rgb({255 - style.bgcolor.triplet.red},{255 - style.bgcolor.triplet.green},{255 - style.bgcolor.triplet.blue})")
+            segments.append(Segment(ch, style))
         return Strip(segments, self.size.width)
     
     def refresh_scaled_region(self, region: Region) -> None:
@@ -743,6 +752,7 @@ class Canvas(Widget):
         if self.magnification == 1:
             self.refresh(region)
             return
+        # TODO: are these offsets needed? I added them because of a problem which I've fixed
         self.refresh(Region(
             (region.x - 1) * self.magnification,
             (region.y - 1) * self.magnification,
@@ -1372,6 +1382,7 @@ class PaintApp(App):
                 ToolsBox(),
                 Container(
                     Canvas(id="canvas"),
+                    # Container(id="magnifier-preview"),
                     id="editing-area",
                 ),
                 id="main-horizontal-split",
@@ -1386,6 +1397,7 @@ class PaintApp(App):
         self.canvas = self.query_one("#canvas", Canvas)
         self.canvas.image = self.image
         self.editing_area = self.query_one("#editing-area", Container)
+        # self.magnifier_preview = self.query_one("#magnifier-preview", Container)
 
     def pick_color(self, x: int, y: int) -> None:
         """Select a color from the image."""
@@ -1459,6 +1471,11 @@ class PaintApp(App):
             self.preview_action.undo(self.image)
             self.canvas.refresh_scaled_region(self.preview_action.region)
             self.preview_action = None
+        if self.canvas.magnifier_preview_region:
+            region = self.canvas.magnifier_preview_region
+            self.canvas.magnifier_preview_region = None
+            self.canvas.refresh_scaled_region(region)
+
 
     def on_canvas_tool_preview_update(self, event: Canvas.ToolPreviewUpdate) -> None:
         """Called when the user is hovering over the canvas but not drawing yet."""
@@ -1474,6 +1491,59 @@ class PaintApp(App):
                 self.preview_action.region = affected_region.intersection(Region(0, 0, self.image.width, self.image.height))
                 self.preview_action.update(image_before)
                 self.canvas.refresh_scaled_region(affected_region)
+        elif self.selected_tool == Tool.magnifier:
+            prospective_magnification = self.get_prospective_magnification()
+
+            if prospective_magnification < self.magnification:
+                return # hide if clicking would zoom out
+
+            # prospective viewport size in document coords
+            w = self.editing_area.size.width // prospective_magnification
+            h = self.editing_area.size.height // prospective_magnification
+
+            rect_x1 = (event.mouse_move_event.x - w // 2)
+            rect_y1 = (event.mouse_move_event.y - h // 2)
+
+            # try to move rect into bounds without squishing
+            rect_x1 = max(0, rect_x1)
+            rect_y1 = max(0, rect_y1)
+            rect_x1 = min(self.image.width - w, rect_x1)
+            rect_y1 = min(self.image.height - h, rect_y1)
+
+            rect_x2 = rect_x1 + w
+            rect_y2 = rect_y1 + h
+
+            # clamp rect to bounds (with squishing)
+            rect_x1 = max(0, rect_x1)
+            rect_y1 = max(0, rect_y1)
+            rect_x2 = min(self.image.width, rect_x2)
+            rect_y2 = min(self.image.height, rect_y2)
+
+            rect_w = rect_x2 - rect_x1
+            rect_h = rect_y2 - rect_y1
+            rect_x = rect_x1
+            rect_y = rect_y1
+
+            # draw rectangle around the prospective viewport
+            # This approach didn't work because
+            # 1. the magnifier preview box blocked mouse events
+            # 2. alpha transparency didn't work, it blended with the background ignoring the canvas
+            # self.magnifier_preview.display = True
+            # self.magnifier_preview.styles.offset = (
+            #     rect_x * self.magnification,
+            #     rect_y * self.magnification,
+            # )
+            # self.magnifier_preview.styles.width = rect_w * self.magnification
+            # self.magnifier_preview.styles.height = rect_h * self.magnification
+            # self.magnifier_preview.styles.border = ("solid", "#000000")
+            # self.magnifier_preview.styles.background = Color(255, 0, 0, a=0.1)
+            # self.magnifier_preview.styles.layer = "magnifier_preview"
+
+            # draw rectangle around the prospective viewport directly
+            # This is more efficient, and lets us invert the colors
+            # so that the preview box is visible on any background.
+            self.canvas.magnifier_preview_region = Region(rect_x, rect_y, rect_w, rect_h)
+            self.canvas.refresh_scaled_region(self.canvas.magnifier_preview_region)
 
     def on_canvas_tool_preview_stop(self, event: Canvas.ToolPreviewStop) -> None:
         """Called when the user stops hovering over the canvas (while previewing, not drawing)."""
