@@ -1067,6 +1067,8 @@ class PaintApp(App):
             else:
                 # Directory or file not found.
                 break
+        # NOTE: There is a 0.02s timer meant to run after the directory tree is expanded,
+        # externally, compounding this mess.
         # Timer is needed to wait for the new nodes to mount, I think.
         # tree.select_node(node)
         self.set_timer(0.01, lambda: tree.select_node(node))
@@ -1277,7 +1279,16 @@ class PaintApp(App):
             Button(_("Cancel"), classes="cancel"),
         )
         self.mount(window)
+        # This context manager doesn't work because it's a child widget, not self.
+        # ...and/or because it uses a timer to select the file node in the tree.
+        # I might be able to do prevent on the widget itself, if not for the timer.
+        # with self.prevent(DirectoryTree.FileSelected):
         self.expand_directory_tree(window.content.query_one("#open_dialog_directory_tree"))
+        # Reset the filename input, which gets set to the selected file name.
+        def reset_filename_input():
+            window.content.query_one("#open_dialog_filename_input").value = ""
+        # Ugh, expand_directory_tree uses set_timer already.
+        self.set_timer(0.02, reset_filename_input)
 
     def action_new(self, *, force=False) -> None:
         """Create a new image."""
