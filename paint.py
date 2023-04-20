@@ -24,7 +24,7 @@ from textual.widget import Widget
 from textual.widgets import Button, Static, Input, DirectoryTree, Header
 from textual.color import Color
 from menus import MenuBar, Menu, MenuItem, Separator
-from windows import Window, DialogWindow, CharacterSelectorDialogWindow
+from windows import Window, DialogWindow, CharacterSelectorDialogWindow, warning_message_box
 from localization.i18n import get as _, load_language
 
 
@@ -1151,97 +1151,7 @@ class PaintApp(App):
             restart_program()
 
     def warning_message_box(self, title: str, message_widget: Widget, button_types: str = "ok", callback = None) -> None:
-
-        if isinstance(message_widget, str):
-            message_widget = Static(message_widget, markup=False)
-
-        for old_window in self.query("#message_box").nodes:
-            old_window.close()
-        
-        self.bell()
-
-        def handle_button(button):
-            if callback:
-                callback(button)
-            window.close()
-
-        window = DialogWindow(
-            id="message_box",
-            title=title,
-            handle_button=handle_button,
-        )
-
-        if button_types == "ok":
-            buttons = [Button(_("OK"), classes="ok submit", variant="primary")]
-        elif button_types == "yes/no":
-            buttons = [
-                Button(_("Yes"), classes="yes submit"), #, variant="primary"),
-                Button(_("No"), classes="no"),
-            ]
-        elif button_types == "yes/no/cancel":
-            buttons = [
-                Button(_("Yes"), classes="yes submit", variant="primary"),
-                Button(_("No"), classes="no"),
-                Button(_("Cancel"), classes="cancel"),
-            ]
-        else:
-            raise ValueError("Invalid button_types: " + repr(button_types))
-        
-        # ASCII line art version:
-#         warning_icon = Static("""[#ffff00]
-#     _
-#    / \\
-#   / | \\
-#  /  .  \\
-# /_______\\
-# [/]""", classes="warning_icon")
-        # Unicode solid version 1:
-#         warning_icon = Static("""[#ffff00 on #000000]
-#     _
-#    ◢█◣
-#   ◢[#000000 on #ffff00] ▼ [/]◣
-#  ◢[#000000 on #ffff00]  ●  [/]◣
-# ◢███████◣
-# [/]""", classes="warning_icon")
-        # Unicode line art version (' might be a better than ╰/╯):
-#         warning_icon = Static("""[#ffff00]
-#     _
-#    ╱ ╲
-#   ╱ │ ╲
-#  ╱  .  ╲
-# ╰───────╯
-# """, classes="warning_icon")
-        # Unicode solid version 2:
-#         warning_icon = Static("""[#ffff00 on #000000]
-#      🭯
-#     🭅[#000000 on #ffff00]🭯[/]🭐
-#    🭅[#000000 on #ffff00] ▼ [/]🭐
-#   🭅[#000000 on #ffff00]  ●  [/]🭐
-#  🭅███████🭐
-# [/]""", classes="warning_icon")
-        # Unicode solid version 3, now with a border:
-        # VS Code's terminal seems unsure of the width of these characters (like it's rendering 2 wide but advancing by 1), and has gaps/seams.
-        # Ubuntu's terminal looks better, and the graphics have less gaps, but the overall shape is worse.
-        # I guess a lot of this comes down to the font as well.
-        warning_icon = Static("""
-    [#000000]🭋[#ffff00 on #000000]🭯[/]🭀[/]
-   [#000000]🭋[#ffff00 on #000000]🭅█🭐[/]🭀[/]
-  [#000000]🭋[#ffff00 on #000000]🭅[#000000 on #ffff00] ▼ [/]🭐[/]🭀[/]
- [#000000]🭋[#ffff00 on #000000]🭅[#000000 on #ffff00]  ●  [/]🭐[/]🭀[/]
-[#000000]🭋[#ffff00 on #000000]🭅███████🭐[/]🭀[/]
-[#000000]🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃[/]
-""", classes="warning_icon")
-        window.content.mount(
-            Horizontal(
-                warning_icon,
-                Vertical(
-                    message_widget,
-                    Horizontal(*buttons, classes="buttons"),
-                    classes="main_content"
-                )
-            )
-        )
-        self.mount(window)
+        warning_message_box(self, title, message_widget, button_types, callback)
 
     def action_open(self) -> None:
         """Show dialog to open an image from a file."""
