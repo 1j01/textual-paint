@@ -771,9 +771,15 @@ class Canvas(Widget):
         if self.magnifier_preview_region:
             inner_magnifier_preview_region = self.magnifier_preview_region.shrink((1, 1, 1, 1))
         for x in range(self.size.width):
-            bg = self.image.bg[y // self.magnification][x // self.magnification]
-            fg = self.image.fg[y // self.magnification][x // self.magnification]
-            ch = self.image.ch[y // self.magnification][x // self.magnification]
+            try:
+                bg = self.image.bg[y // self.magnification][x // self.magnification]
+                fg = self.image.fg[y // self.magnification][x // self.magnification]
+                ch = self.image.ch[y // self.magnification][x // self.magnification]
+            except IndexError:
+                # This should be easier to debug visually.
+                bg = "#555555"
+                fg = "#cccccc"
+                ch = "?"
             if self.magnification > 1:
                 ch = self.big_ch(ch, x % self.magnification, y % self.magnification)
             style = Style.parse(fg+" on "+bg)
