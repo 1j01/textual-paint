@@ -26,7 +26,6 @@ class Menu(Container):
     def __init__(self, items: List[str], **kwargs) -> None:
         """Initialize a menu."""
         super().__init__(**kwargs)
-        self.add_class("menu")
         self.items = items
         self.parent_menu = None
 
@@ -82,7 +81,7 @@ class Menu(Container):
         self.parent_menu_item = parent_menu_item
         self.add_class("menu_popup")
 
-        if parent_menu.has_class("menu_bar"):
+        if isinstance(parent_menu, MenuBar):
             self.styles.offset = (parent_menu_item.region.x, parent_menu_item.region.y + parent_menu_item.region.height)
         else:
             # JS code for reference
@@ -158,7 +157,6 @@ class MenuBar(Menu):
     def __init__(self, items: List[str], **kwargs) -> None:
         """Initialize a menu bar."""
         super().__init__(items, **kwargs)
-        self.add_class("menu_bar")
 
 
 class MenuItem(Button):
@@ -167,7 +165,6 @@ class MenuItem(Button):
     def __init__(self, name: str, action = None, id: str = None, submenu = None, grayed = False, **kwargs) -> None:
         """Initialize a menu item."""
         super().__init__(markup_hotkey(name), **kwargs)
-        self.add_class("menu_item")
         self.disabled = grayed
         self.action = action
         self.submenu = submenu
@@ -187,7 +184,6 @@ class Separator(Static):
     def __init__(self, **kwargs) -> None:
         """Initialize a separator."""
         super().__init__(mid_line, **kwargs)
-        self.add_class("separator")
         # self.disabled = True # This breaks scroll wheel over the separator, as of Textual 0.20.1
         self.disabled = False
         self.action = None

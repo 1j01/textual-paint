@@ -104,11 +104,10 @@ Screen {
     overflow: hidden;
 }
 
-.menu {
+Menu {
     background: $panel;
-    /* border: round red; */
 }
-.menu_popup {
+Menu.menu_popup {
     layout: vertical;
     dock: top;
     layer: menu-popup;
@@ -124,8 +123,7 @@ Screen {
     /* but I'm accounting for this with padding-right inside the menu item */
     overflow-x: hidden;
 }
-/* MenuBar { */
-.menu_bar {
+MenuBar {
     layout: horizontal;
     width: 100%;
     height: auto;
@@ -133,25 +131,23 @@ Screen {
     /* border-bottom: hkey $panel-darken-2; */
     overflow: hidden;
 }
-/* MenuItem { */
-.menu_item {
+MenuItem {
     width: auto;
     height: auto;
 }
-/* Separator { */
-.separator {
+Separator {
     width: 100%;
     height: 1;
 }
-.menu Button {
+Menu Button {
     border: none;
     height: 3;
 }
-.menu_bar Button {
+MenuBar Button {
     width: auto;
     min-width: 0;
 }
-.menu_popup Button {
+Menu.menu_popup Button {
     min-width: 1fr;
     text-align: left;
     /* This compensates for the scrollbar, so text isn't cut off (though it also applies when there's no scrollbar) */
