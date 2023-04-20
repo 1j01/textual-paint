@@ -741,8 +741,6 @@ class Canvas(Widget):
             style = Style.parse(fg+" on "+bg)
             if self.magnifier_preview_region and self.magnifier_preview_region.contains(x, y) and not inner_magnifier_preview_region.contains(x, y):
                 # invert the colors
-                # style.bgcolor = rich.Color.from_rgb(255 - style.bgcolor.triplet.red, 255 - style.bgcolor.triplet.green, 255 - style.bgcolor.triplet.blue)
-                # style.color = rich.Color.from_rgb(255 - style.color.triplet.red, 255 - style.color.triplet.green, 255 - style.color.triplet.blue)
                 style = Style.parse(f"rgb({255 - style.color.triplet.red},{255 - style.color.triplet.green},{255 - style.color.triplet.blue}) on rgb({255 - style.bgcolor.triplet.red},{255 - style.bgcolor.triplet.green},{255 - style.bgcolor.triplet.blue})")
             segments.append(Segment(ch, style))
         return Strip(segments, self.size.width)
