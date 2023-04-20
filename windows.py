@@ -52,6 +52,7 @@ class Window(Container):
         self.content = Container(classes="window_content")
         # must be after title_bar is defined
         self.title = title
+        self.can_focus = True
 
     def on_mount(self) -> None:
         """Called when the widget is mounted."""
@@ -61,6 +62,15 @@ class Window(Container):
         # (I peaked into mouse over handling and it calls update_styles.)
         # This can still briefly show the incorrect layout, since it relies on a timer.
         self.set_timer(0.01, lambda: self.app.update_styles(self))
+        # Set focus. (In the future, some windows will not want default focus...)
+        self.set_timer(0.01, lambda: self.focus())
+    
+    def on_focus(self, event: events.Focus) -> None:
+        """Called when the window is focused."""
+        # TODO: focus last focused widget if re-focusing
+        controls = self.content.query(".submit, Input, Button")
+        if controls:
+            controls[0].focus()
 
     # def compose(self) -> ComposeResult:
     #     """Add our widgets."""
@@ -156,6 +166,9 @@ class DialogWindow(Window):
         # Make sure the button is in the window content
         if event.button in self.content.query("Button").nodes:
             self.handle_button(event.button)
+
+    # def on_input_submitted(self, event: Input.Submitted) -> None:
+    #     """Called when a the enter key is pressed in an Input."""
 
 
 class CharacterSelectorDialog(DialogWindow):
