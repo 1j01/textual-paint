@@ -191,7 +191,7 @@ class CharacterSelectorDialog(DialogWindow):
     def __init__(self, *args, selected_character=None, handle_selected_character=None, **kwargs) -> None:
         """Initialize the dialog window."""
         super().__init__(handle_button=self.handle_button, *args, **kwargs)
-        self.add_class("character_selector_dialog")
+        self.add_class("character_selector_dialog_window")
         # TODO: can't I ditch the class names and just use the python class names in selectors?
         self._char_to_highlight = selected_character
         self.handle_selected_character = handle_selected_character

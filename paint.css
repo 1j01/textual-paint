@@ -211,7 +211,7 @@ Menu.menu_popup Button {
     height: auto;
 }
 
-.character_selector_dialog .character_buttons {
+.character_selector_dialog_window .character_buttons {
     layout: grid;
     grid-size: 8;
     grid-columns: 6;
@@ -223,13 +223,13 @@ Menu.menu_popup Button {
     overflow-y: auto;
     overflow-x: hidden;
 }
-.character_selector_dialog .character_buttons Button {
+.character_selector_dialog_window .character_buttons Button {
     /* compensate for scrollbar */
     margin-right: 3;
     /* balance */
     margin-left: 1;
 }
-.character_selector_dialog .cancel {
+.character_selector_dialog_window .cancel {
     margin: 2;
 }
 
