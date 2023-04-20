@@ -1093,7 +1093,7 @@ class PaintApp(App):
 
         def done_expanding():
             self.expanding_directory_tree = False
-        self.set_timer(0.02, done_expanding)
+        self.set_timer(0.1, done_expanding)
     
     def confirm_overwrite(self, filename: str, callback) -> None:
         message = _("%1 already exists.\nDo you want to replace it?").replace("%1", filename)
