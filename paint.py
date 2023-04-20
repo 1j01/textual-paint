@@ -1382,7 +1382,6 @@ class PaintApp(App):
                 ToolsBox(),
                 Container(
                     Canvas(id="canvas"),
-                    # Container(id="magnifier-preview"),
                     id="editing-area",
                 ),
                 id="main-horizontal-split",
@@ -1397,7 +1396,6 @@ class PaintApp(App):
         self.canvas = self.query_one("#canvas", Canvas)
         self.canvas.image = self.image
         self.editing_area = self.query_one("#editing-area", Container)
-        # self.magnifier_preview = self.query_one("#magnifier-preview", Container)
 
     def pick_color(self, x: int, y: int) -> None:
         """Select a color from the image."""
@@ -1524,24 +1522,6 @@ class PaintApp(App):
             rect_x = rect_x1
             rect_y = rect_y1
 
-            # draw rectangle around the prospective viewport
-            # This approach didn't work because
-            # 1. the magnifier preview box blocked mouse events
-            # 2. alpha transparency didn't work, it blended with the background ignoring the canvas
-            # self.magnifier_preview.display = True
-            # self.magnifier_preview.styles.offset = (
-            #     rect_x * self.magnification,
-            #     rect_y * self.magnification,
-            # )
-            # self.magnifier_preview.styles.width = rect_w * self.magnification
-            # self.magnifier_preview.styles.height = rect_h * self.magnification
-            # self.magnifier_preview.styles.border = ("solid", "#000000")
-            # self.magnifier_preview.styles.background = Color(255, 0, 0, a=0.1)
-            # self.magnifier_preview.styles.layer = "magnifier_preview"
-
-            # draw rectangle around the prospective viewport directly
-            # This is more efficient, and lets us invert the colors
-            # so that the preview box is visible on any background.
             self.canvas.magnifier_preview_region = Region(rect_x, rect_y, rect_w, rect_h)
             self.canvas.refresh_scaled_region(self.canvas.magnifier_preview_region)
 
