@@ -171,7 +171,7 @@ class DialogWindow(Window):
     #     """Called when a the enter key is pressed in an Input."""
 
 
-class CharacterSelectorDialog(DialogWindow):
+class CharacterSelectorDialogWindow(DialogWindow):
     """A dialog window that lets the user select a character."""
     
     # class CharacterSelected(Message):

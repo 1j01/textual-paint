@@ -24,7 +24,7 @@ from textual.widget import Widget
 from textual.widgets import Button, Static, Input, DirectoryTree, Header
 from textual.color import Color
 from menus import MenuBar, Menu, MenuItem, Separator
-from windows import Window, DialogWindow, CharacterSelectorDialog
+from windows import Window, DialogWindow, CharacterSelectorDialogWindow
 from localization.i18n import get as _, load_language
 
 
@@ -1337,7 +1337,7 @@ class PaintApp(App):
         def handle_selected_character(character):
             self.selected_char = character
             window.close()
-        window = CharacterSelectorDialog(
+        window = CharacterSelectorDialogWindow(
             id="character_selector_dialog",
             handle_selected_character=handle_selected_character,
             selected_character=self.selected_char,
