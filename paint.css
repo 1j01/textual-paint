@@ -241,6 +241,11 @@ Screen {
     margin: 2;
 }
 
+#about_paint_dialog .window_content {
+    padding: 2 4;
+    width: 50;
+    height: auto;
+}
 
 #message_box .window_content {
     width: 50;

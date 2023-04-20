@@ -1394,8 +1394,27 @@ class PaintApp(App):
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_help_topics(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    
     def action_about_paint(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        """Show the About Paint dialog."""
+        for old_window in self.query("#about_paint_dialog").nodes:
+            old_window.close()
+        window = DialogWindow(
+            id="about_paint_dialog",
+            title=_("About Paint"),
+            handle_button=lambda button: window.close(),
+        )
+        window.content.mount(Static("""🎨 [b]Textual Paint[/b]
+
+[i]MS Paint in your terminal.[/i]
+
+[b]Version:[/b] 0.1.0
+[b]Author:[/b] [link=https://isaiahodhner.io/]Isaiah Odhner[/link]
+[b]License:[/b] [link=https://github.com/1j01/textual-paint/blob/main/LICENSE.txt]MIT[/link]
+[b]Source Code:[/b] [link=https://github.com/1j01/textual-paint]github.com/1j01/textual-paint[/link]
+"""))
+        window.content.mount(Button(_("OK"), classes="ok submit"))
+        self.mount(window)
 
     def compose(self) -> ComposeResult:
         """Add our widgets."""
