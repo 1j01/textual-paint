@@ -24,7 +24,7 @@ from textual.widget import Widget
 from textual.widgets import Button, Static, Input, DirectoryTree, Header
 from textual.color import Color
 from menus import MenuBar, Menu, MenuItem, Separator
-from windows import Window, DialogWindow, CharacterSelectorDialogWindow, warning_message_box
+from windows import Window, DialogWindow, CharacterSelectorDialogWindow, create_warning_message_box
 from localization.i18n import get as _, load_language
 
 
@@ -1151,7 +1151,14 @@ class PaintApp(App):
             restart_program()
 
     def warning_message_box(self, title: str, message_widget: Widget, button_types: str = "ok", callback = None) -> None:
-        warning_message_box(self, title, message_widget, button_types, callback)
+        
+        for old_window in self.query("#message_box").nodes:
+            old_window.close()
+        
+        self.bell()
+
+        window = create_warning_message_box(title, message_widget, button_types, callback)
+        self.mount(window)
 
     def action_open(self) -> None:
         """Show dialog to open an image from a file."""

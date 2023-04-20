@@ -227,15 +227,9 @@ class CharacterSelectorDialogWindow(DialogWindow):
         self.content.mount(Button("Cancel", classes="cancel"))
 
 
-def warning_message_box(app, title: str, message_widget: Widget, button_types: str = "ok", callback = None) -> None:
-
+def create_warning_message_box(title: str, message_widget: Widget, button_types: str = "ok", callback = None) -> None:
     if isinstance(message_widget, str):
         message_widget = Static(message_widget, markup=False)
-
-    for old_window in app.query("#message_box").nodes:
-        old_window.close()
-    
-    app.bell()
 
     def handle_button(button):
         if callback:
@@ -318,4 +312,4 @@ def warning_message_box(app, title: str, message_widget: Widget, button_types: s
             )
         )
     )
-    app.mount(window)
+    return window
