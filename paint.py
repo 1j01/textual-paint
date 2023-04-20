@@ -965,7 +965,7 @@ class PaintApp(App):
             redo_action = Action(_("Undo") + " " + action.name, self.image, action.region)
             action.undo(self.image)
             self.redos.append(redo_action)
-            self.canvas.refresh()
+            self.canvas.refresh(layout=True)
 
     def action_redo(self) -> None:
         if len(self.redos) > 0:
@@ -974,7 +974,7 @@ class PaintApp(App):
             undo_action = Action(_("Undo") + " " + action.name, self.image, action.region)
             action.undo(self.image)
             self.undos.append(undo_action)
-            self.canvas.refresh()
+            self.canvas.refresh(layout=True)
 
     def action_save(self) -> None:
         """Start the save action, but don't wait for the Save As dialog to close if it's a new file."""
@@ -1262,7 +1262,7 @@ class PaintApp(App):
                                 return
                             self.action_new(force=True)
                             self.canvas.image = self.image = new_image
-                            self.canvas.refresh()
+                            self.canvas.refresh(layout=True)
                             self.filename = filename
                             window.close()
                         if self.is_document_modified():
@@ -1308,7 +1308,7 @@ class PaintApp(App):
             return
         self.image = AnsiArtDocument(80, 24)
         self.canvas.image = self.image
-        self.canvas.refresh()
+        self.canvas.refresh(layout=True)
         self.filename = None
         self.saved_undo_count = 0
         self.undos = []
