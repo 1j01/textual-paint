@@ -43,10 +43,16 @@ def restart_program():
         print("Error stopping application mode. The command line may not work as expected. The `reset` command should restore it on Linux.", e)
 
     try:
-        observer.stop()
-        observer.join(timeout=1)
-        if observer.is_alive:
-            print("Timed out waiting for file change observer thread to stop.")
+        try:
+            observer.stop()
+            observer.join(timeout=1)
+            if observer.is_alive:
+                print("Timed out waiting for file change observer thread to stop.")
+        except RuntimeError as e:
+            # Ignore "cannot join current thread" error
+            # join() might be redundant, but I'm keeping it just in case something with threading changes in the future
+            if str(e) != "cannot join current thread":
+                raise
     except Exception as e:
         print("Error stopping file change observer:", e)
 
