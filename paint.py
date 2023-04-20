@@ -1229,10 +1229,11 @@ class PaintApp(App):
             if self.directory_tree_selected_path:
                 filename = os.path.join(self.directory_tree_selected_path, filename)
             if filename:
-                if self.filename and os.path.samefile(filename, self.filename):
-                    window.close()
-                    return
                 try:
+                    # Note that os.path.samefile can raise FileNotFoundError
+                    if self.filename and os.path.samefile(filename, self.filename):
+                        window.close()
+                        return
                     with open(filename, "r") as f:
                         content = f.read() # f is out of scope in go_ahead()
                         def go_ahead():
