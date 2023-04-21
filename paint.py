@@ -1411,7 +1411,46 @@ class PaintApp(App):
     def action_large_size(self) -> None:
         self.magnification = 4
     def action_custom_zoom(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        for old_window in self.query("#zoom_dialog").nodes:
+            old_window.close()
+        def handle_button(button):
+            if button.has_class("ok"):
+                min_zoom = 1
+                max_zoom = 16
+                try:
+                    n = int(window.content.query_one("#zoom_input", Input).value)
+                    if n < min_zoom or n > max_zoom:
+                        raise ValueError
+                    self.magnification = n
+                    window.close()
+                except ValueError:
+                    self.warning_message_box(_("Zoom"), _("Please enter an integer between %1 and %2.", str(min_zoom), str(max_zoom)), "ok")
+            else:
+                window.close()
+        window = DialogWindow(
+            id="zoom_dialog",
+            title=_("Custom Zoom"),
+            handle_button=handle_button,
+        )
+        window.content.mount(
+            Input(id="zoom_input", value=str(self.magnification), placeholder=_("Zoom")),
+            # Vertical(
+            #     Horizontal(
+            #         Static(_("Zoom to")),
+            #         Input(id="zoom_input", value=str(self.magnification)),
+            #     ),
+            #     Horizontal(
+            #         Static(_("Current zoom:")),
+            #         Static(str(self.magnification)),
+            #     ),
+            # ),
+            # Horizontal(
+            Button(_("OK"), classes="ok submit", variant="primary"),
+            Button(_("Cancel"), classes="cancel"),
+            #     classes="buttons",
+            # )
+        )
+        self.mount(window)
     def action_show_grid(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_show_thumbnail(self) -> None:

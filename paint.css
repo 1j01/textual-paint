@@ -252,6 +252,13 @@ CharacterSelectorDialogWindow .cancel {
     overflow-y: auto;
 }
 
+#zoom_dialog .window_content {
+    padding: 2 4;
+    width: 50;
+    /* width: auto; */
+    height: auto;
+}
+
 MessageBox .window_content {
     width: 50;
     height: auto;
