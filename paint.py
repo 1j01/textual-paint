@@ -912,6 +912,9 @@ class PaintApp(App):
 
     def watch_show_tools_box(self, show_tools_box: bool) -> None:
         """Called when show_tools_box changes."""
+        # ID refers to a container within the ToolsBox widget.
+        # Oh, that's probably why hiding it was so complicated!
+        # self.query_one("#tools_box", ToolsBox).display = show_tools_box
         self.query_one("#tools_box").display = show_tools_box
         if self.has_class("show_tools_box"):
             self.remove_class("show_tools_box")
@@ -920,6 +923,9 @@ class PaintApp(App):
     
     def watch_show_colors_box(self, show_colors_box: bool) -> None:
         """Called when show_colors_box changes."""
+        # ID refers to a container within the ColorsBox widget.
+        # TODO: Remove container and simplify hiding/showing.
+        # self.query_one("#colors_box", ColorsBox).display = show_colors_box
         self.query_one("#colors_box").display = show_colors_box
         if self.has_class("show_colors_box"):
             self.remove_class("show_colors_box")
@@ -928,7 +934,7 @@ class PaintApp(App):
 
     def watch_selected_tool(self, old_selected_tool: Tool, selected_tool: Tool) -> None:
         """Called when selected_tool changes."""
-        for button in self.query(".tool_button"):
+        for button in self.query(".tool_button", Button):
             if button.represented_tool == selected_tool:
                 button.add_class("selected")
             else:
@@ -936,15 +942,15 @@ class PaintApp(App):
 
     def watch_selected_bg_color(self, selected_bg_color: str) -> None:
         """Called when selected_bg_color changes."""
-        self.query_one("#selected_color_char_input").styles.background = selected_bg_color
+        self.query_one("#selected_color_char_input", CharInput).styles.background = selected_bg_color
 
     def watch_selected_fg_color(self, selected_fg_color: str) -> None:
         """Called when selected_fg_color changes."""
-        self.query_one("#selected_color_char_input").styles.color = selected_fg_color
+        self.query_one("#selected_color_char_input", CharInput).styles.color = selected_fg_color
 
     def watch_selected_char(self, selected_char: str) -> None:
         """Called when selected_char changes."""
-        self.query_one("#selected_color_char_input").value = selected_char
+        self.query_one("#selected_color_char_input", CharInput).value = selected_char
 
     def watch_magnification(self, old_magnification: int, magnification: int) -> None:
         """Called when magnification changes."""
@@ -1044,7 +1050,7 @@ class PaintApp(App):
 
     async def save_as(self) -> None:
         """Save the image as a new file."""
-        for old_window in self.query("#save_as_dialog, #open_dialog").nodes:
+        for old_window in self.query("#save_as_dialog, #open_dialog", DialogWindow).nodes:
             old_window.close()
         
         saved_future = asyncio.Future()
@@ -1144,7 +1150,7 @@ class PaintApp(App):
 
     def warning_message_box(self, title: str, message_widget: Widget, button_types: str = "ok", callback = None) -> None:
         """Show a warning message box with the given title, message, and buttons."""
-        for old_window in self.query("#message_box").nodes:
+        for old_window in self.query("#message_box", MessageBox).nodes:
             old_window.close()
         
         self.bell()
@@ -1173,7 +1179,7 @@ class PaintApp(App):
             if not button.has_class("open"):
                 window.close()
                 return
-            filename = window.content.query_one("#open_dialog .filename_input").value
+            filename = window.content.query_one("#open_dialog .filename_input", Input).value
             if not filename:
                 return
             if self.directory_tree_selected_path:
@@ -1213,7 +1219,7 @@ class PaintApp(App):
             except Exception as e:
                 self.warning_message_box(_("Open"), Static(_("An unexpected error occurred while reading %1.").replace("%1", filename) + "\n\n" + str(e)), "ok")
 
-        for old_window in self.query("#save_as_dialog, #open_dialog").nodes:
+        for old_window in self.query("#save_as_dialog, #open_dialog", DialogWindow).nodes:
             old_window.close()
         window = DialogWindow(
             id="open_dialog",
@@ -1258,7 +1264,7 @@ class PaintApp(App):
     
     def action_open_character_selector(self) -> None:
         """Show dialog to select a character."""
-        for old_window in self.query("#character_selector_dialog").nodes:
+        for old_window in self.query("#character_selector_dialog", CharacterSelectorDialogWindow).nodes:
             old_window.close()
         def handle_selected_character(character):
             self.selected_char = character
@@ -1331,7 +1337,7 @@ class PaintApp(App):
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     
     def action_help_topics(self) -> None:
-        for old_window in self.query("#help_dialog").nodes:
+        for old_window in self.query("#help_dialog", DialogWindow).nodes:
             old_window.close()
         window = DialogWindow(
             id="help_dialog",
@@ -1345,7 +1351,7 @@ class PaintApp(App):
     
     def action_about_paint(self) -> None:
         """Show the About Paint dialog."""
-        for old_window in self.query("#about_paint_dialog").nodes:
+        for old_window in self.query("#about_paint_dialog", DialogWindow).nodes:
             old_window.close()
         window = DialogWindow(
             id="about_paint_dialog",
