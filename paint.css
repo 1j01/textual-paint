@@ -6,23 +6,15 @@ Screen {
     layout: grid;
     grid-size: 1;
     grid-columns: 1fr;
-    grid-rows: 1fr 0;
+    grid-rows: 1fr 6;
 }
 
 #main_horizontal_split {
     layout: grid;
     grid-size: 2;
-    grid-columns: 0 1fr;
+    grid-columns: 15 1fr;
     grid-rows: 1fr;
     margin: 0 0;
-}
-
-.show_tools_box #main_horizontal_split {
-    grid-columns: 15 1fr;
-}
-
-.show_colors_box #paint {
-    grid-rows: 1fr 6;
 }
 
 #editing_area {

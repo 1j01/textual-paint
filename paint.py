@@ -308,14 +308,12 @@ class ToolsBox(Container):
 
     def compose(self) -> ComposeResult:
         """Add our buttons."""
-        with Container(id="tools_box"):
-            # tool buttons
-            for tool in Tool:
-                # TODO: tooltip with tool.get_name()
-                button = Button(tool.get_icon(), classes="tool_button")
-                button.can_focus = False
-                button.represented_tool = tool
-                yield button
+        for tool in Tool:
+            # TODO: tooltip with tool.get_name()
+            button = Button(tool.get_icon(), classes="tool_button")
+            button.can_focus = False
+            button.represented_tool = tool
+            yield button
 
 class CharInput(Input):
     """Widget for entering a single character."""
@@ -349,19 +347,18 @@ class ColorsBox(Container):
 
     def compose(self) -> ComposeResult:
         """Add our selected color and color well buttons."""
-        with Container(id="colors_box"):
-            with Container(id="palette_selection_box"):
-                # This widget is doing double duty, showing the current color
-                # and showing/editing the current character.
-                # I haven't settled on naming for this yet.
-                yield CharInput(id="selected_color_char_input", classes="color_well")
-            with Container(id="available_colors"):
-                for color in palette:
-                    button = Button("", classes="color_button color_well")
-                    button.styles.background = color
-                    button.can_focus = False
-                    button.represented_color = color
-                    yield button
+        with Container(id="palette_selection_box"):
+            # This widget is doing double duty, showing the current color
+            # and showing/editing the current character.
+            # I haven't settled on naming for this yet.
+            yield CharInput(id="selected_color_char_input", classes="color_well")
+        with Container(id="available_colors"):
+            for color in palette:
+                button = Button("", classes="color_button color_well")
+                button.styles.background = color
+                button.can_focus = False
+                button.represented_color = color
+                yield button
 
 
 debug_region_updates = False
@@ -912,25 +909,11 @@ class PaintApp(App):
 
     def watch_show_tools_box(self, show_tools_box: bool) -> None:
         """Called when show_tools_box changes."""
-        # ID refers to a container within the ToolsBox widget.
-        # Oh, that's probably why hiding it was so complicated!
-        # self.query_one("#tools_box", ToolsBox).display = show_tools_box
-        self.query_one("#tools_box").display = show_tools_box
-        if self.has_class("show_tools_box"):
-            self.remove_class("show_tools_box")
-        else:
-            self.add_class("show_tools_box")
+        self.query_one("#tools_box", ToolsBox).display = show_tools_box
     
     def watch_show_colors_box(self, show_colors_box: bool) -> None:
         """Called when show_colors_box changes."""
-        # ID refers to a container within the ColorsBox widget.
-        # TODO: Remove container and simplify hiding/showing.
-        # self.query_one("#colors_box", ColorsBox).display = show_colors_box
-        self.query_one("#colors_box").display = show_colors_box
-        if self.has_class("show_colors_box"):
-            self.remove_class("show_colors_box")
-        else:
-            self.add_class("show_colors_box")
+        self.query_one("#colors_box", ColorsBox).display = show_colors_box
 
     def watch_selected_tool(self, old_selected_tool: Tool, selected_tool: Tool) -> None:
         """Called when selected_tool changes."""
@@ -1442,14 +1425,14 @@ class PaintApp(App):
                 ])),
             ])
             yield Container(
-                ToolsBox(),
+                ToolsBox(id="tools_box"),
                 Container(
                     Canvas(id="canvas"),
                     id="editing_area",
                 ),
                 id="main_horizontal_split",
             )
-            yield ColorsBox()
+            yield ColorsBox(id="colors_box")
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""
