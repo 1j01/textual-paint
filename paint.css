@@ -3,21 +3,15 @@ Screen {
 }
 
 #paint {
-    layout: grid;
-    grid-size: 1;
-    grid-columns: 1fr;
-    grid-rows: 1fr 6;
+    layout: vertical;
 }
 
 #main_horizontal_split {
-    layout: grid;
-    grid-size: 2;
-    grid-columns: 15 1fr;
-    grid-rows: 1fr;
-    margin: 0 0;
+    layout: horizontal;
 }
 
 #editing_area {
+    width: 1fr;
     background: rgb(128, 128, 128);
 }
 .-dark-mode #editing_area {
@@ -38,6 +32,7 @@ Screen {
     grid-columns: 6;
     grid-rows: 3;
     padding: 0 1;
+    width: 15;
     height: 100%;
     /* can't have a border without taking up a whole cell, and it's more important to show as much of the tools as possible */
     /* border-bottom: tall $panel-darken-2; */
@@ -56,6 +51,7 @@ Screen {
 }
 
 #colors_box {
+    height: 6;
     layout: grid;
     grid-size: 2;
     grid-columns: 10 1fr;
