@@ -250,7 +250,9 @@ class Tool(Enum):
         }[self]
 
     def get_name(self) -> str:
-        """Get the name of this tool."""
+        """Get the localized name for this tool.
+        
+        Not to be confused with tool.name, which is an identifier."""
         return {
             Tool.free_form_select: _("Free-Form Select"),
             Tool.select: _("Select"),
