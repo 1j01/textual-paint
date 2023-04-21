@@ -1036,7 +1036,7 @@ class PaintApp(App):
             if not button.has_class("save"):
                 window.close()
                 return
-            name = self.query_one("#save_as_dialog_filename_input", Input).value
+            name = self.query_one("#save_as_dialog .filename_input", Input).value
             if not name:
                 return
             if self.directory_tree_selected_path:
@@ -1065,7 +1065,7 @@ class PaintApp(App):
         filename = os.path.basename(self.filename) if self.filename else _("Untitled")
         window.content.mount(
             EnhancedDirectoryTree(id="save_as_dialog_directory_tree", path="/"),
-            Input(id="save_as_dialog_filename_input", placeholder=_("Filename"), value=filename),
+            Input(classes="filename_input", placeholder=_("Filename"), value=filename),
             Button(_("Save"), classes="save submit", variant="primary"),
             Button(_("Cancel"), classes="cancel"),
         )
@@ -1156,7 +1156,7 @@ class PaintApp(App):
             if not button.has_class("open"):
                 window.close()
                 return
-            filename = window.content.query_one("#open_dialog_filename_input").value
+            filename = window.content.query_one("#open_dialog .filename_input").value
             if not filename:
                 return
             if self.directory_tree_selected_path:
@@ -1206,7 +1206,7 @@ class PaintApp(App):
         )
         window.content.mount(
             EnhancedDirectoryTree(id="open_dialog_directory_tree", path="/"),
-            Input(id="open_dialog_filename_input", placeholder=_("Filename")),
+            Input(classes="filename_input", placeholder=_("Filename")),
             Button(_("Open"), classes="open submit", variant="primary"),
             Button(_("Cancel"), classes="cancel"),
         )
@@ -1714,7 +1714,7 @@ class PaintApp(App):
             self.directory_tree_selected_path = event.node.parent.data.path
             name = os.path.basename(event.node.data.path)
             if not self.expanding_directory_tree:
-                self.query_one("#save_as_dialog_filename_input, #open_dialog_filename_input", Input).value = name
+                self.query_one(".file_dialog_window .filename_input", Input).value = name
         else:
             self.directory_tree_selected_path = None
 
