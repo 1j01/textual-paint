@@ -390,6 +390,36 @@ class ColorsBox(Container):
             self.post_message(self.ColorSelected(event.button.represented_color))
 
 
+class Selection:
+    """
+    A selection within an AnsiArtDocument.
+
+    AnsiArtDocument can contain a Selection, and Selection can contain an AnsiArtDocument.
+    However, the selection's AnsiArtDocument should never itself contain a Selection.
+
+    When a selection is created, it has no image data, but once it's dragged,
+    it gets a copy of the image data from the document.
+    The image data is stored as an AnsiArtDocument, since it's made up of characters and colors.
+    """
+    def __init__(self, region: Region) -> None:
+        """Initialize a selection."""
+        self.region = region
+        self.contained_image: Optional[AnsiArtDocument] = None
+        self.textbox_mode = False
+
+    def copy_from_document(self, document: 'AnsiArtDocument') -> None:
+        """Copy the image data from the document into the selection."""
+        self.contained_image = AnsiArtDocument(self.region.width, self.region.height)
+        self.contained_image.copy_region(source=document, source_region=self.region)
+    
+    def copy_to_document(self, document: 'AnsiArtDocument') -> None:
+        """Draw the selection onto the document."""
+        if not self.contained_image:
+            # raise ValueError("Selection has no image data.")
+            return
+        document.copy_region(source=self.contained_image, target_region=self.region)
+
+
 debug_region_updates = False
 
 ansi_escape_pattern = re.compile(r"(\N{ESC}\[[\d;]*[a-zA-Z])")
@@ -404,6 +434,7 @@ class AnsiArtDocument:
         self.ch = [[" " for _ in range(width)] for _ in range(height)]
         self.bg = [["#ffffff" for _ in range(width)] for _ in range(height)]
         self.fg = [["#000000" for _ in range(width)] for _ in range(height)]
+        self.selection: Optional[Selection] = None
 
     def copy_region(self, source, source_region: Region = None, target_region: Region = None):
         if source_region is None:
@@ -738,6 +769,13 @@ class Canvas(Widget):
             self.mouse_move_event = mouse_move_event
             super().__init__()
 
+    class ToolStop(Message):
+        """Message when releasing the mouse."""
+
+        def __init__(self, mouse_up_event: events.MouseUp) -> None:
+            self.mouse_up_event = mouse_up_event
+            super().__init__()
+
     class ToolPreviewUpdate(Message):
         """Message when moving the mouse while the mouse is up."""
 
@@ -787,6 +825,7 @@ class Canvas(Widget):
     def on_mouse_up(self, event) -> None:
         self.pointer_active = False
         self.capture_mouse(False)
+        self.post_message(self.ToolStop(event))
 
     def on_leave(self, event) -> None:
         if not self.pointer_active:
@@ -804,15 +843,23 @@ class Canvas(Widget):
         if y >= self.size.height:
             return Strip.blank(self.size.width)
         segments = []
+        sel = self.image.selection
         if self.magnifier_preview_region:
             inner_magnifier_preview_region = self.magnifier_preview_region.shrink((1, 1, 1, 1))
         if self.select_preview_region:
             inner_select_preview_region = self.select_preview_region.shrink((1, 1, 1, 1))
+        if sel:
+            inner_selection_region = sel.region.shrink((1, 1, 1, 1))
         for x in range(self.size.width):
             try:
-                bg = self.image.bg[y // self.magnification][x // self.magnification]
-                fg = self.image.fg[y // self.magnification][x // self.magnification]
-                ch = self.image.ch[y // self.magnification][x // self.magnification]
+                if sel and sel.contained_image and sel.region.contains(x // self.magnification, y // self.magnification):
+                    bg = sel.contained_image.bg[(y - sel.region.y) // self.magnification][(x - sel.region.x) // self.magnification]
+                    fg = sel.contained_image.fg[(y - sel.region.y) // self.magnification][(x - sel.region.x) // self.magnification]
+                    ch = sel.contained_image.ch[(y - sel.region.y) // self.magnification][(x - sel.region.x) // self.magnification]
+                else:
+                    bg = self.image.bg[y // self.magnification][x // self.magnification]
+                    fg = self.image.fg[y // self.magnification][x // self.magnification]
+                    ch = self.image.ch[y // self.magnification][x // self.magnification]
             except IndexError:
                 # This should be easier to debug visually.
                 bg = "#555555"
@@ -823,7 +870,8 @@ class Canvas(Widget):
             style = Style.parse(fg+" on "+bg)
             if (
                 self.magnifier_preview_region and self.magnifier_preview_region.contains(x, y) and not inner_magnifier_preview_region.contains(x, y) or
-                self.select_preview_region and self.select_preview_region.contains(x, y) and not inner_select_preview_region.contains(x, y)
+                self.select_preview_region and self.select_preview_region.contains(x, y) and not inner_select_preview_region.contains(x, y) or
+                sel and sel.region.contains(x, y) and not inner_selection_region.contains(x, y)
             ):
                 # invert the colors
                 style = Style.parse(f"rgb({255 - style.color.triplet.red},{255 - style.color.triplet.green},{255 - style.color.triplet.blue}) on rgb({255 - style.bgcolor.triplet.red},{255 - style.bgcolor.triplet.green},{255 - style.bgcolor.triplet.blue})")
@@ -1548,6 +1596,7 @@ class PaintApp(App):
 
         self.mouse_at_start = (event.mouse_down_event.x, event.mouse_down_event.y)
         if self.selected_tool == Tool.select:
+            self.meld_selection()
             return
 
         self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
@@ -1640,6 +1689,34 @@ class PaintApp(App):
         event.stop()
         self.cancel_preview()
 
+    def get_select_region(self, start: Offset, end: Offset) -> Region:
+        x1, y1 = start
+        x2, y2 = end
+        # clamp new coords to bounds
+        # don't need to clamp the start position since
+        # it should already be in bounds
+        # TODO: use region.intersection() instead for clarity/conciseness in clamping
+        x2 = min(self.image.width - 1, max(0, x2))
+        y2 = min(self.image.height - 1, max(0, y2))
+        x1, x2 = min(x1, x2), max(x1, x2)
+        y1, y2 = min(y1, y2), max(y1, y2)
+        return Region(x1, y1, x2 - x1 + 1, y2 - y1 + 1)
+
+    def meld_selection(self) -> None:
+        """Draw the selection onto the image and dissolve the selection."""
+        if self.image.selection:
+            region = self.image.selection.region
+            self.image.selection.copy_to_document(self.image)
+            self.image.selection = None
+            self.canvas.refresh_scaled_region(region)
+
+    def clear_selection(self) -> None:
+        """Delete the selection and its contents."""
+        if self.image.selection:
+            region = self.image.selection.region
+            self.image.selection = None
+            self.canvas.refresh_scaled_region(region)
+
     def on_canvas_tool_update(self, event: Canvas.ToolUpdate) -> None:
         """Called when the user is drawing on the canvas."""
         event.stop()
@@ -1657,17 +1734,9 @@ class PaintApp(App):
             # Goes to show how the canvas's event names are silly.
             # I should've just named them for what they are (i.e. when they occur)
             # rather than what they mean (what they're meant to represent).
-            x1, y1 = self.mouse_at_start
-            x2, y2 = event.mouse_move_event.x, event.mouse_move_event.y
-            # clamp new coords to bounds
-            # don't need to clamp the start position since
-            # by definition it's already in bounds
-            x2 = min(self.image.width - 1, max(0, x2))
-            y2 = min(self.image.height - 1, max(0, y2))
-            x1, x2 = min(x1, x2), max(x1, x2)
-            y1, y2 = min(y1, y2), max(y1, y2)
-            self.canvas.select_preview_region = Region(x1, y1, x2 - x1 + 1, y2 - y1 + 1)
+            self.canvas.select_preview_region = self.get_select_region(self.mouse_at_start, event.mouse_move_event.offset)
             self.canvas.refresh_scaled_region(self.canvas.select_preview_region)
+            return
 
         if len(self.undos) == 0:
             # This can happen if you undo while drawing.
@@ -1746,6 +1815,17 @@ class PaintApp(App):
             if replace_action:
                 affected_region = affected_region.union(old_action.region)
             self.canvas.refresh_scaled_region(affected_region)
+
+    def on_canvas_tool_stop(self, event: Canvas.ToolStop) -> None:
+        """Called when releasing the mouse button after drawing."""
+        if self.selected_tool == Tool.select:
+            select_region = self.get_select_region(self.mouse_at_start, event.mouse_up_event.offset)
+            if self.image.selection:
+                # This shouldn't happen, because it should meld
+                # the selection on mouse down.
+                self.meld_selection()
+            self.image.selection = Selection(select_region)
+        self.mouse_at_start = None
 
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
