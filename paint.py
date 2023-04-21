@@ -1028,23 +1028,24 @@ class PaintApp(App):
                 window.close()
                 return
             name = self.query_one("#save_as_dialog_filename_input", Input).value
-            if name:
-                if self.directory_tree_selected_path:
-                    name = os.path.join(self.directory_tree_selected_path, name)
-                def on_save_confirmed():
-                    async def async_on_save_confirmed():
-                        self.filename = name
-                        await self.save(from_save_as=True)
-                        window.close()
-                        saved_future.set_result(None)
-                    # https://textual.textualize.io/blog/2023/02/11/the-heisenbug-lurking-in-your-async-code/
-                    task = asyncio.create_task(async_on_save_confirmed())
-                    self.background_tasks.add(task)
-                    task.add_done_callback(self.background_tasks.discard)
-                if os.path.exists(name):
-                    self.confirm_overwrite(name, on_save_confirmed)
-                else:
-                    on_save_confirmed()
+            if not name:
+                return
+            if self.directory_tree_selected_path:
+                name = os.path.join(self.directory_tree_selected_path, name)
+            def on_save_confirmed():
+                async def async_on_save_confirmed():
+                    self.filename = name
+                    await self.save(from_save_as=True)
+                    window.close()
+                    saved_future.set_result(None)
+                # https://textual.textualize.io/blog/2023/02/11/the-heisenbug-lurking-in-your-async-code/
+                task = asyncio.create_task(async_on_save_confirmed())
+                self.background_tasks.add(task)
+                task.add_done_callback(self.background_tasks.discard)
+            if os.path.exists(name):
+                self.confirm_overwrite(name, on_save_confirmed)
+            else:
+                on_save_confirmed()
 
         window = DialogWindow(
             id="save_as_dialog",
