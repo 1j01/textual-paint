@@ -1895,17 +1895,26 @@ class PaintApp(App):
 
     def on_canvas_tool_stop(self, event: Canvas.ToolStop) -> None:
         """Called when releasing the mouse button after drawing/dragging on the canvas."""
+        # Clear the selection preview.
+        # This helps to highlight a bug where the mouse up position can be significantly different from the mouse move position,
+        # I think due to coordinates being calculated differently during mouse capture.
+        # However, it's good to handle this case anyway since the mouse MAY have moved.
+        # (Or at least, I don't know of any guarantee that it won't.)
+        self.cancel_preview()
+
         if self.selection_drag_offset:
             # Done dragging selection
             self.selection_drag_offset = None
             return
         if self.selected_tool == Tool.select and self.mouse_at_start:
+            # Finish making a selection
             select_region = self.get_select_region(self.mouse_at_start, event.mouse_up_event.offset)
             if self.image.selection:
                 # This shouldn't happen, because it should meld
                 # the selection on mouse down.
                 self.meld_selection()
             self.image.selection = Selection(select_region)
+            self.canvas.refresh_scaled_region(select_region)
         self.mouse_at_start = None
 
     def on_key(self, event: events.Key) -> None:
