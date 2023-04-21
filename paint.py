@@ -323,7 +323,7 @@ class CharInput(Input):
         return value[-1] if value else " "
     
     def watch_value(self, value: str) -> None:
-        """Update the cursor position when the value changes."""
+        """Called when value changes."""
         # TODO: use a Message instead of accessing the app directly
         self.app.selected_char = value
 
