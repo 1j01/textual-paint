@@ -757,6 +757,7 @@ class Canvas(Widget):
         self.image = None
         self.pointer_active = False
         self.magnifier_preview_region: Optional[Region] = None
+        self.select_preview_region: Optional[Region] = None
 
     def on_mouse_down(self, event) -> None:
         event.x //= self.magnification
@@ -805,6 +806,8 @@ class Canvas(Widget):
         segments = []
         if self.magnifier_preview_region:
             inner_magnifier_preview_region = self.magnifier_preview_region.shrink((1, 1, 1, 1))
+        if self.select_preview_region:
+            inner_select_preview_region = self.select_preview_region.shrink((1, 1, 1, 1))
         for x in range(self.size.width):
             try:
                 bg = self.image.bg[y // self.magnification][x // self.magnification]
@@ -818,7 +821,10 @@ class Canvas(Widget):
             if self.magnification > 1:
                 ch = self.big_ch(ch, x % self.magnification, y % self.magnification)
             style = Style.parse(fg+" on "+bg)
-            if self.magnifier_preview_region and self.magnifier_preview_region.contains(x, y) and not inner_magnifier_preview_region.contains(x, y):
+            if (
+                self.magnifier_preview_region and self.magnifier_preview_region.contains(x, y) and not inner_magnifier_preview_region.contains(x, y) or
+                self.select_preview_region and self.select_preview_region.contains(x, y) and not inner_select_preview_region.contains(x, y)
+            ):
                 # invert the colors
                 style = Style.parse(f"rgb({255 - style.color.triplet.red},{255 - style.color.triplet.green},{255 - style.color.triplet.blue}) on rgb({255 - style.bgcolor.triplet.red},{255 - style.bgcolor.triplet.green},{255 - style.bgcolor.triplet.blue})")
             segments.append(Segment(ch, style))
@@ -917,6 +923,9 @@ class PaintApp(App):
     preview_action: Optional[Action] = None
     # file modification tracking
     saved_undo_count = 0
+
+    # for shape tools and Select tool
+    mouse_at_start = Offset(0, 0)
 
     # flag to prevent setting the filename input when initially expanding the directory tree
     expanding_directory_tree = False
@@ -1533,13 +1542,16 @@ class PaintApp(App):
             self.magnifier_click(event.mouse_down_event.x, event.mouse_down_event.y)
             return
 
-        if self.selected_tool in [Tool.free_form_select, Tool.select, Tool.text, Tool.curve, Tool.polygon]:
+        if self.selected_tool in [Tool.free_form_select, Tool.text, Tool.curve, Tool.polygon]:
             self.selected_tool = Tool.pencil
             # TODO: support remaining tools
 
+        self.mouse_at_start = (event.mouse_down_event.x, event.mouse_down_event.y)
+        if self.selected_tool == Tool.select:
+            return
+
         self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
         self.image_at_start.copy_region(self.image)
-        self.mouse_at_start = (event.mouse_down_event.x, event.mouse_down_event.y)
         if len(self.redos) > 0:
             self.redos = []
         action = Action(self.selected_tool.get_name(), self.image)
@@ -1566,6 +1578,10 @@ class PaintApp(App):
         if self.canvas.magnifier_preview_region:
             region = self.canvas.magnifier_preview_region
             self.canvas.magnifier_preview_region = None
+            self.canvas.refresh_scaled_region(region)
+        if self.canvas.select_preview_region:
+            region = self.canvas.select_preview_region
+            self.canvas.select_preview_region = None
             self.canvas.refresh_scaled_region(region)
 
 
@@ -1636,6 +1652,23 @@ class PaintApp(App):
         if self.selected_tool in [Tool.fill, Tool.magnifier]:
             return
         
+        if self.selected_tool == Tool.select:
+            # This is a tool preview, but it's not in the ToolPreviewUpdate event.
+            # Goes to show how the canvas's event names are silly.
+            # I should've just named them for what they are (i.e. when they occur)
+            # rather than what they mean (what they're meant to represent).
+            x1, y1 = self.mouse_at_start
+            x2, y2 = event.mouse_move_event.x, event.mouse_move_event.y
+            # clamp new coords to bounds
+            # don't need to clamp the start position since
+            # by definition it's already in bounds
+            x2 = min(self.image.width - 1, max(0, x2))
+            y2 = min(self.image.height - 1, max(0, y2))
+            x1, x2 = min(x1, x2), max(x1, x2)
+            y1, y2 = min(y1, y2), max(y1, y2)
+            self.canvas.select_preview_region = Region(x1, y1, x2 - x1 + 1, y2 - y1 + 1)
+            self.canvas.refresh_scaled_region(self.canvas.select_preview_region)
+
         if len(self.undos) == 0:
             # This can happen if you undo while drawing.
             # Ideally we'd stop getting events in this case.
