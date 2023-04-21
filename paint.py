@@ -1626,6 +1626,9 @@ class PaintApp(App):
                     sel.region.x - self.mouse_at_start[0],
                     sel.region.y - self.mouse_at_start[1],
                 )
+                if self.image.selection.contained_image:
+                    # Already cut out, don't replace the image data.
+                    return
                 # Cut out the selected part of the image from the document to use as the selection's image data.
                 # TODO: DRY with the below action handling
                 self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
