@@ -1071,6 +1071,7 @@ class PaintApp(App):
             self.image.fg[y][x] = fg_color
     
     def action_undo(self) -> None:
+        self.meld_selection()
         if len(self.undos) > 0:
             self.cancel_preview()
             action = self.undos.pop()
@@ -1080,6 +1081,7 @@ class PaintApp(App):
             self.canvas.refresh(layout=True)
 
     def action_redo(self) -> None:
+        self.meld_selection()
         if len(self.redos) > 0:
             self.cancel_preview()
             action = self.redos.pop()
@@ -1618,6 +1620,8 @@ class PaintApp(App):
                 self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
                 self.image_at_start.copy_region(self.image)
                 action = Action(self.selected_tool.get_name(), self.image)
+                if len(self.redos) > 0:
+                    self.redos = []
                 self.undos.append(action)
                 self.image.selection.copy_from_document(self.image)
                 # Time to go undercover as an eraser. 🥸
@@ -1628,7 +1632,13 @@ class PaintApp(App):
                     for y in range(sel.region.height):
                         self.stamp_char(x + sel.region.x, y + sel.region.y)
                 self.selected_tool = Tool.select
-                affected_region = sel.region
+                # TODO: use two regions, for the cut out and the paste in, once melded.
+                # I could maybe give Action a sub_action property, and use it for the melding.
+                # Or I could make it use a list of regions.
+                # But for now, just save the whole image, so this action can
+                # simply be updated on meld.
+                # affected_region = sel.region
+                affected_region = Region(0, 0, self.image.width, self.image.height)
                 
                 # TODO: DRY with the below action handling
                 action.region = affected_region
