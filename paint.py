@@ -801,20 +801,25 @@ class Canvas(Widget):
         self.select_preview_region: Optional[Region] = None
 
     def on_mouse_down(self, event) -> None:
+        # self.fix_mouse_event(event) # not needed, pointer isn't captured yet.
         event.x //= self.magnification
         event.y //= self.magnification
+
         self.post_message(self.ToolStart(event))
         self.pointer_active = True
         self.capture_mouse(True)
     
-    def on_mouse_move(self, event) -> None:
+    def fix_mouse_event(self, event) -> None:
         # Hack to fix mouse coordinates, not needed for mouse down,
         # or while the mouse is up.
         # This seems like a bug.
+        # I think it's due to coordinates being calculated differently during mouse capture.
         if self.pointer_active:
             event.x += int(self.parent.scroll_x)
             event.y += int(self.parent.scroll_y)
 
+    def on_mouse_move(self, event) -> None:
+        self.fix_mouse_event(event)
         event.x //= self.magnification
         event.y //= self.magnification
         event.delta_x //= self.magnification
@@ -826,6 +831,10 @@ class Canvas(Widget):
             self.post_message(self.ToolPreviewUpdate(event))
 
     def on_mouse_up(self, event) -> None:
+        self.fix_mouse_event(event)
+        event.x //= self.magnification
+        event.y //= self.magnification
+
         self.pointer_active = False
         self.capture_mouse(False)
         self.post_message(self.ToolStop(event))
@@ -1893,11 +1902,8 @@ class PaintApp(App):
 
     def on_canvas_tool_stop(self, event: Canvas.ToolStop) -> None:
         """Called when releasing the mouse button after drawing/dragging on the canvas."""
-        # Clear the selection preview.
-        # This helps to highlight a bug where the mouse up position can be significantly different from the mouse move position,
-        # I think due to coordinates being calculated differently during mouse capture.
-        # However, it's good to handle this case anyway since the mouse MAY have moved.
-        # (Or at least, I don't know of any guarantee that it won't.)
+        # Clear the selection preview in case the mouse has moved.
+        # (I don't know of any guarantee that it won't.)
         self.cancel_preview()
 
         if self.selection_drag_offset:
