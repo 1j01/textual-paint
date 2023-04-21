@@ -1467,10 +1467,15 @@ class PaintApp(App):
                 (y - h / 2) * self.magnification / prev_magnification,
                 animate=False,
             )
-            # The same thing but without call_after_refresh...
-            # Doesn't work correctly, because the layout isn't updated yet.
-            # And if I call self.screen._refresh_layout() here,
-            # it's back to the flickering.
+            # `scroll_to` uses `call_after_refresh`.
+            # `_scroll_to` is the same thing but without call_after_refresh.
+            # But it doesn't work correctly, because the layout isn't updated yet.
+            # And if I call:
+            # self.screen._refresh_layout()
+            # beforehand, it's back to the flickering.
+            # I also tried calling:
+            # self.editing_area.refresh(layout=True, repaint=False)
+            # But it's back to the incorrect scroll position.
             # self.editing_area._scroll_to(
             #     (x - w / 2) * self.magnification / prev_magnification,
             #     (y - h / 2) * self.magnification / prev_magnification,
