@@ -744,6 +744,10 @@ def flood_fill(document: AnsiArtDocument, x: int, y: int, fill_ch: str, fill_fg:
     # Return the affected region.
     return Region(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
 
+def scale_region(region: Region, scale: int) -> Region:
+    """Returns the region scaled by the given factor."""
+    return Region(region.x * scale, region.y * scale, region.width * scale, region.height * scale)
+
 class Canvas(Widget):
     """The image document widget."""
 
@@ -857,17 +861,20 @@ class Canvas(Widget):
         segments = []
         sel = self.image.selection
         if self.magnifier_preview_region:
-            inner_magnifier_preview_region = self.magnifier_preview_region.shrink((1, 1, 1, 1))
+            magnifier_preview_region = scale_region(self.magnifier_preview_region, self.magnification)
+            inner_magnifier_preview_region = magnifier_preview_region.shrink((1, 1, 1, 1))
         if self.select_preview_region:
-            inner_select_preview_region = self.select_preview_region.shrink((1, 1, 1, 1))
+            select_preview_region = scale_region(self.select_preview_region, self.magnification)
+            inner_select_preview_region = select_preview_region.shrink((1, 1, 1, 1))
         if sel:
-            inner_selection_region = sel.region.shrink((1, 1, 1, 1))
+            selection_region = scale_region(sel.region, self.magnification)
+            inner_selection_region = selection_region.shrink((1, 1, 1, 1))
         for x in range(self.size.width):
             try:
                 if sel and sel.contained_image and sel.region.contains(x // self.magnification, y // self.magnification):
-                    bg = sel.contained_image.bg[(y - sel.region.y) // self.magnification][(x - sel.region.x) // self.magnification]
-                    fg = sel.contained_image.fg[(y - sel.region.y) // self.magnification][(x - sel.region.x) // self.magnification]
-                    ch = sel.contained_image.ch[(y - sel.region.y) // self.magnification][(x - sel.region.x) // self.magnification]
+                    bg = sel.contained_image.bg[y // self.magnification - sel.region.y][x // self.magnification - sel.region.x]
+                    fg = sel.contained_image.fg[y // self.magnification - sel.region.y][x // self.magnification - sel.region.x]
+                    ch = sel.contained_image.ch[y // self.magnification - sel.region.y][x // self.magnification - sel.region.x]
                 else:
                     bg = self.image.bg[y // self.magnification][x // self.magnification]
                     fg = self.image.fg[y // self.magnification][x // self.magnification]
@@ -881,9 +888,9 @@ class Canvas(Widget):
                 ch = self.big_ch(ch, x % self.magnification, y % self.magnification)
             style = Style.parse(fg+" on "+bg)
             if (
-                self.magnifier_preview_region and self.magnifier_preview_region.contains(x, y) and not inner_magnifier_preview_region.contains(x, y) or
-                self.select_preview_region and self.select_preview_region.contains(x, y) and not inner_select_preview_region.contains(x, y) or
-                sel and sel.region.contains(x, y) and not inner_selection_region.contains(x, y)
+                self.magnifier_preview_region and magnifier_preview_region.contains(x, y) and not inner_magnifier_preview_region.contains(x, y) or
+                self.select_preview_region and select_preview_region.contains(x, y) and not inner_select_preview_region.contains(x, y) or
+                sel and selection_region.contains(x, y) and not inner_selection_region.contains(x, y)
             ):
                 # invert the colors
                 style = Style.parse(f"rgb({255 - style.color.triplet.red},{255 - style.color.triplet.green},{255 - style.color.triplet.blue}) on rgb({255 - style.bgcolor.triplet.red},{255 - style.bgcolor.triplet.green},{255 - style.bgcolor.triplet.blue})")
