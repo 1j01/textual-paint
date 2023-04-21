@@ -5,7 +5,13 @@ class EnhancedDirectoryTree(DirectoryTree):
     def expand_to_path(self, target_path: str) -> None:
         """Expand the directory tree to the target path, loading any directories as needed."""
         # TODO: os.path.normcase, and maybe os.path.samefile check
-        
+        # Also, if I'm going to make a PR for this feature,
+        # - I should test it with symbolic links, and UNC paths on Windows.
+        # - There should be an attribute to expand to a path initially.
+        # - Maybe this method should return the node if it was found.
+        # - Could avoid some get_node_name calls by flagging if there's a match.
+        # - Definitely want to figure out how to avoid the timers.
+
         node = self.root
         def get_node_name(node):
             return os.path.basename(node.data.path.rstrip(os.path.sep))
