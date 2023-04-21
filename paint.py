@@ -417,7 +417,8 @@ class Selection:
         if not self.contained_image:
             # raise ValueError("Selection has no image data.")
             return
-        document.copy_region(source=self.contained_image, target_region=self.region)
+        target_region = self.region.intersection(Region(0, 0, document.width, document.height))
+        document.copy_region(source=self.contained_image, target_region=target_region)
 
 
 debug_region_updates = False
@@ -1605,10 +1606,33 @@ class PaintApp(App):
         if self.selected_tool == Tool.select:
             sel = self.image.selection
             if sel and sel.region.contains_point(self.mouse_at_start):
+                # Start dragging the selection.
                 self.selection_drag_offset = Offset(
                     sel.region.x - self.mouse_at_start[0],
                     sel.region.y - self.mouse_at_start[1],
                 )
+                # Cut out the selected part of the image from the document to use as the selection's image data.
+                # TODO: DRY with the below action handling
+                self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
+                self.image_at_start.copy_region(self.image)
+                action = Action(self.selected_tool.get_name(), self.image)
+                self.undos.append(action)
+                self.image.selection.copy_from_document(self.image)
+                # Time to go undercover as an eraser. 🥸
+                # TODO: just add a parameter to stamp_char.
+                # Momentarily masquerading makes me mildly mad.
+                self.selected_tool = Tool.eraser
+                for x in range(sel.region.width):
+                    for y in range(sel.region.height):
+                        self.stamp_char(x + sel.region.x, y + sel.region.y)
+                self.selected_tool = Tool.select
+                affected_region = sel.region
+                
+                # TODO: DRY with the below action handling
+                action.region = affected_region
+                action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
+                action.update(self.image_at_start)
+                self.canvas.refresh_scaled_region(affected_region)
                 return
             self.meld_selection()
             return
@@ -1886,6 +1910,7 @@ class PaintApp(App):
     def on_tools_box_tool_selected(self, event: ToolsBox.ToolSelected) -> None:
         """Called when a tool is selected in the palette."""
         self.selected_tool = event.tool
+        self.meld_selection()
     
     def on_char_input_char_selected(self, event: CharInput.CharSelected) -> None:
         """Called when a character is entered in the character input."""
