@@ -864,6 +864,8 @@ class PaintApp(App):
         ("shift+ctrl+z", "redo", _("Repeat")),
         ("ctrl+y", "redo", _("Repeat")),
         ("f4", "redo", _("Repeat")),
+        ("ctrl+pageup", "normal_size", _("Normal Size")),
+        ("ctrl+pagedown", "large_size", _("Large Size")),
         # action_toggle_dark is built in to App
         ("ctrl+d", "toggle_dark", _("Toggle Dark Mode")),
         # dev helper
@@ -938,6 +940,13 @@ class PaintApp(App):
     def watch_selected_char(self, old_selected_char: str, selected_char: str) -> None:
         """Called when selected_char changes."""
         self.query_one("#selected_color").value = selected_char
+
+    def watch_magnification(self, old_magnification: int, magnification: int) -> None:
+        """Called when magnification changes."""
+        self.canvas.magnification = magnification
+        # TODO: keep the top left corner of the viewport in the same place
+        # https://github.com/1j01/jspaint/blob/12a90c6bb9d36f495dc6a07114f9667c82ee5228/src/functions.js#L326-L351
+        # This will matter more when large documents don't freeze up the program...
 
     def stamp_brush(self, x: int, y: int, affected_region_base: Region = None) -> Region:
         brush_diameter = 1
@@ -1286,9 +1295,9 @@ class PaintApp(App):
     def action_text_toolbar(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_normal_size(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.magnification = 1
     def action_large_size(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.magnification = 4
     def action_custom_zoom(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_show_grid(self) -> None:
