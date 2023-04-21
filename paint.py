@@ -1147,42 +1147,44 @@ class PaintApp(App):
                 window.close()
                 return
             filename = window.content.query_one("#open_dialog_filename_input").value
+            if not filename:
+                return
             if self.directory_tree_selected_path:
                 filename = os.path.join(self.directory_tree_selected_path, filename)
-            if filename:
-                try:
-                    # Note that os.path.samefile can raise FileNotFoundError
-                    if self.filename and os.path.samefile(filename, self.filename):
+            try:
+                # Note that os.path.
+                # samefile can raise FileNotFoundError
+                if self.filename and os.path.samefile(filename, self.filename):
+                    window.close()
+                    return
+                with open(filename, "r") as f:
+                    content = f.read() # f is out of scope in go_ahead()
+                    def go_ahead():
+                        try:
+                            new_image = AnsiArtDocument.from_text(content)
+                        except Exception as e:
+                            # "This is not a valid bitmap file, or its format is not currently supported."
+                            # string from MS Paint doesn't apply well here,
+                            # at least not until we support bitmap files.
+                            self.warning_message_box(_("Open"), Static(_("Paint cannot open this file.") + "\n\n" + str(e)), "ok")
+                            return
+                        self.action_new(force=True)
+                        self.canvas.image = self.image = new_image
+                        self.canvas.refresh(layout=True)
+                        self.filename = filename
                         window.close()
-                        return
-                    with open(filename, "r") as f:
-                        content = f.read() # f is out of scope in go_ahead()
-                        def go_ahead():
-                            try:
-                                new_image = AnsiArtDocument.from_text(content)
-                            except Exception as e:
-                                # "This is not a valid bitmap file, or its format is not currently supported."
-                                # string from MS Paint doesn't apply well here,
-                                # at least not until we support bitmap files.
-                                self.warning_message_box(_("Open"), Static(_("Paint cannot open this file.") + "\n\n" + str(e)), "ok")
-                                return
-                            self.action_new(force=True)
-                            self.canvas.image = self.image = new_image
-                            self.canvas.refresh(layout=True)
-                            self.filename = filename
-                            window.close()
-                        if self.is_document_modified():
-                            self.prompt_save_changes(self.filename or _("Untitled"), go_ahead)
-                        else:
-                            go_ahead()
-                except FileNotFoundError:
-                    self.warning_message_box(_("Open"), Static(_("File not found.") + "\n" + _("Please verify that the correct path and file name are given.")), "ok")
-                except IsADirectoryError:
-                    self.warning_message_box(_("Open"), Static(_("Invalid file.")), "ok")
-                except PermissionError:
-                    self.warning_message_box(_("Open"), Static(_("Access denied.")), "ok")
-                except Exception as e:
-                    self.warning_message_box(_("Open"), Static(_("An unexpected error occurred while reading %1.").replace("%1", filename) + "\n\n" + str(e)), "ok")
+                    if self.is_document_modified():
+                        self.prompt_save_changes(self.filename or _("Untitled"), go_ahead)
+                    else:
+                        go_ahead()
+            except FileNotFoundError:
+                self.warning_message_box(_("Open"), Static(_("File not found.") + "\n" + _("Please verify that the correct path and file name are given.")), "ok")
+            except IsADirectoryError:
+                self.warning_message_box(_("Open"), Static(_("Invalid file.")), "ok")
+            except PermissionError:
+                self.warning_message_box(_("Open"), Static(_("Access denied.")), "ok")
+            except Exception as e:
+                self.warning_message_box(_("Open"), Static(_("An unexpected error occurred while reading %1.").replace("%1", filename) + "\n\n" + str(e)), "ok")
 
         for old_window in self.query("#save_as_dialog, #open_dialog").nodes:
             old_window.close()
