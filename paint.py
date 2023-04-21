@@ -947,6 +947,7 @@ class PaintApp(App):
         ("shift+ctrl+z", "redo", _("Repeat")),
         ("ctrl+y", "redo", _("Repeat")),
         ("f4", "redo", _("Repeat")),
+        ("delete", "clear_selection", _("Clear Selection")),
         ("ctrl+pageup", "normal_size", _("Normal Size")),
         ("ctrl+pagedown", "large_size", _("Large Size")),
         # action_toggle_dark is built in to App
@@ -1070,6 +1071,18 @@ class PaintApp(App):
             self.image.bg[y][x] = bg_color
             self.image.fg[y][x] = fg_color
     
+    def erase_region(self, region: Region) -> None:
+        # Time to go undercover as an eraser. 🥸
+        # TODO: just add a parameter to stamp_char.
+        # Momentarily masquerading makes me mildly mad.
+        original_tool = self.selected_tool
+        self.selected_tool = Tool.eraser
+        sel = self.image.selection
+        for x in range(sel.region.width):
+            for y in range(sel.region.height):
+                self.stamp_char(x + sel.region.x, y + sel.region.y)
+        self.selected_tool = original_tool
+
     def action_undo(self) -> None:
         self.meld_selection()
         if len(self.undos) > 0:
@@ -1374,8 +1387,6 @@ class PaintApp(App):
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_paste(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
-    def action_clear_selection(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_select_all(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_copy_to(self) -> None:
@@ -1624,14 +1635,7 @@ class PaintApp(App):
                     self.redos = []
                 self.undos.append(action)
                 self.image.selection.copy_from_document(self.image)
-                # Time to go undercover as an eraser. 🥸
-                # TODO: just add a parameter to stamp_char.
-                # Momentarily masquerading makes me mildly mad.
-                self.selected_tool = Tool.eraser
-                for x in range(sel.region.width):
-                    for y in range(sel.region.height):
-                        self.stamp_char(x + sel.region.x, y + sel.region.y)
-                self.selected_tool = Tool.select
+                self.erase_region(sel.region)
                 # TODO: use two regions, for the cut out and the paste in, once melded.
                 # I could maybe give Action a sub_action property, and use it for the melding.
                 # Or I could make it use a list of regions.
@@ -1762,10 +1766,13 @@ class PaintApp(App):
             self.canvas.refresh_scaled_region(region)
             self.selection_drag_offset = None
 
-    def clear_selection(self) -> None:
+    def action_clear_selection(self) -> None:
         """Delete the selection and its contents."""
         if self.image.selection:
             region = self.image.selection.region
+            if not self.image.selection.contained_image:
+                # It hasn't been cut out yet, so we need to erase it.
+                self.erase_region(region)
             self.image.selection = None
             self.canvas.refresh_scaled_region(region)
             self.selection_drag_offset = None
