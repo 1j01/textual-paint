@@ -1770,12 +1770,7 @@ class PaintApp(App):
                 widget.styles.background = Color.from_hsl(i / 10, 1, 0.3)
                 if not event.ctrl:
                     widget.styles.border = ("round", Color.from_hsl(i / 10, 1, 0.5))
-                    title = widget.__class__.__name__
-                    if widget.id:
-                        title += "#" + widget.id
-                    if widget.classes:
-                        title += "." + ".".join(widget.classes)
-                    widget.border_title = title
+                    widget.border_title = widget.css_identifier_styled
 
 # `textual run --dev paint.py` will search for a 
 # global variable named `app`, and fallback to
