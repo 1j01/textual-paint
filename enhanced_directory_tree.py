@@ -9,13 +9,13 @@ class EnhancedDirectoryTree(DirectoryTree):
         node = self.root
         def get_node_name(node):
             return os.path.basename(node.data.path.rstrip(os.path.sep))
-        for dir_name in target_path.split(os.path.sep):
+        for path_segment in target_path.split(os.path.sep):
             # Find the child node with the right name.
             for child in node.children:
-                if get_node_name(child) == dir_name:
+                if get_node_name(child) == path_segment:
                     node = child
                     break
-            if get_node_name(node) == dir_name:
+            if get_node_name(node) == path_segment:
                 if node.data.is_dir:
                     if not node.is_expanded and not node.data.loaded:
                         # load_directory also calls node.expand()
