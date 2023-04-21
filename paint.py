@@ -877,7 +877,8 @@ class PaintApp(App):
     show_tools_box = var(True)
     show_colors_box = var(True)
     selected_tool = var(Tool.pencil)
-    selected_color = var(palette[0])
+    selected_bg_color = var(palette[0])
+    selected_fg_color = var(palette[len(palette) // 2])
     selected_char = var(" ")
     filename = var(None)
     image = var(None)
@@ -933,11 +934,15 @@ class PaintApp(App):
             else:
                 button.remove_class("selected")
 
-    def watch_selected_color(self, old_selected_color: str, selected_color: str) -> None:
-        """Called when selected_color changes."""
-        self.query_one("#selected_color_char_input").styles.background = selected_color
+    def watch_selected_bg_color(self, selected_bg_color: str) -> None:
+        """Called when selected_bg_color changes."""
+        self.query_one("#selected_color_char_input").styles.background = selected_bg_color
 
-    def watch_selected_char(self, old_selected_char: str, selected_char: str) -> None:
+    def watch_selected_fg_color(self, selected_fg_color: str) -> None:
+        """Called when selected_fg_color changes."""
+        self.query_one("#selected_color_char_input").styles.color = selected_fg_color
+
+    def watch_selected_char(self, selected_char: str) -> None:
         """Called when selected_char changes."""
         self.query_one("#selected_color_char_input").value = selected_char
 
@@ -970,16 +975,19 @@ class PaintApp(App):
     
     def stamp_char(self, x: int, y: int) -> None:
         char = self.selected_char
-        color = self.selected_color
+        bg_color = self.selected_bg_color
+        fg_color = self.selected_fg_color
         if self.selected_tool == Tool.eraser:
             char = " "
-            color = "#ffffff"
+            bg_color = "#ffffff"
+            fg_color = "#000000"
         if self.selected_tool == Tool.airbrush:
             if random() < 0.7:
                 return
         if x < self.image.width and y < self.image.height and x >= 0 and y >= 0:
             self.image.ch[y][x] = char
-            self.image.bg[y][x] = color
+            self.image.bg[y][x] = bg_color
+            self.image.fg[y][x] = fg_color
     
     def action_undo(self) -> None:
         if len(self.undos) > 0:
@@ -1244,7 +1252,8 @@ class PaintApp(App):
         self.preview_action = None
         # Following MS Paint's lead and resetting the color (but not the tool.)
         # It probably has to do with color modes.
-        self.selected_color = palette[0]
+        self.selected_bg_color = palette[0]
+        self.selected_fg_color = palette[len(palette) // 2]
         self.selected_char = " "
     
     def action_open_character_selector(self) -> None:
@@ -1447,7 +1456,8 @@ class PaintApp(App):
 
     def pick_color(self, x: int, y: int) -> None:
         """Select a color from the image."""
-        self.selected_color = self.image.bg[y][x]
+        self.selected_bg_color = self.image.bg[y][x]
+        self.selected_fg_color = self.image.fg[y][x]
         self.selected_char = self.image.ch[y][x]
 
     def get_prospective_magnification(self) -> float:
@@ -1521,7 +1531,7 @@ class PaintApp(App):
         if self.selected_tool == Tool.pencil or self.selected_tool == Tool.brush:
             affected_region = self.stamp_brush(event.mouse_down_event.x, event.mouse_down_event.y)
         elif self.selected_tool == Tool.fill:
-            affected_region = flood_fill(self.image, event.mouse_down_event.x, event.mouse_down_event.y, self.selected_char, "#ffffff", self.selected_color)
+            affected_region = flood_fill(self.image, event.mouse_down_event.x, event.mouse_down_event.y, self.selected_char, self.selected_fg_color, self.selected_bg_color)
 
         if affected_region:
             action.region = affected_region
@@ -1713,7 +1723,13 @@ class PaintApp(App):
         if "tool_button" in event.button.classes:
             self.selected_tool = event.button.represented_tool
         elif "color_button" in event.button.classes:
-            self.selected_color = event.button.represented_color
+            # TODO: a way to select the foreground color
+            # Pressed event only gives the button that was pressed.
+            # Need to use MouseDown.
+            # if event.shift:
+            #     self.selected_fg_color = event.button.represented_color
+            # else:
+            self.selected_bg_color = event.button.represented_color
 
     def on_tree_node_highlighted(self, event: Tree.NodeHighlighted) -> None:
         """
