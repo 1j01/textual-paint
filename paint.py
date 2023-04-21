@@ -21,7 +21,7 @@ from textual.css.query import NoMatches
 from textual.reactive import var, reactive
 from textual.strip import Strip
 from textual.widget import Widget
-from textual.widgets import Button, Static, Input, DirectoryTree, Header
+from textual.widgets import Button, Static, Input, DirectoryTree, Tree, Header
 from textual.color import Color
 from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon
@@ -1728,7 +1728,7 @@ class PaintApp(App):
             elif button_id.startswith("color_button_"):
                 self.selected_color = button_id[len("color_button_") :]
 
-    def on_tree_node_highlighted(self, event: DirectoryTree.FileSelected) -> None:
+    def on_tree_node_highlighted(self, event: Tree.NodeHighlighted) -> None:
         """
         Called when a file/folder is selected in the DirectoryTree.
         
