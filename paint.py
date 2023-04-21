@@ -306,6 +306,12 @@ palette = [
 class ToolsBox(Container):
     """Widget containing tool buttons"""
 
+    class ToolSelected(Message):
+        """Message sent when a tool is selected."""
+        def __init__(self, tool: Tool) -> None:
+            self.tool = tool
+            super().__init__()
+
     def compose(self) -> ComposeResult:
         """Add our buttons."""
         for tool in Tool:
@@ -314,18 +320,29 @@ class ToolsBox(Container):
             button.can_focus = False
             button.represented_tool = tool
             yield button
+    
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Called when a button is clicked."""
+
+        if "tool_button" in event.button.classes:
+            self.post_message(self.ToolSelected(event.button.represented_tool))
 
 class CharInput(Input):
     """Widget for entering a single character."""
     
+    class CharSelected(Message):
+        """Message sent when a character is selected."""
+        def __init__(self, char: str) -> None:
+            self.char = char
+            super().__init__()
+
     def validate_value(self, value: str) -> str:
         """Limit the value to a single character."""
         return value[-1] if value else " "
     
     def watch_value(self, value: str) -> None:
         """Called when value changes."""
-        # TODO: use a Message instead of accessing the app directly
-        self.app.selected_char = value
+        self.post_message(self.CharSelected(value))
 
     def validate_cursor_position(self, position: int) -> int:
         """Force the cursor position to 0 so that it's over the character."""
@@ -345,6 +362,12 @@ class CharInput(Input):
 class ColorsBox(Container):
     """Color palette widget."""
 
+    class ColorSelected(Message):
+        """Message sent when a color is selected."""
+        def __init__(self, color: str) -> None:
+            self.color = color
+            super().__init__()
+
     def compose(self) -> ComposeResult:
         """Add our selected color and color well buttons."""
         with Container(id="palette_selection_box"):
@@ -359,6 +382,12 @@ class ColorsBox(Container):
                 button.can_focus = False
                 button.represented_color = color
                 yield button
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Called when a button is clicked."""
+
+        if "color_button" in event.button.classes:
+            self.post_message(self.ColorSelected(event.button.represented_color))
 
 
 debug_region_updates = False
@@ -1706,19 +1735,21 @@ class PaintApp(App):
     def action_toggle_colors_box(self) -> None:
         self.show_colors_box = not self.show_colors_box
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Called when a button is clicked or activated with the keyboard."""
+    def on_tools_box_tool_selected(self, event: ToolsBox.ToolSelected) -> None:
+        """Called when a tool is selected in the palette."""
+        self.selected_tool = event.tool
+    
+    def on_char_input_char_selected(self, event: CharInput.CharSelected) -> None:
+        """Called when a character is entered in the character input."""
+        self.selected_char = event.char
 
-        if "tool_button" in event.button.classes:
-            self.selected_tool = event.button.represented_tool
-        elif "color_button" in event.button.classes:
-            # TODO: a way to select the foreground color
-            # Pressed event only gives the button that was pressed.
-            # Need to use MouseDown.
-            # if event.shift:
-            #     self.selected_fg_color = event.button.represented_color
-            # else:
-            self.selected_bg_color = event.button.represented_color
+    def on_colors_box_color_selected(self, event: ColorsBox.ColorSelected) -> None:
+        """Called when a color well is clicked in the palette."""
+        # TODO: a way to select the foreground color
+        # if event.fg:
+        #     self.selected_fg_color = event.color
+        # else:
+        self.selected_bg_color = event.color
 
     def on_tree_node_highlighted(self, event: Tree.NodeHighlighted) -> None:
         """
