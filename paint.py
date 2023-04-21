@@ -1606,8 +1606,8 @@ class PaintApp(App):
             sel = self.image.selection
             if sel and sel.region.contains_point(self.mouse_at_start):
                 self.selection_drag_offset = Offset(
-                    self.mouse_at_start[0] - sel.region.x,
-                    self.mouse_at_start[1] - sel.region.y,
+                    sel.region.x - self.mouse_at_start[0],
+                    sel.region.y - self.mouse_at_start[1],
                 )
                 return
             self.meld_selection()
@@ -1718,11 +1718,13 @@ class PaintApp(App):
 
     def meld_selection(self) -> None:
         """Draw the selection onto the image and dissolve the selection."""
+        # I could DRY this by making clear_selection return the Selection
         if self.image.selection:
             region = self.image.selection.region
             self.image.selection.copy_to_document(self.image)
             self.image.selection = None
             self.canvas.refresh_scaled_region(region)
+            self.selection_drag_offset = None
 
     def clear_selection(self) -> None:
         """Delete the selection and its contents."""
@@ -1730,6 +1732,7 @@ class PaintApp(App):
             region = self.image.selection.region
             self.image.selection = None
             self.canvas.refresh_scaled_region(region)
+            self.selection_drag_offset = None
 
     def on_canvas_tool_update(self, event: Canvas.ToolUpdate) -> None:
         """Called when the user is drawing on the canvas."""
@@ -1753,7 +1756,10 @@ class PaintApp(App):
                     self.selection_drag_offset.x + event.mouse_move_event.x,
                     self.selection_drag_offset.y + event.mouse_move_event.y,
                 )
+                old_region = sel.region
                 sel.region = Region.from_offset(offset, sel.region.size)
+                combined_region = old_region.union(sel.region)
+                self.canvas.refresh_scaled_region(combined_region)
             else:
                 # This is a tool preview, but it's not in the ToolPreviewUpdate event.
                 # Goes to show how the canvas's event names are silly.
@@ -1842,7 +1848,11 @@ class PaintApp(App):
             self.canvas.refresh_scaled_region(affected_region)
 
     def on_canvas_tool_stop(self, event: Canvas.ToolStop) -> None:
-        """Called when releasing the mouse button after drawing."""
+        """Called when releasing the mouse button after drawing/dragging on the canvas."""
+        if self.selection_drag_offset:
+            # Done dragging selection
+            self.selection_drag_offset = None
+            return
         if self.selected_tool == Tool.select:
             select_region = self.get_select_region(self.mouse_at_start, event.mouse_up_event.offset)
             if self.image.selection:
