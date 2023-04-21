@@ -110,6 +110,33 @@ class Window(Container):
         self.mouse_at_drag_start = event.screen_offset
         self.offset_at_drag_start = Offset(self.styles.offset.x.value, self.styles.offset.y.value)
         self.capture_mouse()
+        """
+        Work around a bug in textual where the MouseUp event
+        is not sent to this widget if another widget gets focus,
+        and thus, release_mouse() is not called,
+        and you can never release the drag or click anything else.
+
+        An excerpt from Screen._forward_event:
+
+                if isinstance(event, events.MouseUp) and widget.focusable:
+                    if self.focused is not widget:
+                        self.set_focus(widget)
+                        event.stop()
+                        return
+                event.style = self.get_style_at(event.screen_x, event.screen_y)
+                if widget is self:
+                    event._set_forwarded()
+                    self.post_message(event)
+                else:
+                    widget._forward_event(event._apply_offset(-region.x, -region.y))
+
+        Note the return statement.
+        I don't know what this special case is for,
+        but for this work around, I can make widget.focusable False,
+        so that the special case doesn't apply.
+        (`focusable` is a getter that uses can_focus and checks ancestors are enabled)
+        """
+        self.can_focus = False
 
     def on_mouse_move(self, event: events.MouseMove) -> None:
         """Called when the user moves the mouse."""
@@ -124,6 +151,8 @@ class Window(Container):
         self.mouse_at_drag_start = None
         self.offset_at_drag_start = None
         self.release_mouse()
+        # Part of the workaround for the bug mentioned in on_mouse_down
+        self.can_focus = True
 
     def close(self) -> None:
         """Force close the window."""
