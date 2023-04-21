@@ -76,12 +76,12 @@ Screen {
     border-bottom: tall $panel-lighten-3;
 }
 
-#selected_colors {
+#palette_selection_box {
     max-height: 5;
     overflow: hidden;
 }
 
-#selected_color {
+#selected_color_char_input {
     width: 9;
     height: 4;
     padding-left: 3;

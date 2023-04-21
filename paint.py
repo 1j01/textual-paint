@@ -350,11 +350,11 @@ class ColorsBox(Container):
     def compose(self) -> ComposeResult:
         """Add our selected color and color well buttons."""
         with Container(id="colors_box"):
-            with Container(id="selected_colors"):
+            with Container(id="palette_selection_box"):
                 # This widget is doing double duty, showing the current color
                 # and showing/editing the current character.
                 # I haven't settled on naming for this yet.
-                yield CharInput(id="selected_color", classes="color_well")
+                yield CharInput(id="selected_color_char_input", classes="color_well")
             with Container(id="available_colors"):
                 for color in palette:
                     button = Button("", classes="color_button color_well")
@@ -935,11 +935,11 @@ class PaintApp(App):
 
     def watch_selected_color(self, old_selected_color: str, selected_color: str) -> None:
         """Called when selected_color changes."""
-        self.query_one("#selected_color").styles.background = selected_color
+        self.query_one("#selected_color_char_input").styles.background = selected_color
 
     def watch_selected_char(self, old_selected_char: str, selected_char: str) -> None:
         """Called when selected_char changes."""
-        self.query_one("#selected_color").value = selected_char
+        self.query_one("#selected_color_char_input").value = selected_char
 
     def watch_magnification(self, old_magnification: int, magnification: int) -> None:
         """Called when magnification changes."""
