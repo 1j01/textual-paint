@@ -1795,9 +1795,7 @@ class PaintApp(App):
         if self.selected_tool == Tool.select:
             if self.selection_drag_offset:
                 sel = self.image.selection
-                if sel is None:
-                    print("WARNING: selection_drag_offset is set but there is no selection")
-                    return
+                assert sel is not None, "selection_drag_offset should only be set if there's a selection"
                 offset = (
                     self.selection_drag_offset.x + event.mouse_move_event.x,
                     self.selection_drag_offset.y + event.mouse_move_event.y,
