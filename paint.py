@@ -311,7 +311,9 @@ class ToolsBox(Container):
         with Container(id="tools_box"):
             # tool buttons
             for tool in Tool:
-                yield Button(tool.get_icon(), id="tool_button_" + tool.name)
+                button = Button(tool.get_icon(), id="tool_button_" + tool.name)
+                button.can_focus = False
+                yield button
 
 class CharInput(Input):
     """Widget for entering a single character."""
@@ -355,6 +357,7 @@ class ColorsBox(Container):
                 for color in palette:
                     button = Button("", id="color_button_" + color, classes="color_well")
                     button.styles.background = color
+                    button.can_focus = False
                     yield button
 
 
