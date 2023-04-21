@@ -24,7 +24,7 @@ from textual.widget import Widget
 from textual.widgets import Button, Static, Input, DirectoryTree, Header
 from textual.color import Color
 from menus import MenuBar, Menu, MenuItem, Separator
-from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, warning_icon
+from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon
 from localization.i18n import get as _, load_language
 
 
@@ -1167,7 +1167,7 @@ class PaintApp(App):
         window = MessageBox(
             id="message_box",
             title=title,
-            icon_widget=warning_icon,
+            icon_widget=get_warning_icon(),
             message_widget=message_widget,
             button_types=button_types,
             handle_button=handle_button,

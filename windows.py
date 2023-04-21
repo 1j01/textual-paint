@@ -228,7 +228,7 @@ class CharacterSelectorDialogWindow(DialogWindow):
         self.content.mount(Button("Cancel", classes="cancel"))
 
 # ASCII line art version:
-# warning_icon = Static("""[#ffff00]
+# get_warning_icon = lambda: Static("""[#ffff00]
 #     _
 #    / \\
 #   / | \\
@@ -236,7 +236,7 @@ class CharacterSelectorDialogWindow(DialogWindow):
 # /_______\\
 # [/]""", classes="warning_icon message_box_icon")
 # Unicode solid version 1:
-# warning_icon = Static("""[#ffff00 on #000000]
+# get_warning_icon = lambda: Static("""[#ffff00 on #000000]
 #     _
 #    ◢█◣
 #   ◢[#000000 on #ffff00] ▼ [/]◣
@@ -244,7 +244,7 @@ class CharacterSelectorDialogWindow(DialogWindow):
 # ◢███████◣
 # [/]""", classes="warning_icon message_box_icon")
 # Unicode line art version (' might be a better than ╰/╯):
-# warning_icon = Static("""[#ffff00]
+# get_warning_icon = lambda: Static("""[#ffff00]
 #     _
 #    ╱ ╲
 #   ╱ │ ╲
@@ -252,7 +252,7 @@ class CharacterSelectorDialogWindow(DialogWindow):
 # ╰───────╯
 # """, classes="warning_icon message_box_icon")
 # Unicode solid version 2:
-# warning_icon = Static("""[#ffff00 on #000000]
+# get_warning_icon = lambda: Static("""[#ffff00 on #000000]
 #      🭯
 #     🭅[#000000 on #ffff00]🭯[/]🭐
 #    🭅[#000000 on #ffff00] ▼ [/]🭐
@@ -263,7 +263,7 @@ class CharacterSelectorDialogWindow(DialogWindow):
 # VS Code's terminal seems unsure of the width of these characters (like it's rendering 2 wide but advancing by 1), and has gaps/seams.
 # Ubuntu's terminal looks better, and the graphics have less gaps, but the overall shape is worse.
 # I guess a lot of this comes down to the font as well.
-warning_icon = Static("""
+get_warning_icon = lambda: Static("""
     [#000000]🭋[#ffff00 on #000000]🭯[/]🭀[/]
    [#000000]🭋[#ffff00 on #000000]🭅█🭐[/]🭀[/]
   [#000000]🭋[#ffff00 on #000000]🭅[#000000 on #ffff00] ▼ [/]🭐[/]🭀[/]
