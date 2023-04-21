@@ -311,8 +311,10 @@ class ToolsBox(Container):
         with Container(id="tools_box"):
             # tool buttons
             for tool in Tool:
-                button = Button(tool.get_icon(), id="tool_button_" + tool.name)
+                # TODO: tooltip with tool.get_name()
+                button = Button(tool.get_icon(), classes="tool_button")
                 button.can_focus = False
+                button.represented_tool = tool
                 yield button
 
 class CharInput(Input):
@@ -355,9 +357,10 @@ class ColorsBox(Container):
                 yield CharInput(id="selected_color", classes="color_well")
             with Container(id="available_colors"):
                 for color in palette:
-                    button = Button("", id="color_button_" + color, classes="color_well")
+                    button = Button("", classes="color_button color_well")
                     button.styles.background = color
                     button.can_focus = False
+                    button.represented_color = color
                     yield button
 
 
@@ -922,8 +925,11 @@ class PaintApp(App):
 
     def watch_selected_tool(self, old_selected_tool: Tool, selected_tool: Tool) -> None:
         """Called when selected_tool changes."""
-        self.query_one("#tool_button_" + old_selected_tool.name).remove_class("selected")
-        self.query_one("#tool_button_" + selected_tool.name).add_class("selected")
+        for button in self.query(".tool_button"):
+            if button.represented_tool == selected_tool:
+                button.add_class("selected")
+            else:
+                button.remove_class("selected")
 
     def watch_selected_color(self, old_selected_color: str, selected_color: str) -> None:
         """Called when selected_color changes."""
@@ -1690,14 +1696,10 @@ class PaintApp(App):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked or activated with the keyboard."""
 
-        button_id = event.button.id
-        # button_classes = event.button.classes
-
-        if button_id:
-            if button_id.startswith("tool_button_"):
-                self.selected_tool = Tool[button_id[len("tool_button_") :]]
-            elif button_id.startswith("color_button_"):
-                self.selected_color = button_id[len("color_button_") :]
+        if "tool_button" in event.button.classes:
+            self.selected_tool = event.button.represented_tool
+        elif "color_button" in event.button.classes:
+            self.selected_color = event.button.represented_color
 
     def on_tree_node_highlighted(self, event: Tree.NodeHighlighted) -> None:
         """
