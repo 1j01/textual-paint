@@ -1879,7 +1879,7 @@ class PaintApp(App):
             # Done dragging selection
             self.selection_drag_offset = None
             return
-        if self.selected_tool == Tool.select:
+        if self.selected_tool == Tool.select and self.mouse_at_start:
             select_region = self.get_select_region(self.mouse_at_start, event.mouse_up_event.offset)
             if self.image.selection:
                 # This shouldn't happen, because it should meld
