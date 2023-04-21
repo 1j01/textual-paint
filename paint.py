@@ -974,6 +974,9 @@ class PaintApp(App):
 
     # for shape tools and Select tool
     mouse_at_start = Offset(0, 0)
+    # for Select tool, indicates that the selection is being moved
+    # and defines the offset of the selection from the mouse
+    selection_drag_offset = Offset(0, 0)
 
     # flag to prevent setting the filename input when initially expanding the directory tree
     expanding_directory_tree = False
@@ -1594,8 +1597,19 @@ class PaintApp(App):
             self.selected_tool = Tool.pencil
             # TODO: support remaining tools
 
+        # TODO: use Offset() instead of tuple
+        # and I would say use event.offset, but I'm dynamically
+        # modifying x/y so I need to use those coords for now,
+        # unless there's some getter/setter magic behind the scenes.
         self.mouse_at_start = (event.mouse_down_event.x, event.mouse_down_event.y)
         if self.selected_tool == Tool.select:
+            sel = self.image.selection
+            if sel and sel.region.contains_point(self.mouse_at_start):
+                self.selection_drag_offset = Offset(
+                    self.mouse_at_start[0] - sel.region.x,
+                    self.mouse_at_start[1] - sel.region.y,
+                )
+                return
             self.meld_selection()
             return
 
@@ -1730,12 +1744,23 @@ class PaintApp(App):
             return
         
         if self.selected_tool == Tool.select:
-            # This is a tool preview, but it's not in the ToolPreviewUpdate event.
-            # Goes to show how the canvas's event names are silly.
-            # I should've just named them for what they are (i.e. when they occur)
-            # rather than what they mean (what they're meant to represent).
-            self.canvas.select_preview_region = self.get_select_region(self.mouse_at_start, event.mouse_move_event.offset)
-            self.canvas.refresh_scaled_region(self.canvas.select_preview_region)
+            if self.selection_drag_offset:
+                sel = self.image.selection
+                if sel is None:
+                    print("WARNING: selection_drag_offset is set but there is no selection")
+                    return
+                offset = (
+                    self.selection_drag_offset.x + event.mouse_move_event.x,
+                    self.selection_drag_offset.y + event.mouse_move_event.y,
+                )
+                sel.region = Region.from_offset(offset, sel.region.size)
+            else:
+                # This is a tool preview, but it's not in the ToolPreviewUpdate event.
+                # Goes to show how the canvas's event names are silly.
+                # I should've just named them for what they are (i.e. when they occur)
+                # rather than what they mean (what they're meant to represent).
+                self.canvas.select_preview_region = self.get_select_region(self.mouse_at_start, event.mouse_move_event.offset)
+                self.canvas.refresh_scaled_region(self.canvas.select_preview_region)
             return
 
         if len(self.undos) == 0:
