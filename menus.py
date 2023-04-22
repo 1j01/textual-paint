@@ -9,6 +9,7 @@ from textual.geometry import Offset, Region, Size
 from textual.reactive import var, reactive
 from textual.widget import Widget
 from textual.widgets import Button, Static
+from rich.text import Text
 from localization.i18n import markup_hotkey, get_direction
 
 def to_snake_case(name):
@@ -134,11 +135,13 @@ class Menu(Container):
         max_width = 0
         for item in self.items:
             if isinstance(item, MenuItem):
+                assert isinstance(item.label, Text)
                 if len(item.label.plain) > max_width:
                     max_width = len(item.label.plain)
         # Split on tab character and align the shortcuts
         for item in self.items:
             if isinstance(item, MenuItem):
+                assert isinstance(item.label, Text)
                 markup_parts = item.label.markup.split("\t")
                 plain_parts = item.label.plain.split("\t")
                 if len(markup_parts) > 1:
