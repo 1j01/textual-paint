@@ -2339,11 +2339,11 @@ class PaintApp(App):
         leaf_widget, _ = self.get_widget_at(*event.screen_offset)
         if leaf_widget and leaf_widget is not self.screen:
             for i, widget in enumerate(leaf_widget.ancestors_with_self):
-                self.debug_highlight.append((widget, widget.styles.background, widget.styles.border, widget.border_title if hasattr(widget, "border_title") else None))
+                self.debug_highlight.append((widget, widget.styles.background, widget.styles.border, widget.border_title if hasattr(widget, "border_title") else None))  # type: ignore
                 widget.styles.background = Color.from_hsl(i / 10, 1, 0.3)
                 if not event.ctrl:
                     widget.styles.border = ("round", Color.from_hsl(i / 10, 1, 0.5))
-                    widget.border_title = widget.css_identifier_styled
+                    widget.border_title = widget.css_identifier_styled  # type: ignore
 
 # `textual run --dev paint.py` will search for a 
 # global variable named `app`, and fallback to
