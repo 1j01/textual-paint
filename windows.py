@@ -203,6 +203,8 @@ class DialogWindow(Window):
 
 class CharacterSelectorDialogWindow(DialogWindow):
     """A dialog window that lets the user select a character."""
+    # TODO: use a DataTable instead of a bunch of buttons,
+    # for performance, compactness, and better keyboard navigation
     
     # class CharacterSelected(Message):
     #     """Sent when a character is selected."""
@@ -222,6 +224,7 @@ class CharacterSelectorDialogWindow(DialogWindow):
         """Initialize the dialog window."""
         super().__init__(handle_button=self.handle_button, *args, **kwargs)
         self._char_to_highlight = selected_character
+        self._char_by_button: dict[Button, str] = {}
         self.handle_selected_character = handle_selected_character
     
     def handle_button(self, button: Button) -> None:
@@ -229,27 +232,16 @@ class CharacterSelectorDialogWindow(DialogWindow):
         if button.id == "cancel":
             self.request_close()
         else:
-            # self.post_message(self.CharacterSelected(button.char))
+            # self.post_message(self.CharacterSelected(self._char_by_button[button]))
             # self.close()
-            self.handle_selected_character(button.char)
-
-    # def compose(self) -> ComposeResult:
-    #     """Add our buttons."""
-    #     with Container(classes="character_buttons"):
-    #         for char in self.char_list:
-    #             button = Button(char, variant="primary" if char is self._char_to_highlight else "default")
-    #             button.char = char
-    #             # if char is self._char_to_highlight:
-    #             #     button.add_class("selected")
-    #             yield button
-    #     yield Button("Cancel", id="cancel")
+            self.handle_selected_character(self._char_by_button[button])
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
         container = Container(classes="character_buttons")
         for char in self.char_list:
             button = Button(char, variant="primary" if char is self._char_to_highlight else "default")
-            button.char = char
+            self._char_by_button[button] = char
             # if char is self._char_to_highlight:
             #     button.add_class("selected")
             container.mount(button)

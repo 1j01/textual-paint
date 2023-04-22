@@ -316,18 +316,19 @@ class ToolsBox(Container):
 
     def compose(self) -> ComposeResult:
         """Add our buttons."""
+        self.tool_by_button = {}
         for tool in Tool:
             # TODO: tooltip with tool.get_name()
             button = Button(tool.get_icon(), classes="tool_button")
             button.can_focus = False
-            button.represented_tool = tool
+            self.tool_by_button[button] = tool
             yield button
     
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked."""
 
         if "tool_button" in event.button.classes:
-            self.post_message(self.ToolSelected(event.button.represented_tool))
+            self.post_message(self.ToolSelected(self.tool_by_button[event.button]))
 
 class CharInput(Input):
     """Widget for entering a single character."""
@@ -372,6 +373,7 @@ class ColorsBox(Container):
 
     def compose(self) -> ComposeResult:
         """Add our selected color and color well buttons."""
+        self.color_by_button = {}
         with Container(id="palette_selection_box"):
             # This widget is doing double duty, showing the current color
             # and showing/editing the current character.
@@ -382,14 +384,14 @@ class ColorsBox(Container):
                 button = Button("", classes="color_button color_well")
                 button.styles.background = color
                 button.can_focus = False
-                button.represented_color = color
+                self.color_by_button[button] = color
                 yield button
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked."""
 
         if "color_button" in event.button.classes:
-            self.post_message(self.ColorSelected(event.button.represented_color))
+            self.post_message(self.ColorSelected(self.color_by_button[event.button]))
 
 
 class Selection:
@@ -1112,7 +1114,7 @@ class PaintApp(App):
     def watch_selected_tool(self, old_selected_tool: Tool, selected_tool: Tool) -> None:
         """Called when selected_tool changes."""
         for button in self.query(".tool_button"):
-            if button.represented_tool == selected_tool:
+            if selected_tool == self.query_one("ToolsBox", ToolsBox).tool_by_button[button]:
                 button.add_class("selected")
             else:
                 button.remove_class("selected")
