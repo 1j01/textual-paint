@@ -1250,6 +1250,12 @@ class PaintApp(App):
             self.undos.append(undo_action)
             self.canvas.refresh(layout=True)
 
+    def close_windows(self, selector: str) -> None:
+        """Close all windows matching the CSS selector."""
+        for window in self.query(selector).nodes:
+            assert isinstance(window, Window), f"Expected a Window for query '{selector}', but got {window.css_identifier}"
+            window.close()
+
     def action_save(self) -> None:
         """Start the save action, but don't wait for the Save As dialog to close if it's a new file."""
         task = asyncio.create_task(self.save())
@@ -1287,8 +1293,7 @@ class PaintApp(App):
 
     async def save_as(self) -> None:
         """Save the image as a new file."""
-        for old_window in self.query("#save_as_dialog, #open_dialog").nodes:
-            old_window.close()
+        self.close_windows("#save_as_dialog, #open_dialog")
         
         saved_future = asyncio.Future()
 
@@ -1387,8 +1392,7 @@ class PaintApp(App):
 
     def warning_message_box(self, title: str, message_widget: Widget|str, button_types: str = "ok", callback = None) -> None:
         """Show a warning message box with the given title, message, and buttons."""
-        for old_window in self.query("#message_box").nodes:
-            old_window.close()
+        self.close_windows("#message_box")
         
         self.bell()
 
@@ -1456,8 +1460,7 @@ class PaintApp(App):
             except Exception as e:
                 self.warning_message_box(_("Open"), Static(_("An unexpected error occurred while reading %1.").replace("%1", filename) + "\n\n" + str(e)), "ok")
 
-        for old_window in self.query("#save_as_dialog, #open_dialog").nodes:
-            old_window.close()
+        self.close_windows("#save_as_dialog, #open_dialog")
         window = DialogWindow(
             id="open_dialog",
             classes="file_dialog_window",
@@ -1501,8 +1504,7 @@ class PaintApp(App):
     
     def action_open_character_selector(self) -> None:
         """Show dialog to select a character."""
-        for old_window in self.query("#character_selector_dialog").nodes:
-            old_window.close()
+        self.close_windows("#character_selector_dialog")
         def handle_selected_character(character):
             self.selected_char = character
             window.close()
@@ -1549,8 +1551,7 @@ class PaintApp(App):
     def action_large_size(self) -> None:
         self.magnification = 4
     def action_custom_zoom(self) -> None:
-        for old_window in self.query("#zoom_dialog").nodes:
-            old_window.close()
+        self.close_windows("#zoom_dialog")
         def handle_button(button):
             if button.has_class("ok"):
                 min_zoom = 1
@@ -1611,8 +1612,7 @@ class PaintApp(App):
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     
     def action_help_topics(self) -> None:
-        for old_window in self.query("#help_dialog").nodes:
-            old_window.close()
+        self.close_windows("#help_dialog")
         window = DialogWindow(
             id="help_dialog",
             title=_("Help"), # _("Help Topics"),
@@ -1625,8 +1625,7 @@ class PaintApp(App):
     
     def action_about_paint(self) -> None:
         """Show the About Paint dialog."""
-        for old_window in self.query("#about_paint_dialog").nodes:
-            old_window.close()
+        self.close_windows("#about_paint_dialog")
         window = DialogWindow(
             id="about_paint_dialog",
             title=_("About Paint"),
