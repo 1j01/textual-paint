@@ -1757,6 +1757,7 @@ class PaintApp(App):
 
         if self.selected_tool == Tool.curve:
             self.tool_points.append(Offset(event.mouse_down_event.x, event.mouse_down_event.y))
+            self.make_preview(self.draw_current_curve)
             return
 
         # TODO: use Offset() instead of tuple
@@ -2111,6 +2112,9 @@ class PaintApp(App):
                 self.canvas.refresh_scaled_region(affected_region)
 
                 self.tool_points = []
+            else:
+                # Most likely just drawing the preview we just cancelled.
+                self.make_preview(self.draw_current_curve)
         # Not reliably unset, so might as well not rely on it. (See early returns above.)
         # self.mouse_at_start = None
 
