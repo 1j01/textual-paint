@@ -405,9 +405,16 @@ class Selection:
     """
     def __init__(self, region: Region) -> None:
         """Initialize a selection."""
-        self.region = region
+        self.region: Region = region
+        """The region of the selection within the outer document."""
         self.contained_image: Optional[AnsiArtDocument] = None
+        """The image data contained in the selection, None until dragged, except for text boxes."""
         self.textbox_mode = False
+        """Whether the selection is a text box. Either way it's text, but it's a different editing mode."""
+        self.text_selection_start = Offset(0, 0)
+        """The start position of the text selection within the text box. This may be before or after the end."""""
+        self.text_selection_end = Offset(0, 0)
+        """The end position of the text selection within the text box. This may be before or after the start."""""
 
     def copy_from_document(self, document: 'AnsiArtDocument') -> None:
         """Copy the image data from the document into the selection."""
@@ -889,10 +896,22 @@ class Canvas(Widget):
             if self.magnification > 1:
                 ch = self.big_ch(ch, x % self.magnification, y % self.magnification)
             style = Style.parse(fg+" on "+bg)
+            # def offset_to_text_index(offset) -> int:
+            #     # return offset.y * sel.region.width + offset.x
+            #     # return offset.y * self.image.width + offset.x
             if (
                 self.magnifier_preview_region and magnifier_preview_region.contains(x, y) and not inner_magnifier_preview_region.contains(x, y) or
                 self.select_preview_region and select_preview_region.contains(x, y) and not inner_select_preview_region.contains(x, y) or
-                sel and selection_region.contains(x, y) and not inner_selection_region.contains(x, y)
+                sel and selection_region.contains(x, y) and not inner_selection_region.contains(x, y) or
+                sel and sel.textbox_mode and (
+                    # offset_to_text_index(sel.text_selection_start) <=
+                    # offset_to_text_index(Offset(x, y))
+                    # < offset_to_text_index(sel.text_selection_end)
+                    # sel.text_selection_start.x <= cell_x - sel.region.x < sel.text_selection_end.x and
+                    # sel.text_selection_start.y <= cell_y - sel.region.y < sel.text_selection_end.y
+                    sel.text_selection_start.x == cell_x - sel.region.x and
+                    sel.text_selection_start.y == cell_y - sel.region.y
+                )
             ):
                 # invert the colors
                 style = Style.parse(f"rgb({255 - style.color.triplet.red},{255 - style.color.triplet.green},{255 - style.color.triplet.blue}) on rgb({255 - style.bgcolor.triplet.red},{255 - style.bgcolor.triplet.green},{255 - style.bgcolor.triplet.blue})")
@@ -965,6 +984,7 @@ class PaintApp(App):
         ("shift+ctrl+z", "redo", _("Repeat")),
         ("ctrl+y", "redo", _("Repeat")),
         ("f4", "redo", _("Repeat")),
+        # TODO: don't delete textbox with delete key
         ("delete", "clear_selection", _("Clear Selection")),
         ("ctrl+pageup", "normal_size", _("Normal Size")),
         ("ctrl+pagedown", "large_size", _("Large Size")),
@@ -999,6 +1019,8 @@ class PaintApp(App):
     # for Select tool, indicates that the selection is being moved
     # and defines the offset of the selection from the mouse
     selection_drag_offset = Offset(0, 0)
+    # for Text tool
+    selecting_text = False
 
     # flag to prevent setting the filename input when initially expanding the directory tree
     expanding_directory_tree = False
@@ -1666,18 +1688,25 @@ class PaintApp(App):
             self.magnifier_click(event.mouse_down_event.x, event.mouse_down_event.y)
             return
 
-        if self.selected_tool in [Tool.free_form_select, Tool.text, Tool.curve, Tool.polygon]:
+        if self.selected_tool in [Tool.free_form_select, Tool.curve, Tool.polygon]:
             self.selected_tool = Tool.pencil
             # TODO: support remaining tools
 
         # TODO: use Offset() instead of tuple
         # and I would say use event.offset, but I'm dynamically
-        # modifying x/y so I need to use those coords for now,
+        # modifying x/y in fix_mouse_event so I need to use those coords for now,
         # unless there's some getter/setter magic behind the scenes.
         self.mouse_at_start = (event.mouse_down_event.x, event.mouse_down_event.y)
-        if self.selected_tool == Tool.select:
+        if self.selected_tool in [Tool.select, Tool.text]:
             sel = self.image.selection
             if sel and sel.region.contains_point(self.mouse_at_start):
+                if self.selected_tool == Tool.text:
+                    # Place cursor at mouse position
+                    sel.text_selection_start = Offset(*self.mouse_at_start) - sel.region.offset
+                    sel.text_selection_end = Offset(*self.mouse_at_start) - sel.region.offset
+                    self.canvas.refresh_scaled_region(self.image.selection.region)
+                    self.selecting_text = True
+                    return
                 # Start dragging the selection.
                 self.selection_drag_offset = Offset(
                     sel.region.x - self.mouse_at_start[0],
@@ -1825,6 +1854,7 @@ class PaintApp(App):
             self.image.selection = None
             self.canvas.refresh_scaled_region(region)
             self.selection_drag_offset = None
+            self.selecting_text = False
 
     def action_clear_selection(self) -> None:
         """Delete the selection and its contents."""
@@ -1836,6 +1866,7 @@ class PaintApp(App):
             self.image.selection = None
             self.canvas.refresh_scaled_region(region)
             self.selection_drag_offset = None
+            self.selecting_text = False
 
     def on_canvas_tool_update(self, event: Canvas.ToolUpdate) -> None:
         """Called when the user is drawing on the canvas."""
@@ -1849,9 +1880,13 @@ class PaintApp(App):
         if self.selected_tool in [Tool.fill, Tool.magnifier]:
             return
         
-        if self.selected_tool == Tool.select:
-            if self.selection_drag_offset:
-                sel = self.image.selection
+        if self.selected_tool in [Tool.select, Tool.text]:
+            sel = self.image.selection
+            if self.selecting_text:
+                assert sel is not None, "selecting_text should only be set if there's a selection"
+                self.image.selection.text_selection_end = Offset(event.mouse_move_event.x, event.mouse_move_event.y) - sel.region.offset
+                self.canvas.refresh_scaled_region(self.image.selection.region)
+            elif self.selection_drag_offset:
                 assert sel is not None, "selection_drag_offset should only be set if there's a selection"
                 offset = (
                     self.selection_drag_offset.x + event.mouse_move_event.x,
@@ -1958,7 +1993,11 @@ class PaintApp(App):
             # Done dragging selection
             self.selection_drag_offset = None
             return
-        if self.selected_tool == Tool.select and self.mouse_at_start:
+        if self.selecting_text:
+            # Done selecting text
+            self.selecting_text = False
+            return
+        if self.selected_tool in [Tool.select, Tool.text] and self.mouse_at_start:
             # Finish making a selection
             select_region = self.get_select_region(self.mouse_at_start, event.mouse_up_event.offset)
             if self.image.selection:
@@ -1966,8 +2005,12 @@ class PaintApp(App):
                 # the selection on mouse down.
                 self.meld_selection()
             self.image.selection = Selection(select_region)
+            self.image.selection.textbox_mode = self.selected_tool == Tool.text
+            if self.image.selection.textbox_mode:
+                self.image.selection.contained_image = AnsiArtDocument(self.image.selection.region.width, self.image.selection.region.height)
             self.canvas.refresh_scaled_region(select_region)
-        self.mouse_at_start = None
+        # Not reliably unset, so might as well not rely on it. (See early returns above.)
+        # self.mouse_at_start = None
 
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
@@ -1983,6 +2026,53 @@ class PaintApp(App):
         button_id = self.NAME_MAP.get(key)
         if button_id is not None:
             press(self.NAME_MAP.get(key, key))
+        
+        if self.image.selection and self.image.selection.textbox_mode:
+            # TODO: delete selected text if any, when typing
+            x, y = self.image.selection.text_selection_start
+            if key == "enter":
+                x = 0
+                y += 1
+                if y >= self.image.selection.contained_image.height:
+                    y = self.image.selection.contained_image.height - 1
+            elif key == "left":
+               x = max(0, x - 1)
+            elif key == "right":
+                x = min(self.image.selection.contained_image.width - 1, x + 1)
+            elif key == "up":
+                y = max(0, y - 1)
+            elif key == "down":
+                y = min(self.image.selection.contained_image.height - 1, y + 1)
+            elif key == "backspace":
+                x = max(0, x - 1)
+                self.image.selection.contained_image.ch[y][x] = " "
+            elif key == "delete":
+                self.image.selection.contained_image.ch[y][x] = " "
+                x = min(self.image.selection.contained_image.width - 1, x + 1)
+            elif key == "home":
+                x = 0
+            elif key == "end":
+                x = self.image.selection.contained_image.width - 1
+            elif key == "pageup":
+                y = 0
+            elif key == "pagedown":
+                y = self.image.selection.contained_image.height - 1
+            elif event.is_printable:
+                # Type a character into the textbox
+                self.image.selection.contained_image.ch[y][x] = event.character
+                # x = min(self.image.selection.contained_image.width - 1, x + 1)
+                x += 1
+                if x >= self.image.selection.contained_image.width:
+                    x = 0
+                    # y = min(self.image.selection.contained_image.height - 1, y + 1)
+                    y += 1
+                    if y >= self.image.selection.contained_image.height:
+                        y = self.image.selection.contained_image.height - 1
+                        x = self.image.selection.contained_image.width - 1
+            self.image.selection.text_selection_start = Offset(x, y)
+            self.image.selection.text_selection_end = Offset(x, y)
+            self.canvas.refresh_scaled_region(self.image.selection.region)
+
 
     def action_toggle_tools_box(self) -> None:
         self.show_tools_box = not self.show_tools_box

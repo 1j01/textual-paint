@@ -36,7 +36,7 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
     - [x] Pencil
     - [x] Brush
     - [x] Airbrush
-    - [ ] Text
+    - [x] Text
     - [x] Line
     - [ ] Curve
     - [x] Rectangle
