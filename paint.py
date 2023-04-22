@@ -1738,7 +1738,7 @@ class PaintApp(App):
         self.selected_fg_color = self.image.fg[y][x]
         self.selected_char = self.image.ch[y][x]
 
-    def get_prospective_magnification(self) -> float:
+    def get_prospective_magnification(self) -> int:
         """Returns the magnification result on click with the Magnifier tool."""
         return self.return_to_magnification if self.magnification == 1 else 1
 

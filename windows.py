@@ -108,7 +108,7 @@ class Window(Container):
         if event.button != 1:
             return
         self.mouse_at_drag_start = event.screen_offset
-        self.offset_at_drag_start = Offset(self.styles.offset.x.value, self.styles.offset.y.value)
+        self.offset_at_drag_start = Offset(int(self.styles.offset.x.value), int(self.styles.offset.y.value))
         self.capture_mouse()
         """
         Work around a bug in textual where the MouseUp event
