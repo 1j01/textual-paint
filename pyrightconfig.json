@@ -8,8 +8,7 @@
 		"**/.*"
 	],
 	"strict": [
-		"**/i18n.py",
-		"**/enhanced_directory_tree.py",
+		"**/*.py"
 	],
 	"reportOptionalMemberAccess": false
 }
