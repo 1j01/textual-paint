@@ -1802,17 +1802,17 @@ class PaintApp(App):
         self.cancel_preview()
 
     def get_select_region(self, start: Offset, end: Offset) -> Region:
+        # Region.from_corners requires the first point to be the top left,
+        # and it doesn't ensure the width and height are non-zero, so it doesn't work here.
+        # We want to treat the inputs as cells, not points,
+        # so we need to add 1 to the bottom/right.
         x1, y1 = start
         x2, y2 = end
-        # clamp new coords to bounds
-        # don't need to clamp the start position since
-        # it should already be in bounds
-        # TODO: use region.intersection() instead for clarity/conciseness in clamping
-        x2 = min(self.image.width - 1, max(0, x2))
-        y2 = min(self.image.height - 1, max(0, y2))
         x1, x2 = min(x1, x2), max(x1, x2)
         y1, y2 = min(y1, y2), max(y1, y2)
-        return Region(x1, y1, x2 - x1 + 1, y2 - y1 + 1)
+        region = Region(x1, y1, x2 - x1 + 1, y2 - y1 + 1)
+        # Clamp to the document bounds.
+        return region.intersection(Region(0, 0, self.image.width, self.image.height))
 
     def meld_selection(self) -> None:
         """Draw the selection onto the image and dissolve the selection."""
