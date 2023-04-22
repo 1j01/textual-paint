@@ -1112,15 +1112,16 @@ class PaintApp(App):
 
     def stamp_brush(self, x: int, y: int, affected_region_base: Region = None) -> Region:
         brush_diameter = 1
+        square = self.selected_tool == Tool.eraser
         if self.selected_tool == Tool.brush or self.selected_tool == Tool.airbrush or self.selected_tool == Tool.eraser:
             brush_diameter = 3
         if brush_diameter == 1:
             self.stamp_char(x, y)
         else:
-            # plot points within a circle
+            # plot points within a circle (or square)
             for i in range(brush_diameter):
                 for j in range(brush_diameter):
-                    if (i - brush_diameter // 2) ** 2 + (j - brush_diameter // 2) ** 2 <= (brush_diameter // 2) ** 2:
+                    if square or (i - brush_diameter // 2) ** 2 + (j - brush_diameter // 2) ** 2 <= (brush_diameter // 2) ** 2:
                         self.stamp_char(x + i - brush_diameter // 2, y + j - brush_diameter // 2)
         # expand the affected region to include the brush
         brush_diameter += 2 # safety margin
