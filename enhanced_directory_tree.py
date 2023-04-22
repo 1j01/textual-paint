@@ -1,5 +1,7 @@
 import os
 from textual.widgets import DirectoryTree
+from textual.widgets._tree import TreeNode
+from textual.widgets._directory_tree import DirEntry
 
 class EnhancedDirectoryTree(DirectoryTree):
     def expand_to_path(self, target_path: str) -> None:
@@ -13,7 +15,8 @@ class EnhancedDirectoryTree(DirectoryTree):
         # - Definitely want to figure out how to avoid the timers.
 
         node = self.root
-        def get_node_name(node):
+        def get_node_name(node: TreeNode[DirEntry]) -> str:
+            assert node.data
             return os.path.basename(node.data.path.rstrip(os.path.sep))
         for path_segment in target_path.split(os.path.sep):
             # Find the child node with the right name.
@@ -22,6 +25,7 @@ class EnhancedDirectoryTree(DirectoryTree):
                     node = child
                     break
             if get_node_name(node) == path_segment:
+                assert node.data
                 if node.data.is_dir:
                     if not node.is_expanded and not node.data.loaded:
                         # load_directory also calls node.expand()
@@ -50,7 +54,7 @@ class EnhancedDirectoryTree(DirectoryTree):
         # self.scroll_to_region(self._get_label_region(node._line), animate=False, top=True)
         # Timer is needed to wait for the new nodes to mount, I think.
         def scroll_node_to_top():
-            region = self._get_label_region(node._line)
+            region = self._get_label_region(node._line) # type: ignore
             assert region, "Node not found in tree"
             self.scroll_to_region(region, animate=False, top=True)
         self.set_timer(0.01, scroll_node_to_top)
