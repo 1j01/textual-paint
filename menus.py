@@ -1,13 +1,8 @@
 import re
-from enum import Enum
 from typing import List
 from textual import events
-from textual.message import Message, MessageTarget
-from textual.app import ComposeResult
-from textual.containers import Container, Horizontal, Vertical
-from textual.geometry import Offset, Region, Size
-from textual.reactive import var, reactive
-from textual.widget import Widget
+from textual.containers import Container
+from textual.reactive import var
 from textual.widgets import Button, Static
 from rich.text import Text
 from localization.i18n import markup_hotkey, get_direction

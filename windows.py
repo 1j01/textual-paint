@@ -3,8 +3,8 @@ from textual import events
 from textual.message import Message
 from textual.app import ComposeResult
 from textual.containers import Container
-from textual.geometry import Offset, Region, Size
-from textual.reactive import var, reactive
+from textual.geometry import Offset
+from textual.reactive import var
 from textual.widget import Widget
 from textual.widgets import Button, Static
 from textual.containers import Container, Horizontal, Vertical

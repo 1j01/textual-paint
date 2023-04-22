@@ -13,15 +13,15 @@ import stransi
 from rich.segment import Segment
 from rich.style import Style
 from textual import events
-from textual.message import Message, MessageTarget
+from textual.message import Message
 from textual.app import App, ComposeResult
-from textual.containers import Container, Horizontal, Vertical
+from textual.containers import Container
 from textual.geometry import Offset, Region, Size
 from textual.css.query import NoMatches
 from textual.reactive import var, reactive
 from textual.strip import Strip
 from textual.widget import Widget
-from textual.widgets import Button, Static, Input, DirectoryTree, Tree, Header
+from textual.widgets import Button, Static, Input, Tree, Header
 from textual.color import Color
 from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon
