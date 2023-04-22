@@ -18,7 +18,7 @@ def to_snake_case(name):
     return name.lower()
 
 class Menu(Container):
-    """A menu widget."""
+    """A menu widget. Note that menus can't be reused in multiple places."""
 
     items = var([])
     focus_index = var(0)
@@ -32,7 +32,7 @@ class Menu(Container):
     def watch_items(self, old_items, new_items: List['MenuItem|Separator']) -> None:
         """Update the menu items."""
         for item in old_items:
-            self.unmount(item)
+            item.remove()
         for item in new_items:
             self.mount(item)
             if item.submenu:
