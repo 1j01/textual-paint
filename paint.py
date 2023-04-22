@@ -627,7 +627,7 @@ def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> None:
             y0 = y0 + sy
 
 def midpoint_ellipse(xc: int, yc: int, rx: int, ry: int) -> None:
-    """Midpoint ellipse drawing algorithm. Yields points out of order."""
+    """Midpoint ellipse drawing algorithm. Yields points out of order, and thus can't legally be called a "walk", except in Britain."""
     # Source: https://www.geeksforgeeks.org/midpoint-ellipse-drawing-algorithm/
 
     x = 0
