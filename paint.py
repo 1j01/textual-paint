@@ -79,35 +79,16 @@ class RestartHandler(PatternMatchingEventHandler):
             return
         print("Reloading due to FS change:", event.event_type, event.src_path)
         app.screen.styles.background = "red"
-        # Doesn't include save prompt
-        # restart_program()
-        # Includes save prompt
-        try:
-            # None of these work:
-            # app.action_reload()
-            # app.run_action("reload")
-            # app.set_timer(0.1, app.action_reload)
-            # app.set_timer(0.1, lambda: app.run_action("reload"))
-            # This works when there are no unsaved changes,
-            # but fails to show a dialog:
-            # app._dont_gc = asyncio.create_task(app.action_reload())
-            # This works if there ARE unsaved changes,
-            # but fails to restart immediately if there aren't:
-            # app.call_from_thread(app.action_reload)
-            # So... just do both?
-            try:
-                task = asyncio.create_task(app.action_reload())
-                app.background_tasks.add(task)
-                task.add_done_callback(app.background_tasks.discard)
-            except Exception as e:
-                print("Error reloading (A):", e)
-            try:
-                app.call_from_thread(app.action_reload)
-            except Exception as e:
-                print("Error reloading (B):", e)
-            # I mean... it works, but this clearly sucks.
-        except Exception as e:
-            print("Error reloading:", e)
+        # The unsaved changes prompt seems to need call_from_thread,
+        # or else it gets "no running event loop",
+        # whereas restart_program() needs to not use it,
+        # or else nothing happens.
+        # However, when app.action_reload is called from the key binding,
+        # it seems to work fine with or without unsaved changes.
+        if app.is_document_modified():
+            app.call_from_thread(app.action_reload)
+        else:
+            restart_program()
         app.screen.styles.background = "yellow"
 
 def restart_on_changes():
