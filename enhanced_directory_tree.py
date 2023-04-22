@@ -49,4 +49,8 @@ class EnhancedDirectoryTree(DirectoryTree):
         # Ugh. OK, I'm going to use some internals, and replicate how scroll_to_node works.
         # self.scroll_to_region(self._get_label_region(node._line), animate=False, top=True)
         # Timer is needed to wait for the new nodes to mount, I think.
-        self.set_timer(0.01, lambda: self.scroll_to_region(self._get_label_region(node._line), animate=False, top=True))
+        def scroll_node_to_top():
+            region = self._get_label_region(node._line)
+            assert region, "Node not found in tree"
+            self.scroll_to_region(region, animate=False, top=True)
+        self.set_timer(0.01, scroll_node_to_top)
