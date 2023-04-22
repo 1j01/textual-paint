@@ -456,6 +456,7 @@ class AnsiArtDocument:
             target_region = Region(0, 0, source_region.width, source_region.height)
         source_offset = source_region.offset
         target_offset = target_region.offset
+        random_color: Optional[str] = None # avoid "possibly unbound"
         if debug_region_updates:
             random_color = "rgb(" + str(randint(0, 255)) + "," + str(randint(0, 255)) + "," + str(randint(0, 255)) + ")"
         for y in range(target_region.height):
@@ -465,6 +466,7 @@ class AnsiArtDocument:
                     self.bg[y + target_offset.y][x + target_offset.x] = source.bg[y + source_offset.y][x + source_offset.x]
                     self.fg[y + target_offset.y][x + target_offset.x] = source.fg[y + source_offset.y][x + source_offset.x]
                     if debug_region_updates:
+                        assert random_color is not None
                         # self.bg[y + target_offset.y][x + target_offset.x] = "rgb(" + str((x + source_offset.x) * 255 // self.width) + "," + str((y + source_offset.y) * 255 // self.height) + ",0)"
                         self.bg[y + target_offset.y][x + target_offset.x] = random_color
                 else:
@@ -926,6 +928,15 @@ class Canvas(Widget):
             return Strip.blank(self.size.width)
         segments = []
         sel = self.image.selection
+
+        # Avoiding "possibly unbound" errors.
+        magnifier_preview_region = None
+        inner_magnifier_preview_region = None
+        select_preview_region = None
+        inner_select_preview_region = None
+        selection_region = None
+        inner_selection_region = None
+
         if self.magnifier_preview_region:
             magnifier_preview_region = scale_region(self.magnifier_preview_region, self.magnification)
             inner_magnifier_preview_region = magnifier_preview_region.shrink((1, 1, 1, 1))
@@ -2055,6 +2066,7 @@ class PaintApp(App):
         affected_region = None
 
         replace_action = self.selected_tool in [Tool.ellipse, Tool.rectangle, Tool.line, Tool.rounded_rectangle]
+        old_action: Optional[Action] = None # avoid "possibly unbound"
         if replace_action:
             old_action = self.undos.pop()
             old_action.undo(self.image)
