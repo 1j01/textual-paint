@@ -1801,7 +1801,7 @@ class PaintApp(App):
         # and I would say use event.offset, but I'm dynamically
         # modifying x/y in fix_mouse_event so I need to use those coords for now,
         # unless there's some getter/setter magic behind the scenes.
-        self.mouse_at_start = (event.mouse_down_event.x, event.mouse_down_event.y)
+        self.mouse_at_start = Offset(event.mouse_down_event.x, event.mouse_down_event.y)
 
         if self.selected_tool in [Tool.curve, Tool.polygon]:
             self.tool_points.append(Offset(event.mouse_down_event.x, event.mouse_down_event.y))
@@ -1823,8 +1823,8 @@ class PaintApp(App):
                     return
                 # Start dragging the selection.
                 self.selection_drag_offset = Offset(
-                    sel.region.x - self.mouse_at_start[0],
-                    sel.region.y - self.mouse_at_start[1],
+                    sel.region.x - self.mouse_at_start.x,
+                    sel.region.y - self.mouse_at_start.y,
                 )
                 if self.image.selection.contained_image:
                     # Already cut out, don't replace the image data.
@@ -2062,20 +2062,20 @@ class PaintApp(App):
             for x, y in bresenham_walk(mm.x - mm.delta_x, mm.y - mm.delta_y, mm.x, mm.y):
                 affected_region = self.stamp_brush(x, y, affected_region)
         elif self.selected_tool == Tool.line:
-            for x, y in bresenham_walk(self.mouse_at_start[0], self.mouse_at_start[1], mm.x, mm.y):
+            for x, y in bresenham_walk(self.mouse_at_start.x, self.mouse_at_start.y, mm.x, mm.y):
                 affected_region = self.stamp_brush(x, y, affected_region)
         elif self.selected_tool == Tool.rectangle:
-            for x in range(min(self.mouse_at_start[0], mm.x), max(self.mouse_at_start[0], mm.x) + 1):
-                for y in range(min(self.mouse_at_start[1], mm.y), max(self.mouse_at_start[1], mm.y) + 1):
-                    if x in range(min(self.mouse_at_start[0], mm.x) + 1, max(self.mouse_at_start[0], mm.x)) and y in range(min(self.mouse_at_start[1], mm.y) + 1, max(self.mouse_at_start[1], mm.y)):
+            for x in range(min(self.mouse_at_start.x, mm.x), max(self.mouse_at_start.x, mm.x) + 1):
+                for y in range(min(self.mouse_at_start.y, mm.y), max(self.mouse_at_start.y, mm.y) + 1):
+                    if x in range(min(self.mouse_at_start.x, mm.x) + 1, max(self.mouse_at_start.x, mm.x)) and y in range(min(self.mouse_at_start.y, mm.y) + 1, max(self.mouse_at_start.y, mm.y)):
                         continue
                     affected_region = self.stamp_brush(x, y, affected_region)
         elif self.selected_tool == Tool.rounded_rectangle:
-            arc_radius = min(2, abs(self.mouse_at_start[0] - mm.x) // 2, abs(self.mouse_at_start[1] - mm.y) // 2)
-            min_x = min(self.mouse_at_start[0], mm.x)
-            max_x = max(self.mouse_at_start[0], mm.x)
-            min_y = min(self.mouse_at_start[1], mm.y)
-            max_y = max(self.mouse_at_start[1], mm.y)
+            arc_radius = min(2, abs(self.mouse_at_start.x - mm.x) // 2, abs(self.mouse_at_start.y - mm.y) // 2)
+            min_x = min(self.mouse_at_start.x, mm.x)
+            max_x = max(self.mouse_at_start.x, mm.x)
+            min_y = min(self.mouse_at_start.y, mm.y)
+            max_y = max(self.mouse_at_start.y, mm.y)
             for x, y in midpoint_ellipse(0, 0, arc_radius, arc_radius):
                 if x < 0:
                     x = min_x + x + arc_radius
@@ -2093,10 +2093,10 @@ class PaintApp(App):
                 affected_region = self.stamp_brush(min_x, y, affected_region)
                 affected_region = self.stamp_brush(max_x, y, affected_region)
         elif self.selected_tool == Tool.ellipse:
-            center_x = (self.mouse_at_start[0] + mm.x) // 2
-            center_y = (self.mouse_at_start[1] + mm.y) // 2
-            radius_x = abs(self.mouse_at_start[0] - mm.x) // 2
-            radius_y = abs(self.mouse_at_start[1] - mm.y) // 2
+            center_x = (self.mouse_at_start.x + mm.x) // 2
+            center_y = (self.mouse_at_start.y + mm.y) // 2
+            radius_x = abs(self.mouse_at_start.x - mm.x) // 2
+            radius_y = abs(self.mouse_at_start.y - mm.y) // 2
             for x, y in midpoint_ellipse(center_x, center_y, radius_x, radius_y):
                 affected_region = self.stamp_brush(x, y, affected_region)
         else:
@@ -2182,8 +2182,8 @@ class PaintApp(App):
             )
             double_clicked = (
                 time_since_last_click < double_click_threshold_seconds and
-                abs(self.mouse_at_start[0] - event.mouse_up_event.x) <= double_click_threshold_cells and
-                abs(self.mouse_at_start[1] - event.mouse_up_event.y) <= double_click_threshold_cells
+                abs(self.mouse_at_start.x - event.mouse_up_event.x) <= double_click_threshold_cells and
+                abs(self.mouse_at_start.y - event.mouse_up_event.y) <= double_click_threshold_cells
             )
             if enough_points and (closed_gap or double_clicked):
                 # Finish drawing the polygon
