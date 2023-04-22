@@ -2259,7 +2259,7 @@ class PaintApp(App):
                 y = 0
             elif key == "pagedown":
                 y = self.image.selection.contained_image.height - 1
-            elif event.is_printable:
+            elif event.is_printable and event.character: # Redundance for type checker
                 # Type a character into the textbox
                 self.image.selection.contained_image.ch[y][x] = event.character
                 # x = min(self.image.selection.contained_image.width - 1, x + 1)
