@@ -40,7 +40,7 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
     - [x] Line
     - [x] Curve
     - [x] Rectangle
-    - [ ] Polygon
+    - [x] Polygon
     - [x] Ellipse
     - [x] Rounded Rectangle
 - [x] Color palette

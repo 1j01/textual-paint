@@ -627,6 +627,26 @@ def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> None:
             y0 = y0 + sy
 
 
+def polygon_walk(points: List[Offset]) -> None:
+    """Yields points along the perimeter of a polygon."""
+    for i in range(len(points)):
+        yield from bresenham_walk(
+            points[i][0],
+            points[i][1],
+            points[(i + 1) % len(points)][0],
+            points[(i + 1) % len(points)][1]
+        )
+
+def polyline_walk(points: List[Offset]) -> None:
+    """Yields points along a polyline (unclosed polygon)."""
+    for i in range(len(points) - 1):
+        yield from bresenham_walk(
+            points[i][0],
+            points[i][1],
+            points[i + 1][0],
+            points[i + 1][1]
+        )
+
 # adapted from https://github.com/Pomax/bezierjs
 def compute_bezier(t, start_x, start_y, control_1_x, control_1_y, control_2_x, control_2_y, end_x, end_y):
     mt = 1 - t
@@ -646,6 +666,7 @@ def compute_bezier(t, start_x, start_y, control_1_x, control_1_y, control_2_x, c
 # It's possible to walk a bezier curve more correctly,
 # but is it possible to tell the difference?
 def bezier_curve_walk(start_x, start_y, control_1_x, control_1_y, control_2_x, control_2_y, end_x, end_y):
+    """Yields points along a bezier curve."""
     steps = 100
     point_a = (start_x, start_y)
     # TypeError: 'float' object cannot be interpreted as an integer
@@ -657,6 +678,7 @@ def bezier_curve_walk(start_x, start_y, control_1_x, control_1_y, control_2_x, c
         point_a = point_b
 
 def quadratic_curve_walk(start_x, start_y, control_x, control_y, end_x, end_y):
+    """Yields points along a quadratic curve."""
     return bezier_curve_walk(start_x, start_y, control_x, control_y, control_x, control_y, end_x, end_y)
 
 def midpoint_ellipse(xc: int, yc: int, rx: int, ry: int) -> None:
@@ -1047,7 +1069,9 @@ class PaintApp(App):
     # file modification tracking
     saved_undo_count = 0
 
-    # for shape tools and Select tool
+    # for shape tools that draw between the mouse down and up points
+    # (Line, Rectangle, Ellipse, Rounded Rectangle),
+    # Select tool (similarly), and Polygon (to detect double-click)
     mouse_at_start = Offset(0, 0)
     # for Select tool, indicates that the selection is being moved
     # and defines the offset of the selection from the mouse
@@ -1056,6 +1080,8 @@ class PaintApp(App):
     selecting_text = False
     # for Curve, Polygon, or Free-Form Select tools
     tool_points: List[Offset] = []
+    # for Polygon tool to detect double-click
+    polygon_last_click_time = 0
 
     # flag to prevent setting the filename input when initially expanding the directory tree
     expanding_directory_tree = False
@@ -1158,6 +1184,22 @@ class PaintApp(App):
             for y in range(sel.region.height):
                 self.stamp_char(x + sel.region.x, y + sel.region.y)
         self.selected_tool = original_tool
+
+    def draw_current_polyline(self) -> Region:
+        # TODO: DRY with draw_current_curve/draw_current_polygon
+        gen = polyline_walk(self.tool_points)
+        affected_region = Region()
+        for x, y in gen:
+            affected_region = affected_region.union(self.stamp_brush(x, y, affected_region))
+        return affected_region
+
+    def draw_current_polygon(self) -> Region:
+        # TODO: DRY with draw_current_curve/draw_current_polyline
+        gen = polygon_walk(self.tool_points)
+        affected_region = Region()
+        for x, y in gen:
+            affected_region = affected_region.union(self.stamp_brush(x, y, affected_region))
+        return affected_region
 
     def draw_current_curve(self) -> Region:
         points = self.tool_points
@@ -1751,20 +1793,24 @@ class PaintApp(App):
             self.magnifier_click(event.mouse_down_event.x, event.mouse_down_event.y)
             return
 
-        if self.selected_tool in [Tool.free_form_select, Tool.polygon]:
+        if self.selected_tool in [Tool.free_form_select]:
             self.selected_tool = Tool.pencil
-            # TODO: support remaining tools
-
-        if self.selected_tool == Tool.curve:
-            self.tool_points.append(Offset(event.mouse_down_event.x, event.mouse_down_event.y))
-            self.make_preview(self.draw_current_curve)
-            return
+            # TODO: support the last tool
 
         # TODO: use Offset() instead of tuple
         # and I would say use event.offset, but I'm dynamically
         # modifying x/y in fix_mouse_event so I need to use those coords for now,
         # unless there's some getter/setter magic behind the scenes.
         self.mouse_at_start = (event.mouse_down_event.x, event.mouse_down_event.y)
+
+        if self.selected_tool in [Tool.curve, Tool.polygon]:
+            self.tool_points.append(Offset(event.mouse_down_event.x, event.mouse_down_event.y))
+            if self.selected_tool == Tool.curve:
+                self.make_preview(self.draw_current_curve)
+            else:
+                self.make_preview(self.draw_current_polyline) # polyline until finished
+            return
+
         if self.selected_tool in [Tool.select, Tool.text]:
             sel = self.image.selection
             if sel and sel.region.contains_point(self.mouse_at_start):
@@ -1860,9 +1906,11 @@ class PaintApp(App):
         event.stop()
         self.cancel_preview()
 
-        if self.selected_tool in [Tool.brush, Tool.pencil, Tool.eraser, Tool.curve]:
+        if self.selected_tool in [Tool.brush, Tool.pencil, Tool.eraser, Tool.curve, Tool.polygon]:
             if self.selected_tool == Tool.curve:
                 self.make_preview(self.draw_current_curve)
+            elif self.selected_tool == Tool.polygon:
+                self.make_preview(self.draw_current_polyline) # polyline until finished
             else:
                 self.make_preview(lambda: self.stamp_brush(event.mouse_move_event.x, event.mouse_move_event.y))
         elif self.selected_tool == Tool.magnifier:
@@ -1979,12 +2027,15 @@ class PaintApp(App):
                 self.canvas.refresh_scaled_region(self.canvas.select_preview_region)
             return
 
-        if self.selected_tool == Tool.curve:
+        if self.selected_tool in [Tool.curve, Tool.polygon]:
             if len(self.tool_points) < 2:
                 self.tool_points.append(Offset(event.mouse_move_event.x, event.mouse_move_event.y))
             self.tool_points[-1] = Offset(event.mouse_move_event.x, event.mouse_move_event.y)
 
-            self.make_preview(self.draw_current_curve)
+            if self.selected_tool == Tool.curve:
+                self.make_preview(self.draw_current_curve)
+            elif self.selected_tool == Tool.polygon:
+                self.make_preview(self.draw_current_polyline) # polyline until finished
             return
 
         if len(self.undos) == 0:
@@ -2093,7 +2144,7 @@ class PaintApp(App):
             if self.image.selection.textbox_mode:
                 self.image.selection.contained_image = AnsiArtDocument(self.image.selection.region.width, self.image.selection.region.height)
             self.canvas.refresh_scaled_region(select_region)
-        if self.selected_tool == Tool.curve:
+        elif self.selected_tool == Tool.curve:
             # Maybe finish drawing a curve
             if len(self.tool_points) >= 4:
                 # TODO: DRY action handling (undo state creation)!!!
@@ -2115,6 +2166,51 @@ class PaintApp(App):
             else:
                 # Most likely just drawing the preview we just cancelled.
                 self.make_preview(self.draw_current_curve)
+        elif self.selected_tool == Tool.polygon:
+            # Maybe finish drawing a polygon
+            
+            # Check if the distance between the first and last point is small enough,
+            # or if the user double-clicked.
+            close_gap_threshold_cells = 2
+            double_click_threshold_seconds = 0.5
+            double_click_threshold_cells = 2
+            time_since_last_click = event.time - self.polygon_last_click_time
+            enough_points = len(self.tool_points) >= 3
+            closed_gap = (
+                abs(self.tool_points[0].x - event.mouse_up_event.x) <= close_gap_threshold_cells and
+                abs(self.tool_points[0].y - event.mouse_up_event.y) <= close_gap_threshold_cells
+            )
+            double_clicked = (
+                time_since_last_click < double_click_threshold_seconds and
+                abs(self.mouse_at_start[0] - event.mouse_up_event.x) <= double_click_threshold_cells and
+                abs(self.mouse_at_start[1] - event.mouse_up_event.y) <= double_click_threshold_cells
+            )
+            if enough_points and (closed_gap or double_clicked):
+                # Finish drawing the polygon
+                # TODO: DRY action handling (undo state creation)!!!
+                self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
+                self.image_at_start.copy_region(self.image)
+                action = Action(self.selected_tool.get_name(), self.image)
+                if len(self.redos) > 0:
+                    self.redos = []
+                self.undos.append(action)
+
+                affected_region = self.draw_current_polygon()
+                
+                action.region = affected_region
+                action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
+                action.update(self.image_at_start)
+                self.canvas.refresh_scaled_region(affected_region)
+
+                self.tool_points = []
+            else:
+                # Most likely just drawing the preview we just cancelled.
+                self.make_preview(self.draw_current_polyline) # polyline until finished
+
+            self.polygon_last_click_time = event.time
+
+
+
         # Not reliably unset, so might as well not rely on it. (See early returns above.)
         # self.mouse_at_start = None
 
