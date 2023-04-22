@@ -1073,7 +1073,11 @@ class PaintApp(App):
     selected_fg_color = var(palette[len(palette) // 2])
     selected_char = var(" ")
     filename = var(None)
-    image = var(AnsiArtDocument(1, 1))
+    
+    # I'm avoiding allowing None for image, to avoid type checking woes.
+    image = var(AnsiArtDocument.from_text("Not Loaded"))
+    image_initialized = False
+    
     magnification = var(1)
     return_to_magnification = var(4)
 
@@ -1740,8 +1744,9 @@ class PaintApp(App):
     def on_mount(self) -> None:
         """Called when the app is mounted."""
         # Image can be set from the outside, via CLI
-        if self.image is None:
+        if not self.image_initialized:
             self.image = AnsiArtDocument(80, 24)
+            self.image_initialized = True
         self.canvas = self.query_one("#canvas", Canvas)
         self.canvas.image = self.image
         self.editing_area = self.query_one("#editing_area", Container)
@@ -2379,6 +2384,7 @@ if args.filename:
     # else:
     with open(args.filename, 'r') as my_file:
         app.image = AnsiArtDocument.from_text(my_file.read())
+        app.image_initialized = True
         app.filename = os.path.abspath(args.filename)
 if args.clear_screen:
     os.system("cls||clear")
