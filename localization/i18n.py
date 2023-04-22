@@ -2,7 +2,7 @@ from typing import Optional
 import json
 import re
 
-translations = {}
+translations: dict[str, str] = {}
 base_language = "en"
 current_language = base_language
 
@@ -26,6 +26,7 @@ def load_language(language_code: str):
 			end = js.rfind("}")
 			# parse the JSON object
 			translations = json.loads(js[start:end + 1])
+			global current_language
 			current_language = language_code
 	except FileNotFoundError:
 		print(f"Could not find language file for '{language_code}'.")
@@ -34,7 +35,7 @@ def load_language(language_code: str):
 	except Exception as e:
 		print(f"Could not load language '{language_code}': {e}")
 
-untranslated = set()
+untranslated: set[str] = set()
 try:
 	with open("localization/untranslated.txt", "r") as f:
 		untranslated = set(f.read().splitlines())
@@ -43,7 +44,7 @@ except FileNotFoundError:
 
 def get(base_language_str: str, *interpolations: str) -> str:
 	"""Get a localized string."""
-	def find_localization(base_language_str: str):
+	def find_localization(base_language_str: str) -> str:
 		amp_index = index_of_hotkey(base_language_str)
 		if amp_index > -1:
 			without_hotkey = remove_hotkey(base_language_str)
