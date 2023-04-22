@@ -626,6 +626,39 @@ def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> None:
             err = err + dx
             y0 = y0 + sy
 
+
+# adapted from https://github.com/Pomax/bezierjs
+def compute_bezier(t, start_x, start_y, control_1_x, control_1_y, control_2_x, control_2_y, end_x, end_y):
+    mt = 1 - t
+    mt2 = mt * mt
+    t2 = t * t
+
+    a = mt2 * mt
+    b = mt2 * t * 3
+    c = mt * t2 * 3
+    d = t * t2
+
+    return (
+        a * start_x + b * control_1_x + c * control_2_x + d * end_x,
+        a * start_y + b * control_1_y + c * control_2_y + d * end_y,
+    )
+
+# It's possible to walk a bezier curve more correctly,
+# but is it possible to tell the difference?
+def bezier_curve_walk(start_x, start_y, control_1_x, control_1_y, control_2_x, control_2_y, end_x, end_y):
+    steps = 100
+    point_a = (start_x, start_y)
+    # TypeError: 'float' object cannot be interpreted as an integer
+    # for t in range(0, 1, 1 / steps):
+    for i in range(steps):
+        t = i / steps
+        point_b = compute_bezier(t, start_x, start_y, control_1_x, control_1_y, control_2_x, control_2_y, end_x, end_y)
+        yield from bresenham_walk(int(point_a[0]), int(point_a[1]), int(point_b[0]), int(point_b[1]))
+        point_a = point_b
+
+def quadratic_curve_walk(start_x, start_y, control_x, control_y, end_x, end_y):
+    return bezier_curve_walk(start_x, start_y, control_x, control_y, control_x, control_y, end_x, end_y)
+
 def midpoint_ellipse(xc: int, yc: int, rx: int, ry: int) -> None:
     """Midpoint ellipse drawing algorithm. Yields points out of order, and thus can't legally be called a "walk", except in Britain."""
     # Source: https://www.geeksforgeeks.org/midpoint-ellipse-drawing-algorithm/
@@ -1021,6 +1054,8 @@ class PaintApp(App):
     selection_drag_offset = Offset(0, 0)
     # for Text tool
     selecting_text = False
+    # for Curve, Polygon, or Free-Form Select tools
+    tool_points: List[Offset] = []
 
     # flag to prevent setting the filename input when initially expanding the directory tree
     expanding_directory_tree = False
@@ -1122,6 +1157,33 @@ class PaintApp(App):
             for y in range(sel.region.height):
                 self.stamp_char(x + sel.region.x, y + sel.region.y)
         self.selected_tool = original_tool
+
+    def draw_current_curve(self) -> Region:
+        points = self.tool_points
+        if len(points) == 4:
+            gen = bezier_curve_walk(
+                points[0].x, points[0].y,
+                points[2].x, points[2].y,
+                points[3].x, points[3].y,
+                points[1].x, points[1].y,
+            )
+        elif len(points) == 3:
+            gen = quadratic_curve_walk(
+                points[0].x, points[0].y,
+                points[2].x, points[2].y,
+                points[1].x, points[1].y,
+            )
+        elif len(points) == 2:
+            gen = bresenham_walk(
+                points[0].x, points[0].y,
+                points[1].x, points[1].y,
+            )
+        else:
+            gen = points
+        affected_region = Region()
+        for x, y in gen:
+            affected_region = affected_region.union(self.stamp_brush(x, y, affected_region))
+        return affected_region
 
     def action_undo(self) -> None:
         self.meld_selection()
@@ -1688,9 +1750,13 @@ class PaintApp(App):
             self.magnifier_click(event.mouse_down_event.x, event.mouse_down_event.y)
             return
 
-        if self.selected_tool in [Tool.free_form_select, Tool.curve, Tool.polygon]:
+        if self.selected_tool in [Tool.free_form_select, Tool.polygon]:
             self.selected_tool = Tool.pencil
             # TODO: support remaining tools
+
+        if self.selected_tool == Tool.curve:
+            self.tool_points.append(Offset(event.mouse_down_event.x, event.mouse_down_event.y))
+            return
 
         # TODO: use Offset() instead of tuple
         # and I would say use event.offset, but I'm dynamically
@@ -1776,16 +1842,29 @@ class PaintApp(App):
             self.canvas.select_preview_region = None
             self.canvas.refresh_scaled_region(region)
 
+    # def make_preview(self, draw_proc: Callable):
+    #     self.cancel_preview()
+    #     image_before = AnsiArtDocument(self.image.width, self.image.height)
+    #     image_before.copy_region(self.image)
+    #     affected_region = draw_proc()
+    #     if affected_region:
+    #         self.preview_action = Action(self.selected_tool.get_name(), self.image)
+    #         self.preview_action.region = affected_region.intersection(Region(0, 0, self.image.width, self.image.height))
+    #         self.preview_action.update(image_before)
+    #         self.canvas.refresh_scaled_region(affected_region)
 
     def on_canvas_tool_preview_update(self, event: Canvas.ToolPreviewUpdate) -> None:
         """Called when the user is hovering over the canvas but not drawing yet."""
         event.stop()
         self.cancel_preview()
 
-        if self.selected_tool in [Tool.brush, Tool.pencil, Tool.eraser]:
+        if self.selected_tool in [Tool.brush, Tool.pencil, Tool.eraser, Tool.curve]:
             image_before = AnsiArtDocument(self.image.width, self.image.height)
             image_before.copy_region(self.image)
-            affected_region = self.stamp_brush(event.mouse_move_event.x, event.mouse_move_event.y)
+            if Tool.curve:
+                affected_region = self.draw_current_curve()
+            else:
+                affected_region = self.stamp_brush(event.mouse_move_event.x, event.mouse_move_event.y)
             if affected_region:
                 self.preview_action = Action(self.selected_tool.get_name(), self.image)
                 self.preview_action.region = affected_region.intersection(Region(0, 0, self.image.width, self.image.height))
@@ -1905,9 +1984,31 @@ class PaintApp(App):
                 self.canvas.refresh_scaled_region(self.canvas.select_preview_region)
             return
 
+        if self.selected_tool == Tool.curve:
+            # This is a tool preview too... partially. I mean it also updates a point.
+            # TODO: DRY / clean up this mess.
+
+            if len(self.tool_points) < 2:
+                self.tool_points.append(Offset(event.mouse_move_event.x, event.mouse_move_event.y))
+            self.tool_points[-1] = Offset(event.mouse_move_event.x, event.mouse_move_event.y)
+
+            image_before = AnsiArtDocument(self.image.width, self.image.height)
+            image_before.copy_region(self.image)
+            
+            affected_region = self.draw_current_curve()
+
+            if affected_region:
+                self.preview_action = Action(self.selected_tool.get_name(), self.image)
+                self.preview_action.region = affected_region.intersection(Region(0, 0, self.image.width, self.image.height))
+                self.preview_action.update(image_before)
+                self.canvas.refresh_scaled_region(affected_region)
+            return
+
         if len(self.undos) == 0:
-            # This can happen if you undo while drawing.
-            # Ideally we'd stop getting events in this case.
+            # Code below wants to update the last action.
+            # However, if you you undo while drawing,
+            # there may be no last action.
+            # FIXME: Ideally we'd stop getting events in this case.
             # This might be buggy if there were multiple undos.
             # It might replace the action instead of doing nothing.
             return
@@ -2009,6 +2110,25 @@ class PaintApp(App):
             if self.image.selection.textbox_mode:
                 self.image.selection.contained_image = AnsiArtDocument(self.image.selection.region.width, self.image.selection.region.height)
             self.canvas.refresh_scaled_region(select_region)
+        if self.selected_tool == Tool.curve:
+            # Maybe finish drawing a curve
+            if len(self.tool_points) >= 4:
+                # TODO: DRY action handling (undo state creation)!!!
+                self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
+                self.image_at_start.copy_region(self.image)
+                action = Action(self.selected_tool.get_name(), self.image)
+                if len(self.redos) > 0:
+                    self.redos = []
+                self.undos.append(action)
+
+                affected_region = self.draw_current_curve()
+                
+                action.region = affected_region
+                action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
+                action.update(self.image_at_start)
+                self.canvas.refresh_scaled_region(affected_region)
+
+                self.tool_points = []
         # Not reliably unset, so might as well not rely on it. (See early returns above.)
         # self.mouse_at_start = None
 
@@ -2084,6 +2204,7 @@ class PaintApp(App):
         """Called when a tool is selected in the palette."""
         self.selected_tool = event.tool
         self.meld_selection()
+        self.tool_points = []
     
     def on_char_input_char_selected(self, event: CharInput.CharSelected) -> None:
         """Called when a character is entered in the character input."""

@@ -38,7 +38,7 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
     - [x] Airbrush
     - [x] Text
     - [x] Line
-    - [ ] Curve
+    - [x] Curve
     - [x] Rectangle
     - [ ] Polygon
     - [x] Ellipse
