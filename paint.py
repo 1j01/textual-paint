@@ -359,6 +359,7 @@ class CharInput(Input):
     def on_click(self, event: events.Click) -> None:
         """Detect double click and open character selector dialog."""
         if event.time - self.last_click_time < 0.8:
+            assert isinstance(self.app, PaintApp)
             self.app.action_open_character_selector()
         self.last_click_time = event.time
 
@@ -883,6 +884,7 @@ class Canvas(Widget):
         # This seems like a bug.
         # I think it's due to coordinates being calculated differently during mouse capture.
         if self.pointer_active:
+            assert isinstance(self.parent, Widget)
             event.x += int(self.parent.scroll_x)
             event.y += int(self.parent.scroll_y)
 
