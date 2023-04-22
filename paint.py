@@ -6,7 +6,7 @@ import argparse
 import asyncio
 from enum import Enum
 from random import randint, random
-from typing import List, Optional
+from typing import List, Optional, Callable
 from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
 from watchdog.observers import Observer
 import stransi
@@ -1842,16 +1842,16 @@ class PaintApp(App):
             self.canvas.select_preview_region = None
             self.canvas.refresh_scaled_region(region)
 
-    # def make_preview(self, draw_proc: Callable):
-    #     self.cancel_preview()
-    #     image_before = AnsiArtDocument(self.image.width, self.image.height)
-    #     image_before.copy_region(self.image)
-    #     affected_region = draw_proc()
-    #     if affected_region:
-    #         self.preview_action = Action(self.selected_tool.get_name(), self.image)
-    #         self.preview_action.region = affected_region.intersection(Region(0, 0, self.image.width, self.image.height))
-    #         self.preview_action.update(image_before)
-    #         self.canvas.refresh_scaled_region(affected_region)
+    def make_preview(self, draw_proc: Callable[[], Region]):
+        self.cancel_preview()
+        image_before = AnsiArtDocument(self.image.width, self.image.height)
+        image_before.copy_region(self.image)
+        affected_region = draw_proc()
+        if affected_region:
+            self.preview_action = Action(self.selected_tool.get_name(), self.image)
+            self.preview_action.region = affected_region.intersection(Region(0, 0, self.image.width, self.image.height))
+            self.preview_action.update(image_before)
+            self.canvas.refresh_scaled_region(affected_region)
 
     def on_canvas_tool_preview_update(self, event: Canvas.ToolPreviewUpdate) -> None:
         """Called when the user is hovering over the canvas but not drawing yet."""
@@ -1859,17 +1859,10 @@ class PaintApp(App):
         self.cancel_preview()
 
         if self.selected_tool in [Tool.brush, Tool.pencil, Tool.eraser, Tool.curve]:
-            image_before = AnsiArtDocument(self.image.width, self.image.height)
-            image_before.copy_region(self.image)
             if Tool.curve:
-                affected_region = self.draw_current_curve()
+                self.make_preview(self.draw_current_curve)
             else:
-                affected_region = self.stamp_brush(event.mouse_move_event.x, event.mouse_move_event.y)
-            if affected_region:
-                self.preview_action = Action(self.selected_tool.get_name(), self.image)
-                self.preview_action.region = affected_region.intersection(Region(0, 0, self.image.width, self.image.height))
-                self.preview_action.update(image_before)
-                self.canvas.refresh_scaled_region(affected_region)
+                self.make_preview(lambda: self.stamp_brush(event.mouse_move_event.x, event.mouse_move_event.y))
         elif self.selected_tool == Tool.magnifier:
             prospective_magnification = self.get_prospective_magnification()
 
@@ -1985,23 +1978,11 @@ class PaintApp(App):
             return
 
         if self.selected_tool == Tool.curve:
-            # This is a tool preview too... partially. I mean it also updates a point.
-            # TODO: DRY / clean up this mess.
-
             if len(self.tool_points) < 2:
                 self.tool_points.append(Offset(event.mouse_move_event.x, event.mouse_move_event.y))
             self.tool_points[-1] = Offset(event.mouse_move_event.x, event.mouse_move_event.y)
 
-            image_before = AnsiArtDocument(self.image.width, self.image.height)
-            image_before.copy_region(self.image)
-            
-            affected_region = self.draw_current_curve()
-
-            if affected_region:
-                self.preview_action = Action(self.selected_tool.get_name(), self.image)
-                self.preview_action.region = affected_region.intersection(Region(0, 0, self.image.width, self.image.height))
-                self.preview_action.update(image_before)
-                self.canvas.refresh_scaled_region(affected_region)
+            self.make_preview(self.draw_current_curve)
             return
 
         if len(self.undos) == 0:
