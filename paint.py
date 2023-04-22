@@ -870,15 +870,17 @@ class Canvas(Widget):
             selection_region = scale_region(sel.region, self.magnification)
             inner_selection_region = selection_region.shrink((1, 1, 1, 1))
         for x in range(self.size.width):
+            cell_x = x // self.magnification
+            cell_y = y // self.magnification
             try:
-                if sel and sel.contained_image and sel.region.contains(x // self.magnification, y // self.magnification):
-                    bg = sel.contained_image.bg[y // self.magnification - sel.region.y][x // self.magnification - sel.region.x]
-                    fg = sel.contained_image.fg[y // self.magnification - sel.region.y][x // self.magnification - sel.region.x]
-                    ch = sel.contained_image.ch[y // self.magnification - sel.region.y][x // self.magnification - sel.region.x]
+                if sel and sel.contained_image and sel.region.contains(cell_x, cell_y):
+                    bg = sel.contained_image.bg[cell_y - sel.region.y][cell_x - sel.region.x]
+                    fg = sel.contained_image.fg[cell_y - sel.region.y][cell_x - sel.region.x]
+                    ch = sel.contained_image.ch[cell_y - sel.region.y][cell_x - sel.region.x]
                 else:
-                    bg = self.image.bg[y // self.magnification][x // self.magnification]
-                    fg = self.image.fg[y // self.magnification][x // self.magnification]
-                    ch = self.image.ch[y // self.magnification][x // self.magnification]
+                    bg = self.image.bg[cell_y][cell_x]
+                    fg = self.image.fg[cell_y][cell_x]
+                    ch = self.image.ch[cell_y][cell_x]
             except IndexError:
                 # This should be easier to debug visually.
                 bg = "#555555"
