@@ -113,7 +113,7 @@ The rest match MS Paint's keyboard shortcuts:
 
 Install Textual and other dependencies:
 ```bash
-pip install "textual[dev]" stransi psutil
+pip install "textual[dev]" stransi psutil pyright
 ```
 
 Run via Textual's CLI for live-reloading CSS support, and enable other development features:

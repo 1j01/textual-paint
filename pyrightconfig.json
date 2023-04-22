@@ -1,0 +1,11 @@
+{
+	"include": [
+		"**/*.py",
+	],
+	"exclude": [
+		"**/node_modules",
+		"**/__pycache__",
+		"**/.*"
+	],
+	"reportOptionalMemberAccess": false
+}

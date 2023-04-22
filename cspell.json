@@ -34,6 +34,7 @@
 		"psutil",
 		"pycache",
 		"pypixelart",
+		"pyright",
 		"Shft",
 		"stransi",
 		"STRINGTABLE",
