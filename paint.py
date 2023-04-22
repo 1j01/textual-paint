@@ -39,7 +39,7 @@ def restart_program():
         # It's meant to eventually call this, but we need it immediately (unless we delay with asyncio perhaps)
         # Otherwise the terminal will be left in a state where you can't (visibly) type anything
         # if you exit the app after reloading, since the new process will pick up the old terminal state.
-        app._driver.stop_application_mode()
+        app._driver.stop_application_mode() # type: ignore
     except Exception as e:
         print("Error stopping application mode. The command line may not work as expected. The `reset` command should restore it on Linux.", e)
 
@@ -144,6 +144,7 @@ if __name__ == "<run_path>":
         if arg.startswith("paint.py"):
             args = parser.parse_args(arg[len("paint.py") :].split())
             break
+    assert args is not None, "Couldn't find paint.py in command line arguments"
 else:
     args = parser.parse_args()
 
@@ -297,7 +298,7 @@ class ToolsBox(Container):
 
     def compose(self) -> ComposeResult:
         """Add our buttons."""
-        self.tool_by_button = {}
+        self.tool_by_button: dict[Button, Tool] = {}
         for tool in Tool:
             # TODO: tooltip with tool.get_name()
             button = Button(tool.get_icon(), classes="tool_button")
@@ -355,7 +356,7 @@ class ColorsBox(Container):
 
     def compose(self) -> ComposeResult:
         """Add our selected color and color well buttons."""
-        self.color_by_button = {}
+        self.color_by_button: dict[Button, str] = {}
         with Container(id="palette_selection_box"):
             # This widget is doing double duty, showing the current color
             # and showing/editing the current character.
@@ -430,7 +431,7 @@ class AnsiArtDocument:
         self.fg = [["#000000" for _ in range(width)] for _ in range(height)]
         self.selection: Optional[Selection] = None
 
-    def copy_region(self, source, source_region: Region|None = None, target_region: Region|None = None):
+    def copy_region(self, source: 'AnsiArtDocument', source_region: Region|None = None, target_region: Region|None = None):
         if source_region is None:
             source_region = Region(0, 0, source.width, source.height)
         if target_region is None:
@@ -540,8 +541,9 @@ class AnsiArtDocument:
                         document.ch[y].append(char)
                         document.bg[y].append(bg_color)
                         document.fg[y].append(fg_color)
-            elif isinstance(instruction, stransi.SetColor):
-                # Color
+            elif isinstance(instruction, stransi.SetColor) and instruction.color is not None:
+                # Color (I'm not sure why instruction.color would be None, but it's typed as Optional[Color])
+                # (maybe just for initial state?)
                 if instruction.role == stransi.color.ColorRole.FOREGROUND:
                     rgb = instruction.color.rgb
                     fg_color = "rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"
@@ -575,7 +577,7 @@ class AnsiArtDocument:
 class Action:
     """An action that can be undone efficiently using a region update."""
 
-    def __init__(self, name, document: AnsiArtDocument, region: Region|None = None) -> None:
+    def __init__(self, name: str, document: AnsiArtDocument, region: Region|None = None) -> None:
         """Initialize the action using the document state before modification."""
         if region is None:
             region = Region(0, 0, document.width, document.height)
@@ -634,7 +636,7 @@ def polyline_walk(points: List[Offset]) -> Iterator[Tuple[int, int]]:
         )
 
 # adapted from https://github.com/Pomax/bezierjs
-def compute_bezier(t, start_x, start_y, control_1_x, control_1_y, control_2_x, control_2_y, end_x, end_y):
+def compute_bezier(t: float, start_x: float, start_y: float, control_1_x: float, control_1_y: float, control_2_x: float, control_2_y: float, end_x: float, end_y: float):
     mt = 1 - t
     mt2 = mt * mt
     t2 = t * t
@@ -651,7 +653,7 @@ def compute_bezier(t, start_x, start_y, control_1_x, control_1_y, control_2_x, c
 
 # It's possible to walk a bezier curve more correctly,
 # but is it possible to tell the difference?
-def bezier_curve_walk(start_x, start_y, control_1_x, control_1_y, control_2_x, control_2_y, end_x, end_y):
+def bezier_curve_walk(start_x: float, start_y: float, control_1_x: float, control_1_y: float, control_2_x: float, control_2_y: float, end_x: float, end_y: float):
     """Yields points along a bezier curve."""
     steps = 100
     point_a = (start_x, start_y)
@@ -663,7 +665,7 @@ def bezier_curve_walk(start_x, start_y, control_1_x, control_1_y, control_2_x, c
         yield from bresenham_walk(int(point_a[0]), int(point_a[1]), int(point_b[0]), int(point_b[1]))
         point_a = point_b
 
-def quadratic_curve_walk(start_x, start_y, control_x, control_y, end_x, end_y):
+def quadratic_curve_walk(start_x: float, start_y: float, control_x: float, control_y: float, end_x: float, end_y: float):
     """Yields points along a quadratic curve."""
     return bezier_curve_walk(start_x, start_y, control_x, control_y, control_x, control_y, end_x, end_y)
 
@@ -767,7 +769,7 @@ def flood_fill(document: AnsiArtDocument, x: int, y: int, fill_ch: str, fill_fg:
     # pseudo-code from https://en.wikipedia.org/wiki/Flood_fill
     if not inside(x, y):
         return
-    stack = [(x, x, y, 1), (x, x, y - 1, -1)]
+    stack: list[tuple[int, int, int, int]] = [(x, x, y, 1), (x, x, y - 1, -1)]
     while stack:
         x1, x2, y, dy = stack.pop()
         x = x1
@@ -852,7 +854,7 @@ class Canvas(Widget):
         self.magnifier_preview_region: Optional[Region] = None
         self.select_preview_region: Optional[Region] = None
 
-    def on_mouse_down(self, event) -> None:
+    def on_mouse_down(self, event: events.MouseDown) -> None:
         # self.fix_mouse_event(event) # not needed, pointer isn't captured yet.
         event.x //= self.magnification
         event.y //= self.magnification
@@ -861,7 +863,7 @@ class Canvas(Widget):
         self.pointer_active = True
         self.capture_mouse(True)
     
-    def fix_mouse_event(self, event) -> None:
+    def fix_mouse_event(self, event: events.MouseEvent) -> None:
         # Hack to fix mouse coordinates, not needed for mouse down,
         # or while the mouse is up.
         # This seems like a bug.
@@ -871,7 +873,7 @@ class Canvas(Widget):
             event.x += int(self.parent.scroll_x)
             event.y += int(self.parent.scroll_y)
 
-    def on_mouse_move(self, event) -> None:
+    def on_mouse_move(self, event: events.MouseMove) -> None:
         self.fix_mouse_event(event)
         event.x //= self.magnification
         event.y //= self.magnification
@@ -883,7 +885,7 @@ class Canvas(Widget):
         else:
             self.post_message(self.ToolPreviewUpdate(event))
 
-    def on_mouse_up(self, event) -> None:
+    def on_mouse_up(self, event: events.MouseUp) -> None:
         self.fix_mouse_event(event)
         event.x //= self.magnification
         event.y //= self.magnification
@@ -892,7 +894,7 @@ class Canvas(Widget):
         self.capture_mouse(False)
         self.post_message(self.ToolStop(event))
 
-    def on_leave(self, event) -> None:
+    def on_leave(self, event: events.Leave) -> None:
         if not self.pointer_active:
             self.post_message(self.ToolPreviewStop())
 
@@ -904,10 +906,11 @@ class Canvas(Widget):
 
     def render_line(self, y: int) -> Strip:
         """Render a line of the widget. y is relative to the top of the widget."""
+        assert self.image is not None
         # self.size.width/height already is multiplied by self.magnification.
         if y >= self.size.height:
             return Strip.blank(self.size.width)
-        segments = []
+        segments: List[Segment] = []
         sel = self.image.selection
 
         # Avoiding "possibly unbound" errors.
@@ -997,6 +1000,7 @@ class Canvas(Widget):
                 return "█" if x < self.magnification // 2 else " "
             case "▐":
                 return "█" if x >= self.magnification // 2 else " "
+            case _: pass
         # Fall back to showing the character for a single cell.
         # if x == 0 and y == 0:
         if x == self.magnification // 2 and y == self.magnification // 2:
@@ -1005,7 +1009,7 @@ class Canvas(Widget):
             return " "
 
 
-class PaintApp(App):
+class PaintApp(App[None]):
     """MS Paint like image editor in the terminal."""
 
     CSS_PATH = "paint.css"
@@ -1054,6 +1058,9 @@ class PaintApp(App):
     selected_fg_color = var(palette[len(palette) // 2])
     selected_char = var(" ")
     filename = var(None)
+
+    # For Open/Save As dialogs
+    directory_tree_selected_path: str|None = None
     
     # I'm avoiding allowing None for image, to avoid type checking woes.
     image = var(AnsiArtDocument.from_text("Not Loaded"))
@@ -1086,7 +1093,7 @@ class PaintApp(App):
     # flag to prevent setting the filename input when initially expanding the directory tree
     expanding_directory_tree = False
 
-    background_tasks = set()
+    background_tasks: set[asyncio.Task[None]] = set()
 
     NAME_MAP = {
         # key to button id
@@ -1260,7 +1267,7 @@ class PaintApp(App):
         self.background_tasks.add(task)
         task.add_done_callback(self.background_tasks.discard)
 
-    async def save(self, from_save_as=False) -> None:
+    async def save(self, from_save_as: bool = False) -> None:
         """Save the image to a file."""
         self.cancel_preview()
         dialog_title = _("Save As") if from_save_as else _("Save")
@@ -1293,9 +1300,9 @@ class PaintApp(App):
         """Save the image as a new file."""
         self.close_windows("#save_as_dialog, #open_dialog")
         
-        saved_future = asyncio.Future()
+        saved_future: asyncio.Future[None] = asyncio.Future()
 
-        def handle_button(button):
+        def handle_button(button: Button) -> None:
             if not button.has_class("save"):
                 window.close()
                 return
@@ -1325,7 +1332,7 @@ class PaintApp(App):
             title=_("Save As"),
             handle_button=handle_button,
         )
-        filename = os.path.basename(self.filename) if self.filename else _("Untitled")
+        filename: str = os.path.basename(self.filename) if self.filename else _("Untitled")
         window.content.mount(
             EnhancedDirectoryTree(id="save_as_dialog_directory_tree", path="/"),
             Input(classes="filename_input", placeholder=_("Filename"), value=filename),
@@ -1348,21 +1355,21 @@ class PaintApp(App):
             self.expanding_directory_tree = False
         self.set_timer(0.1, done_expanding)
 
-    def confirm_overwrite(self, filename: str, callback) -> None:
+    def confirm_overwrite(self, filename: str, callback: Callable[[], None]) -> None:
         message = _("%1 already exists.\nDo you want to replace it?").replace("%1", filename)
-        def handle_button(button):
+        def handle_button(button: Button) -> None:
             if not button.has_class("yes"):
                 return
             callback()
         self.warning_message_box(_("Save As"), Static(message, markup=False), "yes/no", handle_button)
 
-    def prompt_save_changes(self, filename: str, callback) -> None:
+    def prompt_save_changes(self, filename: str, callback: Callable[[], None]) -> None:
         filename = os.path.basename(filename)
         message = "Save changes to " + filename + "?"
-        def handle_button(button):
+        def handle_button(button: Button) -> None:
             if not button.has_class("yes") and not button.has_class("no"):
                 return
-            async def async_handle_button(button):
+            async def async_handle_button(button: Button):
                 if button.has_class("yes"):
                     await self.save()
                 callback()
@@ -1388,13 +1395,18 @@ class PaintApp(App):
         else:
             restart_program()
 
-    def warning_message_box(self, title: str, message_widget: Widget|str, button_types: str = "ok", callback = None) -> None:
+    def warning_message_box(self,
+        title: str,
+        message_widget: Widget|str,
+        button_types: str = "ok",
+        callback: Callable[[Button], None]|None = None,
+    ) -> None:
         """Show a warning message box with the given title, message, and buttons."""
         self.close_windows("#message_box")
         
         self.bell()
 
-        def handle_button(button):
+        def handle_button(button: Button) -> None:
             # TODO: this is not different or useful enough from DialogWindow's
             # handle_button to justify
             # It's a difference in name, and an automatic close
@@ -1414,7 +1426,7 @@ class PaintApp(App):
     def action_open(self) -> None:
         """Show dialog to open an image from a file."""
 
-        def handle_button(button):
+        def handle_button(button: Button) -> None:
             if not button.has_class("open"):
                 window.close()
                 return

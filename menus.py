@@ -1,5 +1,5 @@
 import re
-from typing import List
+from typing import Any, Callable
 from textual import events
 from textual.containers import Container
 from textual.reactive import var
@@ -7,7 +7,7 @@ from textual.widgets import Button, Static
 from rich.text import Text
 from localization.i18n import markup_hotkey, get_direction
 
-def to_snake_case(name):
+def to_snake_case(name: str) -> str:
     name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     name = re.sub('__([A-Z])', r'_\1', name)
     name = re.sub('([a-z0-9])([A-Z])', r'\1_\2', name)
@@ -19,13 +19,15 @@ class Menu(Container):
     items = var([])
     focus_index = var(0)
 
-    def __init__(self, items: List['MenuItem|Separator'], **kwargs) -> None:
+    def __init__(self, items: list['MenuItem|Separator'], **kwargs) -> None:
         """Initialize a menu."""
         super().__init__(**kwargs)
         self.items = items
-        self.parent_menu = None
+        # These are set when opening a submenu
+        self.parent_menu: Menu | None = None
+        self.parent_menu_item: MenuItem | None = None
 
-    def watch_items(self, old_items, new_items: List['MenuItem|Separator']) -> None:
+    def watch_items(self, old_items: list['MenuItem|Separator'], new_items: list['MenuItem|Separator']) -> None:
         """Update the menu items."""
         for item in old_items:
             item.remove()
@@ -69,7 +71,7 @@ class Menu(Container):
                 if not was_open:
                     event.button.submenu.open(self, event.button)
 
-    def open(self, parent_menu, parent_menu_item):
+    def open(self, parent_menu: 'Menu', parent_menu_item: 'MenuItem') -> None:
         self.display = True
         if len(self.items) > 0:
             self.items[0].focus()
@@ -152,7 +154,7 @@ class Menu(Container):
 class MenuBar(Menu):
     """A menu bar widget."""
 
-    def __init__(self, items: List['MenuItem|Separator'], **kwargs) -> None:
+    def __init__(self, items: list['MenuItem|Separator'], **kwargs) -> None:
         """Initialize a menu bar."""
         super().__init__(items, **kwargs)
 
@@ -160,7 +162,14 @@ class MenuBar(Menu):
 class MenuItem(Button):
     """A menu item widget."""
 
-    def __init__(self, name: str, action = None, id: str | int | None = None, submenu = None, grayed = False, **kwargs) -> None:
+    def __init__(self,
+        name: str,
+        action: Callable[[], None] | None = None,
+        id: str | int | None = None,
+        submenu: Menu | None = None,
+        grayed: bool = False,
+        **kwargs: Any
+    ) -> None:
         """Initialize a menu item."""
         super().__init__(markup_hotkey(name), **kwargs)
         self.disabled = grayed
