@@ -1859,7 +1859,7 @@ class PaintApp(App):
         self.cancel_preview()
 
         if self.selected_tool in [Tool.brush, Tool.pencil, Tool.eraser, Tool.curve]:
-            if Tool.curve:
+            if self.selected_tool == Tool.curve:
                 self.make_preview(self.draw_current_curve)
             else:
                 self.make_preview(lambda: self.stamp_brush(event.mouse_move_event.x, event.mouse_move_event.y))
