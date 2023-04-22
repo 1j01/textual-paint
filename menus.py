@@ -23,13 +23,13 @@ class Menu(Container):
     items = var([])
     focus_index = var(0)
 
-    def __init__(self, items: List[str], **kwargs) -> None:
+    def __init__(self, items: List['MenuItem|Separator'], **kwargs) -> None:
         """Initialize a menu."""
         super().__init__(**kwargs)
         self.items = items
         self.parent_menu = None
 
-    def watch_items(self, old_items, new_items: List[str]) -> None:
+    def watch_items(self, old_items, new_items: List['MenuItem|Separator']) -> None:
         """Update the menu items."""
         for item in old_items:
             self.unmount(item)
@@ -154,7 +154,7 @@ class Menu(Container):
 class MenuBar(Menu):
     """A menu bar widget."""
 
-    def __init__(self, items: List[str], **kwargs) -> None:
+    def __init__(self, items: List['MenuItem|Separator'], **kwargs) -> None:
         """Initialize a menu bar."""
         super().__init__(items, **kwargs)
 
@@ -162,7 +162,7 @@ class MenuBar(Menu):
 class MenuItem(Button):
     """A menu item widget."""
 
-    def __init__(self, name: str, action = None, id: str = None, submenu = None, grayed = False, **kwargs) -> None:
+    def __init__(self, name: str, action = None, id: str | int | None = None, submenu = None, grayed = False, **kwargs) -> None:
         """Initialize a menu item."""
         super().__init__(markup_hotkey(name), **kwargs)
         self.disabled = grayed

@@ -6,7 +6,7 @@ import argparse
 import asyncio
 from enum import Enum
 from random import randint, random
-from typing import List, Optional, Callable
+from typing import List, Optional, Callable, Iterator, Tuple
 from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
 from watchdog.observers import Observer
 import stransi
@@ -446,7 +446,7 @@ class AnsiArtDocument:
         self.fg = [["#000000" for _ in range(width)] for _ in range(height)]
         self.selection: Optional[Selection] = None
 
-    def copy_region(self, source, source_region: Region = None, target_region: Region = None):
+    def copy_region(self, source, source_region: Region|None = None, target_region: Region|None = None):
         if source_region is None:
             source_region = Region(0, 0, source.width, source.height)
         if target_region is None:
@@ -589,7 +589,7 @@ class AnsiArtDocument:
 class Action:
     """An action that can be undone efficiently using a region update."""
 
-    def __init__(self, name, document: AnsiArtDocument, region: Region = None) -> None:
+    def __init__(self, name, document: AnsiArtDocument, region: Region|None = None) -> None:
         """Initialize the action using the document state before modification."""
         if region is None:
             region = Region(0, 0, document.width, document.height)
@@ -607,7 +607,7 @@ class Action:
         """Undo this action. Note that a canvas refresh is not performed here."""
         target_document.copy_region(self.sub_image_before, target_region=self.region)
 
-def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> None:
+def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> Iterator[Tuple[int, int]]:
     """Bresenham's line algorithm"""
     dx = abs(x1 - x0)
     dy = abs(y1 - y0)
@@ -627,7 +627,7 @@ def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> None:
             y0 = y0 + sy
 
 
-def polygon_walk(points: List[Offset]) -> None:
+def polygon_walk(points: List[Offset]) -> Iterator[Tuple[int, int]]:
     """Yields points along the perimeter of a polygon."""
     for i in range(len(points)):
         yield from bresenham_walk(
@@ -637,7 +637,7 @@ def polygon_walk(points: List[Offset]) -> None:
             points[(i + 1) % len(points)][1]
         )
 
-def polyline_walk(points: List[Offset]) -> None:
+def polyline_walk(points: List[Offset]) -> Iterator[Tuple[int, int]]:
     """Yields points along a polyline (unclosed polygon)."""
     for i in range(len(points) - 1):
         yield from bresenham_walk(
@@ -681,7 +681,7 @@ def quadratic_curve_walk(start_x, start_y, control_x, control_y, end_x, end_y):
     """Yields points along a quadratic curve."""
     return bezier_curve_walk(start_x, start_y, control_x, control_y, control_x, control_y, end_x, end_y)
 
-def midpoint_ellipse(xc: int, yc: int, rx: int, ry: int) -> None:
+def midpoint_ellipse(xc: int, yc: int, rx: int, ry: int) -> Iterator[Tuple[int, int]]:
     """Midpoint ellipse drawing algorithm. Yields points out of order, and thus can't legally be called a "walk", except in Britain."""
     # Source: https://www.geeksforgeeks.org/midpoint-ellipse-drawing-algorithm/
 
@@ -741,7 +741,7 @@ def midpoint_ellipse(xc: int, yc: int, rx: int, ry: int) -> None:
             dy = dy - (2 * rx * rx)
             d2 = d2 + dx - dy + (rx * rx)
 
-def flood_fill(document: AnsiArtDocument, x: int, y: int, fill_ch: str, fill_fg: str, fill_bg: str) -> None:
+def flood_fill(document: AnsiArtDocument, x: int, y: int, fill_ch: str, fill_fg: str, fill_bg: str) -> Region|None:
     """Flood fill algorithm."""
 
     # Get the original value of the cell.
@@ -861,8 +861,8 @@ class Canvas(Widget):
     def __init__(self, **kwargs) -> None:
         """Initialize the canvas."""
         super().__init__(**kwargs)
-        self.image = None
-        self.pointer_active = False
+        self.image: AnsiArtDocument|None = None
+        self.pointer_active: bool = False
         self.magnifier_preview_region: Optional[Region] = None
         self.select_preview_region: Optional[Region] = None
 
@@ -1058,7 +1058,7 @@ class PaintApp(App):
     selected_fg_color = var(palette[len(palette) // 2])
     selected_char = var(" ")
     filename = var(None)
-    image = var(None)
+    image = var(AnsiArtDocument(1, 1))
     magnification = var(1)
     return_to_magnification = var(4)
 
@@ -1136,7 +1136,7 @@ class PaintApp(App):
         # https://github.com/1j01/jspaint/blob/12a90c6bb9d36f495dc6a07114f9667c82ee5228/src/functions.js#L326-L351
         # This will matter more when large documents don't freeze up the program...
 
-    def stamp_brush(self, x: int, y: int, affected_region_base: Region = None) -> Region:
+    def stamp_brush(self, x: int, y: int, affected_region_base: Optional[Region] = None) -> Region:
         brush_diameter = 1
         square = self.selected_tool == Tool.eraser
         if self.selected_tool == Tool.brush or self.selected_tool == Tool.airbrush or self.selected_tool == Tool.eraser:
@@ -1383,7 +1383,7 @@ class PaintApp(App):
         else:
             restart_program()
 
-    def warning_message_box(self, title: str, message_widget: Widget, button_types: str = "ok", callback = None) -> None:
+    def warning_message_box(self, title: str, message_widget: Widget|str, button_types: str = "ok", callback = None) -> None:
         """Show a warning message box with the given title, message, and buttons."""
         for old_window in self.query("#message_box").nodes:
             old_window.close()

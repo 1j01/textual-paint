@@ -14,7 +14,7 @@ from localization.i18n import get as _
 class WindowTitleBar(Container):
     """A title bar widget."""
 
-    title = var([])
+    title = var("")
 
     def __init__(self, title: str = "", **kwargs) -> None:
         """Initialize a title bar."""
@@ -218,7 +218,7 @@ class CharacterSelectorDialogWindow(DialogWindow):
 
     # char_list = ["A", "b", "c"] * 4
 
-    def __init__(self, *args, selected_character=None, handle_selected_character=None, **kwargs) -> None:
+    def __init__(self, *args, selected_character: str|None, handle_selected_character: Callable, **kwargs) -> None:
         """Initialize the dialog window."""
         super().__init__(handle_button=self.handle_button, *args, **kwargs)
         self._char_to_highlight = selected_character
