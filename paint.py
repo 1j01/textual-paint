@@ -1888,6 +1888,9 @@ class PaintApp(App[None]):
                 )
                 if sel.contained_image:
                     # Already cut out, don't replace the image data.
+                    # But if you hold Ctrl, stamp the selection.
+                    if event.mouse_down_event.ctrl:
+                        sel.copy_to_document(self.image)
                     return
                 # Cut out the selected part of the image from the document to use as the selection's image data.
                 # TODO: DRY with the below action handling
@@ -1898,7 +1901,8 @@ class PaintApp(App[None]):
                     self.redos = []
                 self.undos.append(action)
                 sel.copy_from_document(self.image)
-                self.erase_region(sel.region, sel.mask)
+                if not event.mouse_down_event.ctrl:
+                    self.erase_region(sel.region, sel.mask)
                 # TODO: use two regions, for the cut out and the paste in, once melded.
                 # I could maybe give Action a sub_action property, and use it for the melding.
                 # Or I could make it use a list of regions.
