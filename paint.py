@@ -1114,6 +1114,7 @@ class PaintApp(App[None]):
     show_tools_box = var(True)
     show_colors_box = var(True)
     selected_tool = var(Tool.pencil)
+    return_to_tool = var(Tool.pencil)
     selected_bg_color = var(palette[0])
     selected_fg_color = var(palette[len(palette) // 2])
     selected_char = var(" ")
@@ -1882,6 +1883,7 @@ class PaintApp(App[None]):
 
         if self.selected_tool == Tool.magnifier:
             self.magnifier_click(event.mouse_down_event.x, event.mouse_down_event.y)
+            self.selected_tool = self.return_to_tool
             return
 
         # TODO: use Offset() instead of tuple
@@ -2324,7 +2326,8 @@ class PaintApp(App[None]):
                 self.make_preview(self.draw_current_polyline) # polyline until finished
 
             self.polygon_last_click_time = event.time
-
+        elif self.selected_tool == Tool.pick_color:
+            self.selected_tool = self.return_to_tool
 
 
         # Not reliably unset, so might as well not rely on it. (See early returns above.)
@@ -2390,6 +2393,8 @@ class PaintApp(App[None]):
     def on_tools_box_tool_selected(self, event: ToolsBox.ToolSelected) -> None:
         """Called when a tool is selected in the palette."""
         self.selected_tool = event.tool
+        if self.selected_tool not in [Tool.magnifier, Tool.pick_color]:
+            self.return_to_tool = self.selected_tool
         self.meld_selection()
         self.tool_points = []
     
