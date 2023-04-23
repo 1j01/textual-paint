@@ -400,6 +400,8 @@ class Selection:
         """The start position of the text selection within the text box. This may be before or after the end."""""
         self.text_selection_end = Offset(0, 0)
         """The end position of the text selection within the text box. This may be before or after the start."""""
+        self.mask: Optional[list[list[bool]]] = None
+        """A mask of the selection to cut out, used for Free-Form Select tool. Coordinates are relative to the selection region."""
 
     def copy_from_document(self, document: 'AnsiArtDocument') -> None:
         """Copy the image data from the document into the selection."""
@@ -412,7 +414,7 @@ class Selection:
             # raise ValueError("Selection has no image data.")
             return
         target_region = self.region.intersection(Region(0, 0, document.width, document.height))
-        document.copy_region(source=self.contained_image, target_region=target_region)
+        document.copy_region(source=self.contained_image, target_region=target_region, mask=self.mask)
 
 
 debug_region_updates = False
@@ -431,7 +433,7 @@ class AnsiArtDocument:
         self.fg = [["#000000" for _ in range(width)] for _ in range(height)]
         self.selection: Optional[Selection] = None
 
-    def copy_region(self, source: 'AnsiArtDocument', source_region: Region|None = None, target_region: Region|None = None):
+    def copy_region(self, source: 'AnsiArtDocument', source_region: Region|None = None, target_region: Region|None = None, mask: list[list[bool]]|None = None) -> None:
         if source_region is None:
             source_region = Region(0, 0, source.width, source.height)
         if target_region is None:
@@ -443,7 +445,7 @@ class AnsiArtDocument:
             random_color = "rgb(" + str(randint(0, 255)) + "," + str(randint(0, 255)) + "," + str(randint(0, 255)) + ")"
         for y in range(target_region.height):
             for x in range(target_region.width):
-                if source_region.contains(x + source_offset.x, y + source_offset.y):
+                if source_region.contains(x + source_offset.x, y + source_offset.y) and (mask is None or mask[y][x]):
                     self.ch[y + target_offset.y][x + target_offset.x] = source.ch[y + source_offset.y][x + source_offset.x]
                     self.bg[y + target_offset.y][x + target_offset.x] = source.bg[y + source_offset.y][x + source_offset.x]
                     self.fg[y + target_offset.y][x + target_offset.x] = source.fg[y + source_offset.y][x + source_offset.x]
@@ -634,6 +636,39 @@ def polyline_walk(points: List[Offset]) -> Iterator[Tuple[int, int]]:
             points[i + 1][0],
             points[i + 1][1]
         )
+
+def is_inside_polygon(x: int, y: int, points: List[Offset]) -> bool:
+    """Returns True if the point is inside the polygon."""
+    # https://stackoverflow.com/a/217578
+    n = len(points)
+    inside = False
+    p1x, p1y = points[0]
+    for i in range(n + 1):
+        p2x, p2y = points[i % n]
+        if y > min(p1y, p2y):
+            if y <= max(p1y, p2y):
+                if x <= max(p1x, p2x):
+                    if p1y != p2y:
+                        xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                    if p1x == p2x or x <= xinters:
+                        inside = not inside
+        p1x, p1y = p2x, p2y
+    return inside
+
+# def polygon_fill(points: List[Offset]) -> Iterator[Tuple[int, int]]:
+#     """Yields points inside a polygon."""
+
+#     # Find the bounding box
+#     min_x = min(points, key=lambda p: p[0])[0]
+#     min_y = min(points, key=lambda p: p[1])[1]
+#     max_x = max(points, key=lambda p: p[0])[0]
+#     max_y = max(points, key=lambda p: p[1])[1]
+
+#     # Check each point in the bounding box, and yield any points that are inside the polygon
+#     for x in range(min_x, max_x + 1):
+#         for y in range(min_y, max_y + 1):
+#             if is_inside_polygon(x, y, points):
+#                 yield x, y
 
 # adapted from https://github.com/Pomax/bezierjs
 def compute_bezier(t: float, start_x: float, start_y: float, control_1_x: float, control_1_y: float, control_2_x: float, control_2_y: float, end_x: float, end_y: float):
@@ -934,7 +969,7 @@ class Canvas(Widget):
             cell_x = x // self.magnification
             cell_y = y // self.magnification
             try:
-                if sel and sel.contained_image and sel.region.contains(cell_x, cell_y):
+                if sel and sel.contained_image and sel.region.contains(cell_x, cell_y) and (sel.mask is None or sel.mask[cell_y - sel.region.y][cell_x - sel.region.x]):
                     bg = sel.contained_image.bg[cell_y - sel.region.y][cell_x - sel.region.x]
                     fg = sel.contained_image.fg[cell_y - sel.region.y][cell_x - sel.region.x]
                     ch = sel.contained_image.ch[cell_y - sel.region.y][cell_x - sel.region.x]
@@ -1179,7 +1214,7 @@ class PaintApp(App[None]):
             self.image.bg[y][x] = bg_color
             self.image.fg[y][x] = fg_color
     
-    def erase_region(self, region: Region) -> None:
+    def erase_region(self, region: Region, mask: Optional[list[list[bool]]] = None) -> None:
         # Time to go undercover as an eraser. 🥸
         # TODO: just add a parameter to stamp_char.
         # Momentarily masquerading makes me mildly mad.
@@ -1187,7 +1222,8 @@ class PaintApp(App[None]):
         self.selected_tool = Tool.eraser
         for x in range(region.width):
             for y in range(region.height):
-                self.stamp_char(x + region.x, y + region.y)
+                if mask is None or mask[y][x]:
+                    self.stamp_char(x + region.x, y + region.y)
         self.selected_tool = original_tool
 
     def draw_current_polyline(self) -> Region:
@@ -1803,10 +1839,6 @@ class PaintApp(App[None]):
             self.magnifier_click(event.mouse_down_event.x, event.mouse_down_event.y)
             return
 
-        if self.selected_tool in [Tool.free_form_select]:
-            self.selected_tool = Tool.pencil
-            # TODO: support the last tool
-
         # TODO: use Offset() instead of tuple
         # and I would say use event.offset, but I'm dynamically
         # modifying x/y in fix_mouse_event so I need to use those coords for now,
@@ -1821,7 +1853,10 @@ class PaintApp(App[None]):
                 self.make_preview(self.draw_current_polyline) # polyline until finished
             return
 
-        if self.selected_tool in [Tool.select, Tool.text]:
+        if self.selected_tool == Tool.free_form_select:
+            self.tool_points = [Offset(event.mouse_down_event.x, event.mouse_down_event.y)]
+
+        if self.selected_tool in [Tool.select, Tool.free_form_select, Tool.text]:
             sel = self.image.selection
             if sel and sel.region.contains_point(self.mouse_at_start):
                 if self.selected_tool == Tool.text:
@@ -1848,7 +1883,7 @@ class PaintApp(App[None]):
                     self.redos = []
                 self.undos.append(action)
                 sel.copy_from_document(self.image)
-                self.erase_region(sel.region)
+                self.erase_region(sel.region, sel.mask)
                 # TODO: use two regions, for the cut out and the paste in, once melded.
                 # I could maybe give Action a sub_action property, and use it for the melding.
                 # Or I could make it use a list of regions.
@@ -1994,14 +2029,18 @@ class PaintApp(App[None]):
             region = self.image.selection.region
             if not self.image.selection.contained_image:
                 # It hasn't been cut out yet, so we need to erase it.
-                self.erase_region(region)
+                self.erase_region(region, self.image.selection.mask)
             self.image.selection = None
             self.canvas.refresh_scaled_region(region)
             self.selection_drag_offset = None
             self.selecting_text = False
 
     def on_canvas_tool_update(self, event: Canvas.ToolUpdate) -> None:
-        """Called when the user is drawing on the canvas."""
+        """Called when the user is drawing on the canvas.
+        
+        Several tools do a preview of sorts here, even though it's not the ToolPreviewUpdate event.
+        TODO: rename these events to describe when they occur, ascribe less semantics to them.
+        """
         event.stop()
         self.cancel_preview()
 
@@ -2012,7 +2051,7 @@ class PaintApp(App[None]):
         if self.selected_tool in [Tool.fill, Tool.magnifier]:
             return
         
-        if self.selected_tool in [Tool.select, Tool.text]:
+        if self.selected_tool in [Tool.select, Tool.free_form_select, Tool.text]:
             sel = self.image.selection
             if self.selecting_text:
                 assert sel is not None, "selecting_text should only be set if there's a selection"
@@ -2028,11 +2067,11 @@ class PaintApp(App[None]):
                 sel.region = Region.from_offset(offset, sel.region.size)
                 combined_region = old_region.union(sel.region)
                 self.canvas.refresh_scaled_region(combined_region)
+            elif self.selected_tool == Tool.free_form_select:
+                self.tool_points.append(Offset(event.mouse_move_event.x, event.mouse_move_event.y))
+                # polyline until finished, TODO: invert background, don't use selected color
+                self.make_preview(self.draw_current_polyline)
             else:
-                # This is a tool preview, but it's not in the ToolPreviewUpdate event.
-                # Goes to show how the canvas's event names are silly.
-                # I should've just named them for what they are (i.e. when they occur)
-                # rather than what they mean (what they're meant to represent).
                 self.canvas.select_preview_region = self.get_select_region(self.mouse_at_start, event.mouse_move_event.offset)
                 self.canvas.refresh_scaled_region(self.canvas.select_preview_region)
             return
@@ -2143,9 +2182,17 @@ class PaintApp(App[None]):
             # Done selecting text
             self.selecting_text = False
             return
-        if self.selected_tool in [Tool.select, Tool.text] and self.mouse_at_start:
+        if self.selected_tool in [Tool.select, Tool.free_form_select, Tool.text] and self.mouse_at_start:
             # Finish making a selection
-            select_region = self.get_select_region(self.mouse_at_start, event.mouse_up_event.offset)
+            if self.selected_tool == Tool.free_form_select:
+                # Find bounds of the polygon
+                min_x = min(p.x for p in self.tool_points)
+                max_x = max(p.x for p in self.tool_points)
+                min_y = min(p.y for p in self.tool_points)
+                max_y = max(p.y for p in self.tool_points)
+                select_region = Region(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
+            else:
+                select_region = self.get_select_region(self.mouse_at_start, event.mouse_up_event.offset)
             if self.image.selection:
                 # This shouldn't happen, because it should meld
                 # the selection on mouse down.
@@ -2154,6 +2201,9 @@ class PaintApp(App[None]):
             self.image.selection.textbox_mode = self.selected_tool == Tool.text
             if self.image.selection.textbox_mode:
                 self.image.selection.contained_image = AnsiArtDocument(self.image.selection.region.width, self.image.selection.region.height)
+            if self.selected_tool == Tool.free_form_select:
+                # Define the mask for the selection using the polygon
+                self.image.selection.mask = [[is_inside_polygon(x + select_region.x, y + select_region.y, self.tool_points) for x in range(select_region.width)] for y in range(select_region.height)]
             self.canvas.refresh_scaled_region(select_region)
         elif self.selected_tool == Tool.curve:
             # Maybe finish drawing a curve

@@ -26,7 +26,7 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
     - [x] ANSI (.ans)
 		  - Note that while it can load the files that it saves, you may have limited success loading other ANSI files that you find. ANSI files can vary a lot and even encode animations!
 - Tools
-    - [ ] Free-Form Select
+    - [x] Free-Form Select
     - [x] Select
     - [x] Eraser
         - [ ] Color Eraser
