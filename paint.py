@@ -2372,6 +2372,12 @@ class PaintApp(App[None]):
 
     def on_mouse_down(self, event: events.MouseDown) -> None:
         """Called when the mouse button gets pressed."""
+
+        leaf_widget, _ = self.get_widget_at(*event.screen_offset)
+        # Deselect if clicking outside the canvas
+        if leaf_widget is self.editing_area:
+            self.meld_selection()
+
         # This is a dev helper to inspect the layout
         # by highlighting the elements under the mouse in different colors, and labeling them on their borders.
         # debug_highlight is a list of tuples of (element, original_color, original_border, original_border_title)
@@ -2388,7 +2394,7 @@ class PaintApp(App[None]):
                 element.styles.border = original_border
                 element.border_title = original_border_title
         self.debug_highlight: List[Tuple[Widget, Color, BorderDefinition, Optional[str]]] = []
-        leaf_widget, _ = self.get_widget_at(*event.screen_offset)
+        # leaf_widget, _ = self.get_widget_at(*event.screen_offset)
         if leaf_widget and leaf_widget is not self.screen:
             for i, widget in enumerate(leaf_widget.ancestors_with_self):
                 self.debug_highlight.append((widget, widget.styles.background, widget.styles.border, widget.border_title if hasattr(widget, "border_title") else None))  # type: ignore
