@@ -1185,10 +1185,9 @@ class PaintApp(App[None]):
         # Momentarily masquerading makes me mildly mad.
         original_tool = self.selected_tool
         self.selected_tool = Tool.eraser
-        sel = self.image.selection
-        for x in range(sel.region.width):
-            for y in range(sel.region.height):
-                self.stamp_char(x + sel.region.x, y + sel.region.y)
+        for x in range(region.width):
+            for y in range(region.height):
+                self.stamp_char(x + region.x, y + region.y)
         self.selected_tool = original_tool
 
     def draw_current_polyline(self) -> Region:
