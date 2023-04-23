@@ -1,4 +1,4 @@
-from typing import Union, Optional, Callable
+from typing import Any, Union, Optional, Callable
 from textual import events
 from textual.message import Message
 from textual.app import ComposeResult
@@ -16,7 +16,7 @@ class WindowTitleBar(Container):
 
     title = var("")
 
-    def __init__(self, title: str = "", **kwargs) -> None:
+    def __init__(self, title: str = "", **kwargs: Any) -> None:
         """Initialize a title bar."""
         super().__init__(**kwargs)
         self.title = title
@@ -35,7 +35,7 @@ class Window(Container):
     class CloseRequest(Message):
         """Message when the user clicks the close button. Can be prevented."""
 
-        def __init__(self, **kwargs) -> None:
+        def __init__(self, **kwargs: Any) -> None:
             """Initialize a close request."""
             super().__init__(**kwargs)
             self.prevent_close = False
@@ -45,7 +45,7 @@ class Window(Container):
 
     title = var([])
 
-    def __init__(self, *children: Widget, title: str = "", **kwargs) -> None:
+    def __init__(self, *children: Widget, title: str = "", **kwargs: Any) -> None:
         """Initialize a window."""
         super().__init__(*children, **kwargs)
         self.mouse_at_drag_start = None
@@ -170,7 +170,7 @@ class Window(Container):
 class DialogWindow(Window):
     """A window that can be submitted like a form."""
 
-    def __init__(self, *children: Widget, handle_button: Callable[[Button], None], **kwargs) -> None:
+    def __init__(self, *children: Widget, handle_button: Callable[[Button], None], **kwargs: Any) -> None:
         """Initialize a dialog window."""
         super().__init__(*children, **kwargs)
         self.handle_button = handle_button
@@ -220,7 +220,7 @@ class CharacterSelectorDialogWindow(DialogWindow):
 
     # char_list = ["A", "b", "c"] * 4
 
-    def __init__(self, *children: Widget, selected_character: str|None, handle_selected_character: Callable[[str], None], **kwargs) -> None:
+    def __init__(self, *children: Widget, selected_character: str|None, handle_selected_character: Callable[[str], None], **kwargs: Any) -> None:
         """Initialize the dialog window."""
         super().__init__(handle_button=self.handle_button, *children, **kwargs)
         self._char_to_highlight = selected_character
@@ -301,7 +301,7 @@ class MessageBox(DialogWindow):
         button_types: str = "ok",
         icon_widget: Optional[Widget],
         handle_button: Callable[[Button], None],
-        **kwargs
+        **kwargs: Any,
     ) -> None:
         """Initialize the message box."""
         super().__init__(*children, handle_button=handle_button, **kwargs)

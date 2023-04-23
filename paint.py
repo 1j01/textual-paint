@@ -6,7 +6,7 @@ import argparse
 import asyncio
 from enum import Enum
 from random import randint, random
-from typing import List, Optional, Callable, Iterator, Tuple
+from typing import Any, List, Optional, Callable, Iterator, Tuple
 from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
 from watchdog.observers import Observer
 import stransi
@@ -846,7 +846,7 @@ class Canvas(Widget):
         def __init__(self) -> None:
             super().__init__()
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         """Initialize the canvas."""
         super().__init__(**kwargs)
         self.image: AnsiArtDocument|None = None

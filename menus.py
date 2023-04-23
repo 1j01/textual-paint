@@ -19,7 +19,7 @@ class Menu(Container):
     items = var([])
     focus_index = var(0)
 
-    def __init__(self, items: list['MenuItem|Separator'], **kwargs) -> None:
+    def __init__(self, items: list['MenuItem|Separator'], **kwargs: Any) -> None:
         """Initialize a menu."""
         super().__init__(**kwargs)
         self.items = items
@@ -154,7 +154,7 @@ class Menu(Container):
 class MenuBar(Menu):
     """A menu bar widget."""
 
-    def __init__(self, items: list['MenuItem|Separator'], **kwargs) -> None:
+    def __init__(self, items: list['MenuItem|Separator'], **kwargs: Any) -> None:
         """Initialize a menu bar."""
         super().__init__(items, **kwargs)
 
@@ -188,7 +188,7 @@ class Separator(Static):
     """A menu separator widget."""
 
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         """Initialize a separator."""
         super().__init__(mid_line, **kwargs)
         # self.disabled = True # This breaks scroll wheel over the separator, as of Textual 0.20.1
