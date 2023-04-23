@@ -45,7 +45,7 @@ class Window(Container):
 
     title = var([])
 
-    def __init__(self, *children, title: str = "", **kwargs) -> None:
+    def __init__(self, *children: Widget, title: str = "", **kwargs) -> None:
         """Initialize a window."""
         super().__init__(*children, **kwargs)
         self.mouse_at_drag_start = None
@@ -83,7 +83,7 @@ class Window(Container):
     #     """When using the context manager compose syntax, we want to attach nodes to the content container."""
     #     self.content.mount(widget)
 
-    def watch_title(self, old_title, new_title: str) -> None:
+    def watch_title(self, new_title: str) -> None:
         """Called when title is changed."""
         self.title_bar.title = new_title
 
@@ -170,7 +170,7 @@ class Window(Container):
 class DialogWindow(Window):
     """A window that can be submitted like a form."""
 
-    def __init__(self, *children, handle_button, **kwargs) -> None:
+    def __init__(self, *children: Widget, handle_button: Callable[[Button], None], **kwargs) -> None:
         """Initialize a dialog window."""
         super().__init__(*children, **kwargs)
         self.handle_button = handle_button
@@ -220,9 +220,9 @@ class CharacterSelectorDialogWindow(DialogWindow):
 
     # char_list = ["A", "b", "c"] * 4
 
-    def __init__(self, *args, selected_character: str|None, handle_selected_character: Callable, **kwargs) -> None:
+    def __init__(self, *children: Widget, selected_character: str|None, handle_selected_character: Callable[[str], None], **kwargs) -> None:
         """Initialize the dialog window."""
-        super().__init__(handle_button=self.handle_button, *args, **kwargs)
+        super().__init__(handle_button=self.handle_button, *children, **kwargs)
         self._char_to_highlight = selected_character
         self._char_by_button: dict[Button, str] = {}
         self.handle_selected_character = handle_selected_character
@@ -295,9 +295,16 @@ get_warning_icon = lambda: Static("""
 
 class MessageBox(DialogWindow):
     """A simple dialog window that displays a message, a group of buttons, and an optional icon."""
-    def __init__(self, *args, message_widget: Union[Widget, str], button_types: str = "ok", icon_widget: Optional[Widget], handle_button: Optional[Callable] = None, **kwargs) -> None:
+    def __init__(self,
+        *children: Widget,
+        message_widget: Union[Widget, str],
+        button_types: str = "ok",
+        icon_widget: Optional[Widget],
+        handle_button: Callable[[Button], None],
+        **kwargs
+    ) -> None:
         """Initialize the message box."""
-        super().__init__(*args, handle_button=handle_button, **kwargs)
+        super().__init__(*children, handle_button=handle_button, **kwargs)
         if isinstance(message_widget, str):
             message_widget = Static(message_widget, markup=False)
         if not icon_widget:

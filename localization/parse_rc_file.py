@@ -3,7 +3,10 @@
 
 import re
 
-def parse_rc_file(rc_file_text, callback=None, lang=None):
+def parse_rc_file(rc_file_text: str) -> list[str]:
+    """
+    Parses a Windows RC file and returns a list of strings.
+    """
     strings = []
     menu = dialog = stringtable = False
     block_level = 0

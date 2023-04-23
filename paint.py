@@ -6,7 +6,7 @@ import argparse
 import asyncio
 from enum import Enum
 from random import randint, random
-from typing import List, Optional, Callable, Iterator, Tuple
+from typing import List, Optional, Callable, Iterator, Sequence, Tuple, TypeAlias
 from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
 from watchdog.observers import Observer
 import stransi
@@ -18,6 +18,7 @@ from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.geometry import Offset, Region, Size
 from textual.css.query import NoMatches
+from textual.css.types import EdgeType
 from textual.reactive import var, reactive
 from textual.strip import Strip
 from textual.widget import Widget
@@ -950,6 +951,8 @@ class Canvas(Widget):
             if self.magnification > 1:
                 ch = self.big_ch(ch, x % self.magnification, y % self.magnification)
             style = Style.parse(fg+" on "+bg)
+            assert style.color is not None
+            assert style.bgcolor is not None
             # def offset_to_text_index(offset) -> int:
             #     # return offset.y * sel.region.width + offset.x
             #     # return offset.y * self.image.width + offset.x
@@ -1119,6 +1122,7 @@ class PaintApp(App[None]):
     def watch_selected_tool(self, old_selected_tool: Tool, selected_tool: Tool) -> None:
         """Called when selected_tool changes."""
         for button in self.query(".tool_button"):
+            assert isinstance(button, Button)
             if selected_tool == self.query_one("ToolsBox", ToolsBox).tool_by_button[button]:
                 button.add_class("selected")
             else:
@@ -1486,7 +1490,7 @@ class PaintApp(App[None]):
         self.mount(window)
         self.expand_directory_tree(window.content.query_one("#open_dialog_directory_tree", EnhancedDirectoryTree))
 
-    def action_new(self, *, force=False) -> None:
+    def action_new(self, *, force: bool = False) -> None:
         """Create a new image."""
         if self.is_document_modified() and not force:
             def go_ahead():
@@ -1515,7 +1519,7 @@ class PaintApp(App[None]):
     def action_open_character_selector(self) -> None:
         """Show dialog to select a character."""
         self.close_windows("#character_selector_dialog")
-        def handle_selected_character(character):
+        def handle_selected_character(character: str) -> None:
             self.selected_char = character
             window.close()
         window = CharacterSelectorDialogWindow(
@@ -1562,7 +1566,7 @@ class PaintApp(App[None]):
         self.magnification = 4
     def action_custom_zoom(self) -> None:
         self.close_windows("#zoom_dialog")
-        def handle_button(button):
+        def handle_button(button: Button) -> None:
             if button.has_class("ok"):
                 min_zoom = 1
                 max_zoom = 16
@@ -2243,6 +2247,7 @@ class PaintApp(App[None]):
             press(self.NAME_MAP.get(key, key))
         
         if self.image.selection and self.image.selection.textbox_mode:
+            assert self.image.selection.contained_image is not None, "Textbox mode should always have contained_image, to edit as text."
             # TODO: delete selected text if any, when typing
             x, y = self.image.selection.text_selection_start
             if key == "enter":
@@ -2347,7 +2352,10 @@ class PaintApp(App[None]):
                 element.styles.background = original_color
                 element.styles.border = original_border
                 element.border_title = original_border_title
-        self.debug_highlight = []
+        BorderDefinition: TypeAlias = (
+            "Sequence[tuple[EdgeType, str | Color] | None] | tuple[EdgeType, str | Color]"
+        )
+        self.debug_highlight: List[Tuple[Widget, Color, BorderDefinition, Optional[str]]] = []
         leaf_widget, _ = self.get_widget_at(*event.screen_offset)
         if leaf_widget and leaf_widget is not self.screen:
             for i, widget in enumerate(leaf_widget.ancestors_with_self):
