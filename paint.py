@@ -1830,7 +1830,7 @@ class PaintApp(App[None]):
                     # Place cursor at mouse position
                     sel.text_selection_start = Offset(*self.mouse_at_start) - sel.region.offset
                     sel.text_selection_end = Offset(*self.mouse_at_start) - sel.region.offset
-                    self.canvas.refresh_scaled_region(self.image.selection.region)
+                    self.canvas.refresh_scaled_region(sel.region)
                     self.selecting_text = True
                     return
                 # Start dragging the selection.
@@ -1838,7 +1838,7 @@ class PaintApp(App[None]):
                     sel.region.x - self.mouse_at_start.x,
                     sel.region.y - self.mouse_at_start.y,
                 )
-                if self.image.selection.contained_image:
+                if sel.contained_image:
                     # Already cut out, don't replace the image data.
                     return
                 # Cut out the selected part of the image from the document to use as the selection's image data.
@@ -1849,7 +1849,7 @@ class PaintApp(App[None]):
                 if len(self.redos) > 0:
                     self.redos = []
                 self.undos.append(action)
-                self.image.selection.copy_from_document(self.image)
+                sel.copy_from_document(self.image)
                 self.erase_region(sel.region)
                 # TODO: use two regions, for the cut out and the paste in, once melded.
                 # I could maybe give Action a sub_action property, and use it for the melding.
@@ -2018,8 +2018,8 @@ class PaintApp(App[None]):
             sel = self.image.selection
             if self.selecting_text:
                 assert sel is not None, "selecting_text should only be set if there's a selection"
-                self.image.selection.text_selection_end = Offset(event.mouse_move_event.x, event.mouse_move_event.y) - sel.region.offset
-                self.canvas.refresh_scaled_region(self.image.selection.region)
+                sel.text_selection_end = Offset(event.mouse_move_event.x, event.mouse_move_event.y) - sel.region.offset
+                self.canvas.refresh_scaled_region(sel.region)
             elif self.selection_drag_offset:
                 assert sel is not None, "selection_drag_offset should only be set if there's a selection"
                 offset = (
