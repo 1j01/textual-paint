@@ -250,7 +250,7 @@ class CharacterSelectorDialogWindow(DialogWindow):
     
     def handle_button(self, button: Button) -> None:
         """Called when a button is clicked or activated with the keyboard."""
-        if button.id == "cancel":
+        if button.has_class("cancel"):
             self.request_close()
         else:
             # self.post_message(self.CharacterSelected(self._char_by_button[button]))

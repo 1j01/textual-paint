@@ -49,7 +49,7 @@ class EditColorsDialogWindow(DialogWindow):
     
     def handle_button(self, button: Button) -> None:
         """Called when a button is clicked or activated with the keyboard."""
-        if button.id == "cancel":
+        if button.has_class("cancel"):
             self.request_close()
         else:
             self.handle_selected_color(self._color_by_button[button])
