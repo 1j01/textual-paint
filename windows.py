@@ -51,6 +51,8 @@ class Window(Container):
         # Binding("shift+tab", "focus_previous", "Focus Previous", show=False),
         ("tab", "focus_next", "Focus Next"),
         ("shift+tab", "focus_previous", "Focus Previous"),
+        ("right,down", "focus_next_button", "Focus Next Button"),
+        ("left,up", "focus_previous_button", "Focus Previous Button"),
     ]
 
     def __init__(self, *children: Widget, title: str = "", **kwargs: Any) -> None:
@@ -76,6 +78,27 @@ class Window(Container):
     def action_focus_previous(self) -> None:
         """Override action to focus the previous widget only within the window."""
         self.screen.focus_previous(f"#{self.id} .window_content *")
+
+    def within_buttons(self, widget: Widget|None) -> bool:
+        """Returns True if widget exists and is within .buttons."""
+        if not widget:
+            return False
+        node = widget
+        while node:
+            if node.has_class("buttons"):
+                return True
+            node = node.parent
+        return False
+
+    def action_focus_next_button(self) -> None:
+        """Action to focus the next button within .buttons IF a button is focused within .buttons."""
+        if self.within_buttons(self.screen.focused):
+            self.screen.focus_next(f"#{self.id} .buttons *")
+
+    def action_focus_previous_button(self) -> None:
+        """Action to focus the previous button within .buttons IF a button is focused within .buttons."""
+        if self.within_buttons(self.screen.focused):
+            self.screen.focus_previous(f"#{self.id} .buttons *")
 
     def on_mount(self) -> None:
         """Called when the widget is mounted."""
@@ -358,6 +381,7 @@ class MessageBox(DialogWindow):
                 self.icon_widget,
                 Vertical(
                     self.message_widget,
+                    # Window class provides arrow key navigation within .buttons
                     Horizontal(*buttons, classes="buttons"),
                     classes="main_content"
                 )
