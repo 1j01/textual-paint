@@ -1,5 +1,6 @@
 Screen {
     layers: window menu-popup;
+    overflow: hidden;
 }
 
 #paint {
@@ -257,6 +258,24 @@ CharacterSelectorDialogWindow .cancel {
     width: 50;
     /* width: auto; */
     height: auto;
+}
+
+EditColorsDialogWindow .window_content {
+    padding: 2 4;
+    width: 65;
+    /* align-horizontal: center; */
+    height: auto;
+}
+EditColorsDialogWindow .color_grid {
+    layout: grid;
+    grid-size: 8;
+    grid-gutter: 1 2;
+    grid-columns: 5;
+    grid-rows: 2;
+    height: auto;
+    /* width: auto; */
+    overflow: hidden;
+    margin-bottom: 2;
 }
 
 MessageBox .window_content {

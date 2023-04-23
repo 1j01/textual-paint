@@ -27,6 +27,7 @@ from textual.widgets._directory_tree import DirEntry
 from textual.color import Color
 from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon
+from edit_colors import EditColorsDialogWindow
 from localization.i18n import get as _, load_language
 from enhanced_directory_tree import EnhancedDirectoryTree
 
@@ -377,6 +378,16 @@ class ColorsBox(Container):
         if "color_button" in event.button.classes:
             self.post_message(self.ColorSelected(self.color_by_button[event.button]))
 
+    last_click_time = 0
+    def on_click(self, event: events.Click) -> None:
+        """Detect double click and open Edit Colors dialog.
+        
+        TODO: Detect it on the buttons, not the whole widget excluding the buttons!
+        """
+        if event.time - self.last_click_time < 0.8:
+            assert isinstance(self.app, PaintApp)
+            self.app.action_edit_colors()
+        self.last_click_time = event.time
 
 class Selection:
     """
@@ -1572,6 +1583,20 @@ class PaintApp(App[None]):
         )
         self.mount(window)
 
+    def action_edit_colors(self) -> None:
+        """Show dialog to edit colors."""
+        self.close_windows("#edit_colors_dialog")
+        def handle_selected_color(color: str) -> None:
+            self.selected_bg_color = color
+            window.close()
+        window = EditColorsDialogWindow(
+            id="edit_colors_dialog",
+            handle_selected_color=handle_selected_color,
+            selected_color=self.selected_bg_color,
+            title=_("Edit Colors"),
+        )
+        self.mount(window)
+
     def action_print_preview(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_page_setup(self) -> None:
@@ -1666,8 +1691,6 @@ class PaintApp(App[None]):
     def action_clear_image(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_draw_opaque(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
-    def action_edit_colors(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     
     def action_help_topics(self) -> None:
@@ -1765,7 +1788,7 @@ class PaintApp(App[None]):
                     MenuItem(_("&Draw Opaque"), self.action_draw_opaque, 6868, grayed=True),
                 ])),
                 MenuItem(_("&Colors"), submenu=Menu([
-                    MenuItem(_("&Edit Colors..."), self.action_edit_colors, 6869, grayed=True),
+                    MenuItem(_("&Edit Colors..."), self.action_edit_colors, 6869),
                 ])),
                 MenuItem(_("&Help"), submenu=Menu([
                     MenuItem(_("&Help Topics"), self.action_help_topics, 57670),
