@@ -1795,6 +1795,8 @@ class PaintApp(App[None]):
 
     def pick_color(self, x: int, y: int) -> None:
         """Select a color from the image."""
+        if x < 0 or y < 0 or x >= self.image.width or y >= self.image.height:
+            return
         self.selected_bg_color = self.image.bg[y][x]
         self.selected_fg_color = self.image.fg[y][x]
         self.selected_char = self.image.ch[y][x]
