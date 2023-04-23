@@ -29,6 +29,7 @@ class WindowTitleBar(Container):
         # yield Button("🗖", classes="window_maximize")
         # 🗗 for restore
 
+id_counter = 0
 class Window(Container):
     """A draggable window widget."""
 
@@ -45,6 +46,13 @@ class Window(Container):
 
     title = var([])
 
+    BINDINGS = [
+        # Binding("tab", "focus_next", "Focus Next", show=False),
+        # Binding("shift+tab", "focus_previous", "Focus Previous", show=False),
+        ("tab", "focus_next", "Focus Next"),
+        ("shift+tab", "focus_previous", "Focus Previous"),
+    ]
+
     def __init__(self, *children: Widget, title: str = "", **kwargs: Any) -> None:
         """Initialize a window."""
         super().__init__(*children, **kwargs)
@@ -55,6 +63,19 @@ class Window(Container):
         # must be after title_bar is defined
         self.title = title
         self.can_focus = True
+        if not self.id:
+            # ID is needed for focus cycling
+            global id_counter
+            self.id = f"window_auto_id_{id_counter}"
+            id_counter += 1
+
+    def action_focus_next(self) -> None:
+        """Override action to focus the next widget only within the window."""
+        self.screen.focus_next(f"#{self.id} .window_content *")
+
+    def action_focus_previous(self) -> None:
+        """Override action to focus the previous widget only within the window."""
+        self.screen.focus_previous(f"#{self.id} .window_content *")
 
     def on_mount(self) -> None:
         """Called when the widget is mounted."""
