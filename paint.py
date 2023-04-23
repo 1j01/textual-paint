@@ -1098,10 +1098,6 @@ class PaintApp(App[None]):
 
     background_tasks: set[asyncio.Task[None]] = set()
 
-    NAME_MAP = {
-        # key to button id
-    }
-
     TITLE = _("Paint")
 
     def watch_filename(self, filename: Optional[str]) -> None:
@@ -2233,20 +2229,8 @@ class PaintApp(App[None]):
 
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
-
-        def press(button_id: str) -> None:
-            try:
-                self.query_one(f"#{button_id}", Button).press()
-            except NoMatches:
-                pass
-
-        key = event.key
-        
-        button_id = self.NAME_MAP.get(key)
-        if button_id is not None:
-            press(self.NAME_MAP.get(key, key))
-        
         if self.image.selection and self.image.selection.textbox_mode:
+            key = event.key
             assert self.image.selection.contained_image is not None, "Textbox mode should always have contained_image, to edit as text."
             # TODO: delete selected text if any, when typing
             x, y = self.image.selection.text_selection_start
