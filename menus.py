@@ -5,7 +5,7 @@ from textual.containers import Container
 from textual.reactive import var
 from textual.widgets import Button, Static
 from rich.text import Text
-from localization.i18n import markup_hotkey, get_direction
+from localization.i18n import markup_hotkey, get_hotkey, get_direction
 
 def to_snake_case(name: str) -> str:
     name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
@@ -52,6 +52,15 @@ class Menu(Container):
             self.close()
             if self.parent_menu:
                 self.parent_menu.focus()
+        elif event.is_printable:
+            # TODO: alt+hotkey for top level menus, globally.
+            # This is pretty useless when you have to click a menu first.
+            for item in self.items:
+                if isinstance(item, MenuItem) and item.hotkey and event.character:
+                    if item.hotkey.lower() == event.character.lower():
+                        item.press()
+                        break
+
     
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked or activated with the keyboard."""
@@ -184,6 +193,7 @@ class MenuItem(Button):
     ) -> None:
         """Initialize a menu item."""
         super().__init__(markup_hotkey(name), **kwargs)
+        self.hotkey: str|None = get_hotkey(name)
         self.disabled = grayed
         self.action = action
         self.submenu = submenu
@@ -203,6 +213,7 @@ class Separator(Static):
     def __init__(self, **kwargs: Any) -> None:
         """Initialize a separator."""
         super().__init__(mid_line, **kwargs)
+        self.hotkey = None
         # self.disabled = True # This breaks scroll wheel over the separator, as of Textual 0.20.1
         self.disabled = False
         self.action = None
