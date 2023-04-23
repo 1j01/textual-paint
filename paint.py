@@ -1065,6 +1065,7 @@ class PaintApp(App[None]):
         ("ctrl+c", "exit", _("Quit")),
         ("ctrl+s", "save", _("Save")),
         ("ctrl+shift+s", "save_as", _("Save As")),
+        # ("ctrl+p", "print", _("Print")),
         ("ctrl+o", "open", _("Open")),
         ("ctrl+n", "new", _("New")),
         # ("ctrl+shift+n", "clear_image", _("Clear Image")),
@@ -1076,8 +1077,18 @@ class PaintApp(App[None]):
         ("shift+ctrl+z", "redo", _("Repeat")),
         ("ctrl+y", "redo", _("Repeat")),
         ("f4", "redo", _("Repeat")),
+        # ("ctrl+x", "cut", _("Cut")),
+        # ("ctrl+c", "copy", _("Copy")),
+        # ("ctrl+v", "paste", _("Paste")),
+        # ("ctrl+g", "toggle_grid", _("Show Grid")),
+        # ("ctrl+f", "view_bitmap", _("View Bitmap")),
+        # ("ctrl+r", "flip_rotate", _("Flip/Rotate")),
+        # ("ctrl+w", "stretch_skew", _("Stretch/Skew")),
+        # ("ctrl+i", "invert_colors", _("Invert Colors")),
+        # ("ctrl+e", "attributes", _("Attributes")),
         # TODO: don't delete textbox with delete key
         ("delete", "clear_selection", _("Clear Selection")),
+        ("ctrl+a", "select_all", _("Select All")),
         ("ctrl+pageup", "normal_size", _("Normal Size")),
         ("ctrl+pagedown", "large_size", _("Large Size")),
         # action_toggle_dark is built in to App
@@ -1581,7 +1592,10 @@ class PaintApp(App[None]):
     def action_paste(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_select_all(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.meld_selection()
+        self.image.selection = Selection(Region(0, 0, self.image.width, self.image.height))
+        self.canvas.refresh()
+        self.selected_tool = Tool.select
     def action_copy_to(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_paste_from(self) -> None:
@@ -1720,7 +1734,7 @@ class PaintApp(App[None]):
                     MenuItem(_("&Copy\tCtrl+C"), self.action_copy, 57634, grayed=True),
                     MenuItem(_("&Paste\tCtrl+V"), self.action_paste, 57637, grayed=True),
                     MenuItem(_("C&lear Selection\tDel"), self.action_clear_selection, 57632),
-                    MenuItem(_("Select &All\tCtrl+A"), self.action_select_all, 57642, grayed=True),
+                    MenuItem(_("Select &All\tCtrl+A"), self.action_select_all, 57642),
                     Separator(),
                     MenuItem(_("C&opy To..."), self.action_copy_to, 37663, grayed=True),
                     MenuItem(_("Paste &From..."), self.action_paste_from, 37664, grayed=True),

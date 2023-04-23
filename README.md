@@ -106,6 +106,7 @@ The rest match MS Paint's keyboard shortcuts:
 - <kbd>Ctrl</kbd>+<kbd>Z</kbd>: Undo
 - <kbd>Ctrl</kbd>+<kbd>Y</kbd>: Redo
 - <kbd>F4</kbd>: Redo
+- <kbd>Ctrl</kbd>+<kbd>A</kbd>: Select All
 - <kbd>Ctrl</kbd>+<kbd>PageUp</kbd>: Large Size
 - <kbd>Ctrl</kbd>+<kbd>PageDown</kbd>: Normal Size
 
