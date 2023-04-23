@@ -24,6 +24,7 @@ from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import Button, Static, Input, Tree, Header
 from textual.widgets._directory_tree import DirEntry
+from textual.binding import Binding
 from textual.color import Color
 from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon
@@ -1074,39 +1075,39 @@ class PaintApp(App[None]):
         # There is a built-in "quit" action, but it will quit without asking to save.
         # It's also bound to Ctrl+C by default, so for now I'll rebind it,
         # but eventually Ctrl+C will become Edit > Copy.
-        ("ctrl+q,ctrl+c", "exit", _("Quit")),
-        ("ctrl+s", "save", _("Save")),
-        ("ctrl+shift+s", "save_as", _("Save As")),
-        ("ctrl+p", "print", _("Print")),
-        ("ctrl+o", "open", _("Open")),
-        ("ctrl+n", "new", _("New")),
-        ("ctrl+shift+n", "clear_image", _("Clear Image")),
-        ("ctrl+t", "toggle_tools_box", _("Toggle Tools Box")),
-        ("ctrl+w", "toggle_colors_box", _("Toggle Colors Box")),
-        ("ctrl+z", "undo", _("Undo")),
+        Binding("ctrl+q,ctrl+c", "exit", _("Quit")),
+        Binding("ctrl+s", "save", _("Save")),
+        Binding("ctrl+shift+s", "save_as", _("Save As")),
+        Binding("ctrl+p", "print", _("Print")),
+        Binding("ctrl+o", "open", _("Open")),
+        Binding("ctrl+n", "new", _("New")),
+        Binding("ctrl+shift+n", "clear_image", _("Clear Image")),
+        Binding("ctrl+t", "toggle_tools_box", _("Toggle Tools Box")),
+        Binding("ctrl+w", "toggle_colors_box", _("Toggle Colors Box")),
+        Binding("ctrl+z", "undo", _("Undo")),
         # Ctrl+Shift+<key> doesn't seem to work on Ubuntu or VS Code terminal,
         # it ignores the Shift.
-        ("ctrl+shift+z,shift+ctrl+z,ctrl+y,f4", "redo", _("Repeat")),
-        ("ctrl+x", "cut", _("Cut")),
-        # ("ctrl+c", "copy", _("Copy")), # Quit, for now
-        ("ctrl+v", "paste", _("Paste")),
-        ("ctrl+g", "toggle_grid", _("Show Grid")),
-        ("ctrl+f", "view_bitmap", _("View Bitmap")),
-        ("ctrl+r", "flip_rotate", _("Flip/Rotate")),
-        ("ctrl+w", "stretch_skew", _("Stretch/Skew")),
-        ("ctrl+i", "invert_colors", _("Invert Colors")),
-        ("ctrl+e", "attributes", _("Attributes")),
+        Binding("ctrl+shift+z,shift+ctrl+z,ctrl+y,f4", "redo", _("Repeat")),
+        Binding("ctrl+x", "cut", _("Cut")),
+        # Binding("ctrl+c", "copy", _("Copy")), # Quit, for now
+        Binding("ctrl+v", "paste", _("Paste")),
+        Binding("ctrl+g", "toggle_grid", _("Show Grid")),
+        Binding("ctrl+f", "view_bitmap", _("View Bitmap")),
+        Binding("ctrl+r", "flip_rotate", _("Flip/Rotate")),
+        Binding("ctrl+w", "stretch_skew", _("Stretch/Skew")),
+        Binding("ctrl+i", "invert_colors", _("Invert Colors")),
+        Binding("ctrl+e", "attributes", _("Attributes")),
         # TODO: don't delete textbox with delete key
-        ("delete", "clear_selection", _("Clear Selection")),
-        ("ctrl+a", "select_all", _("Select All")),
-        ("ctrl+pageup", "normal_size", _("Normal Size")),
-        ("ctrl+pagedown", "large_size", _("Large Size")),
+        Binding("delete", "clear_selection", _("Clear Selection")),
+        Binding("ctrl+a", "select_all", _("Select All")),
+        Binding("ctrl+pageup", "normal_size", _("Normal Size")),
+        Binding("ctrl+pagedown", "large_size", _("Large Size")),
         # action_toggle_dark is built in to App
-        ("ctrl+d", "toggle_dark", _("Toggle Dark Mode")),
+        Binding("ctrl+d", "toggle_dark", _("Toggle Dark Mode")),
         # dev helper
         # f5 would be more traditional, but I need something not bound to anything
         # in the context of the terminal in VS Code, and not used by this app, like Ctrl+R, and detectable in the terminal.
-        ("f2", "reload", _("Reload")),
+        Binding("f2", "reload", _("Reload")),
     ]
 
     show_tools_box = var(True)
