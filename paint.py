@@ -1088,7 +1088,7 @@ class PaintApp(App[None]):
         # it ignores the Shift.
         ("ctrl+shift+z,shift+ctrl+z,ctrl+y,f4", "redo", _("Repeat")),
         ("ctrl+x", "cut", _("Cut")),
-        ("ctrl+c", "copy", _("Copy")),
+        # ("ctrl+c", "copy", _("Copy")), # Quit, for now
         ("ctrl+v", "paste", _("Paste")),
         ("ctrl+g", "toggle_grid", _("Show Grid")),
         ("ctrl+f", "view_bitmap", _("View Bitmap")),
