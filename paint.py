@@ -21,6 +21,7 @@ from textual.geometry import Offset, Region, Size
 from textual.css._style_properties import BorderDefinition
 from textual.reactive import var, reactive
 from textual.strip import Strip
+from textual.dom import DOMNode
 from textual.widget import Widget
 from textual.widgets import Button, Static, Input, Tree, Header
 from textual.widgets._directory_tree import DirEntry
@@ -2423,10 +2424,26 @@ class PaintApp(App[None]):
         else:
             self.directory_tree_selected_path = None
 
+    def within_menus(self, node: DOMNode) -> bool:
+        """Returns True if the node is within the menus."""
+        # root node will never be a menu, so it doesn't need to be `while node:`
+        # and this makes the type checker happy, since parent can be None
+        while node.parent:
+            if isinstance(node, Menu):
+                return True
+            node = node.parent
+        return False
+
     def on_mouse_down(self, event: events.MouseDown) -> None:
         """Called when the mouse button gets pressed."""
 
         leaf_widget, _ = self.get_widget_at(*event.screen_offset)
+
+        # Close menus if clicking outside the menus
+        if not self.within_menus(leaf_widget):
+            self.query_one(MenuBar).close()
+            return
+
         # Deselect if clicking outside the canvas
         if leaf_widget is self.editing_area:
             self.meld_selection()
