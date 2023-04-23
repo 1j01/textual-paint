@@ -23,6 +23,7 @@ from textual.reactive import var, reactive
 from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import Button, Static, Input, Tree, Header
+from textual.widgets._directory_tree import DirEntry
 from textual.color import Color
 from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon
@@ -2302,16 +2303,18 @@ class PaintApp(App[None]):
         # else:
         self.selected_bg_color = event.color
 
-    def on_tree_node_highlighted(self, event: Tree.NodeHighlighted) -> None:
+    def on_tree_node_highlighted(self, event: Tree.NodeHighlighted[DirEntry]) -> None:
         """
         Called when a file/folder is selected in the DirectoryTree.
         
         This message comes from Tree.
         DirectoryTree gives FileSelected but only for files.
         """
+        assert event.node.data
         if event.node.data.is_dir:
             self.directory_tree_selected_path = event.node.data.path
         elif event.node.parent:
+            assert event.node.parent.data
             self.directory_tree_selected_path = event.node.parent.data.path
             name = os.path.basename(event.node.data.path)
             if not self.expanding_directory_tree:
