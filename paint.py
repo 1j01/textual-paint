@@ -6,7 +6,7 @@ import argparse
 import asyncio
 from enum import Enum
 from random import randint, random
-from typing import List, Optional, Callable, Iterator, Sequence, Tuple, TypeAlias
+from typing import List, Optional, Callable, Iterator, Tuple
 from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
 from watchdog.observers import Observer
 import stransi
@@ -17,8 +17,7 @@ from textual.message import Message
 from textual.app import App, ComposeResult
 from textual.containers import Container
 from textual.geometry import Offset, Region, Size
-from textual.css.query import NoMatches
-from textual.css.types import EdgeType
+from textual.css._style_properties import BorderDefinition
 from textual.reactive import var, reactive
 from textual.strip import Strip
 from textual.widget import Widget
@@ -29,7 +28,6 @@ from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon
 from localization.i18n import get as _, load_language
 from enhanced_directory_tree import EnhancedDirectoryTree
-
 
 observer = None
 
@@ -2339,9 +2337,6 @@ class PaintApp(App[None]):
                 element.styles.background = original_color
                 element.styles.border = original_border
                 element.border_title = original_border_title
-        BorderDefinition: TypeAlias = (
-            "Sequence[tuple[EdgeType, str | Color] | None] | tuple[EdgeType, str | Color]"
-        )
         self.debug_highlight: List[Tuple[Widget, Color, BorderDefinition, Optional[str]]] = []
         leaf_widget, _ = self.get_widget_at(*event.screen_offset)
         if leaf_widget and leaf_widget is not self.screen:
