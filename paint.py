@@ -1075,7 +1075,6 @@ class PaintApp(App[None]):
         # It's also bound to Ctrl+C by default, so for now I'll rebind it,
         # but eventually Ctrl+C will become Edit > Copy.
         ("ctrl+q", "exit", _("Quit")),
-        ("meta+q", "exit", _("Quit")),
         ("ctrl+c", "exit", _("Quit")),
         ("ctrl+s", "save", _("Save")),
         ("ctrl+shift+s", "save_as", _("Save As")),
