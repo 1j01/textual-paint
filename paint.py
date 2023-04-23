@@ -1074,8 +1074,7 @@ class PaintApp(App[None]):
         # There is a built-in "quit" action, but it will quit without asking to save.
         # It's also bound to Ctrl+C by default, so for now I'll rebind it,
         # but eventually Ctrl+C will become Edit > Copy.
-        ("ctrl+q", "exit", _("Quit")),
-        ("ctrl+c", "exit", _("Quit")),
+        ("ctrl+q,ctrl+c", "exit", _("Quit")),
         ("ctrl+s", "save", _("Save")),
         ("ctrl+shift+s", "save_as", _("Save As")),
         ("ctrl+p", "print", _("Print")),
@@ -1085,11 +1084,9 @@ class PaintApp(App[None]):
         ("ctrl+t", "toggle_tools_box", _("Toggle Tools Box")),
         ("ctrl+w", "toggle_colors_box", _("Toggle Colors Box")),
         ("ctrl+z", "undo", _("Undo")),
-        # Ctrl+Shift+Z doesn't seem to work on Ubuntu or VS Code terminal
-        ("ctrl+shift+z", "redo", _("Repeat")),
-        ("shift+ctrl+z", "redo", _("Repeat")),
-        ("ctrl+y", "redo", _("Repeat")),
-        ("f4", "redo", _("Repeat")),
+        # Ctrl+Shift+<key> doesn't seem to work on Ubuntu or VS Code terminal,
+        # it ignores the Shift.
+        ("ctrl+shift+z,shift+ctrl+z,ctrl+y,f4", "redo", _("Repeat")),
         ("ctrl+x", "cut", _("Cut")),
         ("ctrl+c", "copy", _("Copy")),
         ("ctrl+v", "paste", _("Paste")),
