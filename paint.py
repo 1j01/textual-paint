@@ -2063,6 +2063,11 @@ class PaintApp(App[None]):
                     self.selection_drag_offset.x + event.mouse_move_event.x,
                     self.selection_drag_offset.y + event.mouse_move_event.y,
                 )
+                # constrain to have at least one cell in the bounds of the document
+                offset = (
+                    max(1-sel.region.width, min(self.image.width - 1, offset[0])),
+                    max(1-sel.region.height, min(self.image.height - 1, offset[1])),
+                )
                 old_region = sel.region
                 sel.region = Region.from_offset(offset, sel.region.size)
                 combined_region = old_region.union(sel.region)
