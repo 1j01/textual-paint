@@ -372,22 +372,17 @@ class ColorsBox(Container):
                 self.color_by_button[button] = color
                 yield button
 
+    last_click_time = 0
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked."""
 
         if "color_button" in event.button.classes:
             self.post_message(self.ColorSelected(self.color_by_button[event.button]))
-
-    last_click_time = 0
-    def on_click(self, event: events.Click) -> None:
-        """Detect double click and open Edit Colors dialog.
-        
-        TODO: Detect it on the buttons, not the whole widget excluding the buttons!
-        """
-        if event.time - self.last_click_time < 0.8:
-            assert isinstance(self.app, PaintApp)
-            self.app.action_edit_colors()
-        self.last_click_time = event.time
+            # Detect double click and open Edit Colors dialog.
+            if event.time - self.last_click_time < 0.8:
+                assert isinstance(self.app, PaintApp)
+                self.app.action_edit_colors()
+            self.last_click_time = event.time
 
 class Selection:
     """
