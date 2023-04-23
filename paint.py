@@ -372,6 +372,13 @@ class ColorsBox(Container):
                 self.color_by_button[button] = color
                 yield button
 
+    def update_palette(self) -> None: # , palette: list[str]) -> None:
+        """Update the palette with new colors."""
+        for button, color in zip(self.query(".color_button").nodes, palette):
+            assert isinstance(button, Button)
+            button.styles.background = color
+            self.color_by_button[button] = color
+
     last_click_time = 0
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked."""
@@ -381,7 +388,7 @@ class ColorsBox(Container):
             # Detect double click and open Edit Colors dialog.
             if event.time - self.last_click_time < 0.8:
                 assert isinstance(self.app, PaintApp)
-                self.app.action_edit_colors()
+                self.app.action_edit_colors(self.query(".color_button").nodes.index(event.button))
             self.last_click_time = event.time
 
 class Selection:
@@ -1578,11 +1585,16 @@ class PaintApp(App[None]):
         )
         self.mount(window)
 
-    def action_edit_colors(self) -> None:
+    def action_edit_colors(self, color_palette_index: int|None = None) -> None:
         """Show dialog to edit colors."""
         self.close_windows("#edit_colors_dialog")
         def handle_selected_color(color: str) -> None:
             self.selected_bg_color = color
+            if color_palette_index is not None:
+                palette[color_palette_index] = color
+                # TODO: Update the palette in a reactive way.
+                # I'll need to move the palette state to the app.
+                self.query_one(ColorsBox).update_palette()
             window.close()
         window = EditColorsDialogWindow(
             id="edit_colors_dialog",
