@@ -314,7 +314,7 @@ class ToolsBox(Container):
         if "tool_button" in event.button.classes:
             self.post_message(self.ToolSelected(self.tool_by_button[event.button]))
 
-class CharInput(Input):
+class CharInput(Input, inherit_bindings=False):
     """Widget for entering a single character."""
     
     class CharSelected(Message):
