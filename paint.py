@@ -2191,6 +2191,7 @@ class PaintApp(App[None]):
                 min_y = min(p.y for p in self.tool_points)
                 max_y = max(p.y for p in self.tool_points)
                 select_region = Region(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
+                select_region = select_region.intersection(Region(0, 0, self.image.width, self.image.height))
             else:
                 select_region = self.get_select_region(self.mouse_at_start, event.mouse_up_event.offset)
             if self.image.selection:
