@@ -130,11 +130,23 @@ class Menu(Container):
 
         # Find the widest label
         max_width = 0
+        # any_submenus = False
         for item in self.items:
             if isinstance(item, MenuItem):
                 assert isinstance(item.label, Text)
                 if len(item.label.plain) > max_width:
                     max_width = len(item.label.plain)
+                if item.submenu:
+                    # any_submenus = True
+                    # Add a right pointing triangle to the label
+                    # TODO: Make this work generally. Right now I've just spaced it for View > Zoom in English.
+                    # Also, all this layout stuff should ideally use the width, not the length, of text.
+                    # And it's stupid that this code applies multiple times to the same menu,
+                    # and has to be idempotent.
+                    # Basically I should rewrite this whole thing.
+                    # I'd like to try using the built-in ListView widget for menus.
+                    if not item.label.plain.endswith("▶"):
+                        item.label = item.label.markup + "\t        ▶"
         # Split on tab character and align the shortcuts
         for item in self.items:
             if isinstance(item, MenuItem):
