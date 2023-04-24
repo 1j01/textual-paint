@@ -1166,6 +1166,8 @@ class PaintApp(App[None]):
     # file modification tracking
     saved_undo_count = 0
 
+    # for Undo/Redo, to interrupt the current action
+    mouse_gesture_cancelled = False
     # for shape tools that draw between the mouse down and up points
     # (Line, Rectangle, Ellipse, Rounded Rectangle),
     # Select tool (similarly), and Polygon (to detect double-click)
@@ -1359,8 +1361,19 @@ class PaintApp(App[None]):
             affected_region = affected_region.union(self.stamp_brush(x, y, affected_region))
         return affected_region
 
-    def action_undo(self) -> None:
+    def stop_action_in_progress(self) -> None:
+        """Finalizes the selection, or cancels other tools."""
+        self.cancel_preview()
         self.meld_selection()
+        self.tool_points = []
+        self.mouse_gesture_cancelled = True
+        self.get_widget_by_id("status_coords", Static).update("")
+        self.get_widget_by_id("status_dimensions", Static).update("")
+        if self.selected_tool in [Tool.pick_color, Tool.magnifier]:
+            self.selected_tool = self.return_to_tool
+
+    def action_undo(self) -> None:
+        self.stop_action_in_progress()
         if len(self.undos) > 0:
             self.cancel_preview()
             action = self.undos.pop()
@@ -1370,7 +1383,7 @@ class PaintApp(App[None]):
             self.canvas.refresh(layout=True)
 
     def action_redo(self) -> None:
-        self.meld_selection()
+        self.stop_action_in_progress()
         if len(self.redos) > 0:
             self.cancel_preview()
             action = self.redos.pop()
@@ -1948,6 +1961,8 @@ class PaintApp(App[None]):
         event.stop()
         self.cancel_preview()
 
+        self.mouse_gesture_cancelled = False
+
         if self.selected_tool == Tool.pick_color:
             self.pick_color(event.mouse_down_event.x, event.mouse_down_event.y)
             return
@@ -2169,6 +2184,9 @@ class PaintApp(App[None]):
         event.stop()
         self.cancel_preview()
 
+        if self.mouse_gesture_cancelled:
+            return
+
         if self.selected_tool != Tool.select:
             if self.selected_tool in [Tool.line, Tool.rectangle, Tool.ellipse, Tool.rounded_rectangle]: # , Tool.curve
                 # Display is allowed to go negative, unlike for the Select tool, handled below.
@@ -2326,6 +2344,9 @@ class PaintApp(App[None]):
         self.cancel_preview()
 
         self.get_widget_by_id("status_dimensions", Static).update("")
+
+        if self.mouse_gesture_cancelled:
+            return
 
         if self.selection_drag_offset:
             # Done dragging selection
