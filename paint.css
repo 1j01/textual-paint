@@ -312,11 +312,15 @@ MessageBox .window_content Horizontal {
     width: 20;
     height: 100%;
     content-align: left middle;
-    border: outer $panel-darken-2;
-    border-right: outer $panel-darken-1;
+    border: none;
+    border-top: outer $panel-darken-2;
     border-bottom: outer $panel-lighten-1;
-    border-left: none;
+    border-left: outer $panel-darken-1;
 }
 #status_bar > #status_text {
     width: 1fr;
+}
+#status_bar > #status_dimensions {
+    /* this is the last division */
+    border-right: outer $panel-darken-1;
 }
