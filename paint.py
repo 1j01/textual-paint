@@ -329,11 +329,11 @@ class CharInput(Input, inherit_bindings=False):
         """Limit the value to a single character."""
         return value[-1] if value else " "
     
-    def watch_value(self, value: str) -> None:
+    async def watch_value(self, value: str) -> None:
         """Called when value changes."""
         self.post_message(self.CharSelected(value))
 
-    def validate_cursor_position(self, position: int) -> int:
+    def validate_cursor_position(self, cursor_position: int) -> int:
         """Force the cursor position to 0 so that it's over the character."""
         return 0
     
