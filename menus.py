@@ -6,7 +6,7 @@ from textual.reactive import var
 from textual.widgets import Button, Static
 from textual.message import Message
 from rich.text import Text
-from localization.i18n import markup_hotkey, get_hotkey, get_direction
+from localization.i18n import markup_hotkey, remove_hotkey, get_hotkey, get_direction
 
 def to_snake_case(name: str) -> str:
     name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
@@ -61,8 +61,9 @@ class Menu(Container):
             if self.parent_menu:
                 self.parent_menu.focus()
         elif event.is_printable:
-            # TODO: alt+hotkey for top level menus, globally.
-            # This is pretty useless when you have to click a menu first.
+            # There doesn't seem to be a way to detect if alt is pressed
+            if isinstance(self, MenuBar): #and not event.alt:
+                return
             for item in self.items:
                 if isinstance(item, MenuItem) and item.hotkey and event.character:
                     if item.hotkey.lower() == event.character.lower():

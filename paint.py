@@ -30,7 +30,7 @@ from textual.color import Color
 from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon
 from edit_colors import EditColorsDialogWindow
-from localization.i18n import get as _, load_language
+from localization.i18n import get as _, load_language, remove_hotkey
 from enhanced_directory_tree import EnhancedDirectoryTree
 
 observer = None
@@ -1786,8 +1786,9 @@ class PaintApp(App[None]):
         """Add our widgets."""
         yield Header()
         with Container(id="paint"):
+            # I'm not supporting hotkeys for the top level menus, because I can't detect Alt.
             yield MenuBar([
-                MenuItem(_("&File"), submenu=Menu([
+                MenuItem(remove_hotkey(_("&File")), submenu=Menu([
                     MenuItem(_("&New\tCtrl+N"), self.action_new, 57600, description=_("Creates a new document.")),
                     MenuItem(_("&Open...\tCtrl+O"), self.action_open, 57601, description=_("Opens an existing document.")),
                     MenuItem(_("&Save\tCtrl+S"), self.action_save, 57603, description=_("Saves the active document.")),
@@ -1807,7 +1808,7 @@ class PaintApp(App[None]):
                     # MenuItem(_("E&xit\tAlt+F4"), self.action_exit, 57665, description=_("Quits Paint.")),
                     MenuItem(_("E&xit\tCtrl+Q"), self.action_exit, 57665, description=_("Quits Paint.")),
                 ])),
-                MenuItem(_("&Edit"), submenu=Menu([
+                MenuItem(remove_hotkey(_("&Edit")), submenu=Menu([
                     MenuItem(_("&Undo\tCtrl+Z"), self.action_undo, 57643, description=_("Undoes the last action.")),
                     MenuItem(_("&Repeat\tF4"), self.action_redo, 57644, description=_("Redoes the previously undone action.")),
                     Separator(),
@@ -1820,7 +1821,7 @@ class PaintApp(App[None]):
                     MenuItem(_("C&opy To..."), self.action_copy_to, 37663, grayed=True, description=_("Copies the selection to a file.")),
                     MenuItem(_("Paste &From..."), self.action_paste_from, 37664, grayed=True, description=_("Pastes a file into the selection.")),
                 ])),
-                MenuItem(_("&View"), submenu=Menu([
+                MenuItem(remove_hotkey(_("&View")), submenu=Menu([
                     MenuItem(_("&Tool Box\tCtrl+T"), self.action_toggle_tools_box, 59415, description=_("Shows or hides the tool box.")),
                     MenuItem(_("&Color Box\tCtrl+L"), self.action_toggle_colors_box, 59416, description=_("Shows or hides the color box.")),
                     MenuItem(_("&Status Bar"), self.action_toggle_status_bar, 59393, description=_("Shows or hides the status bar.")),
@@ -1836,7 +1837,7 @@ class PaintApp(App[None]):
                     ])),
                     MenuItem(_("&View Bitmap\tCtrl+F"), self.action_view_bitmap, 37673, grayed=True, description=_("Displays the entire picture.")),
                 ])),
-                MenuItem(_("&Image"), submenu=Menu([
+                MenuItem(remove_hotkey(_("&Image")), submenu=Menu([
                     MenuItem(_("&Flip/Rotate...\tCtrl+R"), self.action_flip_rotate, 37680, grayed=True, description=_("Flips or rotates the picture or a selection.")),
                     MenuItem(_("&Stretch/Skew...\tCtrl+W"), self.action_stretch_skew, 37681, grayed=True, description=_("Stretches or skews the picture or a selection.")),
                     MenuItem(_("&Invert Colors\tCtrl+I"), self.action_invert_colors, 37682, grayed=True, description=_("Inverts the colors of the picture or a selection.")),
@@ -1844,10 +1845,10 @@ class PaintApp(App[None]):
                     MenuItem(_("&Clear Image\tCtrl+Shft+N"), self.action_clear_image, 37684, grayed=True, description=_("Clears the picture or selection.")),
                     MenuItem(_("&Draw Opaque"), self.action_draw_opaque, 6868, grayed=True, description=_("Makes the current selection either opaque or transparent.")),
                 ])),
-                MenuItem(_("&Colors"), submenu=Menu([
+                MenuItem(remove_hotkey(_("&Colors")), submenu=Menu([
                     MenuItem(_("&Edit Colors..."), self.action_edit_colors, 6869, description=_("Creates a new color.")),
                 ])),
-                MenuItem(_("&Help"), submenu=Menu([
+                MenuItem(remove_hotkey(_("&Help")), submenu=Menu([
                     MenuItem(_("&Help Topics"), self.action_help_topics, 57670, description=_("Displays Help for the current task or command.")),
                     Separator(),
                     MenuItem(_("&About Paint"), self.action_about_paint, 57664, description=_("Displays program information, version number, and copyright.")),
