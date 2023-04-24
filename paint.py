@@ -1258,9 +1258,25 @@ class PaintApp(App[None]):
         if self.selected_tool == Tool.airbrush:
             if random() < 0.7:
                 return
-        self.image.ch[y][x] = char
-        self.image.bg[y][x] = bg_color
-        self.image.fg[y][x] = fg_color
+        if self.selected_tool == Tool.free_form_select:
+            # Invert the underlying colors
+            style = Style.parse(self.image.fg[y][x]+" on "+self.image.bg[y][x])
+            assert style.color is not None
+            assert style.bgcolor is not None
+            # Why do I need these extra asserts here and not in the other place I do color inversion,
+            # using pyright, even though hovering over the other place shows that it also considers
+            # triplet to be ColorTriplet|None?
+            assert style.color.triplet is not None
+            assert style.bgcolor.triplet is not None
+            # self.image.bg[y][x] = f"rgb({255 - style.bgcolor.triplet.red},{255 - style.bgcolor.triplet.green},{255 - style.bgcolor.triplet.blue})"
+            # self.image.fg[y][x] = f"rgb({255 - style.color.triplet.red},{255 - style.color.triplet.green},{255 - style.color.triplet.blue})"
+            # Use hex instead, for less memory usage, theoretically
+            self.image.bg[y][x] = f"#{(255 - style.bgcolor.triplet.red):02x}{(255 - style.bgcolor.triplet.green):02x}{(255 - style.bgcolor.triplet.blue):02x}"
+            self.image.fg[y][x] = f"#{(255 - style.color.triplet.red):02x}{(255 - style.color.triplet.green):02x}{(255 - style.color.triplet.blue):02x}"
+        else:
+            self.image.ch[y][x] = char
+            self.image.bg[y][x] = bg_color
+            self.image.fg[y][x] = fg_color
     
     def erase_region(self, region: Region, mask: Optional[list[list[bool]]] = None) -> None:
         # Time to go undercover as an eraser. 🥸
@@ -1273,6 +1289,19 @@ class PaintApp(App[None]):
                 if mask is None or mask[y][x]:
                     self.stamp_char(x + region.x, y + region.y)
         self.selected_tool = original_tool
+
+    def draw_current_free_form_select_polyline(self) -> Region:
+        # TODO: DRY with draw_current_curve/draw_current_polygon/draw_current_polyline
+        # Also (although this may be counter to DRYING (Deduplicating Repetitive Yet Individually Nimble Generators)),
+        # could optimize to not use stamp_brush, since it's always a single character here.
+        gen = polyline_walk(self.tool_points)
+        affected_region = Region()
+        already_inverted: set[tuple[int, int]] = set()
+        for x, y in gen:
+            if (x, y) not in already_inverted:
+                affected_region = affected_region.union(self.stamp_brush(x, y, affected_region))
+                already_inverted.add((x, y))
+        return affected_region
 
     def draw_current_polyline(self) -> Region:
         # TODO: DRY with draw_current_curve/draw_current_polygon
@@ -2173,8 +2202,7 @@ class PaintApp(App[None]):
                 self.canvas.refresh_scaled_region(combined_region)
             elif self.selected_tool == Tool.free_form_select:
                 self.tool_points.append(Offset(event.mouse_move_event.x, event.mouse_move_event.y))
-                # polyline until finished, TODO: invert background, don't use selected color
-                self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True)
+                self.make_preview(self.draw_current_free_form_select_polyline, show_dimensions_in_status_bar=True)
             else:
                 self.canvas.select_preview_region = self.get_select_region(self.mouse_at_start, event.mouse_move_event.offset)
                 self.canvas.refresh_scaled_region(self.canvas.select_preview_region)
