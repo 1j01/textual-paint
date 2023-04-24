@@ -1115,6 +1115,7 @@ class PaintApp(App[None]):
 
     show_tools_box = var(True)
     show_colors_box = var(True)
+    show_status_bar = var(True)
     selected_tool = var(Tool.pencil)
     return_to_tool = var(Tool.pencil)
     selected_bg_color = var(palette[0])
@@ -1174,6 +1175,10 @@ class PaintApp(App[None]):
     def watch_show_colors_box(self, show_colors_box: bool) -> None:
         """Called when show_colors_box changes."""
         self.query_one("#colors_box", ColorsBox).display = show_colors_box
+
+    def watch_show_status_bar(self, show_status_bar: bool) -> None:
+        """Called when show_status_bar changes."""
+        self.query_one("#status_bar").display = show_status_bar
 
     def watch_selected_tool(self, old_selected_tool: Tool, selected_tool: Tool) -> None:
         """Called when selected_tool changes."""
@@ -1634,8 +1639,6 @@ class PaintApp(App[None]):
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_paste_from(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
-    def action_toggle_status_bar(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_text_toolbar(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_normal_size(self) -> None:
@@ -1774,7 +1777,7 @@ class PaintApp(App[None]):
                 MenuItem(_("&View"), submenu=Menu([
                     MenuItem(_("&Tool Box\tCtrl+T"), self.action_toggle_tools_box, 59415),
                     MenuItem(_("&Color Box\tCtrl+L"), self.action_toggle_colors_box, 59416),
-                    MenuItem(_("&Status Bar"), self.action_toggle_status_bar, 59393, grayed=True),
+                    MenuItem(_("&Status Bar"), self.action_toggle_status_bar, 59393),
                     MenuItem(_("T&ext Toolbar"), self.action_text_toolbar, 37678, grayed=True),
                     Separator(),
                     MenuItem(_("&Zoom"), submenu=Menu([
@@ -1813,6 +1816,12 @@ class PaintApp(App[None]):
                 id="main_horizontal_split",
             )
             yield ColorsBox(id="colors_box")
+            yield Container(
+                Static(id="status_text"),
+                Static(id="status_coords"),
+                Static(id="status_dimensions"),
+                id="status_bar",
+            )
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""
@@ -2391,6 +2400,9 @@ class PaintApp(App[None]):
 
     def action_toggle_colors_box(self) -> None:
         self.show_colors_box = not self.show_colors_box
+
+    def action_toggle_status_bar(self) -> None:
+        self.show_status_bar = not self.show_status_bar
 
     def on_tools_box_tool_selected(self, event: ToolsBox.ToolSelected) -> None:
         """Called when a tool is selected in the palette."""

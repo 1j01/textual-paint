@@ -302,3 +302,21 @@ MessageBox .main_content {
 MessageBox .window_content Horizontal {
     height: auto;
 }
+
+#status_bar {
+    background: $panel;
+    height: 3;
+    layout: horizontal;
+}
+#status_bar > Static {
+    width: 20;
+    height: 100%;
+    content-align: left middle;
+    border: outer $panel-darken-2;
+    border-right: outer $panel-darken-1;
+    border-bottom: outer $panel-lighten-1;
+    border-left: none;
+}
+#status_bar > #status_text {
+    width: 1fr;
+}
