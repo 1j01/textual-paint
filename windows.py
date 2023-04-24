@@ -328,12 +328,24 @@ class CharacterSelectorDialogWindow(DialogWindow):
 # VS Code's terminal seems unsure of the width of these characters (like it's rendering 2 wide but advancing by 1), and has gaps/seams.
 # Ubuntu's terminal looks better, and the graphics have less gaps, but the overall shape is worse.
 # I guess a lot of this comes down to the font as well.
+# get_warning_icon = lambda: Static("""
+#     [#000000]🭋[#ffff00 on #000000]🭯[/]🭀[/]
+#    [#000000]🭋[#ffff00 on #000000]🭅█🭐[/]🭀[/]
+#   [#000000]🭋[#ffff00 on #000000]🭅[#000000 on #ffff00] ▼ [/]🭐[/]🭀[/]
+#  [#000000]🭋[#ffff00 on #000000]🭅[#000000 on #ffff00]  ●  [/]🭐[/]🭀[/]
+# [#000000]🭋[#ffff00 on #000000]🭅███████🭐[/]🭀[/]
+# [#000000]🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃[/]
+# """, classes="warning_icon message_box_icon")
+# Unicode solid version 4:
+# This now looks great in Ubuntu's terminal.
+# In VS Code's terminal, all the gaps make it look like it's under frosted glass,
+# but it's acceptable.
 get_warning_icon = lambda: Static("""
-    [#000000]🭋[#ffff00 on #000000]🭯[/]🭀[/]
-   [#000000]🭋[#ffff00 on #000000]🭅█🭐[/]🭀[/]
-  [#000000]🭋[#ffff00 on #000000]🭅[#000000 on #ffff00] ▼ [/]🭐[/]🭀[/]
- [#000000]🭋[#ffff00 on #000000]🭅[#000000 on #ffff00]  ●  [/]🭐[/]🭀[/]
-[#000000]🭋[#ffff00 on #000000]🭅███████🭐[/]🭀[/]
+    [#000000]◢[#ffff00 on #000000]🭯[/]◣[/]
+   [#000000]◢[#ffff00 on #000000]◢█◣[/]◣[/]
+  [#000000]◢[#ffff00 on #000000]◢[#000000 on #ffff00] ▼ [/]◣[/]◣[/]
+ [#000000]◢[#ffff00 on #000000]◢[#000000 on #ffff00]  ●  [/]◣[/]◣[/]
+[#000000]◢[#ffff00 on #000000]◢███████◣[/]◣[/]
 [#000000]🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃[/]
 """, classes="warning_icon message_box_icon")
 
