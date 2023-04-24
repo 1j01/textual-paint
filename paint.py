@@ -944,8 +944,6 @@ class Canvas(Widget):
         self.fix_mouse_event(event)
         event.x //= self.magnification
         event.y //= self.magnification
-        event.delta_x //= self.magnification
-        event.delta_y //= self.magnification
 
         if self.pointer_active:
             self.post_message(self.ToolUpdate(event))
@@ -1158,6 +1156,8 @@ class PaintApp(App[None]):
     # (Line, Rectangle, Ellipse, Rounded Rectangle),
     # Select tool (similarly), and Polygon (to detect double-click)
     mouse_at_start = Offset(0, 0)
+    # for brush tools (Pencil, Brush, Eraser, Airbrush)
+    mouse_previous = Offset(0, 0)
     # for Select tool, indicates that the selection is being moved
     # and defines the offset of the selection from the mouse
     selection_drag_offset = Offset(0, 0)
@@ -1912,6 +1912,7 @@ class PaintApp(App[None]):
             return
 
         self.mouse_at_start = Offset(event.mouse_down_event.x, event.mouse_down_event.y)
+        self.mouse_previous = self.mouse_at_start
 
         if self.selected_tool in [Tool.curve, Tool.polygon]:
             self.tool_points.append(Offset(event.mouse_down_event.x, event.mouse_down_event.y))
@@ -2213,7 +2214,7 @@ class PaintApp(App[None]):
             self.undos.append(action)
         
         if self.selected_tool in [Tool.pencil, Tool.brush, Tool.eraser, Tool.airbrush]:
-            for x, y in bresenham_walk(mm.x - mm.delta_x, mm.y - mm.delta_y, mm.x, mm.y):
+            for x, y in bresenham_walk(self.mouse_previous.x, self.mouse_previous.y, mm.x, mm.y):
                 affected_region = self.stamp_brush(x, y, affected_region)
         elif self.selected_tool == Tool.line:
             for x, y in bresenham_walk(self.mouse_at_start.x, self.mouse_at_start.y, mm.x, mm.y):
@@ -2271,6 +2272,8 @@ class PaintApp(App[None]):
             if replace_action:
                 affected_region = affected_region.union(old_action.region)
             self.canvas.refresh_scaled_region(affected_region)
+        
+        self.mouse_previous = mm.offset
 
     def on_canvas_tool_stop(self, event: Canvas.ToolStop) -> None:
         """Called when releasing the mouse button after drawing/dragging on the canvas."""
