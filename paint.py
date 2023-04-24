@@ -2212,7 +2212,7 @@ class PaintApp(App[None]):
             action = Action(self.selected_tool.get_name(), self.image, affected_region)
             self.undos.append(action)
         
-        if self.selected_tool == Tool.pencil or self.selected_tool == Tool.brush or self.selected_tool == Tool.eraser or self.selected_tool == Tool.airbrush:
+        if self.selected_tool in [Tool.pencil, Tool.brush, Tool.eraser, Tool.airbrush]:
             for x, y in bresenham_walk(mm.x - mm.delta_x, mm.y - mm.delta_y, mm.x, mm.y):
                 affected_region = self.stamp_brush(x, y, affected_region)
         elif self.selected_tool == Tool.line:
