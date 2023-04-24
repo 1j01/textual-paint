@@ -908,7 +908,7 @@ class Canvas(Widget):
         self.select_preview_region: Optional[Region] = None
 
     def on_mouse_down(self, event: events.MouseDown) -> None:
-        # self.fix_mouse_event(event) # not needed, pointer isn't captured yet.
+        self.fix_mouse_event(event) # not needed, pointer isn't captured yet.
         event.x //= self.magnification
         event.y //= self.magnification
 
@@ -921,10 +921,24 @@ class Canvas(Widget):
         # or while the mouse is up.
         # This seems like a bug.
         # I think it's due to coordinates being calculated differently during mouse capture.
-        if self.pointer_active:
-            assert isinstance(self.parent, Widget)
-            event.x += int(self.parent.scroll_x)
-            event.y += int(self.parent.scroll_y)
+        # if self.pointer_active:
+        #     assert isinstance(self.parent, Widget)
+        #     event.x += int(self.parent.scroll_x)
+        #     event.y += int(self.parent.scroll_y)
+        # The above fix sometimes works but maybe sometimes shouldn't apply or isn't right.
+        # In order to make this robust without knowing the exact cause,
+        # I'm going to always calculate straight from the screen coordinates.
+        # This should also make it robust against the bugs in the library being fixed.
+        # node: DOMNode|None = self
+        offset = event.screen_offset
+        # while node:
+        #     offset = offset - node.offset
+        #     node = node.parent
+        # assert isinstance(self.parent, Widget)
+        offset = offset - self.region.offset #+ Offset(int(self.parent.scroll_x), int(self.parent.scroll_y))
+        event.x = offset.x
+        event.y = offset.y
+
 
     def on_mouse_move(self, event: events.MouseMove) -> None:
         self.fix_mouse_event(event)
