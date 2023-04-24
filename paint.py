@@ -1897,10 +1897,6 @@ class PaintApp(App[None]):
             self.selected_tool = self.return_to_tool
             return
 
-        # TODO: use Offset() instead of tuple
-        # and I would say use event.offset, but I'm dynamically
-        # modifying x/y in fix_mouse_event so I need to use those coords for now,
-        # unless there's some getter/setter magic behind the scenes.
         self.mouse_at_start = Offset(event.mouse_down_event.x, event.mouse_down_event.y)
 
         if self.selected_tool in [Tool.curve, Tool.polygon]:
