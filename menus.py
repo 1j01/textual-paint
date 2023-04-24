@@ -44,6 +44,7 @@ class Menu(Container):
             if item.submenu:
                 self.app.mount(item.submenu)
                 item.submenu.close()
+            item.parent_menu = self
 
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
@@ -222,6 +223,7 @@ class MenuItem(Button):
         self.action = action
         self.submenu = submenu
         self.description = description
+        self.parent_menu: Menu | None = None # set when mounted
         if isinstance(id, str):
             self.id = id
         elif id:
@@ -230,8 +232,15 @@ class MenuItem(Button):
             self.id = "menu_item_" + to_snake_case(name)
     
     def on_enter(self, event: events.Enter) -> None:
+        if isinstance(self.parent_menu, MenuBar):
+            # The message is only reset to the default help text on close, so don't change it while no menu is open.
+            # (The top level menus don't have descriptions anyway.)
+            return
         self.post_message(Menu.StatusInfo(self.description))
     def on_leave(self, event: events.Leave) -> None:
+        if isinstance(self.parent_menu, MenuBar):
+            # The message is only reset to the default help text on close, so don't clear it while no menu is open.
+            return
         self.post_message(Menu.StatusInfo(None))
 
 
