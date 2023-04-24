@@ -1908,7 +1908,6 @@ class PaintApp(App[None]):
 
         if self.selected_tool == Tool.magnifier:
             self.magnifier_click(event.mouse_down_event.x, event.mouse_down_event.y)
-            self.selected_tool = self.return_to_tool
             return
 
         self.mouse_at_start = Offset(event.mouse_down_event.x, event.mouse_down_event.y)
@@ -2379,7 +2378,7 @@ class PaintApp(App[None]):
                 self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True) # polyline until finished
 
             self.polygon_last_click_time = event.time
-        elif self.selected_tool == Tool.pick_color:
+        elif self.selected_tool in [Tool.pick_color, Tool.magnifier]:
             self.selected_tool = self.return_to_tool
 
 
