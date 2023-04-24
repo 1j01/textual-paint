@@ -2539,8 +2539,9 @@ class PaintApp(App[None]):
 
         # Close menus if clicking outside the menus
         if not self.within_menus(leaf_widget):
-            self.query_one(MenuBar).close()
-            return
+            if self.query_one(MenuBar).any_menus_open():
+                self.query_one(MenuBar).close()
+                return
 
         # Deselect if clicking outside the canvas
         if leaf_widget is self.editing_area:

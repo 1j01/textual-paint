@@ -184,6 +184,12 @@ class Menu(Container):
         if not isinstance(self, MenuBar):
             self.display = False
         self.post_message(Menu.StatusInfo(None, closed=True))
+    
+    def any_menus_open(self) -> bool:
+        for item in self.items:
+            if item.submenu and item.submenu.display:
+                return True
+        return False
 
 class MenuBar(Menu):
     """A menu bar widget."""
