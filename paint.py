@@ -658,6 +658,7 @@ def polyline_walk(points: List[Offset]) -> Iterator[Tuple[int, int]]:
 def is_inside_polygon(x: int, y: int, points: List[Offset]) -> bool:
     """Returns True if the point is inside the polygon."""
     # https://stackoverflow.com/a/217578
+    # Actually I just got this from Copilot, and don't know the source
     n = len(points)
     inside = False
     p1x, p1y = points[0]
@@ -667,8 +668,8 @@ def is_inside_polygon(x: int, y: int, points: List[Offset]) -> bool:
             if y <= max(p1y, p2y):
                 if x <= max(p1x, p2x):
                     if p1y != p2y:
-                        xinters = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
-                    if p1x == p2x or x <= xinters:
+                        x_intersection = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
+                    if p1x == p2x or x <= x_intersection:
                         inside = not inside
         p1x, p1y = p2x, p2y
     return inside
