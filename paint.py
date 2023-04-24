@@ -2013,6 +2013,8 @@ class PaintApp(App[None]):
         event.stop()
         self.cancel_preview()
 
+        self.get_widget_by_id("status_coords", Static).update(f"{event.mouse_move_event.x},{event.mouse_move_event.y}")
+
         if self.selected_tool in [Tool.brush, Tool.pencil, Tool.eraser, Tool.curve, Tool.polygon]:
             if self.selected_tool == Tool.curve:
                 self.make_preview(self.draw_current_curve)
@@ -2060,6 +2062,7 @@ class PaintApp(App[None]):
         """Called when the user stops hovering over the canvas (while previewing, not drawing)."""
         event.stop()
         self.cancel_preview()
+        self.get_widget_by_id("status_coords", Static).update("")
 
     def get_select_region(self, start: Offset, end: Offset) -> Region:
         # Region.from_corners requires the first point to be the top left,
