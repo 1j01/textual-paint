@@ -1155,18 +1155,18 @@ class PaintApp(App[None]):
     # for shape tools that draw between the mouse down and up points
     # (Line, Rectangle, Ellipse, Rounded Rectangle),
     # Select tool (similarly), and Polygon (to detect double-click)
-    mouse_at_start = Offset(0, 0)
+    mouse_at_start: Offset = Offset(0, 0)
     # for brush tools (Pencil, Brush, Eraser, Airbrush)
-    mouse_previous = Offset(0, 0)
+    mouse_previous: Offset = Offset(0, 0)
     # for Select tool, indicates that the selection is being moved
     # and defines the offset of the selection from the mouse
-    selection_drag_offset = Offset(0, 0)
+    selection_drag_offset: Offset|None = Offset(0, 0)
     # for Text tool
-    selecting_text = False
+    selecting_text: bool = False
     # for Curve, Polygon, or Free-Form Select tools
     tool_points: List[Offset] = []
     # for Polygon tool to detect double-click
-    polygon_last_click_time = 0
+    polygon_last_click_time: float = 0
 
     # flag to prevent setting the filename input when initially expanding the directory tree
     expanding_directory_tree = False
