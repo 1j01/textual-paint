@@ -339,14 +339,32 @@ class CharacterSelectorDialogWindow(DialogWindow):
 # Unicode solid version 4:
 # This now looks great in Ubuntu's terminal.
 # In VS Code's terminal, all the gaps make it look like it's under frosted glass,
-# but it's acceptable.
+# but it's acceptable. Alternatively, you may see it as looking "spiky",
+# which is sensible for a warning icon, if not particularly attractive.
+# get_warning_icon = lambda: Static("""
+#     [#000000]◢[#ffff00 on #000000]🭯[/]◣[/]
+#    [#000000]◢[#ffff00 on #000000]◢█◣[/]◣[/]
+#   [#000000]◢[#ffff00 on #000000]◢[#000000 on #ffff00] ▼ [/]◣[/]◣[/]
+#  [#000000]◢[#ffff00 on #000000]◢[#000000 on #ffff00]  ●  [/]◣[/]◣[/]
+# [#000000]◢[#ffff00 on #000000]◢███████◣[/]◣[/]
+# [#000000]🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃[/]
+# """, classes="warning_icon message_box_icon")
+# Unicode solid version 5, rounder exclamation mark:
+# get_warning_icon = lambda: Static("""
+#     [#000000]◢[#ffff00 on #000000]🭯[/]◣[/]
+#    [#000000]◢[#ffff00 on #000000]◢█◣[/]◣[/]
+#   [#000000]◢[#ffff00 on #000000]◢[#000000 on #ffff00] ⬮ [/]◣[/]◣[/]
+#  [#000000]◢[#ffff00 on #000000]◢[#000000 on #ffff00]  •  [/]◣[/]◣[/]
+# [#000000]◢[#ffff00 on #000000]◢███████◣[/]◣[/]
+# [#000000]🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃[/]
+# """, classes="warning_icon message_box_icon")
+# Unicode solid version 6, smaller overall:
 get_warning_icon = lambda: Static("""
-    [#000000]◢[#ffff00 on #000000]🭯[/]◣[/]
-   [#000000]◢[#ffff00 on #000000]◢█◣[/]◣[/]
-  [#000000]◢[#ffff00 on #000000]◢[#000000 on #ffff00] ▼ [/]◣[/]◣[/]
- [#000000]◢[#ffff00 on #000000]◢[#000000 on #ffff00]  ●  [/]◣[/]◣[/]
-[#000000]◢[#ffff00 on #000000]◢███████◣[/]◣[/]
-[#000000]🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃[/]
+   [#000000]◢[#ffff00 on #000000]🭯[/]◣[/]
+  [#000000]◢[#ffff00 on #000000]◢█◣[/]◣[/]
+ [#000000]◢[#ffff00 on #000000]◢[#000000 on #ffff00] ⬮ [/]◣[/]◣[/]
+[#000000]◢[#ffff00 on #000000]◢[#000000 on #ffff00]  •  [/]◣[/]◣[/]
+[#000000]🮃🮃🮃🮃🮃🮃🮃🮃🮃[/]
 """, classes="warning_icon message_box_icon")
 
 class MessageBox(DialogWindow):
