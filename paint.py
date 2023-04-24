@@ -1742,69 +1742,69 @@ class PaintApp(App[None]):
         with Container(id="paint"):
             yield MenuBar([
                 MenuItem(_("&File"), submenu=Menu([
-                    MenuItem(_("&New\tCtrl+N"), self.action_new, 57600),
-                    MenuItem(_("&Open...\tCtrl+O"), self.action_open, 57601),
-                    MenuItem(_("&Save\tCtrl+S"), self.action_save, 57603),
-                    MenuItem(_("Save &As..."), self.action_save_as, 57604),
+                    MenuItem(_("&New\tCtrl+N"), self.action_new, 57600, description=_("Creates a new document.")),
+                    MenuItem(_("&Open...\tCtrl+O"), self.action_open, 57601, description=_("Opens an existing document.")),
+                    MenuItem(_("&Save\tCtrl+S"), self.action_save, 57603, description=_("Saves the active document.")),
+                    MenuItem(_("Save &As..."), self.action_save_as, 57604, description=_("Saves the active document with a new name.")),
                     Separator(),
-                    MenuItem(_("Print Pre&view"), self.action_print_preview, 57609, grayed=True),
-                    MenuItem(_("Page Se&tup..."), self.action_page_setup, 57605, grayed=True),
-                    MenuItem(_("&Print...\tCtrl+P"), self.action_print, 57607, grayed=True),
+                    MenuItem(_("Print Pre&view"), self.action_print_preview, 57609, grayed=True, description=_("Displays full pages.")),
+                    MenuItem(_("Page Se&tup..."), self.action_page_setup, 57605, grayed=True, description=_("Changes the page layout.")),
+                    MenuItem(_("&Print...\tCtrl+P"), self.action_print, 57607, grayed=True, description=_("Prints the active document and sets printing options.")),
                     Separator(),
-                    MenuItem(_("S&end..."), self.action_send, 37662, grayed=True),
+                    MenuItem(_("S&end..."), self.action_send, 37662, grayed=True, description=_("Sends a picture by using mail or fax.")),
                     Separator(),
-                    MenuItem(_("Set As &Wallpaper (Tiled)"), self.action_set_as_wallpaper_tiled, 57677, grayed=True),
-                    MenuItem(_("Set As Wa&llpaper (Centered)"), self.action_set_as_wallpaper_centered, 57675, grayed=True),
+                    MenuItem(_("Set As &Wallpaper (Tiled)"), self.action_set_as_wallpaper_tiled, 57677, grayed=True, description=_("Tiles this bitmap as the desktop wallpaper.")),
+                    MenuItem(_("Set As Wa&llpaper (Centered)"), self.action_set_as_wallpaper_centered, 57675, grayed=True, description=_("Centers this bitmap as the desktop wallpaper.")),
                     Separator(),
-                    MenuItem(_("Recent File"), self.action_recent_file, 57616, grayed=True),
+                    MenuItem(_("Recent File"), self.action_recent_file, 57616, grayed=True, description=_("Opens this document.")),
                     Separator(),
-                    # MenuItem(_("E&xit\tAlt+F4"), self.action_exit, 57665),
-                    MenuItem(_("E&xit\tCtrl+Q"), self.action_exit, 57665),
+                    # MenuItem(_("E&xit\tAlt+F4"), self.action_exit, 57665, description=_("Quits Paint.")),
+                    MenuItem(_("E&xit\tCtrl+Q"), self.action_exit, 57665, description=_("Quits Paint.")),
                 ])),
                 MenuItem(_("&Edit"), submenu=Menu([
-                    MenuItem(_("&Undo\tCtrl+Z"), self.action_undo, 57643),
-                    MenuItem(_("&Repeat\tF4"), self.action_redo, 57644),
+                    MenuItem(_("&Undo\tCtrl+Z"), self.action_undo, 57643, description=_("Undoes the last action.")),
+                    MenuItem(_("&Repeat\tF4"), self.action_redo, 57644, description=_("Redoes the previously undone action.")),
                     Separator(),
-                    MenuItem(_("Cu&t\tCtrl+X"), self.action_cut, 57635, grayed=True),
-                    MenuItem(_("&Copy\tCtrl+C"), self.action_copy, 57634, grayed=True),
-                    MenuItem(_("&Paste\tCtrl+V"), self.action_paste, 57637, grayed=True),
-                    MenuItem(_("C&lear Selection\tDel"), self.action_clear_selection, 57632),
-                    MenuItem(_("Select &All\tCtrl+A"), self.action_select_all, 57642),
+                    MenuItem(_("Cu&t\tCtrl+X"), self.action_cut, 57635, grayed=True, description=_("Cuts the selection and puts it on the Clipboard.")),
+                    MenuItem(_("&Copy\tCtrl+C"), self.action_copy, 57634, grayed=True, description=_("Copies the selection and puts it on the Clipboard.")),
+                    MenuItem(_("&Paste\tCtrl+V"), self.action_paste, 57637, grayed=True, description=_("Inserts the contents of the Clipboard.")),
+                    MenuItem(_("C&lear Selection\tDel"), self.action_clear_selection, 57632, description=_("Deletes the selection.")),
+                    MenuItem(_("Select &All\tCtrl+A"), self.action_select_all, 57642, description=_("Selects everything.")),
                     Separator(),
-                    MenuItem(_("C&opy To..."), self.action_copy_to, 37663, grayed=True),
-                    MenuItem(_("Paste &From..."), self.action_paste_from, 37664, grayed=True),
+                    MenuItem(_("C&opy To..."), self.action_copy_to, 37663, grayed=True, description=_("Copies the selection to a file.")),
+                    MenuItem(_("Paste &From..."), self.action_paste_from, 37664, grayed=True, description=_("Pastes a file into the selection.")),
                 ])),
                 MenuItem(_("&View"), submenu=Menu([
-                    MenuItem(_("&Tool Box\tCtrl+T"), self.action_toggle_tools_box, 59415),
-                    MenuItem(_("&Color Box\tCtrl+L"), self.action_toggle_colors_box, 59416),
-                    MenuItem(_("&Status Bar"), self.action_toggle_status_bar, 59393),
-                    MenuItem(_("T&ext Toolbar"), self.action_text_toolbar, 37678, grayed=True),
+                    MenuItem(_("&Tool Box\tCtrl+T"), self.action_toggle_tools_box, 59415, description=_("Shows or hides the tool box.")),
+                    MenuItem(_("&Color Box\tCtrl+L"), self.action_toggle_colors_box, 59416, description=_("Shows or hides the color box.")),
+                    MenuItem(_("&Status Bar"), self.action_toggle_status_bar, 59393, description=_("Shows or hides the status bar.")),
+                    MenuItem(_("T&ext Toolbar"), self.action_text_toolbar, 37678, grayed=True, description=_("Shows or hides the text toolbar.")),
                     Separator(),
                     MenuItem(_("&Zoom"), submenu=Menu([
-                        MenuItem(_("&Normal Size\tCtrl+PgUp"), self.action_normal_size, 37670),
-                        MenuItem(_("&Large Size\tCtrl+PgDn"), self.action_large_size, 37671),
-                        MenuItem(_("C&ustom..."), self.action_custom_zoom, 37672),
+                        MenuItem(_("&Normal Size\tCtrl+PgUp"), self.action_normal_size, 37670, description=_("Zooms the picture to 100%.")),
+                        MenuItem(_("&Large Size\tCtrl+PgDn"), self.action_large_size, 37671, description=_("Zooms the picture to 400%.")),
+                        MenuItem(_("C&ustom..."), self.action_custom_zoom, 37672, description=_("Zooms the picture.")),
                         Separator(),
-                        MenuItem(_("Show &Grid\tCtrl+G"), self.action_show_grid, 37677, grayed=True),
-                        MenuItem(_("Show T&humbnail"), self.action_show_thumbnail, 37676, grayed=True),
+                        MenuItem(_("Show &Grid\tCtrl+G"), self.action_show_grid, 37677, grayed=True, description=_("Shows or hides the grid.")),
+                        MenuItem(_("Show T&humbnail"), self.action_show_thumbnail, 37676, grayed=True, description=_("Shows or hides the thumbnail view of the picture.")),
                     ])),
-                    MenuItem(_("&View Bitmap\tCtrl+F"), self.action_view_bitmap, 37673, grayed=True),
+                    MenuItem(_("&View Bitmap\tCtrl+F"), self.action_view_bitmap, 37673, grayed=True, description=_("Displays the entire picture.")),
                 ])),
                 MenuItem(_("&Image"), submenu=Menu([
-                    MenuItem(_("&Flip/Rotate...\tCtrl+R"), self.action_flip_rotate, 37680, grayed=True),
-                    MenuItem(_("&Stretch/Skew...\tCtrl+W"), self.action_stretch_skew, 37681, grayed=True),
-                    MenuItem(_("&Invert Colors\tCtrl+I"), self.action_invert_colors, 37682, grayed=True),
-                    MenuItem(_("&Attributes...\tCtrl+E"), self.action_attributes, 37683, grayed=True),
-                    MenuItem(_("&Clear Image\tCtrl+Shft+N"), self.action_clear_image, 37684, grayed=True),
-                    MenuItem(_("&Draw Opaque"), self.action_draw_opaque, 6868, grayed=True),
+                    MenuItem(_("&Flip/Rotate...\tCtrl+R"), self.action_flip_rotate, 37680, grayed=True, description=_("Flips or rotates the picture or a selection.")),
+                    MenuItem(_("&Stretch/Skew...\tCtrl+W"), self.action_stretch_skew, 37681, grayed=True, description=_("Stretches or skews the picture or a selection.")),
+                    MenuItem(_("&Invert Colors\tCtrl+I"), self.action_invert_colors, 37682, grayed=True, description=_("Inverts the colors of the picture or a selection.")),
+                    MenuItem(_("&Attributes...\tCtrl+E"), self.action_attributes, 37683, grayed=True, description=_("Changes the attributes of the picture.")),
+                    MenuItem(_("&Clear Image\tCtrl+Shft+N"), self.action_clear_image, 37684, grayed=True, description=_("Clears the picture or selection.")),
+                    MenuItem(_("&Draw Opaque"), self.action_draw_opaque, 6868, grayed=True, description=_("Makes the current selection either opaque or transparent.")),
                 ])),
                 MenuItem(_("&Colors"), submenu=Menu([
-                    MenuItem(_("&Edit Colors..."), self.action_edit_colors, 6869),
+                    MenuItem(_("&Edit Colors..."), self.action_edit_colors, 6869, description=_("Creates a new color.")),
                 ])),
                 MenuItem(_("&Help"), submenu=Menu([
-                    MenuItem(_("&Help Topics"), self.action_help_topics, 57670),
+                    MenuItem(_("&Help Topics"), self.action_help_topics, 57670, description=_("Displays Help for the current task or command.")),
                     Separator(),
-                    MenuItem(_("&About Paint"), self.action_about_paint, 57664),
+                    MenuItem(_("&About Paint"), self.action_about_paint, 57664, description=_("Displays program information, version number, and copyright.")),
                 ])),
             ])
             yield Container(
@@ -2467,6 +2467,14 @@ class PaintApp(App[None]):
                 self.query_one(".file_dialog_window .filename_input", Input).value = name
         else:
             self.directory_tree_selected_path = None
+
+    def on_menu_item_hovered(self, event: MenuItem.Hovered) -> None:
+        """Called when a menu item is hovered."""
+        self.get_widget_by_id("status_text", Static).update(event.menu_item.description or "")
+
+    def on_menu_closed(self, event: Menu.Closed) -> None:
+        """Called when a menu is closed."""
+        self.get_widget_by_id("status_text", Static).update(_("For Help, click Help Topics on the Help Menu."))
 
     def within_menus(self, node: DOMNode) -> bool:
         """Returns True if the node is within the menus."""

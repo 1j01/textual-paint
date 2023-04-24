@@ -4,6 +4,7 @@ from textual import events
 from textual.containers import Container
 from textual.reactive import var
 from textual.widgets import Button, Static
+from textual.message import Message
 from rich.text import Text
 from localization.i18n import markup_hotkey, get_hotkey, get_direction
 
@@ -15,6 +16,10 @@ def to_snake_case(name: str) -> str:
 
 class Menu(Container):
     """A menu widget. Note that menus can't be reused in multiple places."""
+
+    class Closed(Message):
+        """Sent when a menu is closed."""
+        pass
 
     items = var([])
     focus_index = var(0)
@@ -171,6 +176,7 @@ class Menu(Container):
                 item.submenu.close()
         if not isinstance(self, MenuBar):
             self.display = False
+        self.post_message(Menu.Closed())
 
 class MenuBar(Menu):
     """A menu bar widget."""
@@ -183,11 +189,19 @@ class MenuBar(Menu):
 class MenuItem(Button):
     """A menu item widget."""
 
+    class Hovered(Message):
+        """Message sent when the mouse hovers over a menu item."""
+        def __init__(self, menu_item: 'MenuItem') -> None:
+            """Initialize the hover message."""
+            super().__init__()
+            self.menu_item = menu_item
+
     def __init__(self,
         name: str,
         action: Callable[[], None] | None = None,
         id: str | int | None = None,
         submenu: Menu | None = None,
+        description: str | None = None,
         grayed: bool = False,
         **kwargs: Any
     ) -> None:
@@ -197,12 +211,16 @@ class MenuItem(Button):
         self.disabled = grayed
         self.action = action
         self.submenu = submenu
+        self.description = description
         if isinstance(id, str):
             self.id = id
         elif id:
             self.id = "rc_" + str(id)
         else:
             self.id = "menu_item_" + to_snake_case(name)
+    
+    def on_enter(self, event: events.Enter) -> None:
+        self.post_message(self.Hovered(self))
 
 
 mid_line = "─" * 100
