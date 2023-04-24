@@ -2468,13 +2468,12 @@ class PaintApp(App[None]):
         else:
             self.directory_tree_selected_path = None
 
-    def on_menu_item_hovered(self, event: MenuItem.Hovered) -> None:
+    def on_menu_status_info(self, event: Menu.StatusInfo) -> None:
         """Called when a menu item is hovered."""
-        self.get_widget_by_id("status_text", Static).update(event.menu_item.description or "")
-
-    def on_menu_closed(self, event: Menu.Closed) -> None:
-        """Called when a menu is closed."""
-        self.get_widget_by_id("status_text", Static).update(_("For Help, click Help Topics on the Help Menu."))
+        text: str = event.description or ""
+        if event.closed:
+            text = _("For Help, click Help Topics on the Help Menu.")
+        self.get_widget_by_id("status_text", Static).update(text)
 
     def within_menus(self, node: DOMNode) -> bool:
         """Returns True if the node is within the menus."""

@@ -17,9 +17,12 @@ def to_snake_case(name: str) -> str:
 class Menu(Container):
     """A menu widget. Note that menus can't be reused in multiple places."""
 
-    class Closed(Message):
-        """Sent when a menu is closed."""
-        pass
+    class StatusInfo(Message):
+        """Sent when hovering over a menu item, or to reset when leaving a menu item or when menu is closed."""
+        def __init__(self, description: str|None, closed: bool = False) -> None:
+            super().__init__()
+            self.description = description
+            self.closed = closed
 
     items = var([])
     focus_index = var(0)
@@ -180,7 +183,7 @@ class Menu(Container):
                 item.submenu.close()
         if not isinstance(self, MenuBar):
             self.display = False
-        self.post_message(Menu.Closed())
+        self.post_message(Menu.StatusInfo(None, closed=True))
 
 class MenuBar(Menu):
     """A menu bar widget."""
@@ -192,13 +195,6 @@ class MenuBar(Menu):
 
 class MenuItem(Button):
     """A menu item widget."""
-
-    class Hovered(Message):
-        """Message sent when the mouse hovers over a menu item."""
-        def __init__(self, menu_item: 'MenuItem') -> None:
-            """Initialize the hover message."""
-            super().__init__()
-            self.menu_item = menu_item
 
     def __init__(self,
         name: str,
@@ -227,13 +223,14 @@ class MenuItem(Button):
             self.id = "menu_item_" + to_snake_case(name)
     
     def on_enter(self, event: events.Enter) -> None:
-        self.post_message(self.Hovered(self))
+        self.post_message(Menu.StatusInfo(self.description))
+    def on_leave(self, event: events.Leave) -> None:
+        self.post_message(Menu.StatusInfo(None))
 
 
 mid_line = "─" * 100
 class Separator(Static):
     """A menu separator widget."""
-
 
     def __init__(self, **kwargs: Any) -> None:
         """Initialize a separator."""
