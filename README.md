@@ -49,6 +49,8 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
 	- You could totally use this program over SSH! Haha, this "what if" project could actually be useful. Of course, it should be mentioned that you can also run graphical programs over SSH, but this might be more responsive, or just fit your vibe better.
 - [x] Brush previews
 - [x] Menu bar
+- [x] Status bar
+- [x] Keyboard shortcuts
 - [x] Localization into 26 languages: Arabic, Czech, Danish, German, Greek, English, Spanish, Finnish, French, Hebrew, Hungarian, Italian, Japanese, Korean, Dutch, Norwegian, Polish, Portuguese, Brazilian Portuguese, Russian, Slovak, Slovenian, Swedish, Turkish, Chinese, Simplified Chinese
 
 ## Usage
@@ -109,6 +111,21 @@ The rest match MS Paint's keyboard shortcuts:
 - <kbd>Ctrl</kbd>+<kbd>A</kbd>: Select All
 - <kbd>Ctrl</kbd>+<kbd>PageUp</kbd>: Large Size
 - <kbd>Ctrl</kbd>+<kbd>PageDown</kbd>: Normal Size
+
+## Known Issues
+
+- Pressing Delete while using the Text tool deletes the whole text box. Similarly, Ctrl+A selects the canvas instead of the text in the text box.
+- The Curve and Polygon tool previews disappear when you're not hovering over the canvas.
+- Pick Color can't be cancelled with Escape or by pressing both mouse buttons.
+- Help > Help Topics isn't very helpful.
+- The selection can't be dragged from the top left corner.
+- Due to limitations of the terminal, shortcuts using Shift or Alt might not work.
+- Menus are not keyboard navigable.
+- Clicking the Zoom submenu doesn't always work. You just have to click it a few times before it opens. (It may be technically open but positioned off screen, or lacking width/height. I don't know.)
+- Some languages don't display correctly.
+- Large files can make the program very slow.
+- The program sometimes crashes or freezes randomly.
+- The program freezes when using the fill tool on a spot already filled with the target color.
 
 ## Development
 
