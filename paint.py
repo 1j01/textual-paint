@@ -1904,7 +1904,7 @@ class PaintApp(App[None]):
             if self.selected_tool == Tool.curve:
                 self.make_preview(self.draw_current_curve)
             else:
-                self.make_preview(self.draw_current_polyline) # polyline until finished
+                self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True) # polyline until finished
             return
 
         if self.selected_tool == Tool.free_form_select:
@@ -1993,7 +1993,7 @@ class PaintApp(App[None]):
             self.canvas.select_preview_region = None
             self.canvas.refresh_scaled_region(region)
 
-    def make_preview(self, draw_proc: Callable[[], Region]):
+    def make_preview(self, draw_proc: Callable[[], Region], show_dimensions_in_status_bar: bool = False) -> None:
         self.cancel_preview()
         image_before = AnsiArtDocument(self.image.width, self.image.height)
         image_before.copy_region(self.image)
@@ -2003,6 +2003,10 @@ class PaintApp(App[None]):
             self.preview_action.region = affected_region.intersection(Region(0, 0, self.image.width, self.image.height))
             self.preview_action.update(image_before)
             self.canvas.refresh_scaled_region(affected_region)
+            if show_dimensions_in_status_bar:
+                self.get_widget_by_id("status_dimensions", Static).update(
+                    f"{self.preview_action.region.width}x{self.preview_action.region.height}"
+                )
 
     def on_canvas_tool_preview_update(self, event: Canvas.ToolPreviewUpdate) -> None:
         """Called when the user is hovering over the canvas but not drawing yet."""
@@ -2015,7 +2019,7 @@ class PaintApp(App[None]):
             if self.selected_tool == Tool.curve:
                 self.make_preview(self.draw_current_curve)
             elif self.selected_tool == Tool.polygon:
-                self.make_preview(self.draw_current_polyline) # polyline until finished
+                self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True) # polyline until finished
             else:
                 self.make_preview(lambda: self.stamp_brush(event.mouse_move_event.x, event.mouse_move_event.y))
         elif self.selected_tool == Tool.magnifier:
@@ -2105,6 +2109,23 @@ class PaintApp(App[None]):
         event.stop()
         self.cancel_preview()
 
+        if self.selected_tool != Tool.select:
+            if self.selected_tool in [Tool.line, Tool.rectangle, Tool.ellipse, Tool.rounded_rectangle]: # , Tool.curve
+                # Display is allowed to go negative, unlike for the Select tool, handled below.
+                # Also, Polygon gets both coords and dimensions.
+                # Unlike MS Paint, Free-Form Select displays the dimensions of the resulting selection,
+                # (rather than the difference between the mouse position and the starting point,)
+                # which seems better to me.
+                # Also, unlike MS Paint, Curve displays mouse coords rather than dimensions,
+                # where "dimensions" are the difference between the mouse position and the starting point.
+                # I don't know that this is better, but my mouse_at_start currently is set on mouse down for in-progress curves,
+                # so it wouldn't match MS Paint unless I changed that or used the tool_points list.
+                # I don't know that anyone looks at the status bar while drawing a curve.
+                # If they do, they should probably be using a graphing calculator instead or something.
+                self.get_widget_by_id("status_dimensions", Static).update(f"{event.mouse_move_event.x - self.mouse_at_start.x}x{event.mouse_move_event.y - self.mouse_at_start.y}")
+            else:
+                self.get_widget_by_id("status_coords", Static).update(f"{event.mouse_move_event.x},{event.mouse_move_event.y}")
+
         if self.selected_tool == Tool.pick_color:
             self.pick_color(event.mouse_move_event.x, event.mouse_move_event.y)
             return
@@ -2136,10 +2157,13 @@ class PaintApp(App[None]):
             elif self.selected_tool == Tool.free_form_select:
                 self.tool_points.append(Offset(event.mouse_move_event.x, event.mouse_move_event.y))
                 # polyline until finished, TODO: invert background, don't use selected color
-                self.make_preview(self.draw_current_polyline)
+                self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True)
             else:
                 self.canvas.select_preview_region = self.get_select_region(self.mouse_at_start, event.mouse_move_event.offset)
                 self.canvas.refresh_scaled_region(self.canvas.select_preview_region)
+                self.get_widget_by_id("status_dimensions", Static).update(
+                    f"{self.canvas.select_preview_region.width}x{self.canvas.select_preview_region.height}"
+                )
             return
 
         if self.selected_tool in [Tool.curve, Tool.polygon]:
@@ -2150,7 +2174,7 @@ class PaintApp(App[None]):
             if self.selected_tool == Tool.curve:
                 self.make_preview(self.draw_current_curve)
             elif self.selected_tool == Tool.polygon:
-                self.make_preview(self.draw_current_polyline) # polyline until finished
+                self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True) # polyline until finished
             return
 
         if len(self.undos) == 0:
@@ -2239,6 +2263,8 @@ class PaintApp(App[None]):
         # Clear the selection preview in case the mouse has moved.
         # (I don't know of any guarantee that it won't.)
         self.cancel_preview()
+
+        self.get_widget_by_id("status_dimensions", Static).update("")
 
         if self.selection_drag_offset:
             # Done dragging selection
@@ -2333,7 +2359,7 @@ class PaintApp(App[None]):
                 self.tool_points = []
             else:
                 # Most likely just drawing the preview we just cancelled.
-                self.make_preview(self.draw_current_polyline) # polyline until finished
+                self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True) # polyline until finished
 
             self.polygon_last_click_time = event.time
         elif self.selected_tool == Tool.pick_color:
