@@ -119,6 +119,9 @@ MenuItem {
     width: auto;
     height: auto;
 }
+MenuItem.grayed {
+    color: #777;
+}
 Separator {
     width: 100%;
     height: 1;

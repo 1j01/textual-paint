@@ -71,6 +71,10 @@ class Menu(Container):
         """Called when a button is clicked or activated with the keyboard."""
 
         if isinstance(event.button, MenuItem):
+            if event.button.has_class("grayed"):
+                # TODO: use disabled property once Textual fixes mouse wheel events on disabled buttons
+                # and we have a way to listen for the mouse Enter event on disabled buttons
+                return
             if event.button.action:
                 event.button.action()
                 root_menu = self
@@ -208,7 +212,10 @@ class MenuItem(Button):
         """Initialize a menu item."""
         super().__init__(markup_hotkey(name), **kwargs)
         self.hotkey: str|None = get_hotkey(name)
-        self.disabled = grayed
+        # self.disabled = grayed # This breaks scroll wheel over the menu item, as of Textual 0.20.1
+        if grayed:
+            self.add_class("grayed")
+            self.can_focus = False
         self.action = action
         self.submenu = submenu
         self.description = description
