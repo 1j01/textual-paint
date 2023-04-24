@@ -88,17 +88,26 @@ def get(base_language_str: str, *interpolations: str) -> str:
 # & defines accelerators (hotkeys) in menus and buttons and things, which get underlined in the UI.
 # & can be escaped by doubling it, e.g. "&Taskbar && Start Menu"
 def index_of_hotkey(text: str) -> int:
-	# Returns the index of the ampersand that defines a hotkey, or -1 if not present.
+	"""Returns the index of the ampersand that defines a hotkey, or -1 if not present."""
 	# The space here handles beginning-of-string matching and counteracts the offset for the [^&] so it acts like a negative lookbehind
 	m = re.search(r"[^&]&[^&\s]", f" {text}")
 	return m.start() if m else -1
 
 def has_hotkey(text: str) -> bool:
+	"""Returns whether the text has a hotkey defined."""
 	return index_of_hotkey(text) != -1
 
 def remove_hotkey(text: str) -> str:
+	"""Returns the text with the hotkey removed, keeping any hotkey escapes (&&) in tact."""
+	# Translations sometimes have the hotkey in parentheses, e.g. "&Hide": "숨기기(&H)"
+	# This removes the whole parenthetical.
 	text = re.sub(r"\s?\(&.\)", "", text)
+	# For other cases, just remove the ampersand, e.g. "&Taskbar && Start Menu" -> "Taskbar && Start Menu"
 	text = re.sub(r"([^&]|^)&([^&\s])", r"\1\2", text)
+	# A better way might be to use the index_of_hotkey function, ideally for the parenthetical removal too,
+	# but in practice, there shouldn't be translations with ambiguous/multiple hotkeys like "&Taskbar &Start Menu".
+	# index = index_of_hotkey(text)
+	# text = text[:index] + text[index + 1:] if index != -1 else text
 	return text
 
 def markup_hotkey(text: str) -> str:
