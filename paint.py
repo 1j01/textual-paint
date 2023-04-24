@@ -1817,7 +1817,7 @@ class PaintApp(App[None]):
             )
             yield ColorsBox(id="colors_box")
             yield Container(
-                Static(id="status_text"),
+                Static(_("For Help, click Help Topics on the Help Menu."), id="status_text"),
                 Static(id="status_coords"),
                 Static(id="status_dimensions"),
                 id="status_bar",
