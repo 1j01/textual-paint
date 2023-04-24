@@ -118,6 +118,7 @@ MenuBar {
 MenuItem {
     width: auto;
     height: auto;
+    text-style: none;
 }
 MenuItem.grayed {
     color: #777;
