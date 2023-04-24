@@ -1245,6 +1245,9 @@ class PaintApp(App[None]):
             return affected_region
     
     def stamp_char(self, x: int, y: int) -> None:
+        if x >= self.image.width or y >= self.image.height or x < 0 or y < 0:
+            return
+
         char = self.selected_char
         bg_color = self.selected_bg_color
         fg_color = self.selected_fg_color
@@ -1255,10 +1258,9 @@ class PaintApp(App[None]):
         if self.selected_tool == Tool.airbrush:
             if random() < 0.7:
                 return
-        if x < self.image.width and y < self.image.height and x >= 0 and y >= 0:
-            self.image.ch[y][x] = char
-            self.image.bg[y][x] = bg_color
-            self.image.fg[y][x] = fg_color
+        self.image.ch[y][x] = char
+        self.image.bg[y][x] = bg_color
+        self.image.fg[y][x] = fg_color
     
     def erase_region(self, region: Region, mask: Optional[list[list[bool]]] = None) -> None:
         # Time to go undercover as an eraser. 🥸
