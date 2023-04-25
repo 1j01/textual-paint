@@ -2185,7 +2185,13 @@ class PaintApp(App[None]):
     def on_canvas_tool_preview_stop(self, event: Canvas.ToolPreviewStop) -> None:
         """Called when the user stops hovering over the canvas (while previewing, not drawing)."""
         event.stop()
-        self.cancel_preview()
+        # Curve and Polygon persist when the mouse leaves the canvas,
+        # since they're more stateful in their UI. It's confusing if
+        # what you started drawing disappears.
+        # Other tools should hide their preview, since they only preview
+        # what will happen if you click on the canvas.
+        if self.selected_tool not in [Tool.curve, Tool.polygon]:
+            self.cancel_preview()
         self.get_widget_by_id("status_coords", Static).update("")
 
     def get_select_region(self, start: Offset, end: Offset) -> Region:

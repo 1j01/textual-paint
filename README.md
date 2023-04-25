@@ -130,7 +130,6 @@ cat file.ans
 - The Text tool cannot be undone, and immediately affects the canvas. It doesn't go away if you click off without typing anything.
 - Text and Selection box borders are inside instead of outside (and have no dashes).
 - The currently selected foreground (text) color is not displayed in the palette.
-- The Curve and Polygon tool previews disappear when you're not hovering over the canvas.
 - Pick Color can't be cancelled with Escape or by pressing both mouse buttons.
 - Help > Help Topics isn't very helpful.
 - Due to limitations of the terminal, shortcuts using Shift or Alt might not work.
