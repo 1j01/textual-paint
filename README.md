@@ -127,18 +127,25 @@ cat file.ans
 ## Known Issues
 
 - Pressing Delete while using the Text tool deletes the whole text box. Similarly, Ctrl+A selects the canvas instead of the text in the text box.
-- The Text tool cannot be undone.
+- The Text tool cannot be undone, and immediately affects the canvas. It doesn't go away if you click off without typing anything.
 - Text and Selection box borders are inside instead of outside (and have no dashes).
+- The currently selected foreground (text) color is not displayed in the palette.
 - The Curve and Polygon tool previews disappear when you're not hovering over the canvas.
 - Pick Color can't be cancelled with Escape or by pressing both mouse buttons.
 - Help > Help Topics isn't very helpful.
-- The selection can't be dragged from the top left corner.
+- The selection can't be dragged from the top left corner. (Instead it starts a new selection, seemingly without finalizing the old one, until mouse up.)
 - Due to limitations of the terminal, shortcuts using Shift or Alt might not work.
 - Menus are not keyboard navigable.
 - Clicking the Zoom submenu doesn't always work. You just have to click it a few times before it opens. (It may be technically open but positioned off screen, or lacking width/height. I don't know.)
 - Some languages don't display correctly.
-- Large files can make the program very slow.
-- The program sometimes crashes or freezes randomly.
+- Large files can make the program very slow, as can magnifying the canvas.
+- The program sometimes crashes or freezes randomly, and there's no auto-save feature.
+- Saving/loading an ANSI file ends up with a white cell at the top left, which pushes the top row to the right. The top right cell gets pushed off and deleted.
+- Dragging windows is broken; it used to work, but now does nothing.
+- The Polygon/Curve tools aren't finalized when you switch tools.
+- Saved ANSI files are unnecessarily large, because they include escape sequences for every cell, even if the colors match the previous cell.
+
+The program has only been tested on Linux. Issues on other platforms are as-yet _unknown_ :)
 
 ## Development
 
