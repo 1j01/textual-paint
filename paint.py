@@ -1041,10 +1041,10 @@ class Canvas(Widget):
             #     # return offset.y * sel.region.width + offset.x
             #     # return offset.y * self.image.width + offset.x
             if (
-                self.magnifier_preview_region and magnifier_preview_region.contains(x, y) and not inner_magnifier_preview_region.contains(x, y) or
-                self.select_preview_region and select_preview_region.contains(x, y) and not inner_select_preview_region.contains(x, y) or
-                sel and selection_region.contains(x, y) and not inner_selection_region.contains(x, y) or
-                sel and sel.textbox_mode and (
+                (self.magnifier_preview_region and magnifier_preview_region.contains(x, y) and (not inner_magnifier_preview_region.contains(x, y))) or
+                (self.select_preview_region and select_preview_region.contains(x, y) and (not inner_select_preview_region.contains(x, y))) or
+                (sel and selection_region.contains(x, y) and (not inner_selection_region.contains(x, y))) or
+                (sel and sel.textbox_mode and (
                     # offset_to_text_index(sel.text_selection_start) <=
                     # offset_to_text_index(Offset(x, y))
                     # < offset_to_text_index(sel.text_selection_end)
@@ -1052,7 +1052,7 @@ class Canvas(Widget):
                     # sel.text_selection_start.y <= cell_y - sel.region.y < sel.text_selection_end.y
                     sel.text_selection_start.x == cell_x - sel.region.x and
                     sel.text_selection_start.y == cell_y - sel.region.y
-                )
+                ))
             ):
                 # invert the colors
                 style = Style.parse(f"rgb({255 - style.color.triplet.red},{255 - style.color.triplet.green},{255 - style.color.triplet.blue}) on rgb({255 - style.bgcolor.triplet.red},{255 - style.bgcolor.triplet.green},{255 - style.bgcolor.triplet.blue})")
