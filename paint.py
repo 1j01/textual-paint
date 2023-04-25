@@ -2608,6 +2608,11 @@ class PaintApp(App[None]):
         # Deselect if clicking outside the canvas
         if leaf_widget is self.editing_area:
             self.meld_selection()
+        # Unfocus if clicking on or outside the canvas,
+        # so that you can type in the Text tool.
+        # Otherwise the CharInput gets in the way.
+        if leaf_widget is self.editing_area or leaf_widget is self.canvas:
+            self.app.set_focus(None)
 
         # This is a dev helper to inspect the layout
         # by highlighting the elements under the mouse in different colors, and labeling them on their borders.
