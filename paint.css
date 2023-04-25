@@ -220,26 +220,12 @@ DialogWindow .window_content {
     height: auto;
 }
 
-CharacterSelectorDialogWindow .character_buttons {
-    layout: grid;
-    grid-size: 8;
-    grid-columns: 6;
-    grid-rows: 3;
-    grid-gutter: 1 1;
+CharacterSelectorDialogWindow DataTable {
     width: auto;
-    height: auto;
-    max-height: 30;
-    overflow-y: auto;
-    overflow-x: hidden;
 }
-CharacterSelectorDialogWindow .character_buttons Button {
-    /* compensate for scrollbar */
-    margin-right: 3;
-    /* balance */
-    margin-left: 1;
-}
+CharacterSelectorDialogWindow .ok,
 CharacterSelectorDialogWindow .cancel {
-    margin: 2;
+    margin: 1;
 }
 
 #about_paint_dialog .window_content {

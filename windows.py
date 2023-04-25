@@ -6,7 +6,7 @@ from textual.containers import Container
 from textual.geometry import Offset
 from textual.reactive import var
 from textual.widget import Widget
-from textual.widgets import Button, Static
+from textual.widgets import Button, Static, DataTable
 from textual.containers import Container, Horizontal, Vertical
 from textual.css.query import NoMatches
 from localization.i18n import get as _
@@ -247,8 +247,6 @@ class DialogWindow(Window):
 
 class CharacterSelectorDialogWindow(DialogWindow):
     """A dialog window that lets the user select a character."""
-    # TODO: use a DataTable instead of a bunch of buttons,
-    # for performance, compactness, and better keyboard navigation
     
     # class CharacterSelected(Message):
     #     """Sent when a character is selected."""
@@ -267,8 +265,7 @@ class CharacterSelectorDialogWindow(DialogWindow):
     def __init__(self, *children: Widget, selected_character: str|None, handle_selected_character: Callable[[str], None], **kwargs: Any) -> None:
         """Initialize the dialog window."""
         super().__init__(handle_button=self.handle_button, *children, **kwargs)
-        self._char_to_highlight = selected_character
-        self._char_by_button: dict[Button, str] = {}
+        self._selected_character = selected_character
         self.handle_selected_character = handle_selected_character
     
     def handle_button(self, button: Button) -> None:
@@ -278,18 +275,23 @@ class CharacterSelectorDialogWindow(DialogWindow):
         else:
             # self.post_message(self.CharacterSelected(self._char_by_button[button]))
             # self.close()
-            self.handle_selected_character(self._char_by_button[button])
+            self.handle_selected_character(self._selected_character)
+
+    def on_data_table_cell_highlighted(self, event: DataTable.CellHighlighted) -> None:
+        """Called when a cell is highlighted."""
+        assert isinstance(event.value, str)
+        self._selected_character = event.value
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
-        container = Container(classes="character_buttons")
-        for char in self.char_list:
-            button = Button(char, variant="primary" if char is self._char_to_highlight else "default")
-            self._char_by_button[button] = char
-            # if char is self._char_to_highlight:
-            #     button.add_class("selected")
-            container.mount(button)
-        self.content.mount(container)
+        data_table: DataTable[str] = DataTable()
+        column_count = 16
+        data_table.add_columns(*([" "] * column_count))
+        data_table.show_header = False
+        for i in range(0, len(self.char_list), column_count):
+            data_table.add_row(*self.char_list[i:i+column_count])
+        self.content.mount(data_table)
+        self.content.mount(Button("OK", classes="ok submit"))
         self.content.mount(Button("Cancel", classes="cancel"))
 
 # ASCII line art version:
