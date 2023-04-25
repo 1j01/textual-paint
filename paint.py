@@ -2242,17 +2242,38 @@ class PaintApp(App[None]):
     def meld_or_clear_selection(self, meld: bool) -> None:
         if not self.image.selection:
             return
+        
+        make_undo_state = self.image.selection.contained_image is None and not meld
+
+        if make_undo_state:
+            # TODO: DRY with other undo state creation
+            self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
+            self.image_at_start.copy_region(self.image)
+            action = Action(self.selected_tool.get_name(), self.image)
+            if len(self.redos) > 0:
+                self.redos = []
+            self.undos.append(action)
+
         region = self.image.selection.region
         if meld:
             self.image.selection.copy_to_document(self.image)
         else:
-            if not self.image.selection.contained_image:
+            if self.image.selection.contained_image is None:
                 # It hasn't been cut out yet, so we need to erase it.
                 self.erase_region(region, self.image.selection.mask)
         self.image.selection = None
         self.canvas.refresh_scaled_region(region)
         self.selection_drag_offset = None
         self.selecting_text = False
+
+        if make_undo_state:
+            action = action # type: ignore
+            affected_region = region
+            # TODO: DRY with other undo state creation
+            action.region = affected_region
+            action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
+            action.update(self.image_at_start)
+            self.canvas.refresh_scaled_region(affected_region)
 
     def meld_selection(self) -> None:
         """Draw the selection onto the image and dissolve the selection."""
