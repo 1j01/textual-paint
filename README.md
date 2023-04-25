@@ -112,6 +112,19 @@ The rest match MS Paint's keyboard shortcuts:
 - <kbd>Ctrl</kbd>+<kbd>PageUp</kbd>: Large Size
 - <kbd>Ctrl</kbd>+<kbd>PageDown</kbd>: Normal Size
 
+## Tips
+
+You can draw with a character by clicking the selected color display area in the palette and then typing the character,
+or by double clicking the same area to pick a character a list.
+
+You can set the text color by holding Ctrl while clicking a color in the palette, or while double clicking a color to open the Edit Colors dialog.
+
+You can display a saved ANSI file in the terminal with `cat`:
+
+```bash
+cat file.ans
+```
+
 ## Known Issues
 
 - Pressing Delete while using the Text tool deletes the whole text box. Similarly, Ctrl+A selects the canvas instead of the text in the text box.
