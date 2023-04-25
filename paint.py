@@ -1190,6 +1190,8 @@ class PaintApp(App[None]):
     tool_points: List[Offset] = []
     # for Polygon tool to detect double-click
     polygon_last_click_time: float = 0
+    # for Eraser/Color Eraser tool, when using the right mouse button
+    color_eraser_mode: bool = False
 
     # flag to prevent setting the filename input when initially expanding the directory tree
     expanding_directory_tree = False
@@ -1291,6 +1293,22 @@ class PaintApp(App[None]):
             char = " "
             bg_color = "#ffffff"
             fg_color = "#000000"
+            if self.color_eraser_mode:
+                char = self.image.ch[y][x]
+                # fg_color = self.selected_bg_color if self.image.fg[y][x] == self.selected_fg_color else self.image.fg[y][x]
+                # bg_color = self.selected_bg_color if self.image.bg[y][x] == self.selected_fg_color else self.image.bg[y][x]
+                
+                # Use color comparison instead of string comparison because "#000000" != "rgb(0,0,0)"
+                # This stuff might be simpler and more efficient if we used Color objects in the document model
+                style = Style.parse(self.image.fg[y][x]+" on "+self.image.bg[y][x])
+                selected_fg_style = Style.parse(self.selected_fg_color)
+                assert style.color is not None
+                assert style.bgcolor is not None
+                assert selected_fg_style.color is not None
+                fg_matches = style.color.triplet == selected_fg_style.color.triplet
+                bg_matches = style.bgcolor.triplet == selected_fg_style.color.triplet
+                fg_color = self.selected_bg_color if fg_matches else self.image.fg[y][x]
+                bg_color = self.selected_bg_color if bg_matches else self.image.bg[y][x]
         if self.selected_tool == Tool.airbrush:
             if random() < 0.7:
                 return
@@ -1997,6 +2015,7 @@ class PaintApp(App[None]):
 
         self.mouse_at_start = Offset(event.mouse_down_event.x, event.mouse_down_event.y)
         self.mouse_previous = self.mouse_at_start
+        self.color_eraser_mode = self.selected_tool == Tool.eraser and event.mouse_down_event.button == 3
 
         if self.selected_tool in [Tool.curve, Tool.polygon]:
             self.tool_points.append(Offset(event.mouse_down_event.x, event.mouse_down_event.y))
@@ -2368,6 +2387,8 @@ class PaintApp(App[None]):
         self.cancel_preview()
 
         self.get_widget_by_id("status_dimensions", Static).update("")
+
+        self.color_eraser_mode = False # reset for preview
 
         if self.mouse_gesture_cancelled:
             return
