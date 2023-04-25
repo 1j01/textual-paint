@@ -1044,10 +1044,11 @@ class Canvas(Widget):
             # def offset_to_text_index(offset) -> int:
             #     # return offset.y * sel.region.width + offset.x
             #     # return offset.y * self.image.width + offset.x
+            assert isinstance(self.app, PaintApp)
             if (
                 (self.magnifier_preview_region and magnifier_preview_region.contains(x, y) and (not inner_magnifier_preview_region.contains(x, y))) or
                 (self.select_preview_region and select_preview_region.contains(x, y) and (not inner_select_preview_region.contains(x, y))) or
-                (sel and (not sel.textbox_mode) and selection_region.contains(x, y) and (not inner_selection_region.contains(x, y))) or
+                (sel and (not sel.textbox_mode) and (self.app.selection_drag_offset is None) and selection_region.contains(x, y) and (not inner_selection_region.contains(x, y))) or
                 (sel and sel.textbox_mode and (
                     # offset_to_text_index(sel.text_selection_start) <=
                     # offset_to_text_index(Offset(x, y))
@@ -2484,6 +2485,9 @@ class PaintApp(App[None]):
         if self.selection_drag_offset is not None:
             # Done dragging selection
             self.selection_drag_offset = None
+            # Refresh to show border, which is hidden while dragging
+            assert self.image.selection is not None, "Dragging selection without selection"
+            self.canvas.refresh_scaled_region(self.image.selection.region)
             return
         if self.selecting_text:
             # Done selecting text
