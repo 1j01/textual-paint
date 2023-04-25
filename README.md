@@ -139,7 +139,7 @@ cat file.ans
 - The program sometimes crashes or freezes randomly, and there's no auto-save feature.
 - Saving/loading an ANSI file ends up with a white cell at the top left, which pushes the top row to the right. The top right cell gets pushed off and deleted.
 - Saved ANSI files are unnecessarily large, because they include escape sequences for every cell, even if the colors match the previous cell.
-- If you hit Ctrl+A after dragging (or while dragging) a selection, it can get cut off. (This seems to behave differently horizontally and vertically, so it may be an x/y axis typo.)
+- When finalizing a selection that is partially outside the document bounds to the top or to the left, it gets cut off.
 
 The program has only been tested on Linux. Issues on other platforms are as-yet _unknown_ :)
 
