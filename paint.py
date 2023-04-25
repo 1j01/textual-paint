@@ -2240,18 +2240,19 @@ class PaintApp(App[None]):
         return region.intersection(Region(0, 0, self.image.width, self.image.height))
 
     def meld_or_clear_selection(self, meld: bool) -> None:
-        if self.image.selection:
-            region = self.image.selection.region
-            if meld:
-                self.image.selection.copy_to_document(self.image)
-            else:
-                if not self.image.selection.contained_image:
-                    # It hasn't been cut out yet, so we need to erase it.
-                    self.erase_region(region, self.image.selection.mask)
-            self.image.selection = None
-            self.canvas.refresh_scaled_region(region)
-            self.selection_drag_offset = None
-            self.selecting_text = False
+        if not self.image.selection:
+            return
+        region = self.image.selection.region
+        if meld:
+            self.image.selection.copy_to_document(self.image)
+        else:
+            if not self.image.selection.contained_image:
+                # It hasn't been cut out yet, so we need to erase it.
+                self.erase_region(region, self.image.selection.mask)
+        self.image.selection = None
+        self.canvas.refresh_scaled_region(region)
+        self.selection_drag_offset = None
+        self.selecting_text = False
 
     def meld_selection(self) -> None:
         """Draw the selection onto the image and dissolve the selection."""
