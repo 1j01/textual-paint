@@ -2350,18 +2350,8 @@ class PaintApp(App[None]):
                     self.selection_drag_offset.x + event.mouse_move_event.x,
                     self.selection_drag_offset.y + event.mouse_move_event.y,
                 )
-                # Constrain to have at least one row/column within the bounds of the document.
-                # This ensures you can always drag the selection back into the document,
-                # but doesn't limit you from positioning it partially outside.
-                # (It is useless to position it _completely_ outside, since you could just delete it.)
-                offset = (
-                    max(1-sel.region.width, min(self.image.width - 1, offset[0])),
-                    max(1-sel.region.height, min(self.image.height - 1, offset[1])),
-                )
-                old_region = sel.region
-                sel.region = Region.from_offset(offset, sel.region.size)
-                combined_region = old_region.union(sel.region)
-                self.canvas.refresh_scaled_region(combined_region)
+                # Handles constraints and canvas refresh.
+                self.move_selection_absolute(*offset)
             elif self.selected_tool == Tool.free_form_select:
                 self.tool_points.append(Offset(event.mouse_move_event.x, event.mouse_move_event.y))
                 self.make_preview(self.draw_current_free_form_select_polyline, show_dimensions_in_status_bar=True)
@@ -2556,10 +2546,42 @@ class PaintApp(App[None]):
         # Not reliably unset, so might as well not rely on it. (See early returns above.)
         # self.mouse_at_start = None
 
+    def move_selection_absolute(self, x: int, y: int) -> None:
+        """Positions the selection relative to the document."""
+        # Constrain to have at least one row/column within the bounds of the document.
+        # This ensures you can always drag the selection back into the document,
+        # but doesn't limit you from positioning it partially outside.
+        # (It is useless to position it _completely_ outside, since you could just delete it.)
+        sel = self.image.selection
+        assert sel is not None, "move_selection_absolute called without a selection"
+        offset = Offset(
+            max(1-sel.region.width, min(self.image.width - 1, x)),
+            max(1-sel.region.height, min(self.image.height - 1, y)),
+        )
+        old_region = sel.region
+        sel.region = Region.from_offset(offset, sel.region.size)
+        combined_region = old_region.union(sel.region)
+        self.canvas.refresh_scaled_region(combined_region)
+
+    def move_selection_relative(self, delta_x: int, delta_y: int) -> None:
+        """Moves the selection relative to its current position."""
+        sel = self.image.selection
+        assert sel is not None, "move_selection_relative called without a selection"
+        self.move_selection_absolute(sel.region.offset.x + delta_x, sel.region.offset.y + delta_y)
+
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
+        key = event.key
+        if self.image.selection and not self.image.selection.textbox_mode:
+            if key == "left":
+                self.move_selection_relative(-1, 0)
+            elif key == "right":
+                self.move_selection_relative(1, 0)
+            elif key == "up":
+                self.move_selection_relative(0, -1)
+            elif key == "down":
+                self.move_selection_relative(0, 1)
         if self.image.selection and self.image.selection.textbox_mode:
-            key = event.key
             assert self.image.selection.contained_image is not None, "Textbox mode should always have contained_image, to edit as text."
             # TODO: delete selected text if any, when typing
             # Note: Don't forget to set self.image.selection.textbox_edited = True
