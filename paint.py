@@ -2100,12 +2100,17 @@ class PaintApp(App[None]):
                 sel.copy_from_document(self.image)
                 if not event.mouse_down_event.ctrl:
                     self.erase_region(sel.region, sel.mask)
-                # TODO: use two regions, for the cut out and the paste in, once melded.
-                # I could maybe give Action a sub_action property, and use it for the melding.
-                # Or I could make it use a list of regions.
-                # But for now, just save the whole image, so this action can
-                # simply be updated on meld.
-                # affected_region = sel.region
+ 
+                # TODO: Optimize the region storage. Right now I'm copying the whole image,
+                # because later when the selection is melded into the canvas, it currently
+                # falls under the same singular undo action.
+                # I could:
+                # - Update the region when melding to be the union of the two rectangles.
+                # - Make Action support a list of regions, and add the new region on meld.
+                # - Make Action support a list of sub-actions (or just one), and make meld a sub-action.
+                # - Add a new Action on meld, but mark it for skipping when undoing, and skipping ahead to when redoing.
+
+                # `affected_region = sel.region` doesn't encompass the new region when melding
                 affected_region = Region(0, 0, self.image.width, self.image.height)
                 
                 # TODO: DRY with the below action handling
