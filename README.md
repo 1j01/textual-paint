@@ -128,6 +128,8 @@ cat file.ans
 ## Known Issues
 
 - Pressing Delete while using the Text tool deletes the whole text box. Similarly, Ctrl+A selects the canvas instead of the text in the text box.
+- The Text tool cannot be undone.
+- Text and Selection box borders are inside instead of outside (and have no dashes).
 - The Curve and Polygon tool previews disappear when you're not hovering over the canvas.
 - Pick Color can't be cancelled with Escape or by pressing both mouse buttons.
 - Help > Help Topics isn't very helpful.
