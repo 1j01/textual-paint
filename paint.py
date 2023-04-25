@@ -551,7 +551,11 @@ class AnsiArtDocument:
         # TODO: use Rich API to render ANSI to a virtual screen,
         # and remove dependency on stransi
         ansi = stransi.Ansi(text)
-        document = AnsiArtDocument(1, 1)
+
+        # Initial document is zero wide to avoid an extraneous character at (0,0),
+        # but needs one row to avoid IndexError.
+        document = AnsiArtDocument(0, 1)
+        # Ultimately, the minimum size is 1x1.
         width = 1
         height = 1
 

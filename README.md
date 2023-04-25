@@ -137,7 +137,6 @@ cat file.ans
 - Some languages don't display correctly.
 - Large files can make the program very slow, as can magnifying the canvas.
 - The program sometimes crashes or freezes randomly, and there's no auto-save feature.
-- Saving/loading an ANSI file ends up with a white cell at the top left, which pushes the top row to the right. The top right cell gets pushed off and deleted.
 - Saved ANSI files are unnecessarily large, because they include escape sequences for every cell, even if the colors match the previous cell.
 - When finalizing a selection that is partially outside the document bounds to the top or to the left, it gets cut off.
 
