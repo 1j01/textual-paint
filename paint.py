@@ -1783,7 +1783,7 @@ class PaintApp(App[None]):
     def action_paste(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_select_all(self) -> None:
-        self.meld_selection()
+        self.stop_action_in_progress()
         self.image.selection = Selection(Region(0, 0, self.image.width, self.image.height))
         self.canvas.refresh()
         self.selected_tool = Tool.select
