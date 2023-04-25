@@ -112,7 +112,7 @@ The rest match MS Paint's keyboard shortcuts:
 - <kbd>Ctrl</kbd>+<kbd>PageUp</kbd>: Large Size
 - <kbd>Ctrl</kbd>+<kbd>PageDown</kbd>: Normal Size
 
-## Tips
+### Tips
 
 You can draw with a character by clicking the selected color display area in the palette and then typing the character,
 or by double clicking the same area to pick a character a list.
