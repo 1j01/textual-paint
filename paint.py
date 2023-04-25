@@ -1408,8 +1408,17 @@ class PaintApp(App[None]):
 
     def finalize_polygon_or_curve(self) -> None:
         """Finalizes the polygon or curve shape, creating an undo state."""
-        # TODO: also Text tool
         # TODO: DRY with other undo state creation
+        self.cancel_preview()
+
+        if self.selected_tool not in [Tool.polygon, Tool.curve]:
+            return
+    
+        if self.selected_tool == Tool.polygon and len(self.tool_points) < 3:
+            return
+        if self.selected_tool == Tool.curve and len(self.tool_points) < 2:
+            return
+
         self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
         self.image_at_start.copy_region(self.image)
         action = Action(self.selected_tool.get_name(), self.image)
@@ -2569,11 +2578,13 @@ class PaintApp(App[None]):
 
     def on_tools_box_tool_selected(self, event: ToolsBox.ToolSelected) -> None:
         """Called when a tool is selected in the palette."""
+        self.finalize_polygon_or_curve() # must come before setting selected_tool
+        self.meld_selection()
+        self.tool_points = []
+
         self.selected_tool = event.tool
         if self.selected_tool not in [Tool.magnifier, Tool.pick_color]:
             self.return_to_tool = self.selected_tool
-        self.meld_selection()
-        self.tool_points = []
     
     def on_char_input_char_selected(self, event: CharInput.CharSelected) -> None:
         """Called when a character is entered in the character input."""
