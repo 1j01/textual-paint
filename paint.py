@@ -1406,6 +1406,29 @@ class PaintApp(App[None]):
             affected_region = affected_region.union(self.stamp_brush(x, y, affected_region))
         return affected_region
 
+    def finalize_polygon_or_curve(self) -> None:
+        """Finalizes the polygon or curve shape, creating an undo state."""
+        # TODO: also Text tool
+        # TODO: DRY with other undo state creation
+        self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
+        self.image_at_start.copy_region(self.image)
+        action = Action(self.selected_tool.get_name(), self.image)
+        if len(self.redos) > 0:
+            self.redos = []
+        self.undos.append(action)
+
+        if self.selected_tool == Tool.polygon:
+            affected_region = self.draw_current_polygon()
+        else:
+            affected_region = self.draw_current_curve()
+        
+        action.region = affected_region
+        action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
+        action.update(self.image_at_start)
+        self.canvas.refresh_scaled_region(affected_region)
+
+        self.tool_points = []
+
     def stop_action_in_progress(self) -> None:
         """Finalizes the selection, or cancels other tools."""
         self.cancel_preview()
@@ -2447,22 +2470,7 @@ class PaintApp(App[None]):
         elif self.selected_tool == Tool.curve:
             # Maybe finish drawing a curve
             if len(self.tool_points) >= 4:
-                # TODO: DRY action handling (undo state creation)!!!
-                self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
-                self.image_at_start.copy_region(self.image)
-                action = Action(self.selected_tool.get_name(), self.image)
-                if len(self.redos) > 0:
-                    self.redos = []
-                self.undos.append(action)
-
-                affected_region = self.draw_current_curve()
-                
-                action.region = affected_region
-                action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
-                action.update(self.image_at_start)
-                self.canvas.refresh_scaled_region(affected_region)
-
-                self.tool_points = []
+                self.finalize_polygon_or_curve()
             else:
                 # Most likely just drawing the preview we just cancelled.
                 self.make_preview(self.draw_current_curve)
@@ -2486,23 +2494,7 @@ class PaintApp(App[None]):
                 abs(self.mouse_at_start.y - event.mouse_up_event.y) <= double_click_threshold_cells
             )
             if enough_points and (closed_gap or double_clicked):
-                # Finish drawing the polygon
-                # TODO: DRY action handling (undo state creation)!!!
-                self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
-                self.image_at_start.copy_region(self.image)
-                action = Action(self.selected_tool.get_name(), self.image)
-                if len(self.redos) > 0:
-                    self.redos = []
-                self.undos.append(action)
-
-                affected_region = self.draw_current_polygon()
-                
-                action.region = affected_region
-                action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
-                action.update(self.image_at_start)
-                self.canvas.refresh_scaled_region(affected_region)
-
-                self.tool_points = []
+                self.finalize_polygon_or_curve()
             else:
                 # Most likely just drawing the preview we just cancelled.
                 self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True) # polyline until finished
