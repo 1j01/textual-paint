@@ -184,7 +184,7 @@ class Window(Container):
 
     def on_mouse_move(self, event: events.MouseMove) -> None:
         """Called when the user moves the mouse."""
-        if self.mouse_at_drag_start and self.offset_at_drag_start:
+        if self.mouse_at_drag_start is not None and self.offset_at_drag_start is not None:
             self.styles.offset = (
                 self.offset_at_drag_start.x + event.screen_x - self.mouse_at_drag_start.x,
                 self.offset_at_drag_start.y + event.screen_y - self.mouse_at_drag_start.y,

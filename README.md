@@ -141,7 +141,6 @@ cat file.ans
 - Large files can make the program very slow, as can magnifying the canvas.
 - The program sometimes crashes or freezes randomly, and there's no auto-save feature.
 - Saving/loading an ANSI file ends up with a white cell at the top left, which pushes the top row to the right. The top right cell gets pushed off and deleted.
-- Dragging windows is broken; it used to work, but now does nothing.
 - The Polygon/Curve tools aren't finalized when you switch tools.
 - Saved ANSI files are unnecessarily large, because they include escape sequences for every cell, even if the colors match the previous cell.
 
