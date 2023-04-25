@@ -5,6 +5,7 @@ from textual.containers import Container
 from textual.reactive import var
 from textual.widgets import Button, Static
 from textual.message import Message
+from textual.dom import NoScreen
 from rich.text import Text
 from localization.i18n import markup_hotkey, get_hotkey, get_direction
 
@@ -35,17 +36,29 @@ class Menu(Container):
         self.parent_menu: Menu | None = None
         self.parent_menu_item: MenuItem | None = None
 
+
+    def mount_items(self) -> None:
+        """Mount the menu items."""
+        for item in self.items:
+            self.mount(item)
+            if item.submenu:
+                self.screen.mount(item.submenu)
+                item.submenu.close()
+            if isinstance(item, MenuItem):
+                item.parent_menu = self
+
     def watch_items(self, old_items: list['MenuItem|Separator'], new_items: list['MenuItem|Separator']) -> None:
         """Update the menu items."""
         for item in old_items:
             item.remove()
-        for item in new_items:
-            self.mount(item)
-            if item.submenu:
-                self.app.mount(item.submenu)
-                item.submenu.close()
-            if isinstance(item, MenuItem):
-                item.parent_menu = self
+        try:
+            self.mount_items()
+        except NoScreen:
+            pass
+
+    def on_mount(self) -> None:
+        """Called when the menu is mounted."""
+        self.mount_items()
 
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
