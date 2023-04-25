@@ -1502,9 +1502,9 @@ class PaintApp(App[None]):
             except FileNotFoundError: 
                 self.warning_message_box(dialog_title, _("%1 contains an invalid path.", self.filename), "ok")
             except OSError as e:
-                self.warning_message_box(dialog_title, _("Failed to save document.") + "\n\n" + str(e), "ok")
+                self.warning_message_box(dialog_title, _("Failed to save document.") + "\n\n" + repr(e), "ok")
             except Exception as e:
-                self.warning_message_box(dialog_title, _("An unexpected error occurred while writing %1.", self.filename) + "\n\n" + str(e), "ok")
+                self.warning_message_box(dialog_title, _("An unexpected error occurred while writing %1.", self.filename) + "\n\n" + repr(e), "ok")
         else:
             await self.save_as()
     
@@ -1670,7 +1670,7 @@ class PaintApp(App[None]):
                             # "This is not a valid bitmap file, or its format is not currently supported."
                             # string from MS Paint doesn't apply well here,
                             # at least not until we support bitmap files.
-                            self.warning_message_box(_("Open"), Static(_("Paint cannot open this file.") + "\n\n" + str(e)), "ok")
+                            self.warning_message_box(_("Open"), Static(_("Paint cannot open this file.") + "\n\n" + repr(e)), "ok")
                             return
                         self.action_new(force=True)
                         self.canvas.image = self.image = new_image
@@ -1688,7 +1688,7 @@ class PaintApp(App[None]):
             except PermissionError:
                 self.warning_message_box(_("Open"), Static(_("Access denied.")), "ok")
             except Exception as e:
-                self.warning_message_box(_("Open"), Static(_("An unexpected error occurred while reading %1.", filename) + "\n\n" + str(e)), "ok")
+                self.warning_message_box(_("Open"), Static(_("An unexpected error occurred while reading %1.", filename) + "\n\n" + repr(e)), "ok")
 
         self.close_windows("#save_as_dialog, #open_dialog")
         window = DialogWindow(
