@@ -249,6 +249,14 @@ CharacterSelectorDialogWindow .cancel {
     /* width: auto; */
     height: auto;
 }
+#zoom_dialog .buttons {
+    layout: horizontal;
+    height: auto;
+}
+#zoom_dialog .buttons Button {
+    width: auto;
+    margin: 1;
+}
 
 EditColorsDialogWindow .window_content {
     padding: 2 4;

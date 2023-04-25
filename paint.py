@@ -1750,11 +1750,11 @@ class PaintApp(App[None]):
             #         Static(str(self.magnification)),
             #     ),
             # ),
-            # Horizontal(
-            Button(_("OK"), classes="ok submit", variant="primary"),
-            Button(_("Cancel"), classes="cancel"),
-            #     classes="buttons",
-            # )
+            Container(
+                Button(_("OK"), classes="ok submit", variant="primary"),
+                Button(_("Cancel"), classes="cancel"),
+                classes="buttons",
+            )
         )
         self.mount(window)
     def action_show_grid(self) -> None:
