@@ -2102,8 +2102,10 @@ class PaintApp(App[None]):
                     self.erase_region(sel.region, sel.mask)
  
                 # TODO: Optimize the region storage. Right now I'm copying the whole image,
-                # because later when the selection is melded into the canvas, it currently
-                # falls under the same singular undo action.
+                # for the case of selection, because later, when the selection is melded into the canvas,
+                # it _implicitly updates_ the undo action, by changing the document without creating a new Action.
+                # This is the intended behavior, in that it allows the user to undo the
+                # selection and any changes to it as one action. But it's not efficient for large images.
                 # I could:
                 # - Update the region when melding to be the union of the two rectangles.
                 # - Make Action support a list of regions, and add the new region on meld.
