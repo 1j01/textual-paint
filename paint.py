@@ -1420,11 +1420,11 @@ class PaintApp(App[None]):
             except PermissionError:
                 self.warning_message_box(dialog_title, _("Access denied."), "ok")
             except FileNotFoundError: 
-                self.warning_message_box(dialog_title, _("%1 contains an invalid path.").replace("%1", self.filename), "ok")
+                self.warning_message_box(dialog_title, _("%1 contains an invalid path.", self.filename), "ok")
             except OSError as e:
                 self.warning_message_box(dialog_title, _("Failed to save document.") + "\n\n" + str(e), "ok")
             except Exception as e:
-                self.warning_message_box(dialog_title, _("An unexpected error occurred while writing %1.").replace("%1", self.filename) + "\n\n" + str(e), "ok")
+                self.warning_message_box(dialog_title, _("An unexpected error occurred while writing %1.", self.filename) + "\n\n" + str(e), "ok")
         else:
             await self.save_as()
     
@@ -1496,7 +1496,7 @@ class PaintApp(App[None]):
         self.set_timer(0.1, done_expanding)
 
     def confirm_overwrite(self, filename: str, callback: Callable[[], None]) -> None:
-        message = _("%1 already exists.\nDo you want to replace it?").replace("%1", filename)
+        message = _("%1 already exists.\nDo you want to replace it?", filename)
         def handle_button(button: Button) -> None:
             if not button.has_class("yes"):
                 return
@@ -1608,7 +1608,7 @@ class PaintApp(App[None]):
             except PermissionError:
                 self.warning_message_box(_("Open"), Static(_("Access denied.")), "ok")
             except Exception as e:
-                self.warning_message_box(_("Open"), Static(_("An unexpected error occurred while reading %1.").replace("%1", filename) + "\n\n" + str(e)), "ok")
+                self.warning_message_box(_("Open"), Static(_("An unexpected error occurred while reading %1.", filename) + "\n\n" + str(e)), "ok")
 
         self.close_windows("#save_as_dialog, #open_dialog")
         window = DialogWindow(
