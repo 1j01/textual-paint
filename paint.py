@@ -2243,7 +2243,16 @@ class PaintApp(App[None]):
         if not self.image.selection:
             return
         
-        make_undo_state = self.image.selection.contained_image is None and not meld
+        if self.image.selection.textbox_mode:
+            # The Text tool creates an undo state only when you switch tools
+            # or click outside the textbox, melding the textbox into the image.
+            # If you're deleting the textbox, an undo state doesn't need to be created.
+            make_undo_state = meld
+        else:
+            # The Select tool creates an undo state when you drag a selection,
+            # so we only need to create one if you haven't dragged it.
+            # Once it's dragged, it cuts out the image data, and contained_image is not None.
+            make_undo_state = self.image.selection.contained_image is None and not meld
 
         if make_undo_state:
             # TODO: DRY with other undo state creation
