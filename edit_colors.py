@@ -66,4 +66,4 @@ class EditColorsDialogWindow(DialogWindow):
                 button.focus()
             container.mount(button)
         self.content.mount(container)
-        self.content.mount(Button("Cancel", classes="cancel"))
+        self.content.mount(Button(_("Cancel"), classes="cancel"))

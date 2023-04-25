@@ -291,8 +291,8 @@ class CharacterSelectorDialogWindow(DialogWindow):
         for i in range(0, len(self.char_list), column_count):
             data_table.add_row(*self.char_list[i:i+column_count])
         self.content.mount(data_table)
-        self.content.mount(Button("OK", classes="ok submit"))
-        self.content.mount(Button("Cancel", classes="cancel"))
+        self.content.mount(Button(_("OK"), classes="ok submit"))
+        self.content.mount(Button(_("Cancel"), classes="cancel"))
 
 # ASCII line art version:
 # get_warning_icon = lambda: Static("""[#ffff00]

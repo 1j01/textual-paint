@@ -7,3 +7,5 @@ No
 Filename
 %1 already exists.
 Do you want to replace it?
+Reload
+Choose Character
