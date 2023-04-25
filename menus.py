@@ -44,7 +44,8 @@ class Menu(Container):
             if item.submenu:
                 self.app.mount(item.submenu)
                 item.submenu.close()
-            item.parent_menu = self
+            if isinstance(item, MenuItem):
+                item.parent_menu = self
 
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
