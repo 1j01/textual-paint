@@ -1505,7 +1505,7 @@ class PaintApp(App[None]):
 
     def prompt_save_changes(self, filename: str, callback: Callable[[], None]) -> None:
         filename = os.path.basename(filename)
-        message = "Save changes to " + filename + "?"
+        message = _("Save changes to %1?", filename)
         def handle_button(button: Button) -> None:
             if not button.has_class("yes") and not button.has_class("no"):
                 return
