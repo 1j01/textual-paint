@@ -2239,28 +2239,27 @@ class PaintApp(App[None]):
         # Clamp to the document bounds.
         return region.intersection(Region(0, 0, self.image.width, self.image.height))
 
-    def meld_selection(self) -> None:
-        """Draw the selection onto the image and dissolve the selection."""
-        # I could DRY this by making clear_selection return the Selection
+    def meld_or_clear_selection(self, meld: bool) -> None:
         if self.image.selection:
             region = self.image.selection.region
-            self.image.selection.copy_to_document(self.image)
+            if meld:
+                self.image.selection.copy_to_document(self.image)
+            else:
+                if not self.image.selection.contained_image:
+                    # It hasn't been cut out yet, so we need to erase it.
+                    self.erase_region(region, self.image.selection.mask)
             self.image.selection = None
             self.canvas.refresh_scaled_region(region)
             self.selection_drag_offset = None
             self.selecting_text = False
 
+    def meld_selection(self) -> None:
+        """Draw the selection onto the image and dissolve the selection."""
+        self.meld_or_clear_selection(meld=True)
+
     def action_clear_selection(self) -> None:
         """Delete the selection and its contents."""
-        if self.image.selection:
-            region = self.image.selection.region
-            if not self.image.selection.contained_image:
-                # It hasn't been cut out yet, so we need to erase it.
-                self.erase_region(region, self.image.selection.mask)
-            self.image.selection = None
-            self.canvas.refresh_scaled_region(region)
-            self.selection_drag_offset = None
-            self.selecting_text = False
+        self.meld_or_clear_selection(meld=False)
 
     def on_canvas_tool_update(self, event: Canvas.ToolUpdate) -> None:
         """Called when the user is drawing on the canvas.
