@@ -125,7 +125,6 @@ The rest match MS Paint's keyboard shortcuts:
 - Some languages don't display correctly.
 - Large files can make the program very slow.
 - The program sometimes crashes or freezes randomly.
-- The program freezes when using the fill tool on a spot already filled with the target color.
 
 ## Development
 

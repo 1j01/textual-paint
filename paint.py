@@ -818,7 +818,8 @@ def flood_fill(document: AnsiArtDocument, x: int, y: int, fill_ch: str, fill_fg:
         return (
             document.ch[y][x] == original_ch and
             document.bg[y][x] == original_bg and
-            (original_ch == " " or document.fg[y][x] == original_fg)
+            (original_ch == " " or document.fg[y][x] == original_fg) and
+            (document.ch[y][x] != fill_ch or document.bg[y][x] != fill_bg or document.fg[y][x] != fill_fg)
         )
 
     def set_cell(x: int, y: int) -> None:
