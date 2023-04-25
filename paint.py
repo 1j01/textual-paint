@@ -367,8 +367,9 @@ class ColorsBox(Container):
 
     class ColorSelected(Message):
         """Message sent when a color is selected."""
-        def __init__(self, color: str) -> None:
+        def __init__(self, color: str, as_foreground: bool) -> None:
             self.color = color
+            self.as_foreground = as_foreground
             super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -396,17 +397,19 @@ class ColorsBox(Container):
 
     last_click_time = 0
     last_click_button: Button | None = None
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        """Called when a button is clicked."""
-
-        if "color_button" in event.button.classes:
-            self.post_message(self.ColorSelected(self.color_by_button[event.button]))
+    # def on_button_pressed(self, event: Button.Pressed) -> None:
+        # """Called when a button is clicked."""
+    def on_mouse_down(self, event: events.MouseDown) -> None:
+        """Called when a mouse button is pressed."""
+        button, _ = self.app.get_widget_at(*event.screen_offset)
+        if "color_button" in button.classes:
+            self.post_message(self.ColorSelected(self.color_by_button[button], event.ctrl))
             # Detect double click and open Edit Colors dialog.
-            if event.time - self.last_click_time < 0.8 and event.button == self.last_click_button:
+            if event.time - self.last_click_time < 0.8 and button == self.last_click_button:
                 assert isinstance(self.app, PaintApp)
-                self.app.action_edit_colors(self.query(".color_button").nodes.index(event.button))
+                self.app.action_edit_colors(self.query(".color_button").nodes.index(button), event.ctrl)
             self.last_click_time = event.time
-            self.last_click_button = event.button
+            self.last_click_button = button
 
 class Selection:
     """
@@ -1667,11 +1670,14 @@ class PaintApp(App[None]):
         )
         self.mount(window)
 
-    def action_edit_colors(self, color_palette_index: int|None = None) -> None:
+    def action_edit_colors(self, color_palette_index: int|None = None, as_foreground: bool = False) -> None:
         """Show dialog to edit colors."""
         self.close_windows("#edit_colors_dialog")
         def handle_selected_color(color: str) -> None:
-            self.selected_bg_color = color
+            if as_foreground:
+                self.selected_fg_color = color
+            else:
+                self.selected_bg_color = color
             if color_palette_index is not None:
                 palette[color_palette_index] = color
                 # TODO: Update the palette in a reactive way.
@@ -2529,11 +2535,10 @@ class PaintApp(App[None]):
 
     def on_colors_box_color_selected(self, event: ColorsBox.ColorSelected) -> None:
         """Called when a color well is clicked in the palette."""
-        # TODO: a way to select the foreground color
-        # if event.fg:
-        #     self.selected_fg_color = event.color
-        # else:
-        self.selected_bg_color = event.color
+        if event.as_foreground:
+            self.selected_fg_color = event.color
+        else:
+            self.selected_bg_color = event.color
 
     def on_tree_node_highlighted(self, event: Tree.NodeHighlighted[DirEntry]) -> None:
         """
