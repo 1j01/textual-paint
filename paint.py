@@ -2266,13 +2266,16 @@ class PaintApp(App[None]):
                 assert sel is not None, "selecting_text should only be set if there's a selection"
                 sel.text_selection_end = Offset(event.mouse_move_event.x, event.mouse_move_event.y) - sel.region.offset
                 self.canvas.refresh_scaled_region(sel.region)
-            elif self.selection_drag_offset:
+            elif self.selection_drag_offset is not None:
                 assert sel is not None, "selection_drag_offset should only be set if there's a selection"
                 offset = (
                     self.selection_drag_offset.x + event.mouse_move_event.x,
                     self.selection_drag_offset.y + event.mouse_move_event.y,
                 )
-                # constrain to have at least one cell in the bounds of the document
+                # Constrain to have at least one row/column within the bounds of the document.
+                # This ensures you can always drag the selection back into the document,
+                # but doesn't limit you from positioning it partially outside.
+                # (It is useless to position it _completely_ outside, since you could just delete it.)
                 offset = (
                     max(1-sel.region.width, min(self.image.width - 1, offset[0])),
                     max(1-sel.region.height, min(self.image.height - 1, offset[1])),
@@ -2399,7 +2402,7 @@ class PaintApp(App[None]):
         if self.mouse_gesture_cancelled:
             return
 
-        if self.selection_drag_offset:
+        if self.selection_drag_offset is not None:
             # Done dragging selection
             self.selection_drag_offset = None
             return

@@ -133,7 +133,6 @@ cat file.ans
 - The Curve and Polygon tool previews disappear when you're not hovering over the canvas.
 - Pick Color can't be cancelled with Escape or by pressing both mouse buttons.
 - Help > Help Topics isn't very helpful.
-- The selection can't be dragged from the top left corner. (Instead it starts a new selection, seemingly without finalizing the old one, until mouse up.)
 - Due to limitations of the terminal, shortcuts using Shift or Alt might not work.
 - Menus are not keyboard navigable.
 - Clicking the Zoom submenu doesn't always work. You just have to click it a few times before it opens. (It may be technically open but positioned off screen, or lacking width/height. I don't know.)
