@@ -1230,9 +1230,23 @@ class PaintApp(App[None]):
         """Called when selected_bg_color changes."""
         self.query_one("#selected_color_char_input", CharInput).styles.background = selected_bg_color
 
+        if self.image.selection and self.image.selection.textbox_mode:
+            assert self.image.selection.contained_image is not None, "textbox_mode without contained_image"
+            for y in range(self.image.selection.region.height):
+                for x in range(self.image.selection.region.width):
+                    self.image.selection.contained_image.bg[y][x] = self.selected_bg_color
+            self.canvas.refresh_scaled_region(self.image.selection.region)
+
     def watch_selected_fg_color(self, selected_fg_color: str) -> None:
         """Called when selected_fg_color changes."""
         self.query_one("#selected_color_char_input", CharInput).styles.color = selected_fg_color
+
+        if self.image.selection and self.image.selection.textbox_mode:
+            assert self.image.selection.contained_image is not None, "textbox_mode without contained_image"
+            for y in range(self.image.selection.region.height):
+                for x in range(self.image.selection.region.width):
+                    self.image.selection.contained_image.fg[y][x] = self.selected_fg_color
+            self.canvas.refresh_scaled_region(self.image.selection.region)
 
     def watch_selected_char(self, selected_char: str) -> None:
         """Called when selected_char changes."""
@@ -2386,6 +2400,10 @@ class PaintApp(App[None]):
             self.image.selection.textbox_mode = self.selected_tool == Tool.text
             if self.image.selection.textbox_mode:
                 self.image.selection.contained_image = AnsiArtDocument(self.image.selection.region.width, self.image.selection.region.height)
+                for y in range(self.image.selection.region.height):
+                    for x in range(self.image.selection.region.width):
+                        self.image.selection.contained_image.fg[y][x] = self.selected_fg_color
+                        self.image.selection.contained_image.bg[y][x] = self.selected_bg_color
             if self.selected_tool == Tool.free_form_select:
                 # Define the mask for the selection using the polygon
                 self.image.selection.mask = [[is_inside_polygon(x + select_region.x, y + select_region.y, self.tool_points) for x in range(select_region.width)] for y in range(select_region.height)]
