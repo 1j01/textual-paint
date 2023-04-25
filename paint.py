@@ -1043,7 +1043,7 @@ class Canvas(Widget):
             if (
                 (self.magnifier_preview_region and magnifier_preview_region.contains(x, y) and (not inner_magnifier_preview_region.contains(x, y))) or
                 (self.select_preview_region and select_preview_region.contains(x, y) and (not inner_select_preview_region.contains(x, y))) or
-                (sel and selection_region.contains(x, y) and (not inner_selection_region.contains(x, y))) or
+                (sel and (not sel.textbox_mode) and selection_region.contains(x, y) and (not inner_selection_region.contains(x, y))) or
                 (sel and sel.textbox_mode and (
                     # offset_to_text_index(sel.text_selection_start) <=
                     # offset_to_text_index(Offset(x, y))

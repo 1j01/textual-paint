@@ -127,7 +127,7 @@ cat file.ans
 ## Known Issues
 
 - Pressing Delete while using the Text tool deletes the whole text box. Similarly, Ctrl+A selects the canvas instead of the text in the text box.
-- Text and Selection box borders are inside instead of outside (and have no dashes).
+- Selection box border is inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
 - The currently selected foreground (text) color is not displayed in the palette.
 - Tools can't be cancelled with Escape or by pressing both mouse buttons.
 - Help > Help Topics isn't very helpful.
