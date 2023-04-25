@@ -221,6 +221,6 @@ A crosshair cursor could use one of `+✜✛✚╋╬`, but whilst that imitates
 ## See Also
 
 - [JavE](http://jave.de/), an advanced Java-based ASCII art editor
-- [Playscii](http://vectorpoem.com/playscii/), a beautiful ASCII/ANSI art editor
+- [Playscii](http://vectorpoem.com/playscii/), a beautiful ASCII/ANSI art editor. This is also written in Python and MIT licensed, so I might take some code from it, for converting images to ANSI, for example. Maybe even try to support (or piggy back off of) its file format.
 - [cmdpxl](https://github.com/knosmos/cmdpxl), a pixel art editor for the terminal using the keyboard
 - [pypixelart](https://github.com/douglascdev/pypixelart), a pixel art editor using vim-like keybindings, inspired by cmdpxl but not terminal-based
