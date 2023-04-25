@@ -129,7 +129,7 @@ cat file.ans
 - Pressing Delete while using the Text tool deletes the whole text box. Similarly, Ctrl+A selects the canvas instead of the text in the text box.
 - Text and Selection box borders are inside instead of outside (and have no dashes).
 - The currently selected foreground (text) color is not displayed in the palette.
-- Pick Color can't be cancelled with Escape or by pressing both mouse buttons.
+- Tools can't be cancelled with Escape or by pressing both mouse buttons.
 - Help > Help Topics isn't very helpful.
 - Due to limitations of the terminal, shortcuts using Shift or Alt might not work.
 - Menus are not keyboard navigable.
@@ -139,6 +139,7 @@ cat file.ans
 - The program sometimes crashes or freezes randomly, and there's no auto-save feature.
 - Saving/loading an ANSI file ends up with a white cell at the top left, which pushes the top row to the right. The top right cell gets pushed off and deleted.
 - Saved ANSI files are unnecessarily large, because they include escape sequences for every cell, even if the colors match the previous cell.
+- If you hit Ctrl+A after dragging (or while dragging) a selection, it can get cut off. (This seems to behave differently horizontally and vertically, so it may be an x/y axis typo.)
 
 The program has only been tested on Linux. Issues on other platforms are as-yet _unknown_ :)
 
