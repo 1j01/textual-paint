@@ -430,6 +430,8 @@ class Selection:
         """The image data contained in the selection, None until dragged, except for text boxes."""
         self.textbox_mode = False
         """Whether the selection is a text box. Either way it's text, but it's a different editing mode."""
+        self.textbox_edited = False
+        """Whether text has been typed into the text box, ever. If not, the textbox can be deleted when clicking off."""
         self.text_selection_start = Offset(0, 0)
         """The start position of the text selection within the text box. This may be before or after the end."""""
         self.text_selection_end = Offset(0, 0)
@@ -2247,6 +2249,14 @@ class PaintApp(App[None]):
             # The Text tool creates an undo state only when you switch tools
             # or click outside the textbox, melding the textbox into the image.
             # If you're deleting the textbox, an undo state doesn't need to be created.
+            
+            # If you haven't typed anything into the textbox yet, it should be deleted
+            # to make it easier to start over in positioning the textbox.
+            # If you have typed something, it should be melded into the image,
+            # even if you backspaced it all, to match MS Paint.
+            if not self.image.selection.textbox_edited:
+                meld = False
+
             make_undo_state = meld
         else:
             # The Select tool creates an undo state when you drag a selection,
@@ -2552,12 +2562,15 @@ class PaintApp(App[None]):
             key = event.key
             assert self.image.selection.contained_image is not None, "Textbox mode should always have contained_image, to edit as text."
             # TODO: delete selected text if any, when typing
+            # Note: Don't forget to set self.image.selection.textbox_edited = True
+            #       for any new actions that actually affect the text content.
             x, y = self.image.selection.text_selection_start
             if key == "enter":
                 x = 0
                 y += 1
                 if y >= self.image.selection.contained_image.height:
                     y = self.image.selection.contained_image.height - 1
+                # self.image.selection.textbox_edited = True
             elif key == "left":
                x = max(0, x - 1)
             elif key == "right":
@@ -2569,9 +2582,11 @@ class PaintApp(App[None]):
             elif key == "backspace":
                 x = max(0, x - 1)
                 self.image.selection.contained_image.ch[y][x] = " "
+                self.image.selection.textbox_edited = True
             elif key == "delete":
                 self.image.selection.contained_image.ch[y][x] = " "
                 x = min(self.image.selection.contained_image.width - 1, x + 1)
+                self.image.selection.textbox_edited = True
             elif key == "home":
                 x = 0
             elif key == "end":
@@ -2592,6 +2607,7 @@ class PaintApp(App[None]):
                     if y >= self.image.selection.contained_image.height:
                         y = self.image.selection.contained_image.height - 1
                         x = self.image.selection.contained_image.width - 1
+                self.image.selection.textbox_edited = True
             self.image.selection.text_selection_start = Offset(x, y)
             self.image.selection.text_selection_end = Offset(x, y)
             self.canvas.refresh_scaled_region(self.image.selection.region)
