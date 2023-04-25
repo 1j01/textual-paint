@@ -1185,7 +1185,7 @@ class PaintApp(App[None]):
     mouse_previous: Offset = Offset(0, 0)
     # for Select tool, indicates that the selection is being moved
     # and defines the offset of the selection from the mouse
-    selection_drag_offset: Offset|None = Offset(0, 0)
+    selection_drag_offset: Offset|None = None
     # for Text tool
     selecting_text: bool = False
     # for Curve, Polygon, or Free-Form Select tools
