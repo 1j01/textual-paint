@@ -255,12 +255,12 @@ class CharacterSelectorDialogWindow(DialogWindow):
     #         self.character = character
 
     # NUL at the beginning (0), SP in the middle (32), and NBSP at the end (255)
-    # are all treated as space. Null can cause the screen to malfunction
+    # are all treated as space when selected. Null can cause the screen to malfunction
     # if it's inserted into the document.
     # spell-checker: disable
     code_page_437 = "\0☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼ !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~⌂ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ "
     # spell-checker: enable
-    char_list = [(" " if char is "\0" else char) for char in code_page_437]
+    char_list = [char for char in code_page_437]
 
     def __init__(self, *children: Widget, selected_character: str|None, handle_selected_character: Callable[[str], None], **kwargs: Any) -> None:
         """Initialize the dialog window."""
@@ -283,7 +283,7 @@ class CharacterSelectorDialogWindow(DialogWindow):
     def on_data_table_cell_highlighted(self, event: DataTable.CellHighlighted) -> None:
         """Called when a cell is highlighted."""
         # assert isinstance(event.value, str), "DataTable should only contain strings, but got: " + repr(event.value)
-        self._selected_character = event.value if isinstance(event.value, str) else " "
+        self._selected_character = event.value if isinstance(event.value, str) and event.value != "\0" else " "
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
