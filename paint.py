@@ -1169,8 +1169,7 @@ class PaintApp(App[None]):
         Binding("ctrl+w", "stretch_skew", _("Stretch/Skew")),
         Binding("ctrl+i", "invert_colors", _("Invert Colors")),
         Binding("ctrl+e", "attributes", _("Attributes")),
-        # TODO: don't delete textbox with delete key
-        Binding("delete", "clear_selection", _("Clear Selection")),
+        Binding("delete", "clear_selection(True)", _("Clear Selection")),
         Binding("ctrl+a", "select_all", _("Select All")),
         Binding("ctrl+pageup", "normal_size", _("Normal Size")),
         Binding("ctrl+pagedown", "large_size", _("Large Size")),
@@ -2386,9 +2385,16 @@ class PaintApp(App[None]):
         """Draw the selection onto the image and dissolve the selection."""
         self.meld_or_clear_selection(meld=True)
 
-    def action_clear_selection(self) -> None:
-        """Delete the selection and its contents."""
-        self.meld_or_clear_selection(meld=False)
+    def action_clear_selection(self, from_key_binding: bool = False) -> None:
+        """Delete the selection and its contents, or if using the Text tool, delete text."""
+        sel = self.image.selection
+        if sel is None:
+            return
+        if sel.textbox_mode:
+            if not from_key_binding:
+                self.on_key(events.Key("delete", None))
+        else:
+            self.meld_or_clear_selection(meld=False)
 
     def on_canvas_tool_update(self, event: Canvas.ToolUpdate) -> None:
         """Called when the user is drawing on the canvas.
