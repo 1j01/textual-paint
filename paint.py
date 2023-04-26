@@ -1891,8 +1891,10 @@ class PaintApp(App[None]):
             return
         pasted_image = AnsiArtDocument.from_text(text)
         self.stop_action_in_progress()
-        # TODO: paste at top left corner of viewport
-        self.image.selection = Selection(Region(0, 0, pasted_image.width, pasted_image.height))
+        # paste at top left corner of viewport
+        x: int = max(0, min(self.image.width - 1, int(self.editing_area.scroll_x // self.magnification)))
+        y: int = max(0, min(self.image.height - 1, int(self.editing_area.scroll_y // self.magnification)))
+        self.image.selection = Selection(Region(x, y, pasted_image.width, pasted_image.height))
         self.image.selection.contained_image = pasted_image
         self.image.selection.pasted = True # create undo state when finalizing selection
         self.canvas.refresh_scaled_region(self.image.selection.region)
