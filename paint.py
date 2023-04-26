@@ -1084,8 +1084,6 @@ class Canvas(Widget):
             def within_text_selection_highlight(textbox: Selection) -> int:
                 if cell_x >= textbox.region.right:
                     # Prevent inverting outside the textbox.
-                    # TODO: I think the x coordinate should be clamped to the textbox region.
-                    # Then this check can be removed.
                     return False
                 def offset_to_text_index(offset: Offset) -> int:
                     return offset.y * textbox.region.width + offset.x
@@ -2204,8 +2202,10 @@ class PaintApp(App[None]):
             if sel and sel.region.contains_point(self.mouse_at_start):
                 if self.selected_tool == Tool.text:
                     # Place cursor at mouse position
-                    sel.text_selection_start = Offset(*self.mouse_at_start) - sel.region.offset
-                    sel.text_selection_end = Offset(*self.mouse_at_start) - sel.region.offset
+                    offset_in_textbox = Offset(*self.mouse_at_start) - sel.region.offset
+                    # clamping isn't needed here, unlike while dragging
+                    sel.text_selection_start = offset_in_textbox
+                    sel.text_selection_end = offset_in_textbox
                     self.canvas.refresh_scaled_region(sel.region)
                     self.selecting_text = True
                     return
@@ -2491,7 +2491,12 @@ class PaintApp(App[None]):
             sel = self.image.selection
             if self.selecting_text:
                 assert sel is not None, "selecting_text should only be set if there's a selection"
-                sel.text_selection_end = Offset(event.mouse_move_event.x, event.mouse_move_event.y) - sel.region.offset
+                offset_in_textbox = Offset(*event.mouse_move_event.offset) - sel.region.offset
+                offset_in_textbox = Offset(
+                    min(max(0, offset_in_textbox.x), sel.region.width - 1),
+                    min(max(0, offset_in_textbox.y), sel.region.height - 1),
+                )
+                sel.text_selection_end = offset_in_textbox
                 self.canvas.refresh_scaled_region(sel.region)
             elif self.selection_drag_offset is not None:
                 assert sel is not None, "selection_drag_offset should only be set if there's a selection"
