@@ -2749,11 +2749,12 @@ class PaintApp(App[None]):
             elif key == "down":
                 self.move_selection_relative(0, 1)
         if self.image.selection and self.image.selection.textbox_mode:
-            assert self.image.selection.contained_image is not None, "Textbox mode should always have contained_image, to edit as text."
+            textbox = self.image.selection
+            assert textbox.contained_image is not None, "Textbox mode should always have contained_image, to edit as text."
 
             # TODO: delete selected text if any, when typing
 
-            # Note: Don't forget to set self.image.selection.textbox_edited = True
+            # Note: Don't forget to set textbox.textbox_edited = True
             #       for any new actions that actually affect the text content.
 
             # Whether or not shift is held, we start with the end point.
@@ -2762,57 +2763,57 @@ class PaintApp(App[None]):
             # This way, the cursor jumps to (near) the end point if you
             # hit an arrow key without shift, but with shift it will extend
             # the selection.
-            x, y = self.image.selection.text_selection_end
+            x, y = textbox.text_selection_end
 
             if key == "enter":
                 x = 0
                 y += 1
-                if y >= self.image.selection.contained_image.height:
-                    y = self.image.selection.contained_image.height - 1
-                # self.image.selection.textbox_edited = True
+                if y >= textbox.contained_image.height:
+                    y = textbox.contained_image.height - 1
+                # textbox.textbox_edited = True
             elif key == "left":
                 x = max(0, x - 1)
             elif key == "right":
-                x = min(self.image.selection.contained_image.width - 1, x + 1)
+                x = min(textbox.contained_image.width - 1, x + 1)
             elif key == "up":
                 y = max(0, y - 1)
             elif key == "down":
-                y = min(self.image.selection.contained_image.height - 1, y + 1)
+                y = min(textbox.contained_image.height - 1, y + 1)
             elif key == "backspace":
                 x = max(0, x - 1)
-                self.image.selection.contained_image.ch[y][x] = " "
-                self.image.selection.textbox_edited = True
+                textbox.contained_image.ch[y][x] = " "
+                textbox.textbox_edited = True
             elif key == "delete":
-                self.image.selection.contained_image.ch[y][x] = " "
-                x = min(self.image.selection.contained_image.width - 1, x + 1)
-                self.image.selection.textbox_edited = True
+                textbox.contained_image.ch[y][x] = " "
+                x = min(textbox.contained_image.width - 1, x + 1)
+                textbox.textbox_edited = True
             elif key == "home":
                 x = 0
             elif key == "end":
-                x = self.image.selection.contained_image.width - 1
+                x = textbox.contained_image.width - 1
             elif key == "pageup":
                 y = 0
             elif key == "pagedown":
-                y = self.image.selection.contained_image.height - 1
+                y = textbox.contained_image.height - 1
             elif event.is_printable and event.character: # Redundance for type checker
                 # Type a character into the textbox
-                self.image.selection.contained_image.ch[y][x] = event.character
-                # x = min(self.image.selection.contained_image.width - 1, x + 1)
+                textbox.contained_image.ch[y][x] = event.character
+                # x = min(textbox.contained_image.width - 1, x + 1)
                 x += 1
-                if x >= self.image.selection.contained_image.width:
+                if x >= textbox.contained_image.width:
                     x = 0
-                    # y = min(self.image.selection.contained_image.height - 1, y + 1)
+                    # y = min(textbox.contained_image.height - 1, y + 1)
                     y += 1
-                    if y >= self.image.selection.contained_image.height:
-                        y = self.image.selection.contained_image.height - 1
-                        x = self.image.selection.contained_image.width - 1
-                self.image.selection.textbox_edited = True
+                    if y >= textbox.contained_image.height:
+                        y = textbox.contained_image.height - 1
+                        x = textbox.contained_image.width - 1
+                textbox.textbox_edited = True
             if shift:
-                self.image.selection.text_selection_end = Offset(x, y)
+                textbox.text_selection_end = Offset(x, y)
             else:
-                self.image.selection.text_selection_start = Offset(x, y)
-                self.image.selection.text_selection_end = Offset(x, y)
-            self.canvas.refresh_scaled_region(self.image.selection.region)
+                textbox.text_selection_start = Offset(x, y)
+                textbox.text_selection_end = Offset(x, y)
+            self.canvas.refresh_scaled_region(textbox.region)
 
 
     def action_toggle_tools_box(self) -> None:
