@@ -1472,7 +1472,11 @@ class PaintApp(App[None]):
         self.tool_points = []
 
     def action_cancel(self) -> None:
+        assert self.canvas is not None
+        need_undo = self.canvas.pointer_active and not self.mouse_gesture_cancelled
         self.stop_action_in_progress()
+        if need_undo:
+            self.action_undo()
 
     def stop_action_in_progress(self) -> None:
         """Finalizes the selection, or cancels other tools."""
