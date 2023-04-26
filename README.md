@@ -128,7 +128,7 @@ cat file.ans
 
 - Pressing Delete while using the Text tool deletes the whole text box. Similarly, Ctrl+A selects the canvas instead of the text in the text box.
 - Selection box border is inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
-- Tools can't be cancelled with Escape or by pressing both mouse buttons.
+- Pick Color can't be cancelled, since it samples the color continuously. No tools can be cancelled by pressing both mouse buttons, only with Escape.
 - Help > Help Topics isn't very helpful.
 - Due to limitations of the terminal, shortcuts using Shift or Alt might not work.
 - Menus are not keyboard navigable.

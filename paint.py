@@ -1154,6 +1154,7 @@ class PaintApp(App[None]):
         Binding("ctrl+pagedown", "large_size", _("Large Size")),
         # action_toggle_dark is built in to App
         Binding("ctrl+d", "toggle_dark", _("Toggle Dark Mode")),
+        Binding("escape", "cancel", _("Cancel")),
         Binding("f1", "help_topics", _("Help Topics")),
         # dev helper
         # f5 would be more traditional, but I need something not bound to anything
@@ -1458,6 +1459,9 @@ class PaintApp(App[None]):
         self.canvas.refresh_scaled_region(affected_region)
 
         self.tool_points = []
+
+    def action_cancel(self) -> None:
+        self.stop_action_in_progress()
 
     def stop_action_in_progress(self) -> None:
         """Finalizes the selection, or cancels other tools."""
