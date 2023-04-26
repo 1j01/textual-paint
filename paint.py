@@ -7,7 +7,7 @@ import argparse
 import asyncio
 from enum import Enum
 from random import randint, random
-from typing import Any, List, Optional, Callable, Iterator, Tuple
+from typing import Any, Generator, List, Optional, Callable, Iterator, Tuple
 from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
 from watchdog.observers import Observer
 import stransi
@@ -2752,6 +2752,34 @@ class PaintApp(App[None]):
             textbox = self.image.selection
             assert textbox.contained_image is not None, "Textbox mode should always have contained_image, to edit as text."
 
+            def offset_to_text_index(offset: Offset) -> int:
+                """Converts an offset in the textbox to an index in the text."""
+                return offset.y * textbox.region.width + offset.x
+            
+            def text_index_to_offset(index: int) -> Offset:
+                """Converts an index in the text to an offset in the textbox."""
+                return Offset(index % textbox.region.width, index // textbox.region.width)
+
+            def selected_text_range() -> Generator[Offset, None, None]:
+                """Yields all offsets within the text selection."""
+                start = offset_to_text_index(textbox.text_selection_start)
+                end = offset_to_text_index(textbox.text_selection_end)
+                for i in range(min(start, end), max(start, end) + 1):
+                    yield text_index_to_offset(i)
+
+            def delete_selected_text() -> None:
+                """Deletes the selected text, if any."""
+                assert textbox.contained_image is not None, "Textbox mode should always have contained_image, to edit as text." # Come on, Pyright.
+                # Delete the selected text.
+                for offset in selected_text_range():
+                    textbox.contained_image.ch[offset.y][offset.x] = " "
+                textbox.textbox_edited = True
+                # Move the cursor to the start of the selection.
+                textbox.text_selection_end = textbox.text_selection_start = min(
+                    textbox.text_selection_start,
+                    textbox.text_selection_end,
+                )
+
             # TODO: delete selected text if any, when typing
 
             # Note: Don't forget to set textbox.textbox_edited = True
@@ -2780,12 +2808,20 @@ class PaintApp(App[None]):
             elif key == "down":
                 y = min(textbox.contained_image.height - 1, y + 1)
             elif key == "backspace":
-                x = max(0, x - 1)
-                textbox.contained_image.ch[y][x] = " "
+                if textbox.text_selection_end == textbox.text_selection_start:
+                    x = max(0, x - 1)
+                    textbox.contained_image.ch[y][x] = " "
+                else:
+                    delete_selected_text()
+                    x, y = textbox.text_selection_end
                 textbox.textbox_edited = True
             elif key == "delete":
-                textbox.contained_image.ch[y][x] = " "
-                x = min(textbox.contained_image.width - 1, x + 1)
+                if textbox.text_selection_end == textbox.text_selection_start:
+                    textbox.contained_image.ch[y][x] = " "
+                    x = min(textbox.contained_image.width - 1, x + 1)
+                else:
+                    delete_selected_text()
+                    x, y = textbox.text_selection_end
                 textbox.textbox_edited = True
             elif key == "home":
                 x = 0
