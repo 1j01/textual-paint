@@ -1909,11 +1909,16 @@ class PaintApp(App[None]):
         self.selected_tool = Tool.select
     
     def action_select_all(self) -> None:
-        """Select the entire image."""
-        self.stop_action_in_progress()
-        self.image.selection = Selection(Region(0, 0, self.image.width, self.image.height))
-        self.canvas.refresh()
-        self.selected_tool = Tool.select
+        """Select the entire image, or in a textbox, all the text."""
+        if self.image.selection and self.image.selection.textbox_mode:
+            assert self.image.selection.contained_image is not None
+            self.image.selection.text_selection_start = Offset(0, 0)
+            self.image.selection.text_selection_end = Offset(self.image.selection.contained_image.width, self.image.selection.contained_image.height)
+        else:
+            self.stop_action_in_progress()
+            self.image.selection = Selection(Region(0, 0, self.image.width, self.image.height))
+            self.canvas.refresh()
+            self.selected_tool = Tool.select
     def action_copy_to(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_paste_from(self) -> None:
