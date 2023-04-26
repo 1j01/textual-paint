@@ -146,7 +146,7 @@ The program has only been tested on Linux. Issues on other platforms are as-yet 
 
 Install Textual and other dependencies:
 ```bash
-pip install "textual[dev]" stransi psutil pyright
+pip install "textual[dev]" stransi psutil watchdog pyperclip pyright
 ```
 
 Run via Textual's CLI for live-reloading CSS support, and enable other development features:
