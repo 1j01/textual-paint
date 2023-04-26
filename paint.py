@@ -1081,23 +1081,26 @@ class Canvas(Widget):
             style = Style.parse(fg+" on "+bg)
             assert style.color is not None
             assert style.bgcolor is not None
-            # def offset_to_text_index(offset) -> int:
-            #     # return offset.y * sel.region.width + offset.x
-            #     # return offset.y * self.image.width + offset.x
+            def within_text_selection_highlight(textbox: Selection) -> int:
+                if cell_x >= textbox.region.right:
+                    # Prevent inverting outside the textbox.
+                    # TODO: I think the x coordinate should be clamped to the textbox region.
+                    # Then this check can be removed.
+                    return False
+                def offset_to_text_index(offset: Offset) -> int:
+                    return offset.y * textbox.region.width + offset.x
+                start_index = offset_to_text_index(textbox.text_selection_start)
+                end_index = offset_to_text_index(textbox.text_selection_end)
+                min_index = min(start_index, end_index)
+                max_index = max(start_index, end_index)
+                cell_index = offset_to_text_index(Offset(cell_x, cell_y) - textbox.region.offset)
+                return min_index <= cell_index <= max_index
             assert isinstance(self.app, PaintApp)
             if (
                 (self.magnifier_preview_region and magnifier_preview_region.contains(x, y) and (not inner_magnifier_preview_region.contains(x, y))) or
                 (self.select_preview_region and select_preview_region.contains(x, y) and (not inner_select_preview_region.contains(x, y))) or
                 (sel and (not sel.textbox_mode) and (self.app.selection_drag_offset is None) and selection_region.contains(x, y) and (not inner_selection_region.contains(x, y))) or
-                (sel and sel.textbox_mode and (
-                    # offset_to_text_index(sel.text_selection_start) <=
-                    # offset_to_text_index(Offset(x, y))
-                    # < offset_to_text_index(sel.text_selection_end)
-                    # sel.text_selection_start.x <= cell_x - sel.region.x < sel.text_selection_end.x and
-                    # sel.text_selection_start.y <= cell_y - sel.region.y < sel.text_selection_end.y
-                    sel.text_selection_start.x == cell_x - sel.region.x and
-                    sel.text_selection_start.y == cell_y - sel.region.y
-                ))
+                (sel and sel.textbox_mode and within_text_selection_highlight(sel))
             ):
                 # invert the colors
                 style = Style.parse(f"rgb({255 - style.color.triplet.red},{255 - style.color.triplet.green},{255 - style.color.triplet.blue}) on rgb({255 - style.bgcolor.triplet.red},{255 - style.bgcolor.triplet.green},{255 - style.bgcolor.triplet.blue})")
@@ -2721,6 +2724,10 @@ class PaintApp(App[None]):
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
         key = event.key
+        shift = key.startswith("shift+")
+        if shift:
+            key = key[len("shift+"):]
+        
         if self.image.selection and not self.image.selection.textbox_mode:
             if key == "left":
                 self.move_selection_relative(-1, 0)
@@ -2735,7 +2742,10 @@ class PaintApp(App[None]):
             # TODO: delete selected text if any, when typing
             # Note: Don't forget to set self.image.selection.textbox_edited = True
             #       for any new actions that actually affect the text content.
-            x, y = self.image.selection.text_selection_start
+            # if shift:
+            x, y = self.image.selection.text_selection_end
+            # else:
+            #     x, y = self.image.selection.text_selection_start
             if key == "enter":
                 x = 0
                 y += 1
@@ -2779,8 +2789,11 @@ class PaintApp(App[None]):
                         y = self.image.selection.contained_image.height - 1
                         x = self.image.selection.contained_image.width - 1
                 self.image.selection.textbox_edited = True
-            self.image.selection.text_selection_start = Offset(x, y)
-            self.image.selection.text_selection_end = Offset(x, y)
+            if shift:
+                self.image.selection.text_selection_end = Offset(x, y)
+            else:
+                self.image.selection.text_selection_start = Offset(x, y)
+                self.image.selection.text_selection_end = Offset(x, y)
             self.canvas.refresh_scaled_region(self.image.selection.region)
 
 
