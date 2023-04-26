@@ -355,6 +355,7 @@ class CharInput(Input, inherit_bindings=False):
         self.value = text[-1] if text else " "
 
     def render_line(self, y: int) -> Strip:
+        """Overrides rendering to color the character, since Input doesn't seem to support the color style."""
         assert isinstance(self.app, PaintApp)
         # return Strip([Segment(self.value * self.size.width, Style(color=self.app.selected_fg_color, bgcolor=self.app.selected_bg_color))])
         # There's a LineFilter class that can be subclassed to do stuff like this, but I'm not sure why you'd want a class for it.
@@ -484,6 +485,7 @@ class AnsiArtDocument:
         self.selection: Optional[Selection] = None
 
     def copy_region(self, source: 'AnsiArtDocument', source_region: Region|None = None, target_region: Region|None = None, mask: list[list[bool]]|None = None) -> None:
+        """Copy a region from another document into this document."""
         if source_region is None:
             source_region = Region(0, 0, source.width, source.height)
         if target_region is None:
@@ -727,6 +729,7 @@ def is_inside_polygon(x: int, y: int, points: List[Offset]) -> bool:
 
 # adapted from https://github.com/Pomax/bezierjs
 def compute_bezier(t: float, start_x: float, start_y: float, control_1_x: float, control_1_y: float, control_2_x: float, control_2_y: float, end_x: float, end_y: float):
+    """Returns a point along a bezier curve."""
     mt = 1 - t
     mt2 = mt * mt
     t2 = t * t
@@ -947,6 +950,8 @@ class Canvas(Widget):
         self.which_button: Optional[int] = None
 
     def on_mouse_down(self, event: events.MouseDown) -> None:
+        """Called when a mouse button is pressed.
+        Start drawing, or if both mouse buttons are pressed, cancel the current action."""
         self.fix_mouse_event(event) # not needed, pointer isn't captured yet.
         event.x //= self.magnification
         event.y //= self.magnification
@@ -962,6 +967,7 @@ class Canvas(Widget):
         self.capture_mouse(True)
     
     def fix_mouse_event(self, event: events.MouseEvent) -> None:
+        """Work around inconsistent widget-relative mouse coordinates by calculating from screen coordinates."""
         # Hack to fix mouse coordinates, not needed for mouse down,
         # or while the mouse is up.
         # This seems like a bug.
@@ -986,6 +992,7 @@ class Canvas(Widget):
 
 
     def on_mouse_move(self, event: events.MouseMove) -> None:
+        """Called when the mouse is moved. Update the tool action or preview."""
         self.fix_mouse_event(event)
         event.x //= self.magnification
         event.y //= self.magnification
@@ -996,6 +1003,7 @@ class Canvas(Widget):
             self.post_message(self.ToolPreviewUpdate(event))
 
     def on_mouse_up(self, event: events.MouseUp) -> None:
+        """Called when a mouse button is released. Stop the current tool."""
         self.fix_mouse_event(event)
         event.x //= self.magnification
         event.y //= self.magnification
@@ -1005,13 +1013,16 @@ class Canvas(Widget):
         self.post_message(self.ToolStop(event))
 
     def on_leave(self, event: events.Leave) -> None:
+        """Called when the mouse leaves the canvas. Stop preview if applicable."""
         if not self.pointer_active:
             self.post_message(self.ToolPreviewStop())
 
     def get_content_width(self, container: Size, viewport: Size) -> int:
+        """Defines the intrinsic width of the widget."""
         return self.image.width * self.magnification
 
     def get_content_height(self, container: Size, viewport: Size, width: int) -> int:
+        """Defines the intrinsic height of the widget."""
         return self.image.height * self.magnification
 
     def render_line(self, y: int) -> Strip:
@@ -1295,6 +1306,7 @@ class PaintApp(App[None]):
         # This will matter more when large documents don't freeze up the program...
 
     def stamp_brush(self, x: int, y: int, affected_region_base: Optional[Region] = None) -> Region:
+        """Draws the current brush at the given coordinates, with special handling for different tools."""
         brush_diameter = 1
         square = self.selected_tool == Tool.eraser
         if self.selected_tool == Tool.brush or self.selected_tool == Tool.airbrush or self.selected_tool == Tool.eraser:
@@ -1316,6 +1328,7 @@ class PaintApp(App[None]):
             return affected_region
     
     def stamp_char(self, x: int, y: int) -> None:
+        """Modifies the cell at the given coordinates, with special handling for different tools."""
         if x >= self.image.width or y >= self.image.height or x < 0 or y < 0:
             return
 
@@ -1372,6 +1385,7 @@ class PaintApp(App[None]):
             self.image.fg[y][x] = fg_color
     
     def erase_region(self, region: Region, mask: Optional[list[list[bool]]] = None) -> None:
+        """Clears the given region."""
         # Time to go undercover as an eraser. 🥸
         # TODO: just add a parameter to stamp_char.
         # Momentarily masquerading makes me mildly mad.
@@ -1384,6 +1398,7 @@ class PaintApp(App[None]):
         self.selected_tool = original_tool
 
     def draw_current_free_form_select_polyline(self) -> Region:
+        """Inverts the colors along a polyline defined by tool_points, for Free-Form Select tool preview."""
         # TODO: DRY with draw_current_curve/draw_current_polygon/draw_current_polyline
         # Also (although this may be counter to DRYING (Deduplicating Repetitive Yet Individually Nimble Generators)),
         # could optimize to not use stamp_brush, since it's always a single character here.
@@ -1397,6 +1412,7 @@ class PaintApp(App[None]):
         return affected_region
 
     def draw_current_polyline(self) -> Region:
+        """Draws a polyline from tool_points, for Polygon tool preview."""
         # TODO: DRY with draw_current_curve/draw_current_polygon
         gen = polyline_walk(self.tool_points)
         affected_region = Region()
@@ -1405,6 +1421,7 @@ class PaintApp(App[None]):
         return affected_region
 
     def draw_current_polygon(self) -> Region:
+        """Draws a polygon from tool_points, for Polygon tool."""
         # TODO: DRY with draw_current_curve/draw_current_polyline
         gen = polygon_walk(self.tool_points)
         affected_region = Region()
@@ -1413,6 +1430,7 @@ class PaintApp(App[None]):
         return affected_region
 
     def draw_current_curve(self) -> Region:
+        """Draws a curve (or line) from tool_points, for Curve tool."""
         points = self.tool_points
         if len(points) == 4:
             gen = bezier_curve_walk(
@@ -1472,6 +1490,7 @@ class PaintApp(App[None]):
         self.tool_points = []
 
     def action_cancel(self) -> None:
+        """Action to end the current tool activity, via Escape key."""
         self.stop_action_in_progress()
 
     def stop_action_in_progress(self) -> None:
@@ -1486,6 +1505,7 @@ class PaintApp(App[None]):
             self.selected_tool = self.return_to_tool
 
     def action_undo(self) -> None:
+        """Undoes the last action."""
         self.stop_action_in_progress()
         if len(self.undos) > 0:
             action = self.undos.pop()
@@ -1495,6 +1515,7 @@ class PaintApp(App[None]):
             self.canvas.refresh(layout=True)
 
     def action_redo(self) -> None:
+        """Redoes the last undone action."""
         self.stop_action_in_progress()
         if len(self.redos) > 0:
             action = self.redos.pop()
@@ -1604,6 +1625,7 @@ class PaintApp(App[None]):
         self.set_timer(0.1, done_expanding)
 
     def confirm_overwrite(self, filename: str, callback: Callable[[], None]) -> None:
+        """Asks the user if they want to overwrite a file."""
         message = _("%1 already exists.\nDo you want to replace it?", filename)
         def handle_button(button: Button) -> None:
             if not button.has_class("yes"):
@@ -1612,6 +1634,7 @@ class PaintApp(App[None]):
         self.warning_message_box(_("Save As"), Static(message, markup=False), "yes/no", handle_button)
 
     def prompt_save_changes(self, filename: str, callback: Callable[[], None]) -> None:
+        """Asks the user if they want to save changes to a file."""
         filename = os.path.basename(filename)
         message = _("Save changes to %1?", filename)
         def handle_button(button: Button) -> None:
@@ -1629,15 +1652,18 @@ class PaintApp(App[None]):
         self.warning_message_box(_("Paint"), Static(message, markup=False), "yes/no/cancel", handle_button)
 
     def is_document_modified(self) -> bool:
+        """Returns whether the document has been modified since the last save."""
         return len(self.undos) != self.saved_undo_count
 
     def action_exit(self) -> None:
+        """Exit the program, prompting to save changes if necessary."""
         if self.is_document_modified():
             self.prompt_save_changes(self.filename or _("Untitled"), self.exit)
         else:
             self.exit()
     
     def action_reload(self) -> None:
+        """Reload the program, prompting to save changes if necessary."""
         if self.is_document_modified():
             self.prompt_save_changes(self.filename or _("Untitled"), restart_program)
         else:
@@ -1817,6 +1843,7 @@ class PaintApp(App[None]):
     def action_paste(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_select_all(self) -> None:
+        """Select the entire image."""
         self.stop_action_in_progress()
         self.image.selection = Selection(Region(0, 0, self.image.width, self.image.height))
         self.canvas.refresh()
@@ -1828,10 +1855,13 @@ class PaintApp(App[None]):
     def action_text_toolbar(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_normal_size(self) -> None:
+        """Zoom to 1x."""
         self.magnification = 1
     def action_large_size(self) -> None:
+        """Zoom to 4x."""
         self.magnification = 4
     def action_custom_zoom(self) -> None:
+        """Show dialog to set zoom level."""
         self.close_windows("#zoom_dialog")
         def handle_button(button: Button) -> None:
             if button.has_class("ok"):
@@ -1891,6 +1921,7 @@ class PaintApp(App[None]):
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     
     def action_help_topics(self) -> None:
+        """Show the Help Topics dialog."""
         self.close_windows("#help_dialog")
         window = DialogWindow(
             id="help_dialog",
@@ -2191,6 +2222,7 @@ class PaintApp(App[None]):
             self.canvas.refresh_scaled_region(region)
 
     def make_preview(self, draw_proc: Callable[[], Region], show_dimensions_in_status_bar: bool = False) -> None:
+        """Preview the result of a draw operation, using a temporary action. Optionally preview dimensions in status bar."""
         self.cancel_preview()
         image_before = AnsiArtDocument(self.image.width, self.image.height)
         image_before.copy_region(self.image)
@@ -2268,6 +2300,7 @@ class PaintApp(App[None]):
         self.get_widget_by_id("status_coords", Static).update("")
 
     def get_select_region(self, start: Offset, end: Offset) -> Region:
+        """Returns the minimum region that contains the cells at the start and end offsets."""
         # Region.from_corners requires the first point to be the top left,
         # and it doesn't ensure the width and height are non-zero, so it doesn't work here.
         # We want to treat the inputs as cells, not points,
@@ -2281,6 +2314,7 @@ class PaintApp(App[None]):
         return region.intersection(Region(0, 0, self.image.width, self.image.height))
 
     def meld_or_clear_selection(self, meld: bool) -> None:
+        """Merges the selection into the image, or deletes it if meld is False."""
         if not self.image.selection:
             return
         
@@ -2678,12 +2712,15 @@ class PaintApp(App[None]):
 
 
     def action_toggle_tools_box(self) -> None:
+        """Toggles the visibility of the tools box."""
         self.show_tools_box = not self.show_tools_box
 
     def action_toggle_colors_box(self) -> None:
+        """Toggles the visibility of the colors box."""
         self.show_colors_box = not self.show_colors_box
 
     def action_toggle_status_bar(self) -> None:
+        """Toggles the visibility of the status bar."""
         self.show_status_bar = not self.show_status_bar
 
     def on_tools_box_tool_selected(self, event: ToolsBox.ToolSelected) -> None:
