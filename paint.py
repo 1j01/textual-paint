@@ -1208,7 +1208,9 @@ class PaintApp(App[None]):
 
     directory_tree_selected_path: str|None = None
     """Last highlighted item in Open/Save As dialogs"""
-    
+    expanding_directory_tree = False
+    """Flag to prevent setting the filename input when initially expanding the directory tree"""
+
     image = var(AnsiArtDocument.from_text("Not Loaded"))
     """The document being edited. Contains the selection, if any."""
     image_initialized = False
@@ -1239,7 +1241,6 @@ class PaintApp(App[None]):
     selection_drag_offset: Offset|None = None
     """For Select tool, indicates that the selection is being moved
     and defines the offset of the selection from the mouse"""
-    
     selecting_text: bool = False
     """Used for Text tool"""
     tool_points: List[Offset] = []
@@ -1249,9 +1250,6 @@ class PaintApp(App[None]):
     color_eraser_mode: bool = False
     """Used for Eraser/Color Eraser tool, when using the right mouse button"""
     
-    expanding_directory_tree = False
-    """Flag to prevent setting the filename input when initially expanding the directory tree"""
-
     background_tasks: set[asyncio.Task[None]] = set()
     """Stores references to Task objects so they don't get garbage collected."""
 
