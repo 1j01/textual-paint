@@ -126,7 +126,7 @@ cat file.ans
 
 ## Known Issues
 
-- Pressing delete in a textbox can crash the program.
+- The Text tool doesn't collapse a text selection when typing, or allow deleting a range.
 - Selection box border is inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
 - Pick Color can't be cancelled, since it samples the color continuously.
 - Pressing both mouse buttons to cancel tools can sometimes result the the tool restarting, or it's just my mouse. It's probably my mouse, now that I think about it. But also, it should actually undo current action, not just end it.

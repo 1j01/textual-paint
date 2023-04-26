@@ -1913,7 +1913,7 @@ class PaintApp(App[None]):
         if self.image.selection and self.image.selection.textbox_mode:
             assert self.image.selection.contained_image is not None
             self.image.selection.text_selection_start = Offset(0, 0)
-            self.image.selection.text_selection_end = Offset(self.image.selection.contained_image.width, self.image.selection.contained_image.height)
+            self.image.selection.text_selection_end = Offset(self.image.selection.contained_image.width - 1, self.image.selection.contained_image.height - 1)
         else:
             self.stop_action_in_progress()
             self.image.selection = Selection(Region(0, 0, self.image.width, self.image.height))
