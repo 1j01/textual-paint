@@ -254,13 +254,11 @@ class CharacterSelectorDialogWindow(DialogWindow):
     #         """Initialize the message."""
     #         self.character = character
 
-    # TODO: fact check this string
+    # NUL at the beginning and NBSP at the end are replaced with spaces
     # spell-checker: disable
-    code_page_437 = "☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼ !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~⌂ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▀▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ "
+    code_page_437 = " ☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼ !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~⌂ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒáíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ "
     # spell-checker: enable
     char_list = [char for char in code_page_437]
-
-    # char_list = ["A", "b", "c"] * 4
 
     def __init__(self, *children: Widget, selected_character: str|None, handle_selected_character: Callable[[str], None], **kwargs: Any) -> None:
         """Initialize the dialog window."""
@@ -282,8 +280,8 @@ class CharacterSelectorDialogWindow(DialogWindow):
 
     def on_data_table_cell_highlighted(self, event: DataTable.CellHighlighted) -> None:
         """Called when a cell is highlighted."""
-        assert isinstance(event.value, str)
-        self._selected_character = event.value
+        # assert isinstance(event.value, str), "DataTable should only contain strings, but got: " + repr(event.value)
+        self._selected_character = event.value if isinstance(event.value, str) else " "
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
