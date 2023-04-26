@@ -357,10 +357,14 @@ class CharInput(Input, inherit_bindings=False):
     def render_line(self, y: int) -> Strip:
         assert isinstance(self.app, PaintApp)
         # return Strip([Segment(self.value * self.size.width, Style(color=self.app.selected_fg_color, bgcolor=self.app.selected_bg_color))])
+        # There's a LineFilter class that can be subclassed to do stuff like this, but I'm not sure why you'd want a class for it.
+        # Is it a typechecking thing? Does python not have good interfaces support?
+        # Anyways, this code is based on how that works, 
         super_class_strip = super().render_line(y)
-        new_segments = []
+        new_segments: list[Segment] = []
         style_mod: Style = Style(color=self.app.selected_fg_color, bgcolor=self.app.selected_bg_color)
         for text, style, _ in super_class_strip._segments:
+            assert isinstance(style, Style)
             new_segments.append(Segment(text, style + style_mod, None))
         return Strip(new_segments)
 
