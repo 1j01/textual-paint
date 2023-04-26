@@ -2763,7 +2763,7 @@ class PaintApp(App[None]):
                     y = self.image.selection.contained_image.height - 1
                 # self.image.selection.textbox_edited = True
             elif key == "left":
-               x = max(0, x - 1)
+                x = max(0, x - 1)
             elif key == "right":
                 x = min(self.image.selection.contained_image.width - 1, x + 1)
             elif key == "up":
