@@ -1884,9 +1884,11 @@ class PaintApp(App[None]):
                 sel.copy_from_document(self.image)
             # TODO: copy selected text in textbox, if any
             import pyperclip
-            if not pyperclip.is_available():
-                self.warning_message_box(_("Paint"), _("Clipboard is not available."), "ok")
-                return False
+            # if not pyperclip.is_available():
+            #     # Why is this so unreliable? Ugh, this function actually checks if implementation functions are loaded.
+            #     # It shouldn't be used.
+            #     self.warning_message_box(_("Paint"), _("Clipboard is not available."), "ok")
+            #     return False
             pyperclip.copy(sel.contained_image.get_ansi())
             # self.use_clipboard(sel.contained_image.get_ansi())
         except Exception as e:
