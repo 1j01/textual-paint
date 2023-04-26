@@ -1488,7 +1488,6 @@ class PaintApp(App[None]):
     def action_undo(self) -> None:
         self.stop_action_in_progress()
         if len(self.undos) > 0:
-            self.cancel_preview()
             action = self.undos.pop()
             redo_action = Action(_("Undo") + " " + action.name, self.image, action.region)
             action.undo(self.image)
@@ -1498,7 +1497,6 @@ class PaintApp(App[None]):
     def action_redo(self) -> None:
         self.stop_action_in_progress()
         if len(self.redos) > 0:
-            self.cancel_preview()
             action = self.redos.pop()
             undo_action = Action(_("Undo") + " " + action.name, self.image, action.region)
             action.undo(self.image)
