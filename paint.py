@@ -1853,21 +1853,6 @@ class PaintApp(App[None]):
     def action_recent_file(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
 
-    # def use_clipboard(self, text_to_write: str|None = None):
-    #     import tkinter # Apparently while this is a built-in module, it's not always available.
-    #     tk = tkinter.Tk()
-    #     tk.withdraw()
-    #     if type(text_to_write) == str: # Set clipboard text.
-    #         tk.clipboard_clear()
-    #         tk.clipboard_append(text_to_write)
-    #     try:
-    #         clipboard_text = tk.clipboard_get()
-    #     except tkinter.TclError:
-    #         clipboard_text = ''
-    #     r.update() # Stops a few errors (clipboard text unchanged, command line program unresponsive, window not destroyed).
-    #     tk.destroy()
-    #     return clipboard_text
-
     def action_cut(self) -> None:
         """Cut the selection to the clipboard."""
         if self.action_copy():
@@ -1886,13 +1871,7 @@ class PaintApp(App[None]):
                 sel.copy_from_document(self.image)
             # TODO: copy selected text in textbox, if any
             import pyperclip
-            # if not pyperclip.is_available():
-            #     # Why is this so unreliable? Ugh, this function actually checks if implementation functions are loaded.
-            #     # It shouldn't be used.
-            #     self.warning_message_box(_("Paint"), _("Clipboard is not available."), "ok")
-            #     return False
             pyperclip.copy(sel.contained_image.get_ansi())
-            # self.use_clipboard(sel.contained_image.get_ansi())
         except Exception as e:
             self.warning_message_box(_("Paint"), _("Failed to copy to the clipboard.") + "\n\n" + repr(e), "ok")
             return False
@@ -1905,7 +1884,6 @@ class PaintApp(App[None]):
         """Paste the clipboard as a selection."""
         import pyperclip
         text = pyperclip.paste()
-        # text = self.use_clipboard()
         if not text:
             return
         if self.image.selection and self.image.selection.textbox_mode:
