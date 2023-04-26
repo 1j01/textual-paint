@@ -1187,56 +1187,73 @@ class PaintApp(App[None]):
     ]
 
     show_tools_box = var(True)
+    """Whether to show the tools box."""
     show_colors_box = var(True)
+    """Whether to show the tools box."""
     show_status_bar = var(True)
-    selected_tool = var(Tool.pencil)
-    return_to_tool = var(Tool.pencil)
-    selected_bg_color = var(palette[0])
-    selected_fg_color = var(palette[len(palette) // 2])
-    selected_char = var(" ")
-    filename = var(None)
+    """Whether to show the status bar."""
 
-    # For Open/Save As dialogs
+    selected_tool = var(Tool.pencil)
+    """The currently selected tool."""
+    return_to_tool = var(Tool.pencil)
+    """Tool to switch to after using the Magnifier or Pick Color tools."""
+    selected_bg_color = var(palette[0])
+    """The currently selected background color. Unlike MS Paint, this acts as the primary color."""
+    selected_fg_color = var(palette[len(palette) // 2])
+    """The currently selected foreground (text) color."""
+    selected_char = var(" ")
+    """The character to draw with."""
+    filename = var(None)
+    """The path to the file being edited. TODO: rename to indicate it's a path."""
+
     directory_tree_selected_path: str|None = None
+    """Last highlighted item in Open/Save As dialogs"""
     
-    # I'm avoiding allowing None for image, to avoid type checking woes.
     image = var(AnsiArtDocument.from_text("Not Loaded"))
+    """The document being edited. Contains the selection, if any."""
     image_initialized = False
+    """Whether the image is ready. This flag exists to avoid type checking woes if I were to allow image to be None."""
     
     magnification = var(1)
+    """Current magnification level."""
     return_to_magnification = var(4)
+    """Saved zoomed-in magnification level."""
 
     undos: List[Action] = []
+    """Past actions that can be undone"""
     redos: List[Action] = []
-    # temporary undo state for brush previews
+    """Future actions that can be redone"""
     preview_action: Optional[Action] = None
-    # file modification tracking
+    """A temporary undo state for tool previews"""
     saved_undo_count = 0
+    """Used to determine if the document has been modified since the last save, in is_document_modified()"""
 
-    # for Undo/Redo, to interrupt the current action
     mouse_gesture_cancelled = False
-    # for shape tools that draw between the mouse down and up points
-    # (Line, Rectangle, Ellipse, Rounded Rectangle),
-    # Select tool (similarly), and Polygon (to detect double-click)
+    """For Undo/Redo, to interrupt the current action"""
     mouse_at_start: Offset = Offset(0, 0)
-    # for brush tools (Pencil, Brush, Eraser, Airbrush)
+    """Mouse position at mouse down.
+    Used for shape tools that draw between the mouse down and up points (Line, Rectangle, Ellipse, Rounded Rectangle),
+    the Select tool (similarly to Rectangle), and used to detect double-click, for the Polygon tool."""
     mouse_previous: Offset = Offset(0, 0)
-    # for Select tool, indicates that the selection is being moved
-    # and defines the offset of the selection from the mouse
+    """Previous mouse position, for brush tools (Pencil, Brush, Eraser, Airbrush)"""
     selection_drag_offset: Offset|None = None
-    # for Text tool
+    """For Select tool, indicates that the selection is being moved
+    and defines the offset of the selection from the mouse"""
+    
     selecting_text: bool = False
-    # for Curve, Polygon, or Free-Form Select tools
+    """Used for Text tool"""
     tool_points: List[Offset] = []
-    # for Polygon tool to detect double-click
+    """Used for Curve, Polygon, or Free-Form Select tools"""
     polygon_last_click_time: float = 0
-    # for Eraser/Color Eraser tool, when using the right mouse button
+    """Used for Polygon tool to detect double-click"""
     color_eraser_mode: bool = False
-
-    # flag to prevent setting the filename input when initially expanding the directory tree
+    """Used for Eraser/Color Eraser tool, when using the right mouse button"""
+    
     expanding_directory_tree = False
+    """Flag to prevent setting the filename input when initially expanding the directory tree"""
 
     background_tasks: set[asyncio.Task[None]] = set()
+    """Stores references to Task objects so they don't get garbage collected."""
 
     TITLE = _("Paint")
 
