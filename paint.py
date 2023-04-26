@@ -1868,14 +1868,14 @@ class PaintApp(App[None]):
 
     def action_cut(self) -> None:
         """Cut the selection to the clipboard."""
-        self.action_copy()
-        self.action_clear_selection()
+        if self.action_copy():
+            self.action_clear_selection()
 
-    def action_copy(self) -> None:
+    def action_copy(self) -> bool:
         """Copy the selection to the clipboard."""
         sel = self.image.selection
         if sel is None:
-            return
+            return False
         had_contained_image = sel.contained_image is not None
         try:
             if sel.contained_image is None:
@@ -1886,14 +1886,16 @@ class PaintApp(App[None]):
             import pyperclip
             if not pyperclip.is_available():
                 self.warning_message_box(_("Paint"), _("Clipboard is not available."), "ok")
-                return
+                return False
             pyperclip.copy(sel.contained_image.get_ansi())
             # self.use_clipboard(sel.contained_image.get_ansi())
         except Exception as e:
             self.warning_message_box(_("Paint"), _("Failed to copy to the clipboard.") + "\n\n" + repr(e), "ok")
+            return False
         finally:
             if not had_contained_image:
                 sel.contained_image = None
+        return True
 
     def action_paste(self) -> None:
         """Paste the clipboard as a selection."""
