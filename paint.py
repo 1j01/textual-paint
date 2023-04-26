@@ -418,6 +418,7 @@ class ColorsBox(Container):
         """Called when a mouse button is pressed."""
         button, _ = self.app.get_widget_at(*event.screen_offset)
         if "color_button" in button.classes:
+            assert isinstance(button, Button)
             self.post_message(self.ColorSelected(self.color_by_button[button], event.ctrl))
             # Detect double click and open Edit Colors dialog.
             if event.time - self.last_click_time < 0.8 and button == self.last_click_button:
@@ -1869,6 +1870,7 @@ class PaintApp(App[None]):
                 # Copy underlying image.
                 # Don't want to make an undo state, unlike when cutting out a selection when you drag it.
                 sel.copy_from_document(self.image)
+                assert sel.contained_image is not None
             # TODO: copy selected text in textbox, if any
             import pyperclip
             pyperclip.copy(sel.contained_image.get_ansi())

@@ -220,7 +220,7 @@ class MenuItem(Button):
 
     def __init__(self,
         name: str,
-        action: Callable[[], None] | None = None,
+        action: Callable[[], Any] | None = None,
         id: str | int | None = None,
         submenu: Menu | None = None,
         description: str | None = None,

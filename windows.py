@@ -265,7 +265,7 @@ class CharacterSelectorDialogWindow(DialogWindow):
     def __init__(self, *children: Widget, selected_character: str|None, handle_selected_character: Callable[[str], None], **kwargs: Any) -> None:
         """Initialize the dialog window."""
         super().__init__(handle_button=self.handle_button, *children, **kwargs)
-        self._selected_character = selected_character
+        self._selected_character: str|None = selected_character
         self.handle_selected_character = handle_selected_character
     
     def handle_button(self, button: Button) -> None:
@@ -273,7 +273,10 @@ class CharacterSelectorDialogWindow(DialogWindow):
         if button.has_class("cancel"):
             self.request_close()
         else:
-            # self.post_message(self.CharacterSelected(self._char_by_button[button]))
+            if self._selected_character is None:
+                # Probably shouldn't happen
+                return
+            # self.post_message(self.CharacterSelected(self._selected_character))
             # self.close()
             self.handle_selected_character(self._selected_character)
 
