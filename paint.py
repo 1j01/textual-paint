@@ -2739,6 +2739,7 @@ class PaintApp(App[None]):
             key = key[len("shift+"):]
         
         if self.image.selection and not self.image.selection.textbox_mode:
+            # TODO: smear selection if shift is held
             if key == "left":
                 self.move_selection_relative(-1, 0)
             elif key == "right":
@@ -2749,13 +2750,20 @@ class PaintApp(App[None]):
                 self.move_selection_relative(0, 1)
         if self.image.selection and self.image.selection.textbox_mode:
             assert self.image.selection.contained_image is not None, "Textbox mode should always have contained_image, to edit as text."
+
             # TODO: delete selected text if any, when typing
+
             # Note: Don't forget to set self.image.selection.textbox_edited = True
             #       for any new actions that actually affect the text content.
-            # if shift:
+
+            # Whether or not shift is held, we start with the end point.
+            # Then once we've moved this point, we update the end point,
+            # and we update the start point unless shift is held.
+            # This way, the cursor jumps to (near) the end point if you
+            # hit an arrow key without shift, but with shift it will extend
+            # the selection.
             x, y = self.image.selection.text_selection_end
-            # else:
-            #     x, y = self.image.selection.text_selection_start
+
             if key == "enter":
                 x = 0
                 y += 1
