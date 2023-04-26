@@ -138,7 +138,6 @@ cat file.ans
 - Large files can make the program very slow, as can magnifying the canvas.
 - The program sometimes crashes or freezes randomly, and there's no auto-save feature.
 - Saved ANSI files are unnecessarily large, because they include escape sequences for every cell, even if the colors match the previous cell.
-- When finalizing a selection that is partially outside the document bounds to the top or to the left, it gets cut off.
 
 The program has only been tested on Linux. Issues on other platforms are as-yet _unknown_ :)
 

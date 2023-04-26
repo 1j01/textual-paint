@@ -467,8 +467,13 @@ class Selection:
         if not self.contained_image:
             # raise ValueError("Selection has no image data.")
             return
+
+        # Prevent out of bounds errors (IndexError: list assignment index out of range)
+        # by clipping the target region to the document, and adjusting the source region accordingly.
         target_region = self.region.intersection(Region(0, 0, document.width, document.height))
-        document.copy_region(source=self.contained_image, target_region=target_region, mask=self.mask)
+        source_region = Region(target_region.x - self.region.x, target_region.y - self.region.y, self.contained_image.width, self.contained_image.height)
+
+        document.copy_region(source=self.contained_image, source_region=source_region, target_region=target_region, mask=self.mask)
 
 
 debug_region_updates = False
