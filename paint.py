@@ -443,6 +443,8 @@ class Selection:
         """The region of the selection within the outer document."""
         self.contained_image: Optional[AnsiArtDocument] = None
         """The image data contained in the selection, None until dragged, except for text boxes."""
+        self.pasted: bool = False
+        """Whether the selection was pasted from the clipboard, and thus needs an undo state created for it when melding."""
         self.textbox_mode = False
         """Whether the selection is a text box. Either way it's text, but it's a different editing mode."""
         self.textbox_edited = False
@@ -1912,9 +1914,9 @@ class PaintApp(App[None]):
         pasted_image = AnsiArtDocument.from_text(text)
         self.stop_action_in_progress()
         # TODO: paste at top left corner of viewport
-        # TODO: create undo state (maybe when finalizing the selection?)
         self.image.selection = Selection(Region(0, 0, pasted_image.width, pasted_image.height))
         self.image.selection.contained_image = pasted_image
+        self.image.selection.pasted = True # create undo state when finalizing selection
         self.canvas.refresh_scaled_region(self.image.selection.region)
         self.selected_tool = Tool.select
     
@@ -2409,9 +2411,10 @@ class PaintApp(App[None]):
             make_undo_state = meld
         else:
             # The Select tool creates an undo state when you drag a selection,
-            # so we only need to create one if you haven't dragged it.
+            # so we only need to create one if you haven't dragged it, unless it was pasted.
             # Once it's dragged, it cuts out the image data, and contained_image is not None.
-            make_undo_state = self.image.selection.contained_image is None and not meld
+            # TODO: refactor to a flag that says whether an undo state was already created
+            make_undo_state = (self.image.selection.contained_image is None and not meld) or self.image.selection.pasted
 
         if make_undo_state:
             # TODO: DRY with other undo state creation
