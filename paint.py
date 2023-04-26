@@ -944,14 +944,21 @@ class Canvas(Widget):
         self.pointer_active: bool = False
         self.magnifier_preview_region: Optional[Region] = None
         self.select_preview_region: Optional[Region] = None
+        self.which_button: Optional[int] = None
 
     def on_mouse_down(self, event: events.MouseDown) -> None:
         self.fix_mouse_event(event) # not needed, pointer isn't captured yet.
         event.x //= self.magnification
         event.y //= self.magnification
 
+        if self.pointer_active and self.which_button != event.button:
+            assert isinstance(self.app, PaintApp)
+            self.app.stop_action_in_progress()
+            return
+
         self.post_message(self.ToolStart(event))
         self.pointer_active = True
+        self.which_button = event.button
         self.capture_mouse(True)
     
     def fix_mouse_event(self, event: events.MouseEvent) -> None:
