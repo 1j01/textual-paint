@@ -1147,7 +1147,7 @@ class PaintApp(App[None]):
         # There is a built-in "quit" action, but it will quit without asking to save.
         # It's also bound to Ctrl+C by default, so for now I'll rebind it,
         # but eventually Ctrl+C will become Edit > Copy.
-        Binding("ctrl+q,ctrl+c", "exit", _("Quit")),
+        Binding("ctrl+q", "exit", _("Quit")),
         Binding("ctrl+s", "save", _("Save")),
         Binding("ctrl+shift+s", "save_as", _("Save As")),
         Binding("ctrl+p", "print", _("Print")),
@@ -1161,7 +1161,7 @@ class PaintApp(App[None]):
         # it ignores the Shift.
         Binding("ctrl+shift+z,shift+ctrl+z,ctrl+y,f4", "redo", _("Repeat")),
         Binding("ctrl+x", "cut", _("Cut")),
-        # Binding("ctrl+c", "copy", _("Copy")), # Quit, for now
+        Binding("ctrl+c", "copy", _("Copy")), # Quit, for now
         Binding("ctrl+v", "paste", _("Paste")),
         Binding("ctrl+g", "toggle_grid", _("Show Grid")),
         Binding("ctrl+f", "view_bitmap", _("View Bitmap")),
@@ -1850,12 +1850,70 @@ class PaintApp(App[None]):
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_recent_file(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+
+    # def use_clipboard(self, text_to_write: str|None = None):
+    #     import tkinter # Apparently while this is a built-in module, it's not always available.
+    #     tk = tkinter.Tk()
+    #     tk.withdraw()
+    #     if type(text_to_write) == str: # Set clipboard text.
+    #         tk.clipboard_clear()
+    #         tk.clipboard_append(text_to_write)
+    #     try:
+    #         clipboard_text = tk.clipboard_get()
+    #     except tkinter.TclError:
+    #         clipboard_text = ''
+    #     r.update() # Stops a few errors (clipboard text unchanged, command line program unresponsive, window not destroyed).
+    #     tk.destroy()
+    #     return clipboard_text
+
     def action_cut(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        """Cut the selection to the clipboard."""
+        self.action_copy()
+        self.action_clear_selection()
+
     def action_copy(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        """Copy the selection to the clipboard."""
+        sel = self.image.selection
+        if sel is None:
+            return
+        had_contained_image = sel.contained_image is not None
+        try:
+            if sel.contained_image is None:
+                # Copy underlying image.
+                # Don't want to make an undo state, unlike when cutting out a selection when you drag it.
+                sel.copy_from_document(self.image)
+            # TODO: copy selected text in textbox, if any
+            import pyperclip
+            if not pyperclip.is_available():
+                self.warning_message_box(_("Paint"), _("Clipboard is not available."), "ok")
+                return
+            pyperclip.copy(sel.contained_image.get_ansi())
+            # self.use_clipboard(sel.contained_image.get_ansi())
+        except Exception as e:
+            self.warning_message_box(_("Paint"), _("Failed to copy to the clipboard.") + "\n\n" + repr(e), "ok")
+        finally:
+            if not had_contained_image:
+                sel.contained_image = None
+
     def action_paste(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        """Paste the clipboard as a selection."""
+        import pyperclip
+        text = pyperclip.paste()
+        # text = self.use_clipboard()
+        if not text:
+            return
+        if self.image.selection and self.image.selection.textbox_mode:
+            # TODO: paste into textbox
+            return
+        pasted_image = AnsiArtDocument.from_text(text)
+        self.stop_action_in_progress()
+        # TODO: paste at top left corner of viewport
+        # TODO: create undo state (maybe when finalizing the selection?)
+        self.image.selection = Selection(Region(0, 0, pasted_image.width, pasted_image.height))
+        self.image.selection.contained_image = pasted_image
+        self.canvas.refresh_scaled_region(self.image.selection.region)
+        self.selected_tool = Tool.select
+    
     def action_select_all(self) -> None:
         """Select the entire image."""
         self.stop_action_in_progress()
@@ -1997,9 +2055,9 @@ class PaintApp(App[None]):
                     MenuItem(_("&Undo\tCtrl+Z"), self.action_undo, 57643, description=_("Undoes the last action.")),
                     MenuItem(_("&Repeat\tF4"), self.action_redo, 57644, description=_("Redoes the previously undone action.")),
                     Separator(),
-                    MenuItem(_("Cu&t\tCtrl+X"), self.action_cut, 57635, grayed=True, description=_("Cuts the selection and puts it on the Clipboard.")),
-                    MenuItem(_("&Copy\tCtrl+C"), self.action_copy, 57634, grayed=True, description=_("Copies the selection and puts it on the Clipboard.")),
-                    MenuItem(_("&Paste\tCtrl+V"), self.action_paste, 57637, grayed=True, description=_("Inserts the contents of the Clipboard.")),
+                    MenuItem(_("Cu&t\tCtrl+X"), self.action_cut, 57635, description=_("Cuts the selection and puts it on the Clipboard.")),
+                    MenuItem(_("&Copy\tCtrl+C"), self.action_copy, 57634, description=_("Copies the selection and puts it on the Clipboard.")),
+                    MenuItem(_("&Paste\tCtrl+V"), self.action_paste, 57637, description=_("Inserts the contents of the Clipboard.")),
                     MenuItem(_("C&lear Selection\tDel"), self.action_clear_selection, 57632, description=_("Deletes the selection.")),
                     MenuItem(_("Select &All\tCtrl+A"), self.action_select_all, 57642, description=_("Selects everything.")),
                     Separator(),

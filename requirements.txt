@@ -1,5 +1,6 @@
 psutil==5.9.0
+pyperclip==1.8.2
 rich==13.3.4
 stransi==0.3.0
-textual==0.20.1
+textual==0.21.0
 watchdog==3.0.0
