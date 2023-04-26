@@ -354,6 +354,16 @@ class CharInput(Input, inherit_bindings=False):
         """Override to limit the value to a single character."""
         self.value = text[-1] if text else " "
 
+    def render_line(self, y: int) -> Strip:
+        assert isinstance(self.app, PaintApp)
+        # return Strip([Segment(self.value * self.size.width, Style(color=self.app.selected_fg_color, bgcolor=self.app.selected_bg_color))])
+        super_class_strip = super().render_line(y)
+        new_segments = []
+        style_mod: Style = Style(color=self.app.selected_fg_color, bgcolor=self.app.selected_bg_color)
+        for text, style, _ in super_class_strip._segments:
+            new_segments.append(Segment(text, style + style_mod, None))
+        return Strip(new_segments)
+
     last_click_time = 0
     def on_click(self, event: events.Click) -> None:
         """Detect double click and open character selector dialog."""
@@ -1238,6 +1248,7 @@ class PaintApp(App[None]):
     def watch_selected_bg_color(self, selected_bg_color: str) -> None:
         """Called when selected_bg_color changes."""
         self.query_one("#selected_color_char_input", CharInput).styles.background = selected_bg_color
+        # CharInput now handles the background style itself PARTIALLY; it doesn't affect the whole area.
 
         if self.image.selection and self.image.selection.textbox_mode:
             assert self.image.selection.contained_image is not None, "textbox_mode without contained_image"
@@ -1248,7 +1259,10 @@ class PaintApp(App[None]):
 
     def watch_selected_fg_color(self, selected_fg_color: str) -> None:
         """Called when selected_fg_color changes."""
-        self.query_one("#selected_color_char_input", CharInput).styles.color = selected_fg_color
+        # self.query_one("#selected_color_char_input", CharInput).styles.color = selected_fg_color
+        # CharInput now handles this itself, because styles.color never worked to color the Input's text.
+        # Well, it still needs to be updated.
+        self.query_one("#selected_color_char_input", CharInput).refresh()
 
         if self.image.selection and self.image.selection.textbox_mode:
             assert self.image.selection.contained_image is not None, "textbox_mode without contained_image"
