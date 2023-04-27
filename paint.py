@@ -1940,6 +1940,7 @@ class PaintApp(App[None]):
                 self.warning_message_box(_("Paint"), _("Not enough room to paste text.") + "\n\n" + _("Enlarge the text area and try again."), "ok")
                 return
             textbox.contained_image.copy_region(source=pasted_image, target_region=paste_region)
+            self.canvas.refresh_scaled_region(textbox.region)
             return
         pasted_image = AnsiArtDocument.from_text(text)
         self.stop_action_in_progress()
