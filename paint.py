@@ -494,6 +494,20 @@ def selected_text_range(textbox: Selection) -> Generator[Offset, None, None]:
     for i in range(min(start, end), max(start, end) + 1):
         yield text_index_to_offset(textbox, i)
 
+def selected_text(textbox: Selection) -> str:
+    """Returns the text within the text selection."""
+    assert textbox.textbox_mode, "selected_text called on non-textbox selection"
+    assert textbox.contained_image, "textbox has no image data"
+    # return "".join(textbox.contained_image.ch[y][x] for x, y in selected_text_range(textbox))
+    text = ""
+    last_y = -1
+    for x, y in selected_text_range(textbox):
+        text += textbox.contained_image.ch[y][x]
+        if y != last_y:
+            text += "\n"
+            last_y = y
+    return text
+
 
 debug_region_updates = False
 
@@ -1896,9 +1910,12 @@ class PaintApp(App[None]):
                 # Don't want to make an undo state, unlike when cutting out a selection when you drag it.
                 sel.copy_from_document(self.image)
                 assert sel.contained_image is not None
-            # TODO: copy selected text in textbox, if any
+            if sel.textbox_mode:
+                text = selected_text(sel)
+            else:
+                text = sel.contained_image.get_ansi()
             import pyperclip
-            pyperclip.copy(sel.contained_image.get_ansi())
+            pyperclip.copy(text)
         except Exception as e:
             self.warning_message_box(_("Paint"), _("Failed to copy to the clipboard.") + "\n\n" + repr(e), "ok")
             return False
@@ -2764,6 +2781,9 @@ class PaintApp(App[None]):
         shift = key.startswith("shift+")
         if shift:
             key = key[len("shift+"):]
+        if "ctrl" in key:
+            # Don't interfere with Ctrl+C, Ctrl+V, etc.
+            return
         
         if self.image.selection and not self.image.selection.textbox_mode:
             # TODO: smear selection if shift is held
