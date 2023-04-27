@@ -32,6 +32,7 @@ from windows import Window, DialogWindow, CharacterSelectorDialogWindow, Message
 from edit_colors import EditColorsDialogWindow
 from localization.i18n import get as _, load_language, remove_hotkey
 from enhanced_directory_tree import EnhancedDirectoryTree
+from wallpaper import get_config_dir, set_wallpaper
 
 observer = None
 
@@ -1886,10 +1887,19 @@ class PaintApp(App[None]):
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_send(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    
     def action_set_as_wallpaper_tiled(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        # TODO: Differentiate between tiled and centered.
+        self.action_set_as_wallpaper_centered()
     def action_set_as_wallpaper_centered(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        try:
+            dir = os.path.join(get_config_dir("textual-paint"), "wallpaper")
+            os.makedirs(dir, exist_ok=True)
+            image_path = self.save_screenshot(path=dir)
+            set_wallpaper(image_path)
+        except Exception as e:
+            self.warning_message_box(_("Paint"), Static(_("Failed to set the wallpaper.") + "\n\n" + repr(e)), "ok")
+    
     def action_recent_file(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
 
@@ -2088,8 +2098,8 @@ class PaintApp(App[None]):
                     Separator(),
                     MenuItem(_("S&end..."), self.action_send, 37662, grayed=True, description=_("Sends a picture by using mail or fax.")),
                     Separator(),
-                    MenuItem(_("Set As &Wallpaper (Tiled)"), self.action_set_as_wallpaper_tiled, 57677, grayed=True, description=_("Tiles this bitmap as the desktop wallpaper.")),
-                    MenuItem(_("Set As Wa&llpaper (Centered)"), self.action_set_as_wallpaper_centered, 57675, grayed=True, description=_("Centers this bitmap as the desktop wallpaper.")),
+                    MenuItem(_("Set As &Wallpaper (Tiled)"), self.action_set_as_wallpaper_tiled, 57677, description=_("Tiles this bitmap as the desktop wallpaper.")),
+                    MenuItem(_("Set As Wa&llpaper (Centered)"), self.action_set_as_wallpaper_centered, 57675, description=_("Centers this bitmap as the desktop wallpaper.")),
                     Separator(),
                     MenuItem(_("Recent File"), self.action_recent_file, 57616, grayed=True, description=_("Opens this document.")),
                     Separator(),
