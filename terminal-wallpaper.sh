@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Clear screen
 # echo -e "\033[2J"
