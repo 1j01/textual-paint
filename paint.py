@@ -1927,7 +1927,7 @@ class PaintApp(App[None]):
     def action_paste(self) -> None:
         """Paste the clipboard as a selection."""
         import pyperclip
-        text = pyperclip.paste()
+        text: str = pyperclip.paste()
         if not text:
             return
         if self.image.selection and self.image.selection.textbox_mode:
