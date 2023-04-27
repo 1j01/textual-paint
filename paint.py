@@ -483,13 +483,13 @@ ansi_escape_pattern = re.compile(r"(\N{ESC}\[[\d;]*[a-zA-Z])")
 class AnsiArtDocument:
     """A document that can be rendered as ANSI."""
 
-    def __init__(self, width: int, height: int) -> None:
+    def __init__(self, width: int, height: int, default_bg: str = "#ffffff", default_fg: str = "#000000") -> None:
         """Initialize the document."""
         self.width = width
         self.height = height
         self.ch = [[" " for _ in range(width)] for _ in range(height)]
-        self.bg = [["#ffffff" for _ in range(width)] for _ in range(height)]
-        self.fg = [["#000000" for _ in range(width)] for _ in range(height)]
+        self.bg = [[default_bg for _ in range(width)] for _ in range(height)]
+        self.fg = [[default_fg for _ in range(width)] for _ in range(height)]
         self.selection: Optional[Selection] = None
 
     def copy_region(self, source: 'AnsiArtDocument', source_region: Region|None = None, target_region: Region|None = None, mask: list[list[bool]]|None = None) -> None:
@@ -556,21 +556,21 @@ class AnsiArtDocument:
         return html
     
     @staticmethod
-    def from_ascii(text: str) -> 'AnsiArtDocument':
+    def from_ascii(text: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
         """Creates a document from the given ASCII plain text."""
         lines = text.splitlines()
         width = 0
         for line in lines:
             width = max(len(line), width)
         height = len(lines)
-        document = AnsiArtDocument(width, height)
+        document = AnsiArtDocument(width, height, default_bg, default_fg)
         for y, line in enumerate(lines):
             for x, char in enumerate(line):
                 document.ch[y][x] = char
         return document
     
     @staticmethod
-    def from_ansi(text: str) -> 'AnsiArtDocument':
+    def from_ansi(text: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
         """Creates a document from the given ANSI text."""
         # TODO: use Rich API to render ANSI to a virtual screen,
         # and remove dependency on stransi
@@ -578,15 +578,15 @@ class AnsiArtDocument:
 
         # Initial document is zero wide to avoid an extraneous character at (0,0),
         # but needs one row to avoid IndexError.
-        document = AnsiArtDocument(0, 1)
+        document = AnsiArtDocument(0, 1, default_bg, default_fg)
         # Ultimately, the minimum size is 1x1.
         width = 1
         height = 1
 
         x = 0
         y = 0
-        bg_color = "#000000"
-        fg_color = "#ffffff"
+        bg_color = default_bg
+        fg_color = default_fg
         for instruction in ansi.instructions():
             if isinstance(instruction, str):
                 # Text
@@ -633,12 +633,12 @@ class AnsiArtDocument:
         return document
     
     @staticmethod
-    def from_text(text: str) -> 'AnsiArtDocument':
+    def from_text(text: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
         """Creates a document from the given text, detecting if uses ANSI or not."""
         if ansi_escape_pattern.search(text):
-            return AnsiArtDocument.from_ansi(text)
+            return AnsiArtDocument.from_ansi(text, default_bg, default_fg)
         else:
-            return AnsiArtDocument.from_ascii(text)
+            return AnsiArtDocument.from_ascii(text, default_bg, default_fg)
 
 class Action:
     """An action that can be undone efficiently using a region update."""
@@ -1894,9 +1894,9 @@ class PaintApp(App[None]):
         text = pyperclip.paste()
         if not text:
             return
-        pasted_image = AnsiArtDocument.from_text(text)
         if self.image.selection and self.image.selection.textbox_mode:
             # paste into textbox
+            pasted_image = AnsiArtDocument.from_text(text, default_bg=self.selected_bg_color, default_fg=self.selected_fg_color)
             textbox = self.image.selection
             assert textbox.contained_image is not None
             paste_region = Region(*textbox.text_selection_start, pasted_image.width, pasted_image.height)
@@ -1905,6 +1905,7 @@ class PaintApp(App[None]):
                 return
             textbox.contained_image.copy_region(source=pasted_image, target_region=paste_region)
             return
+        pasted_image = AnsiArtDocument.from_text(text)
         self.stop_action_in_progress()
         # paste at top left corner of viewport
         x: int = max(0, min(self.image.width - 1, int(self.editing_area.scroll_x // self.magnification)))
