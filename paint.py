@@ -1894,10 +1894,17 @@ class PaintApp(App[None]):
         text = pyperclip.paste()
         if not text:
             return
-        if self.image.selection and self.image.selection.textbox_mode:
-            # TODO: paste into textbox
-            return
         pasted_image = AnsiArtDocument.from_text(text)
+        if self.image.selection and self.image.selection.textbox_mode:
+            # paste into textbox
+            textbox = self.image.selection
+            assert textbox.contained_image is not None
+            paste_region = Region(*textbox.text_selection_start, pasted_image.width, pasted_image.height)
+            if paste_region.right > textbox.region.width or paste_region.bottom > textbox.region.height:
+                self.warning_message_box(_("Paint"), _("Not enough room to paste text.") + "\n\n" + _("Enlarge the text area and try again."), "ok")
+                return
+            textbox.contained_image.copy_region(source=pasted_image, target_region=paste_region)
+            return
         self.stop_action_in_progress()
         # paste at top left corner of viewport
         x: int = max(0, min(self.image.width - 1, int(self.editing_area.scroll_x // self.magnification)))
