@@ -1516,6 +1516,8 @@ class PaintApp(App[None]):
     """A temporary undo state for tool previews"""
     saved_undo_count = 0
     """Used to determine if the document has been modified since the last save, in is_document_modified()"""
+    auto_saved_undo_count = 0
+    """Used to determine if the document has been modified since the last auto-save"""
 
     mouse_gesture_cancelled = False
     """For Undo/Redo, to interrupt the current action"""
@@ -1840,6 +1842,19 @@ class PaintApp(App[None]):
             assert isinstance(window, Window), f"Expected a Window for query '{selector}', but got {window.css_identifier}"
             window.close()
 
+    def start_auto_save_interval(self) -> None:
+        """Auto-save periodically."""
+        self.auto_save_interval = 10
+        self.set_interval(self.auto_save_interval, self.auto_save)
+
+    def auto_save(self) -> None:
+        """Auto-save the image if it has been modified since the last save."""
+        if self.auto_saved_undo_count != len(self.undos):
+            auto_save_file_path = (self.file_path or _("Untitled")) + "~"
+            ansi = self.image.get_ansi()
+            self.write_file_path(auto_save_file_path, ansi, _("Auto-Save Failed"))
+            self.auto_saved_undo_count = len(self.undos)
+
     def action_save(self) -> None:
         """Start the save action, but don't wait for the Save As dialog to close if it's a new file."""
         task = asyncio.create_task(self.save())
@@ -2142,6 +2157,7 @@ class PaintApp(App[None]):
         self.canvas.refresh(layout=True)
         self.file_path = None
         self.saved_undo_count = 0
+        self.auto_saved_undo_count = 0
         self.undos = []
         self.redos = []
         self.preview_action = None
@@ -3539,6 +3555,8 @@ if args.clear_screen:
     os.system("cls||clear")
 
 app.dark = args.theme == "dark"
+
+app.call_later(app.start_auto_save_interval)
 
 if __name__ == "__main__":
     app.run()

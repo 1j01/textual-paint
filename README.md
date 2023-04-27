@@ -21,6 +21,7 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
   - [x] Fancy file dialogs
   - [x] Drag and drop files to open
   - [x] Warnings when overwriting an existing file, or closing with unsaved changes
+  - [x] Auto-saves to `<filename>~` alongside the file you're editing, so you can recover your work if the program crashes
   - File formats, chosen by typing a file extension in the Save As dialog:
     - [x] ANSI (.ans) — Note that while it can load the files that it saves, you may have limited success loading other ANSI files that you find on the web, or create with other tools. ANSI files can vary a lot and even encode animations!
     - [x] Plain Text (.txt) — discards color information
@@ -141,7 +142,6 @@ cat samples/ship.ans
 - The canvas flickers when zooming in with the Magnifier tool.
 - Some languages don't display correctly.
 - Large files can make the program very slow, as can magnifying the canvas.
-- The program may crash or freeze up randomly, and there's no auto-save feature.
 - Saved ANSI files are unnecessarily large, because they include escape sequences for every cell, even if the colors match the previous cell.
 - Free-Form Select stamping/finalizing is incorrect when the selection is off-screen to the left or top.
 - Moving the selection with the arrow keys does not cut out the selection from the canvas, it only moves the selection box.
