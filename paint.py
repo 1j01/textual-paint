@@ -1115,7 +1115,7 @@ class Canvas(Widget):
             assert style.color is not None
             assert style.bgcolor is not None
             def within_text_selection_highlight(textbox: Selection) -> int:
-                if cell_x >= textbox.region.right:
+                if cell_x >= textbox.region.right or cell_x < textbox.region.x:
                     # Prevent inverting outside the textbox.
                     return False
                 def offset_to_text_index(offset: Offset) -> int:
