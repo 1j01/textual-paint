@@ -8,7 +8,10 @@ import re
 # to a folder and made a separate dictionary).
 # spell-checker:disable
 
-def get_desktop_environment(self):
+def get_desktop_environment() -> str:
+    """
+    Returns the name of the current desktop environment.
+    """
     # From https://stackoverflow.com/a/21213358/2624876
     # which takes from:
     # http://stackoverflow.com/questions/2035657/what-is-my-current-desktop-environment
@@ -51,13 +54,15 @@ def get_desktop_environment(self):
             if not "deprecated" in os.environ.get('GNOME_DESKTOP_SESSION_ID'):
                 return "gnome2"
         #From http://ubuntuforums.org/showthread.php?t=652320
-        elif self.is_running("xfce-mcs-manage"):
+        elif is_running("xfce-mcs-manage"):
             return "xfce4"
-        elif self.is_running("ksmserver"):
+        elif is_running("ksmserver"):
             return "kde"
     return "unknown"
 
-def is_running(self, process):
+def is_running(process: str) -> bool:
+    """Returns whether a process with the given name is (likely) currently running.
+    Uses a basic text search, and so may have false positives."""
     #From http://www.bloggerpolis.com/2011/05/how-to-check-if-a-process-is-running-using-python/
     # and http://richarddingwall.name/2009/06/18/windows-equivalents-of-ps-and-kill-commands/
     try: #Linux/Unix
@@ -65,12 +70,14 @@ def is_running(self, process):
     except: #Windows
         s = subprocess.Popen(["tasklist", "/v"],stdout=subprocess.PIPE)
     for x in s.stdout:
-        if re.search(process, x):
+        # if re.search(process, x):
+        if process in str(x):
             return True
     return False
 
 
-def set_wallpaper(self, file_loc, first_run):
+def set_wallpaper(file_loc: str, first_run: bool = True):
+    """Sets the wallpaper to the given file location."""
     # From https://stackoverflow.com/a/21213504/2624876
     # I have not personally tested any of this.
     # -----------------------------------------
@@ -78,7 +85,7 @@ def set_wallpaper(self, file_loc, first_run):
     # Note: There are two common Linux desktop environments where
     # I have not been able to set the desktop background from
     # command line: KDE, Enlightenment
-    desktop_env = self.get_desktop_environment()
+    desktop_env = get_desktop_environment()
     try:
         if desktop_env in ["gnome", "unity", "cinnamon"]:
             uri = "'file://%s'" % file_loc
@@ -122,13 +129,14 @@ def set_wallpaper(self, file_loc, first_run):
             subprocess.Popen(args)
         elif desktop_env=="razor-qt": #TODO: implement reload of desktop when possible
             if first_run:
+                import configparser
                 desktop_conf = configparser.ConfigParser()
                 # Development version
-                desktop_conf_file = os.path.join(self.get_config_dir("razor"),"desktop.conf") 
+                desktop_conf_file = os.path.join(get_config_dir("razor"),"desktop.conf") 
                 if os.path.isfile(desktop_conf_file):
                     config_option = r"screens\1\desktops\1\wallpaper"
                 else:
-                    desktop_conf_file = os.path.join(self.get_home_dir(),".razor/desktop.conf")
+                    desktop_conf_file = os.path.join(get_home_dir(),".razor/desktop.conf")
                     config_option = r"desktops\1\wallpaper"
                 desktop_conf.read(os.path.join(desktop_conf_file))
                 try:
@@ -201,7 +209,7 @@ def set_wallpaper(self, file_loc, first_run):
         return False
 # spell-checker:enable
 
-def get_config_dir(self, app_name=APP_NAME):
+def get_config_dir(app_name: str):
     if "XDG_CONFIG_HOME" in os.environ:
         config_home = os.environ['XDG_CONFIG_HOME'] 
     elif "APPDATA" in os.environ: # On Windows
@@ -211,9 +219,9 @@ def get_config_dir(self, app_name=APP_NAME):
             from xdg import BaseDirectory   
             config_home =  BaseDirectory.xdg_config_home
         except ImportError: # Most likely a Linux/Unix system anyway
-            config_home =  os.path.join(self.get_home_dir(), ".config")
+            config_home =  os.path.join(get_home_dir(), ".config")
     config_dir = os.path.join(config_home,app_name)
     return config_dir
 
-def get_home_dir(self):
+def get_home_dir():
     return os.path.expanduser("~")
