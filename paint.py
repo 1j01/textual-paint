@@ -1959,6 +1959,7 @@ class PaintApp(App[None]):
             assert self.image.selection.contained_image is not None
             self.image.selection.text_selection_start = Offset(0, 0)
             self.image.selection.text_selection_end = Offset(self.image.selection.contained_image.width - 1, self.image.selection.contained_image.height - 1)
+            self.canvas.refresh_scaled_region(self.image.selection.region)
         else:
             self.stop_action_in_progress()
             self.image.selection = Selection(Region(0, 0, self.image.width, self.image.height))
