@@ -1135,7 +1135,9 @@ class Canvas(Widget):
                 (sel and sel.textbox_mode and within_text_selection_highlight(sel))
             ):
                 # invert the colors
-                style = Style(color=f"rgb({255 - style.color.triplet.red},{255 - style.color.triplet.green},{255 - style.color.triplet.blue})", bgcolor=f"rgb({255 - style.bgcolor.triplet.red},{255 - style.bgcolor.triplet.green},{255 - style.bgcolor.triplet.blue})")
+                inverse_color = f"rgb({255 - style.color.triplet.red},{255 - style.color.triplet.green},{255 - style.color.triplet.blue})"
+                inverse_bgcolor = f"rgb({255 - style.bgcolor.triplet.red},{255 - style.bgcolor.triplet.green},{255 - style.bgcolor.triplet.blue})"
+                style = Style(color=inverse_color, bgcolor=inverse_bgcolor)
             segments.append(Segment(ch, style))
         return Strip(segments, self.size.width)
     
