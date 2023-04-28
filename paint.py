@@ -2090,6 +2090,8 @@ class PaintApp(App[None]):
                     def do_the_resize():
                         self.image.resize(width, height, default_bg=self.selected_bg_color, default_fg=self.selected_fg_color)
                         self.canvas.refresh(layout=True)
+                        self.undos = []
+                        self.redos = []
                         window.close()
                     self.confirm_no_undo(do_the_resize)
                 except ValueError:
