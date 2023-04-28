@@ -272,6 +272,16 @@ CharacterSelectorDialogWindow .cancel {
     width: auto;
     padding: 1 2;
 }
+#attributes_dialog Input {
+    width: 10;
+    /* height: 10; */
+    padding: 4;
+    background: red;
+    border: inner yellow;
+}
+#attributes_dialog * {
+    border: outer $panel-darken-1;
+}
 
 EditColorsDialogWindow .window_content {
     padding: 2 4;
