@@ -1112,7 +1112,7 @@ class Canvas(Widget):
                 ch = "?"
             if self.magnification > 1:
                 ch = self.big_ch(ch, x % self.magnification, y % self.magnification)
-            style = Style.parse(fg+" on "+bg)
+            style = Style(color=fg, bgcolor=bg)
             assert style.color is not None
             assert style.bgcolor is not None
             def within_text_selection_highlight(textbox: Selection) -> int:
@@ -1135,7 +1135,7 @@ class Canvas(Widget):
                 (sel and sel.textbox_mode and within_text_selection_highlight(sel))
             ):
                 # invert the colors
-                style = Style.parse(f"rgb({255 - style.color.triplet.red},{255 - style.color.triplet.green},{255 - style.color.triplet.blue}) on rgb({255 - style.bgcolor.triplet.red},{255 - style.bgcolor.triplet.green},{255 - style.bgcolor.triplet.blue})")
+                style = Style(color=f"rgb({255 - style.color.triplet.red},{255 - style.color.triplet.green},{255 - style.color.triplet.blue})", bgcolor=f"rgb({255 - style.bgcolor.triplet.red},{255 - style.bgcolor.triplet.green},{255 - style.bgcolor.triplet.blue})")
             segments.append(Segment(ch, style))
         return Strip(segments, self.size.width)
     
@@ -1403,8 +1403,8 @@ class PaintApp(App[None]):
 
                 # Use color comparison instead of string comparison because "#000000" != "rgb(0,0,0)"
                 # This stuff might be simpler and more efficient if we used Color objects in the document model
-                style = Style.parse(self.image.fg[y][x]+" on "+self.image.bg[y][x])
-                selected_fg_style = Style.parse(self.selected_fg_color)
+                style = Style(color=self.image.fg[y][x], bgcolor=self.image.bg[y][x])
+                selected_fg_style = Style(color=self.selected_fg_color)
                 assert style.color is not None
                 assert style.bgcolor is not None
                 assert selected_fg_style.color is not None
@@ -1423,7 +1423,7 @@ class PaintApp(App[None]):
                 return
         if self.selected_tool == Tool.free_form_select:
             # Invert the underlying colors
-            style = Style.parse(self.image.fg[y][x]+" on "+self.image.bg[y][x])
+            style = Style(color=self.image.fg[y][x], bgcolor=self.image.bg[y][x])
             assert style.color is not None
             assert style.bgcolor is not None
             # Why do I need these extra asserts here and not in the other place I do color inversion,
