@@ -16,7 +16,7 @@ from rich.style import Style
 from textual import events
 from textual.message import Message
 from textual.app import App, ComposeResult
-from textual.containers import Container
+from textual.containers import Container, Vertical, Horizontal
 from textual.geometry import Offset, Region, Size
 from textual.css._style_properties import BorderDefinition
 from textual.reactive import var, reactive
@@ -552,6 +552,24 @@ class AnsiArtDocument:
                         self.ch[y + target_offset.y][x + target_offset.x] = "?"
                         self.bg[y + target_offset.y][x + target_offset.x] = "#ff00ff"
                         self.fg[y + target_offset.y][x + target_offset.x] = "#000000"
+
+    def resize(self, width: int, height: int, default_bg: str = "#ffffff", default_fg: str = "#000000") -> None:
+        """Resize the document."""
+        if width == self.width and height == self.height:
+            return
+        new_ch = [[" " for _ in range(width)] for _ in range(height)]
+        new_bg = [[default_bg for _ in range(width)] for _ in range(height)]
+        new_fg = [[default_fg for _ in range(width)] for _ in range(height)]
+        for y in range(min(height, self.height)):
+            for x in range(min(width, self.width)):
+                new_ch[y][x] = self.ch[y][x]
+                new_bg[y][x] = self.bg[y][x]
+                new_fg[y][x] = self.fg[y][x]
+        self.width = width
+        self.height = height
+        self.ch = new_ch
+        self.bg = new_bg
+        self.fg = new_fg
 
     def get_ansi(self) -> str:
         """Get the ANSI representation of the document."""
@@ -2046,8 +2064,47 @@ class PaintApp(App[None]):
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_invert_colors(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    
     def action_attributes(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        """Show dialog to set the image attributes."""
+        self.close_windows("#attributes_dialog")
+        def handle_button(button: Button) -> None:
+            if button.has_class("ok"):
+                try:
+                    width = int(window.content.query_one("#width_input", Input).value)
+                    height = int(window.content.query_one("#height_input", Input).value)
+                    if width < 1 or height < 1:
+                        raise ValueError
+                    self.image.resize(width, height, default_bg=self.selected_bg_color, default_fg=self.selected_fg_color)
+                    window.close()
+                except ValueError:
+                    self.warning_message_box(_("Attributes"), _("Please enter a positive integer."), "ok")
+            else:
+                window.close()
+        window = DialogWindow(
+            id="attributes_dialog",
+            title=_("Attributes"),
+            handle_button=handle_button,
+        )
+        window.content.mount(
+            Vertical(
+                Horizontal(
+                    Static(_("Width:")),
+                    Input(id="width_input", value=str(self.image.width)),
+                ),
+                Horizontal(
+                    Static(_("Height:")),
+                    Input(id="height_input", value=str(self.image.height)),
+                ),
+            ),
+            Container(
+                Button(_("OK"), classes="ok submit", variant="primary"),
+                Button(_("Cancel"), classes="cancel"),
+                classes="buttons",
+            )
+        )
+        self.mount(window)
+    
     def action_clear_image(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_draw_opaque(self) -> None:
@@ -2145,7 +2202,7 @@ class PaintApp(App[None]):
                     MenuItem(_("&Flip/Rotate...\tCtrl+R"), self.action_flip_rotate, 37680, grayed=True, description=_("Flips or rotates the picture or a selection.")),
                     MenuItem(_("&Stretch/Skew...\tCtrl+W"), self.action_stretch_skew, 37681, grayed=True, description=_("Stretches or skews the picture or a selection.")),
                     MenuItem(_("&Invert Colors\tCtrl+I"), self.action_invert_colors, 37682, grayed=True, description=_("Inverts the colors of the picture or a selection.")),
-                    MenuItem(_("&Attributes...\tCtrl+E"), self.action_attributes, 37683, grayed=True, description=_("Changes the attributes of the picture.")),
+                    MenuItem(_("&Attributes...\tCtrl+E"), self.action_attributes, 37683, description=_("Changes the attributes of the picture.")),
                     MenuItem(_("&Clear Image\tCtrl+Shft+N"), self.action_clear_image, 37684, grayed=True, description=_("Clears the picture or selection.")),
                     MenuItem(_("&Draw Opaque"), self.action_draw_opaque, 6868, grayed=True, description=_("Makes the current selection either opaque or transparent.")),
                 ])),

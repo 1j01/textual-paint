@@ -258,6 +258,18 @@ CharacterSelectorDialogWindow .cancel {
     margin: 1;
 }
 
+#attributes_dialog .window_content {
+    padding: 2 4;
+    width: 50;
+    height: auto;
+}
+#attributes_dialog Horizontal,
+#attributes_dialog Vertical {
+    height: auto;
+    width: auto;
+    padding: 1 2;
+}
+
 EditColorsDialogWindow .window_content {
     padding: 2 4;
     width: 65;
