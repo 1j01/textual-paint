@@ -2088,14 +2088,14 @@ class PaintApp(App[None]):
         )
         window.content.mount(
             Vertical(
-                Horizontal(
+                # Horizontal(
                     Static(_("Width:")),
                     Input(id="width_input", value=str(self.image.width)),
-                ),
-                Horizontal(
+                # ),
+                # Horizontal(
                     Static(_("Height:")),
                     Input(id="height_input", value=str(self.image.height)),
-                ),
+                # ),
             ),
             Container(
                 Button(_("OK"), classes="ok submit", variant="primary"),
