@@ -1802,8 +1802,7 @@ class PaintApp(App[None]):
             if self.directory_tree_selected_path:
                 filename = os.path.join(self.directory_tree_selected_path, filename)
             try:
-                # Note that os.path.
-                # samefile can raise FileNotFoundError
+                # Note that os.path.samefile can raise FileNotFoundError
                 if self.filename and os.path.samefile(filename, self.filename):
                     window.close()
                     return
