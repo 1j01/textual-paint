@@ -1714,6 +1714,17 @@ class PaintApp(App[None]):
             callback()
         self.warning_message_box(_("Save As"), Static(message, markup=False), "yes/no", handle_button)
 
+    def confirm_no_undo(self, callback: Callable[[], None]) -> None:
+        """Asks the user to confirm that they want to continue with a permanent action."""
+        # We have translations for "Do you want to continue?" via MS Paint,
+        # but not for the rest of the message.
+        message = _("This cannot be undone.") + "\n\n" + _("Do you want to continue?")
+        def handle_button(button: Button) -> None:
+            if not button.has_class("yes"):
+                return
+            callback()
+        self.warning_message_box(_("Paint"), Static(message, markup=False), "yes/no", handle_button)
+
     def prompt_save_changes(self, filename: str, callback: Callable[[], None]) -> None:
         """Asks the user if they want to save changes to a file."""
         filename = os.path.basename(filename)
@@ -2076,9 +2087,11 @@ class PaintApp(App[None]):
                     if width < 1 or height < 1:
                         raise ValueError
                     # TODO: make this undoable
-                    self.image.resize(width, height, default_bg=self.selected_bg_color, default_fg=self.selected_fg_color)
-                    self.canvas.refresh(layout=True)
-                    window.close()
+                    def do_the_resize():
+                        self.image.resize(width, height, default_bg=self.selected_bg_color, default_fg=self.selected_fg_color)
+                        self.canvas.refresh(layout=True)
+                        window.close()
+                    self.confirm_no_undo(do_the_resize)
                 except ValueError:
                     self.warning_message_box(_("Attributes"), _("Please enter a positive integer."), "ok")
             else:
