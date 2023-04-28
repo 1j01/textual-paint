@@ -607,14 +607,69 @@ class AnsiArtDocument:
             text += "\n"
         return text
 
-    def get_html(self) -> str:
-        """Get the HTML representation of the document."""
+    def get_pre_inner_xhtml(self) -> str:
+        """Get an XHTML snippet which should be placed in a <pre> tag."""
         html = ""
         for y in range(self.height):
             for x in range(self.width):
                 html += "<span style='background-color:" + self.bg[y][x] + ";color:" + self.fg[y][x] + "'>" + self.ch[y][x] + "</span>"
-            html += "<br>"
+            html += "<br/>"
         return html
+
+    def get_html(self) -> str:
+        """Get the HTML representation of the document."""
+        return """<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+html,
+body,
+pre {
+    margin: 0;
+    padding: 0;
+}
+pre {
+    font-family: monospace;
+    line-height: 1;
+}
+</style>
+</head>
+<body>
+<pre>""" + self.get_pre_inner_xhtml() + """</pre>
+</body>
+</html>
+"""
+
+    def get_svg(self) -> str:
+        """Get the SVG representation of the document."""
+        css = """
+div,
+pre {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+svg {
+    font: 10px monospace;
+    line-height: 1;
+}
+span,
+font {
+    display: inline-block;
+}
+"""
+        svg = f"""<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="{self.width}ch" height="{self.height}lh">
+<style>{css}</style>
+<foreignObject x="0" y="0" width="80ch" height="38lh">
+<div xmlns="http://www.w3.org/1999/xhtml">
+<pre xmlns="http://www.w3.org/1999/xhtml">{self.get_pre_inner_xhtml()}</pre>
+</div>
+</foreignObject>
+</svg>
+"""
+        return svg
     
     @staticmethod
     def from_ascii(text: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
