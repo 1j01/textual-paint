@@ -1595,7 +1595,7 @@ class PaintApp(App[None]):
 
     async def save(self, from_save_as: bool = False) -> None:
         """Save the image to a file."""
-        self.cancel_preview()
+        self.stop_action_in_progress()
         dialog_title = _("Save As") if from_save_as else _("Save")
         if self.filename:
             try:
@@ -1624,6 +1624,10 @@ class PaintApp(App[None]):
 
     async def save_as(self) -> None:
         """Save the image as a new file."""
+        # stop_action_in_progress() will also be called once the dialog is closed, in save()
+        # which is more important than here, since the dialog isn't (currently) modal.
+        # You could make a selection while the dialog is open, for example.
+        self.stop_action_in_progress()
         self.close_windows("#save_as_dialog, #open_dialog")
         
         saved_future: asyncio.Future[None] = asyncio.Future()
