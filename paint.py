@@ -598,6 +598,15 @@ class AnsiArtDocument:
             ansi += "\033[0m\r\n"
         return ansi
 
+    def get_text(self) -> str:
+        """Get the plain text representation of the document."""
+        text = ""
+        for y in range(self.height):
+            for x in range(self.width):
+                text += self.ch[y][x]
+            text += "\n"
+        return text
+
     def get_html(self) -> str:
         """Get the HTML representation of the document."""
         html = ""
@@ -1619,9 +1628,17 @@ class PaintApp(App[None]):
         dialog_title = _("Save As") if from_save_as else _("Save")
         if self.file_path:
             try:
-                ansi = self.image.get_ansi()
+                file_type = os.path.splitext(self.file_path)[1][1:].upper()
+                if file_type == "SVG":
+                    content = self.image.get_svg()
+                elif file_type == "HTML" or file_type == "HTM":
+                    content = self.image.get_html()
+                elif file_type == "TXT":
+                    content = self.image.get_text()
+                else:
+                    content = self.image.get_ansi()
                 with open(self.file_path, "w") as f:
-                    f.write(ansi)
+                    f.write(content)
                 self.saved_undo_count = len(self.undos)
             except PermissionError:
                 self.warning_message_box(dialog_title, _("Access denied."), "ok")
