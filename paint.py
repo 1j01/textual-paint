@@ -1265,8 +1265,8 @@ class PaintApp(App[None]):
     """The currently selected foreground (text) color."""
     selected_char = var(" ")
     """The character to draw with."""
-    filename = var(None)
-    """The path to the file being edited. TODO: rename to indicate it's a path."""
+    file_path = var(None)
+    """The path to the file being edited."""
 
     directory_tree_selected_path: str|None = None
     """Last highlighted item in Open/Save As dialogs"""
@@ -1317,12 +1317,12 @@ class PaintApp(App[None]):
 
     TITLE = _("Paint")
 
-    def watch_filename(self, filename: Optional[str]) -> None:
-        """Called when filename changes."""
-        if filename is None:
+    def watch_file_path(self, file_path: Optional[str]) -> None:
+        """Called when file_path changes."""
+        if file_path is None:
             self.sub_title = _("Untitled")
         else:
-            self.sub_title = os.path.basename(filename)
+            self.sub_title = os.path.basename(file_path)
 
     def watch_show_tools_box(self, show_tools_box: bool) -> None:
         """Called when show_tools_box changes."""
@@ -1617,20 +1617,20 @@ class PaintApp(App[None]):
         """Save the image to a file."""
         self.stop_action_in_progress()
         dialog_title = _("Save As") if from_save_as else _("Save")
-        if self.filename:
+        if self.file_path:
             try:
                 ansi = self.image.get_ansi()
-                with open(self.filename, "w") as f:
+                with open(self.file_path, "w") as f:
                     f.write(ansi)
                 self.saved_undo_count = len(self.undos)
             except PermissionError:
                 self.warning_message_box(dialog_title, _("Access denied."), "ok")
             except FileNotFoundError: 
-                self.warning_message_box(dialog_title, _("%1 contains an invalid path.", self.filename), "ok")
+                self.warning_message_box(dialog_title, _("%1 contains an invalid path.", self.file_path), "ok")
             except OSError as e:
                 self.warning_message_box(dialog_title, _("Failed to save document.") + "\n\n" + repr(e), "ok")
             except Exception as e:
-                self.warning_message_box(dialog_title, _("An unexpected error occurred while writing %1.", self.filename) + "\n\n" + repr(e), "ok")
+                self.warning_message_box(dialog_title, _("An unexpected error occurred while writing %1.", self.file_path) + "\n\n" + repr(e), "ok")
         else:
             await self.save_as()
     
@@ -1659,11 +1659,14 @@ class PaintApp(App[None]):
             name = self.query_one("#save_as_dialog .filename_input", Input).value
             if not name:
                 return
+            # TODO: allow entering an absolute or relative path, not just a filename
             if self.directory_tree_selected_path:
-                name = os.path.join(self.directory_tree_selected_path, name)
+                file_path = os.path.join(self.directory_tree_selected_path, name)
+            else:
+                file_path = name
             def on_save_confirmed():
                 async def async_on_save_confirmed():
-                    self.filename = name
+                    self.file_path = file_path
                     await self.save(from_save_as=True)
                     window.close()
                     saved_future.set_result(None)
@@ -1671,8 +1674,8 @@ class PaintApp(App[None]):
                 task = asyncio.create_task(async_on_save_confirmed())
                 self.background_tasks.add(task)
                 task.add_done_callback(self.background_tasks.discard)
-            if os.path.exists(name):
-                self.confirm_overwrite(name, on_save_confirmed)
+            if os.path.exists(file_path):
+                self.confirm_overwrite(file_path, on_save_confirmed)
             else:
                 on_save_confirmed()
 
@@ -1682,7 +1685,7 @@ class PaintApp(App[None]):
             title=_("Save As"),
             handle_button=handle_button,
         )
-        filename: str = os.path.basename(self.filename) if self.filename else _("Untitled")
+        filename: str = os.path.basename(self.file_path) if self.file_path else _("Untitled")
         window.content.mount(
             EnhancedDirectoryTree(id="save_as_dialog_directory_tree", path="/"),
             Input(classes="filename_input", placeholder=_("Filename"), value=filename),
@@ -1696,7 +1699,7 @@ class PaintApp(App[None]):
     def expand_directory_tree(self, tree: EnhancedDirectoryTree) -> None:
         """Expand the directory tree to the target directory, either the folder of the open file or the current working directory."""
         self.expanding_directory_tree = True
-        target_dir = (self.filename or os.getcwd()).rstrip(os.path.sep)
+        target_dir = (self.file_path or os.getcwd()).rstrip(os.path.sep)
         tree.expand_to_path(target_dir)
         # There are currently some timers in expand_to_path.
         # In particular, it waits before selecting the target node,
@@ -1705,9 +1708,9 @@ class PaintApp(App[None]):
             self.expanding_directory_tree = False
         self.set_timer(0.1, done_expanding)
 
-    def confirm_overwrite(self, filename: str, callback: Callable[[], None]) -> None:
+    def confirm_overwrite(self, file_path: str, callback: Callable[[], None]) -> None:
         """Asks the user if they want to overwrite a file."""
-        message = _("%1 already exists.\nDo you want to replace it?", filename)
+        message = _("%1 already exists.\nDo you want to replace it?", file_path)
         def handle_button(button: Button) -> None:
             if not button.has_class("yes"):
                 return
@@ -1725,9 +1728,9 @@ class PaintApp(App[None]):
             callback()
         self.warning_message_box(_("Paint"), Static(message, markup=False), "yes/no", handle_button)
 
-    def prompt_save_changes(self, filename: str, callback: Callable[[], None]) -> None:
+    def prompt_save_changes(self, file_path: str, callback: Callable[[], None]) -> None:
         """Asks the user if they want to save changes to a file."""
-        filename = os.path.basename(filename)
+        filename = os.path.basename(file_path)
         message = _("Save changes to %1?", filename)
         def handle_button(button: Button) -> None:
             if not button.has_class("yes") and not button.has_class("no"):
@@ -1750,14 +1753,14 @@ class PaintApp(App[None]):
     def action_exit(self) -> None:
         """Exit the program, prompting to save changes if necessary."""
         if self.is_document_modified():
-            self.prompt_save_changes(self.filename or _("Untitled"), self.exit)
+            self.prompt_save_changes(self.file_path or _("Untitled"), self.exit)
         else:
             self.exit()
     
     def action_reload(self) -> None:
         """Reload the program, prompting to save changes if necessary."""
         if self.is_document_modified():
-            self.prompt_save_changes(self.filename or _("Untitled"), restart_program)
+            self.prompt_save_changes(self.file_path or _("Untitled"), restart_program)
         else:
             restart_program()
 
@@ -1799,14 +1802,17 @@ class PaintApp(App[None]):
             filename = window.content.query_one("#open_dialog .filename_input", Input).value
             if not filename:
                 return
+            # TODO: allow entering an absolute or relative path, not just a filename
             if self.directory_tree_selected_path:
-                filename = os.path.join(self.directory_tree_selected_path, filename)
+                file_path = os.path.join(self.directory_tree_selected_path, filename)
+            else:
+                file_path = filename
             try:
                 # Note that os.path.samefile can raise FileNotFoundError
-                if self.filename and os.path.samefile(filename, self.filename):
+                if self.file_path and os.path.samefile(file_path, self.file_path):
                     window.close()
                     return
-                with open(filename, "r") as f:
+                with open(file_path, "r") as f:
                     content = f.read() # f is out of scope in go_ahead()
                     def go_ahead():
                         try:
@@ -1820,10 +1826,10 @@ class PaintApp(App[None]):
                         self.action_new(force=True)
                         self.canvas.image = self.image = new_image
                         self.canvas.refresh(layout=True)
-                        self.filename = filename
+                        self.file_path = file_path
                         window.close()
                     if self.is_document_modified():
-                        self.prompt_save_changes(self.filename or _("Untitled"), go_ahead)
+                        self.prompt_save_changes(self.file_path or _("Untitled"), go_ahead)
                     else:
                         go_ahead()
             except FileNotFoundError:
@@ -1833,7 +1839,7 @@ class PaintApp(App[None]):
             except PermissionError:
                 self.warning_message_box(_("Open"), Static(_("Access denied.")), "ok")
             except Exception as e:
-                self.warning_message_box(_("Open"), Static(_("An unexpected error occurred while reading %1.", filename) + "\n\n" + repr(e)), "ok")
+                self.warning_message_box(_("Open"), Static(_("An unexpected error occurred while reading %1.", file_path) + "\n\n" + repr(e)), "ok")
 
         self.close_windows("#save_as_dialog, #open_dialog")
         window = DialogWindow(
@@ -1861,12 +1867,12 @@ class PaintApp(App[None]):
                 # or the open file saved.
                 # Go ahead and create a new image.
                 self.action_new(force=True)
-            self.prompt_save_changes(self.filename or _("Untitled"), go_ahead)
+            self.prompt_save_changes(self.file_path or _("Untitled"), go_ahead)
             return
         self.image = AnsiArtDocument(80, 24)
         self.canvas.image = self.image
         self.canvas.refresh(layout=True)
-        self.filename = None
+        self.file_path = None
         self.saved_undo_count = 0
         self.undos = []
         self.redos = []
@@ -3110,7 +3116,7 @@ if args.filename:
     with open(args.filename, 'r') as my_file:
         app.image = AnsiArtDocument.from_text(my_file.read())
         app.image_initialized = True
-        app.filename = os.path.abspath(args.filename)
+        app.file_path = os.path.abspath(args.filename)
 if args.clear_screen:
     os.system("cls||clear")
 
