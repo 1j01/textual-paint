@@ -2075,7 +2075,9 @@ class PaintApp(App[None]):
                     height = int(window.content.query_one("#height_input", Input).value)
                     if width < 1 or height < 1:
                         raise ValueError
+                    # TODO: make this undoable
                     self.image.resize(width, height, default_bg=self.selected_bg_color, default_fg=self.selected_fg_color)
+                    self.canvas.refresh(layout=True)
                     window.close()
                 except ValueError:
                     self.warning_message_box(_("Attributes"), _("Please enter a positive integer."), "ok")
