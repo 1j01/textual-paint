@@ -138,6 +138,7 @@ cat file.ans
 - Large files can make the program very slow, as can magnifying the canvas.
 - The program sometimes crashes or freezes randomly, and there's no auto-save feature.
 - Saved ANSI files are unnecessarily large, because they include escape sequences for every cell, even if the colors match the previous cell.
+- Loading and saving a file without making any edits can change color values slightly, e.g. 128 → 127. The Color Eraser feature compensates for this with a slight tolerance, but the fill tool does not.
 
 The program has only been tested on Linux. Issues on other platforms are as-yet _unknown_ :)
 
