@@ -121,7 +121,7 @@ You can set the text color by holding Ctrl while clicking a color in the palette
 You can display a saved ANSI file in the terminal with `cat`:
 
 ```bash
-cat file.ans
+cat samples/ship.ans
 ```
 
 ## Known Issues
