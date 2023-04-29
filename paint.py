@@ -758,8 +758,6 @@ class Action:
 
     def __init__(self, name: str, region: Region|None = None) -> None:
         """Initialize the action using the document state before modification."""
-        # if region is None:
-        #\     region = Region(0, 0, document.width, document.height)
         self.name = name
         self.region = region
         self.sub_image_before: AnsiArtDocument|None = None
