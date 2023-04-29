@@ -644,7 +644,6 @@ pre {
     def get_svg(self) -> str:
         """Get the SVG representation of the document."""
         css = """
-div,
 pre {
     overflow: hidden;
     margin: 0;
@@ -663,9 +662,7 @@ font {
 <svg xmlns="http://www.w3.org/2000/svg" width="{self.width}ch" height="{self.height}lh">
 <style>{css}</style>
 <foreignObject x="0" y="0" width="80ch" height="38lh">
-<div xmlns="http://www.w3.org/1999/xhtml">
 <pre xmlns="http://www.w3.org/1999/xhtml">{self.get_pre_inner_xhtml()}</pre>
-</div>
 </foreignObject>
 </svg>
 """
