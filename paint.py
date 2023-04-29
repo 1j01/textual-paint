@@ -2457,8 +2457,8 @@ class PaintApp(App[None]):
                 if not event.mouse_down_event.ctrl:
                     self.erase_region(sel.region, sel.mask)
  
-                # TODO: Optimize the region storage. Right now I'm copying the whole image,
-                # for the case of selection, because later, when the selection is melded into the canvas,
+                # TODO: Optimize the region storage for selection tools, and Text tool.
+                # Right now I'm copying the whole image here, because later, when the selection is melded into the canvas,
                 # it _implicitly updates_ the undo action, by changing the document without creating a new Action.
                 # This is the intended behavior, in that it allows the user to undo the
                 # selection and any changes to it as one action. But it's not efficient for large images.
