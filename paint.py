@@ -1151,10 +1151,11 @@ class Canvas(Widget):
         self.fix_mouse_event(event)
         event.x //= self.magnification
         event.y //= self.magnification
-
+        
+        if self.pointer_active:
+            self.post_message(self.ToolStop(event))
         self.pointer_active = False
         self.capture_mouse(False)
-        self.post_message(self.ToolStop(event))
 
     def on_leave(self, event: events.Leave) -> None:
         """Called when the mouse leaves the canvas. Stop preview if applicable."""
@@ -2899,13 +2900,12 @@ class PaintApp(App[None]):
             # Done selecting text
             self.selecting_text = False
             return
-        # TODO: FIXME: dragging from outside the canvas shouldn't make a selection
-        # and for Free-Form Select it gets ValueError: min() arg is an empty sequence
-        # - self.mouse_at_start is never unset so it can't be used to check if the mouse is down
-        # - self.canvas.pointer_active is always False during ToolStop currently so I can't use that
-        # I could make it be set to False after ToolStop, but I could also
-        # just make ToolStop not fire if ToolStart didn't fire, right?
-        if self.selected_tool in [Tool.select, Tool.free_form_select, Tool.text] and self.mouse_at_start:
+        
+        assert self.mouse_at_start is not None, "mouse_at_start should be set on mouse down"
+        # Note that self.mouse_at_start is not set to None on mouse up,
+        # so it can't be used to check if the mouse is down.
+        # But ToolStop should only happen if the mouse is down.
+        if self.selected_tool in [Tool.select, Tool.free_form_select, Tool.text]:
             # Finish making a selection
             if self.selected_tool == Tool.free_form_select:
                 # Find bounds of the polygon

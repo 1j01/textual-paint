@@ -126,7 +126,6 @@ cat file.ans
 
 ## Known Issues
 
-- Dragging from outside the canvas to inside with Free-Form Select crashes the program, and with Select makes a stupid selection (using the starting mouse position from the last time you clicked on the canvas).
 - The Text tool doesn't collapse a text selection when typing. Undo/Redo doesn't work with text. Ctrl+Z will delete the textbox.
 - Selection box border is inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
 - Pick Color can't be cancelled, since it samples the color continuously.
@@ -140,6 +139,7 @@ cat file.ans
 - The program sometimes crashes or freezes randomly, and there's no auto-save feature.
 - Saved ANSI files are unnecessarily large, because they include escape sequences for every cell, even if the colors match the previous cell.
 - Loading and saving a file without making any edits can change color values slightly, e.g. 128 → 127. The Color Eraser feature compensates for this with a slight tolerance, but the fill tool does not.
+- Free-Form Select stamping/finalizing is incorrect when the selection is off-screen to the left or top.
 
 The program has only been tested on Linux. Issues on other platforms are as-yet _unknown_ :)
 
