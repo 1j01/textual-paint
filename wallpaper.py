@@ -1,7 +1,6 @@
 import os
 import sys
 import subprocess
-import re
 
 # There are too many desktop environment names and programs,
 # it would pollute the spellings list (unless I moved this file
