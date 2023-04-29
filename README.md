@@ -126,17 +126,17 @@ cat samples/ship.ans
 
 ## Known Issues
 
-- The Text tool doesn't collapse a text selection when typing. Undo/Redo doesn't work with text. Ctrl+Z will delete the textbox.
-- Selection box border is inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
-- Pick Color can't be cancelled, since it samples the color continuously.
-- Pressing both mouse buttons to cancel tools can sometimes result the the tool restarting, or it's just my mouse. It's probably my mouse, now that I think about it. But also, it should actually undo current action, not just end it.
-- Help > Help Topics isn't very helpful.
+- Undo/Redo doesn't work with text. Ctrl+Z will delete the textbox. (Also note that the Text tool works differently from MS Paint; it will overwrite characters and the cursor can move freely, which makes it better for ASCII art and worse for prose.)
+- The selection box border appears inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
+- Pick Color can't be cancelled (with Esc or by pressing both mouse buttons), since it samples the color continuously.
+- Pressing both mouse buttons stops the current tool, but doesn't undo the current action.
+- Help > Help Topics isn't very helpful. I thought it would be funny to include the command line usage, but it doesn't even describe the options, unlike running with `--help`.
 - Due to limitations of the terminal, shortcuts using Shift or Alt might not work.
 - Menus are not keyboard navigable.
-- Clicking the Zoom submenu doesn't always work. You just have to click it a few times before it opens. (It may be technically open but positioned off screen, or lacking width/height. I don't know.)
+- Clicking the Zoom submenu doesn't always work. You just have to click it a few times before it opens. <!--(It may be technically open but positioned off screen, or lacking width/height, or infinitely sized. I don't know. It seems to explode in size before disappearing.)-->
 - Some languages don't display correctly.
 - Large files can make the program very slow, as can magnifying the canvas.
-- The program sometimes crashes or freezes randomly, and there's no auto-save feature.
+- The program may crash or freeze up randomly, and there's no auto-save feature.
 - Saved ANSI files are unnecessarily large, because they include escape sequences for every cell, even if the colors match the previous cell.
 - Loading and saving a file without making any edits can change color values slightly, e.g. 128 → 127. The Color Eraser feature compensates for this with a slight tolerance, but the fill tool does not.
 - Free-Form Select stamping/finalizing is incorrect when the selection is off-screen to the left or top.
