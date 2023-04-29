@@ -766,8 +766,9 @@ class Action:
 
     def update(self, document: AnsiArtDocument) -> None:
         """Grabs the image data from the current region of the document."""
-        if not self.region:
-            raise ValueError("Action region is None")
+        if self.region is None:
+            print("Warning: Action.update called without a defined region")
+            return
         self.sub_image_before = AnsiArtDocument(self.region.width, self.region.height)
         self.sub_image_before.copy_region(document, self.region)
 
@@ -2499,6 +2500,12 @@ class PaintApp(App[None]):
             action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
             action.update(self.image_at_start)
             self.canvas.refresh_scaled_region(affected_region)
+        else:
+            # Flood fill didn't affect anything.
+            # Following MS Paint, we still created an undo action.
+            # We need a region to avoid an error/warning when undoing.
+            # But we don't need to refresh the canvas.
+            action.region = Region(0, 0, 0, 0)
 
     def cancel_preview(self) -> None:
         """Revert the currently previewed action."""
