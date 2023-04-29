@@ -756,22 +756,26 @@ font {
 class Action:
     """An action that can be undone efficiently using a region update."""
 
-    def __init__(self, name: str, document: AnsiArtDocument, region: Region|None = None) -> None:
+    def __init__(self, name: str, region: Region|None = None) -> None:
         """Initialize the action using the document state before modification."""
-        if region is None:
-            region = Region(0, 0, document.width, document.height)
+        # if region is None:
+        #\     region = Region(0, 0, document.width, document.height)
         self.name = name
         self.region = region
-        self.update(document)
+        self.sub_image_before: AnsiArtDocument|None = None
 
     def update(self, document: AnsiArtDocument) -> None:
         """Grabs the image data from the current region of the document."""
-        if self.region:
-            self.sub_image_before = AnsiArtDocument(self.region.width, self.region.height)
-            self.sub_image_before.copy_region(document, self.region)
+        if not self.region:
+            raise ValueError("Action region is None")
+        self.sub_image_before = AnsiArtDocument(self.region.width, self.region.height)
+        self.sub_image_before.copy_region(document, self.region)
 
     def undo(self, target_document: AnsiArtDocument) -> None:
         """Undo this action. Note that a canvas refresh is not performed here."""
+        if not self.sub_image_before:
+            print("Warning: No undo data for Action. (Action.undo was called before any Action.update)")
+            return
         target_document.copy_region(self.sub_image_before, target_region=self.region)
 
 def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> Iterator[Tuple[int, int]]:
@@ -1610,7 +1614,7 @@ class PaintApp(App[None]):
 
         self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
         self.image_at_start.copy_region(self.image)
-        action = Action(self.selected_tool.get_name(), self.image)
+        action = Action(self.selected_tool.get_name())
         if len(self.redos) > 0:
             self.redos = []
         self.undos.append(action)
@@ -1647,7 +1651,8 @@ class PaintApp(App[None]):
         self.stop_action_in_progress()
         if len(self.undos) > 0:
             action = self.undos.pop()
-            redo_action = Action(_("Undo") + " " + action.name, self.image, action.region)
+            redo_action = Action(_("Undo") + " " + action.name, action.region)
+            redo_action.update(self.image)
             action.undo(self.image)
             self.redos.append(redo_action)
             self.canvas.refresh(layout=True)
@@ -1657,7 +1662,8 @@ class PaintApp(App[None]):
         self.stop_action_in_progress()
         if len(self.redos) > 0:
             action = self.redos.pop()
-            undo_action = Action(_("Undo") + " " + action.name, self.image, action.region)
+            undo_action = Action(_("Undo") + " " + action.name, action.region)
+            undo_action.update(self.image)
             action.undo(self.image)
             self.undos.append(undo_action)
             self.canvas.refresh(layout=True)
@@ -2444,7 +2450,7 @@ class PaintApp(App[None]):
                 # TODO: DRY with the below action handling
                 self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
                 self.image_at_start.copy_region(self.image)
-                action = Action(self.selected_tool.get_name(), self.image)
+                action = Action(self.selected_tool.get_name())
                 if len(self.redos) > 0:
                     self.redos = []
                 self.undos.append(action)
@@ -2479,7 +2485,7 @@ class PaintApp(App[None]):
         self.image_at_start.copy_region(self.image)
         if len(self.redos) > 0:
             self.redos = []
-        action = Action(self.selected_tool.get_name(), self.image)
+        action = Action(self.selected_tool.get_name())
         self.undos.append(action)
         
         affected_region = None
@@ -2516,7 +2522,7 @@ class PaintApp(App[None]):
         image_before.copy_region(self.image)
         affected_region = draw_proc()
         if affected_region:
-            self.preview_action = Action(self.selected_tool.get_name(), self.image)
+            self.preview_action = Action(self.selected_tool.get_name())
             self.preview_action.region = affected_region.intersection(Region(0, 0, self.image.width, self.image.height))
             self.preview_action.update(image_before)
             self.canvas.refresh_scaled_region(affected_region)
@@ -2630,7 +2636,7 @@ class PaintApp(App[None]):
             # TODO: DRY with other undo state creation
             self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
             self.image_at_start.copy_region(self.image)
-            action = Action(self.selected_tool.get_name(), self.image)
+            action = Action(self.selected_tool.get_name())
             if len(self.redos) > 0:
                 self.redos = []
             self.undos.append(action)
@@ -2766,7 +2772,7 @@ class PaintApp(App[None]):
         if replace_action:
             old_action = self.undos.pop()
             old_action.undo(self.image)
-            action = Action(self.selected_tool.get_name(), self.image, affected_region)
+            action = Action(self.selected_tool.get_name(), affected_region)
             self.undos.append(action)
         
         if self.selected_tool in [Tool.pencil, Tool.brush, Tool.eraser, Tool.airbrush]:
