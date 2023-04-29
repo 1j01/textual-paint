@@ -1667,10 +1667,11 @@ class PaintApp(App[None]):
 
     def action_undo(self) -> None:
         """Undoes the last action."""
+        # print("Before undo, undos:", ", ".join(map(lambda action: f"{action.name} {action.region}", self.undos)))
+        # print("redos:", ", ".join(map(lambda action: f"{action.name} {action.region}", self.redos)))
         self.stop_action_in_progress()
         if len(self.undos) > 0:
             action = self.undos.pop()
-            # FIXME: resize, undo, redo, undo errors
             redo_region = Region(0, 0, self.image.width, self.image.height) if action.is_resize else action.region
             redo_action = Action(_("Undo") + " " + action.name, redo_region)
             redo_action.is_resize = action.is_resize
@@ -1681,11 +1682,14 @@ class PaintApp(App[None]):
 
     def action_redo(self) -> None:
         """Redoes the last undone action."""
+        # print("Before redo, undos:", ", ".join(map(lambda action: f"{action.name} {action.region}", self.undos)))
+        # print("redos:", ", ".join(map(lambda action: f"{action.name} {action.region}", self.redos)))
         self.stop_action_in_progress()
         if len(self.redos) > 0:
             action = self.redos.pop()
             undo_region = Region(0, 0, self.image.width, self.image.height) if action.is_resize else action.region
             undo_action = Action(_("Undo") + " " + action.name, undo_region)
+            undo_action.is_resize = action.is_resize
             undo_action.update(self.image)
             action.undo(self.image)
             self.undos.append(undo_action)
