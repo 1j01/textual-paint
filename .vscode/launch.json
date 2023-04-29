@@ -13,7 +13,7 @@
 			// or to use textual as "module" but still run the correct app?
 			// I tried a lot of variations of this, but none worked.
 			"program": "${userHome}/.local/bin/textual",
-			"args": ["run", "--dev", "paint.py --clear-screen --inspect-layout"],
+			"args": ["run", "--dev", "src/textual_paint/paint.py --clear-screen --inspect-layout"],
 			"console": "integratedTerminal",
 			"justMyCode": false
 		},
@@ -21,10 +21,10 @@
 			"name": "Open A File in App",
 			"type": "python",
 			"request": "launch",
-			// "program": "paint.py",
+			// "program": "src/textual_paint/paint.py",
 			// "args": ["LICENSE.txt"],
 			"program": "${userHome}/.local/bin/textual",
-			"args": ["run", "--dev", "paint.py --clear-screen --inspect-layout LICENSE.txt"],
+			"args": ["run", "--dev", "src/textual_paint/paint.py --clear-screen --inspect-layout LICENSE.txt"],
 			"console": "integratedTerminal",
 			"justMyCode": false
 		},
@@ -33,7 +33,7 @@
 			"type": "python",
 			"request": "launch",
 			"program": "${userHome}/.local/bin/textual",
-			"args": ["run", "--dev", "paint.py --clear-screen --restart-on-changes"],
+			"args": ["run", "--dev", "src/textual_paint/paint.py --clear-screen --restart-on-changes"],
 			"console": "integratedTerminal",
 			"justMyCode": false
 		}

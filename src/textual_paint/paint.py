@@ -140,14 +140,27 @@ parser.add_argument('--clear-screen', action='store_true', help='Clear the scree
 parser.add_argument('--restart-on-changes', action='store_true', help='Restart the app when the source code is changed, for development')
 parser.add_argument('filename', nargs='?', default=None, help='File to open')
 
+# print("__name__:", __name__)
+# sys.exit()
+
 if __name__ == "<run_path>":
-    # Arguments have to be passed like `textual run --dev "paint.py LICENSE.txt"`
-    # so we need to look for an argument starting with "paint.py",
+    # When using Textual's CLI, arguments have to be passed inside an argument:
+    # `textual run --dev "src/textual_paint/paint.py LICENSE.txt"`
+    # so we need to look for an argument containing "paint.py",
     # and parse the rest of the string as arguments.
+    # For some reason sys.argv[0] is showing the path to paint.py instead of textual,
+    # so I have skip over arguments until after "run".
     args = None
+    got_run = False
     for arg in sys.argv:
-        if arg.startswith("paint.py"):
-            args = parser.parse_args(arg[len("paint.py") :].split())
+        if arg == "run":
+            got_run = True
+            continue
+        if not got_run:
+            continue
+        match = re.match(r"(?:.*[\\/])?paint\.py(.*)", arg)
+        if match:
+            args = parser.parse_args(match.group(1).split())
             break
     assert args is not None, "Couldn't find paint.py in command line arguments"
 else:

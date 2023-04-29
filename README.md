@@ -152,17 +152,17 @@ pip install "textual[dev]" stransi psutil watchdog pyperclip pyright
 
 Run via Textual's CLI for live-reloading CSS support, and enable other development features:
 ```bash
-textual run --dev "paint.py --clear-screen --inspect-layout --restart-on-changes"
+textual run --dev "src/textual_paint/paint.py --clear-screen --inspect-layout --restart-on-changes"
 ```
 
 Or run more basically:
 ```bash
-python paint.py
+python src/textual_paint/paint.py
 ```
 
 `--clear-screen` is useful for development, because it's sometimes jarring to see error messages that have actually been fixed, when exiting the program.
 
-`--inspect-layout` lets you middle click to visualize the layout breakdown by labeling each widget in the hierarchy, and coloring their regions. The labels affect the layout, so you can also hold Ctrl to only colorize, and you can remember how the colors correspond to the labels.
+`--inspect-layout` lets you middle click to visualize the layout breakdown by labeling each widget in the hierarchy, and coloring their regions. The labels affect the layout, so you can also hold Ctrl to only colorize, and you can remember how the colors correspond to the labels, to build a mental model of the layout.
 
 `--restart-on-changes` automatically restarts the program when any Python files change. This works by the program restarting itself directly. (Programs like `modd` or `nodemon` that run your program in a subprocess don't work well with Textual's escape sequences.)
 
