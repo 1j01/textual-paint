@@ -2853,6 +2853,12 @@ class PaintApp(App[None]):
             # Done selecting text
             self.selecting_text = False
             return
+        # TODO: FIXME: dragging from outside the canvas shouldn't make a selection
+        # and for Free-Form Select it gets ValueError: min() arg is an empty sequence
+        # - self.mouse_at_start is never unset so it can't be used to check if the mouse is down
+        # - self.canvas.pointer_active is always False during ToolStop currently so I can't use that
+        # I could make it be set to False after ToolStop, but I could also
+        # just make ToolStop not fire if ToolStart didn't fire, right?
         if self.selected_tool in [Tool.select, Tool.free_form_select, Tool.text] and self.mouse_at_start:
             # Finish making a selection
             if self.selected_tool == Tool.free_form_select:

@@ -126,6 +126,7 @@ cat file.ans
 
 ## Known Issues
 
+- Dragging from outside the canvas to inside with Free-Form Select crashes the program, and with Select makes a stupid selection (using the starting mouse position from the last time you clicked on the canvas).
 - The Text tool doesn't collapse a text selection when typing. Undo/Redo doesn't work with text. Ctrl+Z will delete the textbox.
 - Selection box border is inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
 - Pick Color can't be cancelled, since it samples the color continuously.
