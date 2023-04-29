@@ -1,6 +1,9 @@
+appscript==1.2.2
 psutil==5.9.0
+PyGObject==3.42.1
 pyperclip==1.8.2
-rich==13.3.4
+pyxdg==0.28
+rich==13.3.5
 stransi==0.3.0
-textual==0.21.0
+textual==0.22.3
 watchdog==3.0.0
