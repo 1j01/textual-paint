@@ -2004,7 +2004,10 @@ class PaintApp(App[None]):
         try:
             dir = os.path.join(get_config_dir("textual-paint"), "wallpaper")
             os.makedirs(dir, exist_ok=True)
-            image_path = self.save_screenshot(path=dir)
+            svg = self.image.get_svg()
+            image_path = os.path.join(dir, "wallpaper.svg")
+            with open(image_path, "w") as f:
+                f.write(svg)
             set_wallpaper(image_path)
         except Exception as e:
             self.warning_message_box(_("Paint"), Static(_("Failed to set the wallpaper.") + "\n\n" + repr(e)), "ok")
