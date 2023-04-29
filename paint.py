@@ -1998,9 +1998,11 @@ class PaintApp(App[None]):
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     
     def action_set_as_wallpaper_tiled(self) -> None:
+        """Set the image as the wallpaper."""
         # TODO: Differentiate between tiled and centered.
         self.action_set_as_wallpaper_centered()
     def action_set_as_wallpaper_centered(self) -> None:
+        """Set the image as the wallpaper."""
         try:
             dir = os.path.join(get_config_dir("textual-paint"), "wallpaper")
             os.makedirs(dir, exist_ok=True)
