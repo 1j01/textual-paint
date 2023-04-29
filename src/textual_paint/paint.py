@@ -34,6 +34,8 @@ from localization.i18n import get as _, load_language, remove_hotkey
 from enhanced_directory_tree import EnhancedDirectoryTree
 from wallpaper import get_config_dir, set_wallpaper
 
+__version__ = "0.1.0"
+
 observer = None
 
 def restart_program():
@@ -127,6 +129,7 @@ inspect_layout = False
 # Command line arguments
 # Please keep in sync with the README
 parser = argparse.ArgumentParser(description='Paint in the terminal.')
+parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
 parser.add_argument('--theme', default='light', help='Theme to use, either "light" or "dark"', choices=['light', 'dark'])
 parser.add_argument('--language', default='en', help='Language to use', choices=['ar', 'cs', 'da', 'de', 'el', 'en', 'es', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko', 'nl', 'no', 'pl', 'pt', 'pt-br', 'ru', 'sk', 'sl', 'sv', 'tr', 'zh', 'zh-simplified'])
 parser.add_argument('--ascii-only-icons', action='store_true', help='Use only ASCII characters for tool icons')
@@ -2279,11 +2282,11 @@ class PaintApp(App[None]):
             title=_("About Paint"),
             handle_button=lambda button: window.close(),
         )
-        window.content.mount(Static("""🎨 [b]Textual Paint[/b]
+        window.content.mount(Static(f"""🎨 [b]Textual Paint[/b]
 
 [i]MS Paint in your terminal.[/i]
 
-[b]Version:[/b] 0.1.0
+[b]Version:[/b] {__version__}
 [b]Author:[/b] [link=https://isaiahodhner.io/]Isaiah Odhner[/link]
 [b]License:[/b] [link=https://github.com/1j01/textual-paint/blob/main/LICENSE.txt]MIT[/link]
 [b]Source Code:[/b] [link=https://github.com/1j01/textual-paint]github.com/1j01/textual-paint[/link]

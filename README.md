@@ -72,8 +72,9 @@ textual-paint
 
 ```
 $ python3 paint.py --help
-usage: paint.py [-h] [--theme {light,dark}] [--language {ar,cs,da,de,el,en,es,fi,fr,he,hu,it,ja,ko,nl,no,pl,pt,pt-br,ru,sk,sl,sv,tr,zh,zh-simplified}] [--ascii-only-icons]
-                [--inspect-layout] [--clear-screen] [--restart-on-changes]
+usage: paint.py [-h] [--version] [--theme {light,dark}]
+                [--language {ar,cs,da,de,el,en,es,fi,fr,he,hu,it,ja,ko,nl,no,pl,pt,pt-br,ru,sk,sl,sv,tr,zh,zh-simplified}]
+                [--ascii-only-icons] [--inspect-layout] [--clear-screen] [--restart-on-changes]
                 [filename]
 
 Paint in the terminal.
@@ -83,6 +84,7 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
+  --version             show program's version number and exit
   --theme {light,dark}  Theme to use, either "light" or "dark"
   --language {ar,cs,da,de,el,en,es,fi,fr,he,hu,it,ja,ko,nl,no,pl,pt,pt-br,ru,sk,sl,sv,tr,zh,zh-simplified}
                         Language to use
