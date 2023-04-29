@@ -526,6 +526,15 @@ class AnsiArtDocument:
         self.fg = [[default_fg for _ in range(width)] for _ in range(height)]
         self.selection: Optional[Selection] = None
 
+    def copy(self, source: 'AnsiArtDocument') -> None:
+        """Copy the image size and data from another document. Does not copy the selection."""
+        self.width = source.width
+        self.height = source.height
+        self.ch = [row[:] for row in source.ch]
+        self.bg = [row[:] for row in source.bg]
+        self.fg = [row[:] for row in source.fg]
+        self.selection = None
+
     def copy_region(self, source: 'AnsiArtDocument', source_region: Region|None = None, target_region: Region|None = None, mask: list[list[bool]]|None = None) -> None:
         """Copy a region from another document into this document."""
         if source_region is None:
@@ -759,23 +768,34 @@ class Action:
     def __init__(self, name: str, region: Region|None = None) -> None:
         """Initialize the action using the document state before modification."""
         self.name = name
+        """The name of the action, for future display."""
         self.region = region
+        """The region of the document that was modified."""
+        self.is_resize = False
+        """Indicates that this action resizes the document, and thus should not be undone with a region update."""
         self.sub_image_before: AnsiArtDocument|None = None
+        """The image data from the region of the document before modification."""
 
     def update(self, document: AnsiArtDocument) -> None:
         """Grabs the image data from the current region of the document."""
-        if self.region is None:
-            print("Warning: Action.update called without a defined region")
-            return
+        assert self.region is not None, "Action.update called without a defined region"
         self.sub_image_before = AnsiArtDocument(self.region.width, self.region.height)
         self.sub_image_before.copy_region(document, self.region)
 
     def undo(self, target_document: AnsiArtDocument) -> None:
         """Undo this action. Note that a canvas refresh is not performed here."""
+        # Warning: these warnings are hard to see in the terminal, since the terminal is being redrawn.
+        # You have to use `textual console` to see them.
         if not self.sub_image_before:
             print("Warning: No undo data for Action. (Action.undo was called before any Action.update)")
             return
-        target_document.copy_region(self.sub_image_before, target_region=self.region)
+        if self.region is None:
+            print("Warning: Action.undo called without a defined region")
+            return
+        if self.is_resize:
+            target_document.copy(self.sub_image_before)
+        else:
+            target_document.copy_region(self.sub_image_before, target_region=self.region)
 
 def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> Iterator[Tuple[int, int]]:
     """Bresenham's line algorithm"""
@@ -1650,7 +1670,10 @@ class PaintApp(App[None]):
         self.stop_action_in_progress()
         if len(self.undos) > 0:
             action = self.undos.pop()
-            redo_action = Action(_("Undo") + " " + action.name, action.region)
+            # FIXME: resize, undo, redo, undo errors
+            redo_region = Region(0, 0, self.image.width, self.image.height) if action.is_resize else action.region
+            redo_action = Action(_("Undo") + " " + action.name, redo_region)
+            redo_action.is_resize = action.is_resize
             redo_action.update(self.image)
             action.undo(self.image)
             self.redos.append(redo_action)
@@ -1661,7 +1684,8 @@ class PaintApp(App[None]):
         self.stop_action_in_progress()
         if len(self.redos) > 0:
             action = self.redos.pop()
-            undo_action = Action(_("Undo") + " " + action.name, action.region)
+            undo_region = Region(0, 0, self.image.width, self.image.height) if action.is_resize else action.region
+            undo_action = Action(_("Undo") + " " + action.name, undo_region)
             undo_action.update(self.image)
             action.undo(self.image)
             self.undos.append(undo_action)
@@ -2170,14 +2194,19 @@ class PaintApp(App[None]):
                     height = int(window.content.query_one("#height_input", Input).value)
                     if width < 1 or height < 1:
                         raise ValueError
-                    # TODO: make this undoable
-                    def do_the_resize():
-                        self.image.resize(width, height, default_bg=self.selected_bg_color, default_fg=self.selected_fg_color)
-                        self.canvas.refresh(layout=True)
-                        self.undos = []
+
+                    # TODO: DRY undo state creation (at least the undos/redos part)
+                    action = Action(_("Attributes"), Region(0, 0, self.image.width, self.image.height))
+                    action.is_resize = True
+                    action.update(self.image)
+                    if len(self.redos) > 0:
                         self.redos = []
-                        window.close()
-                    self.confirm_no_undo(do_the_resize)
+                    self.undos.append(action)
+
+                    self.image.resize(width, height, default_bg=self.selected_bg_color, default_fg=self.selected_fg_color)
+                    self.canvas.refresh(layout=True)
+                    window.close()
+
                 except ValueError:
                     self.warning_message_box(_("Attributes"), _("Please enter a positive integer."), "ok")
             else:
