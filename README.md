@@ -20,11 +20,13 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
 - [x] Open and save images
   - [x] Fancy file dialogs
   - [x] Warnings when overwriting an existing file, or closing with unsaved changes
-  - File formats:
-    - [ ] PNG (.png)
-    - [ ] Bitmap (.bmp)
-    - [x] ANSI (.ans)
-		  - Note that while it can load the files that it saves, you may have limited success loading other ANSI files that you find. ANSI files can vary a lot and even encode animations!
+  - File formats, chosen by typing a file extension in the Save As dialog:
+    - [x] ANSI (.ans) — Note that while it can load the files that it saves, you may have limited success loading other ANSI files that you find on the web, or create with other tools. ANSI files can vary a lot and even encode animations!
+    - [x] Plain Text (.txt) — discards color information
+    - [x] SVG (.svg) — save only
+    - [x] HTML (.html) — save only
+    - [ ] PNG (.png) — not yet
+    - [ ] Bitmap (.bmp) — not yet
 - Tools
     - [x] Free-Form Select
     - [x] Select
