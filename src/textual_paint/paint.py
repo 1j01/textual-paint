@@ -2809,14 +2809,8 @@ class PaintApp(App[None]):
                 self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True) # polyline until finished
             return
 
-        if len(self.undos) == 0:
-            # Code below wants to update the last action.
-            # However, if you you undo while drawing,
-            # there may be no last action.
-            # FIXME: Ideally we'd stop getting events in this case.
-            # This might be buggy if there were multiple undos.
-            # It might replace the action instead of doing nothing.
-            return
+        # The remaining tools work by updating an undo state created on mouse down.
+        assert len(self.undos) > 0, "No undo state to update. The undo state should have been created in on_canvas_tool_start, or if the gesture was canceled, execution shouldn't reach here."
 
         mm = event.mouse_move_event
         action = self.undos[-1]
