@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # Clear screen
-# echo -e "\033[2J"
-clear
+tput clear
 
 # Check environment variables
 init_script="$HOME/.bashrc"
@@ -93,4 +92,4 @@ else
 fi
 
 # Reset cursor position
-echo -e "\033[0;0H"
+tput cup 0 0
