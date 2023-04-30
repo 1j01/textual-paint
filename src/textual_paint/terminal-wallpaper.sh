@@ -4,8 +4,30 @@
 # echo -e "\033[2J"
 clear
 
-TERMINAL_WALLPAPER=/home/io/Projects/textual-paint/samples/galaxies.ans
-TERMINAL_WALLPAPER_MODE=TILE
+# Check environment variables
+init_script="$HOME/.bashrc"
+if [[ -f $HOME/.zshrc ]]; then
+	init_script="$HOME/.zshrc"
+fi
+# uninstall_instruction="uninstall terminal wallpaper support with 'textual-paint --remove-wallpaper'"
+this_script_abs_path=${BASH_SOURCE[0]}
+# Note to self: DRY isn't worth it for outputting English instructions
+source_line="source $this_script_abs_path"
+uninstall_instruction="uninstall terminal wallpaper support by removing \"$source_line\" from $init_script"
+add_var_instruction="Add it to $init_script before the line that includes terminal-wallpaper.sh (\"$source_line\"), or $uninstall_instruction"
+if [[ -z $TERMINAL_WALLPAPER ]]; then
+	echo "TERMINAL_WALLPAPER not set. $add_var_instruction"
+	return
+fi
+if [[ -z $TERMINAL_WALLPAPER_MODE ]]; then
+	echo "TERMINAL_WALLPAPER_MODE not set. $add_var_instruction"
+	return
+fi
+# Check file exists
+if [[ ! -f $TERMINAL_WALLPAPER ]]; then
+	echo "TERMINAL_WALLPAPER file not found: $TERMINAL_WALLPAPER\nUpdate TERMINAL_WALLPAPER in $init_script, or $uninstall_instruction"
+	return
+fi
 
 # Draw terminal background according to mode
 if [[ $TERMINAL_WALLPAPER_MODE == "TOP_LEFT" ]]; then
