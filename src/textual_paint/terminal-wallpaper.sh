@@ -29,7 +29,7 @@ if [[ ! -f $TERMINAL_WALLPAPER ]]; then
 fi
 
 # Draw terminal background according to mode
-if [[ $TERMINAL_WALLPAPER_MODE == "TOP_LEFT" ]]; then
+if [[ $TERMINAL_WALLPAPER_MODE == "TOP_LEFT" || $TERMINAL_WALLPAPER_MODE == "TOP-LEFT" ]]; then
 	cat $TERMINAL_WALLPAPER
 else
 	# Split lines of terminal background into array
@@ -53,7 +53,7 @@ else
 		fi
 	done
 
-	if [[ $TERMINAL_WALLPAPER_MODE == "CENTER" ]]; then
+	if [[ $TERMINAL_WALLPAPER_MODE == "CENTER" || $TERMINAL_WALLPAPER_MODE == "CENTERED" ]]; then
 		# Calculate offset
 		terminal_width=$(tput cols)
 		terminal_height=$(tput lines)
@@ -67,7 +67,7 @@ else
 			tput cup $(( $offset_y + $i )) $offset_x
 			echo -e "${lines[$i]}"
 		done
-	elif [[ $TERMINAL_WALLPAPER_MODE == "TILE" ]]; then
+	elif [[ $TERMINAL_WALLPAPER_MODE == "TILE" || $TERMINAL_WALLPAPER_MODE == "TILED" ]]; then
 		# Draw tiled image
 		tput rmam
 		setterm -linewrap off
