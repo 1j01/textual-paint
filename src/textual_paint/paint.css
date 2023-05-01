@@ -237,10 +237,12 @@ CharacterSelectorDialogWindow .cancel {
 #help_dialog .window_content {
     padding: 2 4;
 }
-#help_dialog .help_text {
+#help_dialog .help_text_container {
     width: 80;
     height: auto;
-    overflow-y: auto;
+    max-height: 15;
+    overflow: auto;
+    margin-bottom: 2;
 }
 
 #zoom_dialog .window_content {

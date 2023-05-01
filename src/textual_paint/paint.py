@@ -2293,8 +2293,8 @@ class PaintApp(App[None]):
             title=_("Help"),  # _("Help Topics") not really apt yet since it's just the usage
             handle_button=lambda button: window.close(),
         )
-        help_text = parser.format_usage()
-        window.content.mount(Static(help_text,  classes="help_text"))
+        help_text = parser.format_help()
+        window.content.mount(Container(Static(help_text),  classes="help_text_container"))
         window.content.mount(Button(_("OK"), classes="ok submit"))
         self.mount(window)
     

@@ -134,7 +134,6 @@ cat samples/ship.ans
 - The selection box border appears inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
 - Pick Color can't be cancelled (with Esc or by pressing both mouse buttons), since it samples the color continuously.
 - Pressing both mouse buttons stops the current tool, but doesn't undo the current action.
-- Help > Help Topics isn't very helpful. I thought it would be funny to include the command line usage, but it doesn't even describe the options, unlike running with `--help`.
 - Due to limitations of the terminal, shortcuts using Shift or Alt might not work.
 - Menus are not keyboard navigable.
 - Clicking the Zoom submenu doesn't always work. You just have to click it a few times before it opens. <!--(It may be technically open but positioned off screen, or lacking width/height, or infinitely sized. I don't know. It seems to explode in size before disappearing.)-->
