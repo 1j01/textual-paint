@@ -16,7 +16,13 @@ class WindowTitleBar(Container):
 
     title = var("")
 
-    def __init__(self, title: str = "", allow_maximize: bool = False, allow_minimize: bool = False, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        title: str = "",
+        allow_maximize: bool = False,
+        allow_minimize: bool = False,
+        **kwargs: Any,
+    ) -> None:
         """Initialize a title bar."""
         super().__init__(**kwargs)
         self.title = title
@@ -62,7 +68,7 @@ class Window(Container):
     ]
 
     def __init__(
-        self, 
+        self,
         *children: Widget,
         title: str = "",
         allow_maximize: bool = False,
@@ -93,7 +99,7 @@ class Window(Container):
         """Override action to focus the previous widget only within the window."""
         self.screen.focus_previous(f"#{self.id} .window_content *")
 
-    def within_buttons(self, widget: Widget|None) -> bool:
+    def within_buttons(self, widget: Widget | None) -> bool:
         """Returns True if widget exists and is within .buttons."""
         if not widget:
             return False
@@ -124,7 +130,7 @@ class Window(Container):
         # (I peaked into mouse over handling and it calls update_styles.)
         # This can still briefly show the incorrect layout, since it relies on a timer.
         self.set_timer(0.01, lambda: self.app.update_styles(self))
-    
+
     def on_focus(self, event: events.Focus) -> None:
         """Called when the window is focused."""
         # TODO: focus last focused widget if re-focusing
@@ -157,10 +163,13 @@ class Window(Container):
             # Offset by half the height of the content, because the window has a center anchor.
             border_h = self.outer_size.height - self.size.height
             if minimizing:
-                y_offset = - self.content.outer_size.height / 2 - border_h
+                y_offset = -self.content.outer_size.height / 2 - border_h
             else:
                 y_offset = self._original_content_height / 2 + border_h
-            self.styles.offset = (int(self.styles.offset.x.value), int(self.styles.offset.y.value + y_offset))
+            self.styles.offset = (
+                int(self.styles.offset.x.value),
+                int(self.styles.offset.y.value + y_offset),
+            )
             if minimizing:
                 self._original_content_height = self.content.outer_size.height
                 self._original_window_height_for_minimize = self.styles.height
@@ -202,7 +211,7 @@ class Window(Container):
                 self.title_bar.query_one(".window_minimize").disabled = False
             except NoMatches:
                 pass
-    
+
     def on_mouse_down(self, event: events.MouseDown) -> None:
         """Called when the user presses the mouse button."""
         # detect if the mouse is over the title bar,
@@ -217,7 +226,7 @@ class Window(Container):
 
         if event.button != 1:
             return
-        
+
         if self.maximized:
             return
 
@@ -272,7 +281,7 @@ class Window(Container):
         """Force close the window."""
         self.remove()
         self.post_message(self.Closed())
-    
+
     def request_close(self) -> None:
         """Request to close the window."""
         close_request = self.CloseRequest()
@@ -284,7 +293,9 @@ class Window(Container):
 class DialogWindow(Window):
     """A window that can be submitted like a form."""
 
-    def __init__(self, *children: Widget, handle_button: Callable[[Button], None], **kwargs: Any) -> None:
+    def __init__(
+        self, *children: Widget, handle_button: Callable[[Button], None], **kwargs: Any
+    ) -> None:
         """Initialize a dialog window."""
         super().__init__(*children, **kwargs)
         self.handle_button = handle_button
@@ -304,7 +315,7 @@ class DialogWindow(Window):
             # Like the title bar close button,
             # this doesn't call handle_button...
             self.request_close()
-    
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked or activated with the keyboard."""
         # Make sure the button is in the window content
@@ -317,7 +328,7 @@ class DialogWindow(Window):
 
 class CharacterSelectorDialogWindow(DialogWindow):
     """A dialog window that lets the user select a character."""
-    
+
     # class CharacterSelected(Message):
     #     """Sent when a character is selected."""
     #     def __init__(self, character: str) -> None:
@@ -332,12 +343,18 @@ class CharacterSelectorDialogWindow(DialogWindow):
     # spell-checker: enable
     char_list = [char for char in code_page_437]
 
-    def __init__(self, *children: Widget, selected_character: str|None, handle_selected_character: Callable[[str], None], **kwargs: Any) -> None:
+    def __init__(
+        self,
+        *children: Widget,
+        selected_character: str | None,
+        handle_selected_character: Callable[[str], None],
+        **kwargs: Any,
+    ) -> None:
         """Initialize the dialog window."""
         super().__init__(handle_button=self.handle_button, *children, **kwargs)
-        self._selected_character: str|None = selected_character
+        self._selected_character: str | None = selected_character
         self.handle_selected_character = handle_selected_character
-    
+
     def handle_button(self, button: Button) -> None:
         """Called when a button is clicked or activated with the keyboard."""
         if button.has_class("cancel"):
@@ -353,7 +370,9 @@ class CharacterSelectorDialogWindow(DialogWindow):
     def on_data_table_cell_highlighted(self, event: DataTable.CellHighlighted) -> None:
         """Called when a cell is highlighted."""
         # assert isinstance(event.value, str), "DataTable should only contain strings, but got: " + repr(event.value)
-        self._selected_character = event.value if isinstance(event.value, str) and event.value != "\0" else " "
+        self._selected_character = (
+            event.value if isinstance(event.value, str) and event.value != "\0" else " "
+        )
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
@@ -362,7 +381,7 @@ class CharacterSelectorDialogWindow(DialogWindow):
         data_table.add_columns(*([" "] * column_count))
         data_table.show_header = False
         for i in range(0, len(self.char_list), column_count):
-            data_table.add_row(*self.char_list[i:i+column_count])
+            data_table.add_row(*self.char_list[i : i + column_count])
         self.content.mount(data_table)
         self.content.mount(Button(_("OK"), classes="ok submit"))
         self.content.mount(Button(_("Cancel"), classes="cancel"))
@@ -444,7 +463,9 @@ get_warning_icon = lambda: Static("""
 
 class MessageBox(DialogWindow):
     """A simple dialog window that displays a message, a group of buttons, and an optional icon."""
-    def __init__(self,
+
+    def __init__(
+        self,
         *children: Widget,
         message_widget: Union[Widget, str],
         button_types: str = "ok",
@@ -469,7 +490,7 @@ class MessageBox(DialogWindow):
             buttons = [Button(_("OK"), classes="ok submit", variant="primary")]
         elif self.button_types == "yes/no":
             buttons = [
-                Button(_("Yes"), classes="yes submit"), #, variant="primary"),
+                Button(_("Yes"), classes="yes submit"),  # , variant="primary"),
                 Button(_("No"), classes="no"),
             ]
         elif self.button_types == "yes/no/cancel":
@@ -488,7 +509,7 @@ class MessageBox(DialogWindow):
                     self.message_widget,
                     # Window class provides arrow key navigation within .buttons
                     Horizontal(*buttons, classes="buttons"),
-                    classes="main_content"
-                )
+                    classes="main_content",
+                ),
             )
         )
