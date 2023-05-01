@@ -13,11 +13,13 @@ class EnhancedDirectoryTree(DirectoryTree):
         # - Maybe this method should return the node if it was found.
         # - Could avoid some get_node_name calls by flagging if there's a match.
         # - Definitely want to figure out how to avoid the timers.
+        # - Might be better to handle both / and \ regardless of platform.
 
         node = self.root
         def get_node_name(node: TreeNode[DirEntry]) -> str:
             assert node.data
             return os.path.basename(node.data.path.rstrip(os.path.sep))
+            # return os.path.basename(node.data.path.rstrip("/\\"))
         for path_segment in target_path.split(os.path.sep):
             # Find the child node with the right name.
             for child in node.children:
