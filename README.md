@@ -155,7 +155,7 @@ The program has only been tested on Linux. Issues on other platforms are as-yet 
 
 Install Textual and other dependencies:
 ```bash
-pip install "textual[dev]" stransi psutil watchdog pyperclip pyright
+pip install "textual[dev]" stransi psutil watchdog pyperclip pyright setuptools build
 ```
 
 Run via Textual's CLI for live-reloading CSS support, and enable other development features:
@@ -179,6 +179,27 @@ Note that it runs slower in VS Code's debugger.
 
 To see logs, run [`textual console`](https://textual.textualize.io/guide/devtools/#console) and then run the program via `textual run --dev`.
 This also makes it run slower.
+
+### Packaging
+
+Install the CLI globally: `pip install --editable .`
+You can now run `textual-paint` or `txtpnt` from anywhere, and it should give:
+```
+Traceback (most recent call last):
+  File "/home/io/.local/bin/txtpnt", line 5, in <module>
+    from textual_paint.paint import main
+ModuleNotFoundError: No module named 'textual_paint'
+```
+
+You can also run `pip install --editable ./src/textual_paint` to get a different error:
+```
+$ pip install --editable ./src/textual_paint
+Defaulting to user installation because normal site-packages is not writeable
+Obtaining file:///home/io/Projects/textual-paint/src/textual_paint
+ERROR: file:///home/io/Projects/textual-paint/src/textual_paint does not appear to be a Python project: neither 'setup.py' nor 'pyproject.toml' found.
+```
+
+This ensures your Python installation is working as intended.
 
 ### Update Dependencies
 

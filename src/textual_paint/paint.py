@@ -3256,5 +3256,9 @@ if args.clear_screen:
 
 app.dark = args.theme == "dark"
 
-if __name__ == "__main__":
+def run() -> None:
+    """Run the app. This function is exposed as console script entry point."""
     app.run()
+
+if __name__ == "__main__":
+    run()
