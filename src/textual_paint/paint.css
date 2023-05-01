@@ -276,7 +276,7 @@ DialogWindow .buttons Button {
 }
 
 #attributes_dialog .window_content {
-    padding: 2 4;
+    padding: 1 4;
     width: 50;
     height: auto;
 }
@@ -284,10 +284,13 @@ DialogWindow .buttons Button {
 #attributes_dialog .window_content Vertical {
     height: auto;
     width: auto;
-    padding: 1 2;
+}
+#attributes_dialog .window_content Horizontal {
+    margin: 1;
+    margin-left: 4;
 }
 #attributes_dialog .window_content Horizontal Static {
-    width: auto;
+    width: 10;
     height: 3; /* matching Input height; 1fr or auto didn't work */
     content-align-vertical: middle;
 }
