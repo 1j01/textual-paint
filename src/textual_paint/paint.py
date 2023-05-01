@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import os
 import re
 import sys
@@ -8,6 +9,7 @@ import asyncio
 from enum import Enum
 from random import randint, random
 from typing import Any, Generator, List, Optional, Callable, Iterator, Tuple
+
 from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
 from watchdog.observers import Observer
 import stransi
@@ -27,6 +29,7 @@ from textual.widgets import Button, Static, Input, Tree, Header
 from textual.widgets._directory_tree import DirEntry
 from textual.binding import Binding
 from textual.color import Color
+
 from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon
 from edit_colors import EditColorsDialogWindow
