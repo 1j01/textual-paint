@@ -2,6 +2,7 @@
 
 import os
 import re
+import shlex
 import sys
 import psutil
 import argparse
@@ -1935,6 +1936,41 @@ class PaintApp(App[None]):
         )
         self.mount(window)
 
+    def open_from_file_path(self, file_path: str, opened_callback: Callable[[], None]) -> None:
+        try:
+            # Note that os.path.samefile can raise FileNotFoundError
+            if self.file_path and os.path.samefile(file_path, self.file_path):
+                opened_callback()
+                return
+            with open(file_path, "r") as f:
+                content = f.read()  # f is out of scope in go_ahead()
+                def go_ahead():
+                    try:
+                        new_image = AnsiArtDocument.from_text(content)
+                    except Exception as e:
+                        # "This is not a valid bitmap file, or its format is not currently supported."
+                        # string from MS Paint doesn't apply well here,
+                        # at least not until we support bitmap files.
+                        self.warning_message_box(_("Open"), Static(_("Paint cannot open this file.") + "\n\n" + repr(e)), "ok")
+                        return
+                    self.action_new(force=True)
+                    self.canvas.image = self.image = new_image
+                    self.canvas.refresh(layout=True)
+                    self.file_path = file_path
+                    opened_callback()
+                if self.is_document_modified():
+                    self.prompt_save_changes(self.file_path or _("Untitled"), go_ahead)
+                else:
+                    go_ahead()
+        except FileNotFoundError:
+            self.warning_message_box(_("Open"), Static(_("File not found.") + "\n" + _("Please verify that the correct path and file name are given.")), "ok")
+        except IsADirectoryError:
+            self.warning_message_box(_("Open"), Static(_("Invalid file.")), "ok")
+        except PermissionError:
+            self.warning_message_box(_("Open"), Static(_("Access denied.")), "ok")
+        except Exception as e:
+            self.warning_message_box(_("Open"), Static(_("An unexpected error occurred while reading %1.", file_path) + "\n\n" + repr(e)), "ok")
+
     def action_open(self) -> None:
         """Show dialog to open an image from a file."""
 
@@ -1950,39 +1986,7 @@ class PaintApp(App[None]):
                 file_path = os.path.join(self.directory_tree_selected_path, filename)
             else:
                 file_path = filename
-            try:
-                # Note that os.path.samefile can raise FileNotFoundError
-                if self.file_path and os.path.samefile(file_path, self.file_path):
-                    window.close()
-                    return
-                with open(file_path, "r") as f:
-                    content = f.read()  # f is out of scope in go_ahead()
-                    def go_ahead():
-                        try:
-                            new_image = AnsiArtDocument.from_text(content)
-                        except Exception as e:
-                            # "This is not a valid bitmap file, or its format is not currently supported."
-                            # string from MS Paint doesn't apply well here,
-                            # at least not until we support bitmap files.
-                            self.warning_message_box(_("Open"), Static(_("Paint cannot open this file.") + "\n\n" + repr(e)), "ok")
-                            return
-                        self.action_new(force=True)
-                        self.canvas.image = self.image = new_image
-                        self.canvas.refresh(layout=True)
-                        self.file_path = file_path
-                        window.close()
-                    if self.is_document_modified():
-                        self.prompt_save_changes(self.file_path or _("Untitled"), go_ahead)
-                    else:
-                        go_ahead()
-            except FileNotFoundError:
-                self.warning_message_box(_("Open"), Static(_("File not found.") + "\n" + _("Please verify that the correct path and file name are given.")), "ok")
-            except IsADirectoryError:
-                self.warning_message_box(_("Open"), Static(_("Invalid file.")), "ok")
-            except PermissionError:
-                self.warning_message_box(_("Open"), Static(_("Access denied.")), "ok")
-            except Exception as e:
-                self.warning_message_box(_("Open"), Static(_("An unexpected error occurred while reading %1.", file_path) + "\n\n" + repr(e)), "ok")
+            self.open_from_file_path(file_path, window.close)
 
         self.close_windows("#save_as_dialog, #open_dialog")
         window = DialogWindow(
@@ -3144,6 +3148,42 @@ class PaintApp(App[None]):
                 textbox.text_selection_end = Offset(x, y)
             self.canvas.refresh_scaled_region(textbox.region)
 
+    def on_paste(self, event: events.Paste) -> None:
+        """Called when a file is dropped into the terminal, or when text is pasted with middle click."""
+        # Detect file drop
+        def _extract_filepaths(text: str) -> List[str]:
+            """Extracts escaped filepaths from text.
+            
+            Taken from https://github.com/agmmnn/textual-filedrop/blob/55a288df65d1397b959d55ef429e5282a0bb21ff/textual_filedrop/_filedrop.py#L17-L36
+            """
+            split_filepaths = []
+            if os.name == "nt":
+                pattern = r'(?:[^\s"]|"(?:\\"|[^"])*")+'
+                split_filepaths = re.findall(pattern, text)
+            else:
+                split_filepaths = shlex.split(text)
+
+            split_filepaths = shlex.split(text)
+            print(split_filepaths)
+            filepaths: List[str] = []
+            for i in split_filepaths:
+                item = i.replace("\x00", "").replace('"', "")
+                if os.path.isfile(item):
+                    filepaths.append(i)
+                # elif os.path.isdir(item):
+                #     for root, _, files in os.walk(item):
+                #         for file in files:
+                #             filepaths.append(os.path.join(root, file))
+            return filepaths
+        
+        filepaths = _extract_filepaths(event.text)
+        if filepaths:
+            file_path = filepaths[0]
+            self.open_from_file_path(file_path, lambda: None)
+            return
+        
+        # Text pasting is only supported with Ctrl+V or Edit > Paste, handled separately.
+        return
 
     def action_toggle_tools_box(self) -> None:
         """Toggles the visibility of the tools box."""
