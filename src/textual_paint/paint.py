@@ -887,6 +887,9 @@ def is_inside_polygon(x: int, y: int, points: List[Offset]) -> bool:
         if y > min(p1y, p2y):
             if y <= max(p1y, p2y):
                 if x <= max(p1x, p2x):
+                    x_intersection = x  # Avoid "possibly unbound" type checker error
+                    # I don't know if this is right; should it flip `inside` in this case?
+                    # Is this an actual case that can occur, where p1y == p2y AND p1x != p2x?
                     if p1y != p2y:
                         x_intersection = (y - p1y) * (p2x - p1x) / (p2y - p1y) + p1x
                     if p1x == p2x or x <= x_intersection:
@@ -2588,6 +2591,7 @@ class PaintApp(App[None]):
     def cancel_preview(self) -> None:
         """Revert the currently previewed action."""
         if self.preview_action:
+            assert self.preview_action.region is not None, "region should have been initialized for preview_action"
             self.preview_action.undo(self.image)
             self.canvas.refresh_scaled_region(self.preview_action.region)
             self.preview_action = None

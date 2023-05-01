@@ -47,10 +47,11 @@ def get_desktop_environment() -> str:
                 return "razor-qt"
             elif desktop_session.startswith("wmaker"): # e.g. wmaker-common
                 return "windowmaker"
+        gnome_desktop_session_id = os.environ.get("GNOME_DESKTOP_SESSION_ID")
         if os.environ.get('KDE_FULL_SESSION') == 'true':
             return "kde"
-        elif os.environ.get('GNOME_DESKTOP_SESSION_ID'):
-            if not "deprecated" in os.environ.get('GNOME_DESKTOP_SESSION_ID'):
+        elif gnome_desktop_session_id:
+            if not "deprecated" in gnome_desktop_session_id:
                 return "gnome2"
         #From http://ubuntuforums.org/showthread.php?t=652320
         elif is_running("xfce-mcs-manage"):
@@ -61,13 +62,16 @@ def get_desktop_environment() -> str:
 
 def is_running(process: str) -> bool:
     """Returns whether a process with the given name is (likely) currently running.
-    Uses a basic text search, and so may have false positives."""
+
+    Uses a basic text search, and so may have false positives.
+    """
     #From http://www.bloggerpolis.com/2011/05/how-to-check-if-a-process-is-running-using-python/
     # and http://richarddingwall.name/2009/06/18/windows-equivalents-of-ps-and-kill-commands/
     try: #Linux/Unix
         s = subprocess.Popen(["ps", "axw"],stdout=subprocess.PIPE)
     except: #Windows
         s = subprocess.Popen(["tasklist", "/v"],stdout=subprocess.PIPE)
+    assert s.stdout is not None
     for x in s.stdout:
         # if re.search(process, x):
         if process in str(x):
@@ -183,10 +187,11 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
         #From https://stackoverflow.com/questions/1977694/change-desktop-background
         import ctypes
         SPI_SETDESKWALLPAPER = 20
-        ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, file_loc, 0)
+        ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, file_loc, 0)  # type: ignore
     elif desktop_env=="mac": #Not tested since I do not have a mac
         #From https://stackoverflow.com/questions/431205/how-can-i-programatically-change-the-background-in-mac-os-x
         try:
+            assert os.name == "mac"  # avoid 'Import "appscript" could not be resolved' on other platforms
             from appscript import app, mactypes
             app('Finder').desktop_picture.set(mactypes.File(file_loc))
         except ImportError:
