@@ -177,6 +177,13 @@ Note that it runs slower in VS Code's debugger.
 To see logs, run [`textual console`](https://textual.textualize.io/guide/devtools/#console) and then run the program via `textual run --dev`.
 This also makes it run slower.
 
+### Linting
+  
+```bash
+pyright  # type checking
+cspell-cli lint .  # spell checking
+```
+
 ### Update Dependencies
 
 ```bash
