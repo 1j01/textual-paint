@@ -266,13 +266,11 @@ CharacterSelectorDialogWindow .cancel {
     height: auto;
     width: 1fr;
 }
-#zoom_dialog .buttons,
-#attributes_dialog .buttons {
+DialogWindow .buttons {
     layout: horizontal;
     height: auto;
 }
-#zoom_dialog .buttons Button,
-#attributes_dialog .buttons Button {
+DialogWindow .buttons Button {
     width: auto;
     margin: 1;
 }

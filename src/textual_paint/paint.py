@@ -1836,8 +1836,11 @@ class PaintApp(App[None]):
         window.content.mount(
             EnhancedDirectoryTree(id="save_as_dialog_directory_tree", path="/"),
             Input(classes="filename_input", placeholder=_("Filename"), value=filename),
-            Button(_("Save"), classes="save submit", variant="primary"),
-            Button(_("Cancel"), classes="cancel"),
+            Container(
+                Button(_("Save"), classes="save submit", variant="primary"),
+                Button(_("Cancel"), classes="cancel"),
+                classes="buttons",
+            ),
         )
         self.mount(window)
         self.expand_directory_tree(window.content.query_one("#save_as_dialog_directory_tree", EnhancedDirectoryTree))
@@ -2001,8 +2004,11 @@ class PaintApp(App[None]):
         window.content.mount(
             EnhancedDirectoryTree(id="open_dialog_directory_tree", path="/"),
             Input(classes="filename_input", placeholder=_("Filename")),
-            Button(_("Open"), classes="open submit", variant="primary"),
-            Button(_("Cancel"), classes="cancel"),
+            Container(
+                Button(_("Open"), classes="open submit", variant="primary"),
+                Button(_("Cancel"), classes="cancel"),
+                classes="buttons",
+            ),
         )
         self.mount(window)
         self.expand_directory_tree(window.content.query_one("#open_dialog_directory_tree", EnhancedDirectoryTree))
