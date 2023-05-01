@@ -231,7 +231,10 @@ class Window(Container):
             return
 
         self.mouse_at_drag_start = event.screen_offset
-        self.offset_at_drag_start = Offset(int(self.styles.offset.x.value), int(self.styles.offset.y.value))
+        self.offset_at_drag_start = Offset(
+            int(self.styles.offset.x.value),
+            int(self.styles.offset.y.value),
+        )
         self.capture_mouse()
         """
         Work around a bug in textual where the MouseUp event
@@ -263,7 +266,10 @@ class Window(Container):
 
     def on_mouse_move(self, event: events.MouseMove) -> None:
         """Called when the user moves the mouse."""
-        if self.mouse_at_drag_start is not None and self.offset_at_drag_start is not None:
+        if (
+            self.mouse_at_drag_start is not None
+            and self.offset_at_drag_start is not None
+        ):
             self.styles.offset = (
                 self.offset_at_drag_start.x + event.screen_x - self.mouse_at_drag_start.x,
                 self.offset_at_drag_start.y + event.screen_y - self.mouse_at_drag_start.y,
