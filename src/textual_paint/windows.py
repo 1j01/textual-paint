@@ -1,4 +1,4 @@
-from typing import Any, Union, Optional, Callable
+from typing import Any, Optional, Callable
 from textual import events
 from textual.message import Message
 from textual.app import ComposeResult
@@ -467,7 +467,7 @@ class MessageBox(DialogWindow):
     def __init__(
         self,
         *children: Widget,
-        message_widget: Union[Widget, str],
+        message_widget: Widget | str,
         button_types: str = "ok",
         icon_widget: Optional[Widget],
         handle_button: Callable[[Button], None],
