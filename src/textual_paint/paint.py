@@ -779,7 +779,19 @@ font {
             return AnsiArtDocument.from_ascii(text, default_bg, default_fg)
 
 class Action:
-    """An action that can be undone efficiently using a region update."""
+    """An action that can be undone efficiently using a region update.
+
+    This uses an image patch to undo the action, except for resizes, which store the entire document state.
+    In either case, the action stores image data in sub_image_before.
+    The image data from _after_ the action is not stored, because the Action exists only for undoing.
+
+    TODO: In the future it would be more efficient to use a mask for the region update,
+    to store only modified pixels, and use RLE compression on the mask and image data.
+    
+    NOTE: Not to be confused with Textual's `class Action(Event)`, or the type of law suit.
+    Indeed, Textual's actions are used significantly in this application, with action_* methods,
+    but this class is not related. Perhaps I should rename this class to UndoOp, or HistoryOperation.
+    """
 
     def __init__(self, name: str, region: Region|None = None) -> None:
         """Initialize the action using the document state before modification."""
@@ -788,7 +800,9 @@ class Action:
         self.region = region
         """The region of the document that was modified."""
         self.is_resize = False
-        """Indicates that this action resizes the document, and thus should not be undone with a region update."""
+        """Indicates that this action resizes the document, and thus should not be undone with a region update.
+        
+        That is, unless in the future region updates support a mask and work in tandem with resizes."""
         self.sub_image_before: AnsiArtDocument|None = None
         """The image data from the region of the document before modification."""
 
