@@ -2210,17 +2210,17 @@ class PaintApp(App[None]):
             handle_button=handle_button,
         )
         window.content.mount(
-            Input(id="zoom_input", value=str(self.magnification), placeholder=_("Zoom")),
-            # Vertical(
-            #     Horizontal(
-            #         Static(_("Zoom to")),
-            #         Input(id="zoom_input", value=str(self.magnification)),
-            #     ),
-            #     Horizontal(
-            #         Static(_("Current zoom:")),
-            #         Static(str(self.magnification)),
-            #     ),
-            # ),
+            # TODO: radio button group, and show as percentage
+            Vertical(
+                Horizontal(
+                    Static(_("Current zoom:")),
+                    Static(str(self.magnification) + "x"),
+                ),
+                # Horizontal(
+                    Static(_("Zoom to")),
+                    Input(id="zoom_input", value=str(self.magnification)),
+                # ),
+            ),
             Container(
                 Button(_("OK"), classes="ok submit", variant="primary"),
                 Button(_("Cancel"), classes="cancel"),
