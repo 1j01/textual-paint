@@ -2294,7 +2294,7 @@ class PaintApp(App[None]):
             handle_button=lambda button: window.close(),
         )
         help_text = parser.format_help()
-        window.content.mount(Container(Static(help_text),  classes="help_text_container"))
+        window.content.mount(Container(Static(help_text, markup=False),  classes="help_text_container"))
         window.content.mount(Button(_("OK"), classes="ok submit"))
         self.mount(window)
     
