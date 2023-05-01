@@ -2300,6 +2300,8 @@ class PaintApp(App[None]):
             id="help_dialog",
             title=_("Help"),  # _("Help Topics") not really apt yet since it's just the usage
             handle_button=lambda button: window.close(),
+            allow_maximize=True,
+            allow_minimize=True,
         )
         help_text = parser.format_help()
         window.content.mount(Container(Static(help_text, markup=False),  classes="help_text_container"))

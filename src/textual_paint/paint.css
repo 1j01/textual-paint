@@ -170,13 +170,13 @@ WindowTitleBar Button {
     content-align: left middle;
     padding-left: 1;
 }
-.window_close {
+WindowTitleBar Button {
     background: $panel;
     border: inner $panel-darken-1;
     border-top: inner $panel-lighten-1;
     border-left: inner $panel-lighten-1;
 }
-.window_close:hover {
+WindowTitleBar Button:hover {
     background: $panel-darken-1;
     border: inner $panel-darken-3;
     border-top: inner $panel-lighten-1;
@@ -185,7 +185,7 @@ WindowTitleBar Button {
 /* :active doesn't seem to be supported,
 and .-active doesn't apply until after click,
 at which point the window is closed, generally. */
-.window_close.-active {
+WindowTitleBar Button.-active {
     border: inner $panel-lighten-1;
     border-top: inner $panel-darken-3;
     border-left: inner $panel-darken-3;

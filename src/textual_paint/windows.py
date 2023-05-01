@@ -16,18 +16,24 @@ class WindowTitleBar(Container):
 
     title = var("")
 
-    def __init__(self, title: str = "", **kwargs: Any) -> None:
+    def __init__(self, title: str = "", allow_maximize: bool = False, allow_minimize: bool = False, **kwargs: Any) -> None:
         """Initialize a title bar."""
         super().__init__(**kwargs)
         self.title = title
+        self.allow_maximize = allow_maximize
+        self.allow_minimize = allow_minimize
 
     def compose(self) -> ComposeResult:
         """Add our widgets."""
         yield Static(self.title, classes="window_title")
+        if self.allow_minimize:
+            yield Button("🗕", classes="window_minimize")
+        if self.allow_maximize:
+            yield Button("🗖", classes="window_maximize")
+            restore_button = Button("🗗", classes="window_restore")
+            restore_button.display = False
+            yield restore_button
         yield Button("🗙", classes="window_close")
-        # yield Button("🗕", classes="window_minimize")
-        # yield Button("🗖", classes="window_maximize")
-        # 🗗 for restore
 
 id_counter = 0
 class Window(Container):
@@ -55,12 +61,19 @@ class Window(Container):
         ("left,up", "focus_previous_button", "Focus Previous Button"),
     ]
 
-    def __init__(self, *children: Widget, title: str = "", **kwargs: Any) -> None:
+    def __init__(
+        self, 
+        *children: Widget,
+        title: str = "",
+        allow_maximize: bool = False,
+        allow_minimize: bool = False,
+        **kwargs: Any,
+    ) -> None:
         """Initialize a window."""
         super().__init__(*children, **kwargs)
         self.mouse_at_drag_start = None
         self.offset_at_drag_start = None
-        self.title_bar = WindowTitleBar(title=title)
+        self.title_bar = WindowTitleBar(title=title, allow_maximize=allow_maximize, allow_minimize=allow_minimize)
         self.content = Container(classes="window_content")
         # must be after title_bar is defined
         self.title = title
@@ -136,6 +149,44 @@ class Window(Container):
 
         if event.button.has_class("window_close"):
             self.request_close()
+        elif event.button.has_class("window_minimize"):
+            # TODO: Handle minimize for maximized windows, and maximize for minimized windows.
+            minimizing = self.content.display
+            # if minimizing:
+            #     if self.query_one(".window_restore", Button).display:
+            #         self.query_one(".window_restore", Button).press()
+            # TODO: get border dynamically
+            border = 2  # 1 on each side
+            # Freeze the width, since auto width from the content won't apply.
+            self.styles.width = self.size.width + border
+            # Offset by half the height of the content, because the window has a center anchor.
+            y_offset = - self.content.size.height / 2 - border if minimizing else self._original_content_height / 2 + border
+            self.styles.offset = (int(self.styles.offset.x.value), int(self.styles.offset.y.value + y_offset))
+            if minimizing:
+                self._original_content_height = self.content.size.height
+            # Toggle the display of the content.
+            self.content.display = not self.content.display
+            # Disable the maximize button when minimized.
+            self.title_bar.query_one(".window_maximize").disabled = minimizing
+        elif event.button.has_class("window_maximize"):
+            self.title_bar.query_one(".window_maximize").display = False
+            self.title_bar.query_one(".window_restore").display = True
+            self._original_offset = self.styles.offset
+            self._original_width = self.styles.width
+            self._original_height = self.styles.height
+            self.styles.offset = (0, 0)
+            self.styles.width = "100%"
+            self.styles.height = "100%"
+            # Disable the minimize button when maximized.
+            self.title_bar.query_one(".window_minimize").disabled = True
+        elif event.button.has_class("window_restore"):
+            self.title_bar.query_one(".window_maximize").display = True
+            self.title_bar.query_one(".window_restore").display = False
+            self.styles.offset = self._original_offset
+            self.styles.width = self._original_width
+            self.styles.height = self._original_height
+            # Enable the minimize button when restored.
+            self.title_bar.query_one(".window_minimize").disabled = False
     
     def on_mouse_down(self, event: events.MouseDown) -> None:
         """Called when the user presses the mouse button."""
