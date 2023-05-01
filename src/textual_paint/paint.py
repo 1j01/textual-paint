@@ -131,7 +131,7 @@ inspect_layout = False
 
 # Command line arguments
 # Please keep in sync with the README
-parser = argparse.ArgumentParser(description='Paint in the terminal.')
+parser = argparse.ArgumentParser(description='Paint in the terminal.', usage='%(prog)s [options] [filename]')
 parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
 parser.add_argument('--theme', default='light', help='Theme to use, either "light" or "dark"', choices=['light', 'dark'])
 parser.add_argument('--language', default='en', help='Language to use', choices=['ar', 'cs', 'da', 'de', 'el', 'en', 'es', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko', 'nl', 'no', 'pl', 'pt', 'pt-br', 'ru', 'sk', 'sl', 'sv', 'tr', 'zh', 'zh-simplified'])

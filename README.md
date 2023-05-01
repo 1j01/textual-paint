@@ -72,10 +72,7 @@ textual-paint
 
 ```
 $ python3 paint.py --help
-usage: paint.py [-h] [--version] [--theme {light,dark}]
-                [--language {ar,cs,da,de,el,en,es,fi,fr,he,hu,it,ja,ko,nl,no,pl,pt,pt-br,ru,sk,sl,sv,tr,zh,zh-simplified}]
-                [--ascii-only-icons] [--inspect-layout] [--clear-screen] [--restart-on-changes]
-                [filename]
+usage: paint.py [options] [filename]
 
 Paint in the terminal.
 
