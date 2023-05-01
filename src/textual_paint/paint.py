@@ -34,7 +34,7 @@ from localization.i18n import get as _, load_language, remove_hotkey
 from enhanced_directory_tree import EnhancedDirectoryTree
 from wallpaper import get_config_dir, set_wallpaper
 
-__version__ = "0.1.0"
+from __init__ import __version__
 
 observer = None
 
