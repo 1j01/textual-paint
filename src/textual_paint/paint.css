@@ -280,11 +280,16 @@ DialogWindow .buttons Button {
     width: 50;
     height: auto;
 }
-#attributes_dialog Horizontal,
-#attributes_dialog Vertical {
+#attributes_dialog .window_content Horizontal,
+#attributes_dialog .window_content Vertical {
     height: auto;
     width: auto;
     padding: 1 2;
+}
+#attributes_dialog .window_content Horizontal Static {
+    width: auto;
+    height: 3; /* matching Input height; 1fr or auto didn't work */
+    content-align-vertical: middle;
 }
 #attributes_dialog Input {
     width: 20;
