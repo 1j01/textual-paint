@@ -234,13 +234,17 @@ CharacterSelectorDialogWindow .cancel {
     height: auto;
 }
 
+#help_dialog {
+    width: 80;
+    height: 30;
+}
 #help_dialog .window_content {
     padding: 2 4;
+    height: 1fr;
 }
 #help_dialog .help_text_container {
-    width: 80;
-    height: auto;
-    max-height: 15;
+    width: 1fr;
+    height: 1fr;
     overflow: auto;
     margin-bottom: 2;
 }
