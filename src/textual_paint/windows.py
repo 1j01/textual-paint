@@ -75,6 +75,7 @@ class Window(Container):
         self.offset_at_drag_start = None
         self.title_bar = WindowTitleBar(title=title, allow_maximize=allow_maximize, allow_minimize=allow_minimize)
         self.content = Container(classes="window_content")
+        self.maximized = False
         # must be after title_bar is defined
         self.title = title
         self.can_focus = True
@@ -180,6 +181,7 @@ class Window(Container):
             self.styles.offset = (0, 0)
             self.styles.width = "100%"
             self.styles.height = "100%"
+            self.maximized = True
             # Disable the minimize button when maximized.
             try:
                 self.title_bar.query_one(".window_minimize").disabled = True
@@ -191,6 +193,7 @@ class Window(Container):
             self.styles.offset = self._original_offset
             self.styles.width = self._original_width
             self.styles.height = self._original_height
+            self.maximized = False
             # Enable the minimize button when restored.
             try:
                 self.title_bar.query_one(".window_minimize").disabled = False
@@ -211,6 +214,10 @@ class Window(Container):
 
         if event.button != 1:
             return
+        
+        if self.maximized:
+            return
+
         self.mouse_at_drag_start = event.screen_offset
         self.offset_at_drag_start = Offset(int(self.styles.offset.x.value), int(self.styles.offset.y.value))
         self.capture_mouse()
