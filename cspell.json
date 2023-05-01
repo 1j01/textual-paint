@@ -47,6 +47,7 @@
 		"pypixelart",
 		"pyright",
 		"pyxdg",
+		"renderable",
 		"rmam",
 		"setterm",
 		"setuptools",

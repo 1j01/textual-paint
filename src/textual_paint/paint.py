@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import io
 import os
 import re
 import shlex
@@ -16,6 +17,8 @@ from watchdog.observers import Observer
 import stransi
 from rich.segment import Segment
 from rich.style import Style
+from rich.console import Console, RenderableType
+from rich.text import Text
 from textual import events
 from textual.message import Message
 from textual.app import App, ComposeResult
@@ -676,31 +679,53 @@ pre {
 
     def get_svg(self) -> str:
         """Get the SVG representation of the document."""
-        css = """
-pre {
-    overflow: hidden;
-    margin: 0;
-    padding: 0;
-}
-svg {
-    font: 10px monospace;
-    line-height: 1;
-}
-span,
-font {
-    display: inline-block;
-}
-"""
-        svg = f"""<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="{self.width}ch" height="{self.height}lh">
-<style>{css}</style>
-<foreignObject x="0" y="0" width="80ch" height="38lh">
-<pre xmlns="http://www.w3.org/1999/xhtml">{self.get_pre_inner_xhtml()}</pre>
-</foreignObject>
-</svg>
-"""
-        return svg
+#         css = """
+# pre {
+#     overflow: hidden;
+#     margin: 0;
+#     padding: 0;
+# }
+# svg {
+#     font: 10px monospace;
+#     line-height: 1;
+# }
+# span,
+# font {
+#     display: inline-block;
+# }
+# """
+#         svg = f"""<?xml version="1.0" encoding="UTF-8"?>
+# <svg xmlns="http://www.w3.org/2000/svg" width="{self.width}ch" height="{self.height}lh">
+# <style>{css}</style>
+# <foreignObject x="0" y="0" width="80ch" height="38lh">
+# <pre xmlns="http://www.w3.org/1999/xhtml">{self.get_pre_inner_xhtml()}</pre>
+# </foreignObject>
+# </svg>
+# """
+#         return svg
+        console = self.get_console()
+        return console.export_svg(title=_("Painting"))
     
+    def get_renderable(self) -> RenderableType:
+        """Get a Rich renderable for the document."""
+        # This is kind of roundabout.
+        # TODO: self.get_ansi should use this, not the other way around.
+        return Text.from_ansi(self.get_ansi())
+
+    def get_console(self) -> Console:
+        """Get a Rich Console with the document rendered in it."""
+        console = Console(
+            width=self.width,
+            height=self.height,
+            file=io.StringIO(),
+            force_terminal=True,
+            color_system="truecolor",
+            record=True,
+            legacy_windows=False,
+        )
+        console.print(self.get_renderable())
+        return console
+
     @staticmethod
     def from_ascii(text: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
         """Creates a document from the given ASCII plain text."""
