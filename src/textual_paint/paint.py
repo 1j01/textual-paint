@@ -2131,8 +2131,12 @@ class PaintApp(App[None]):
 
     def action_paste(self) -> None:
         """Paste the clipboard as a selection."""
-        import pyperclip
-        text: str = pyperclip.paste()
+        try:
+            import pyperclip
+            text: str = pyperclip.paste()
+        except Exception as e:
+            self.warning_message_box(_("Paint"), _("Error getting the Clipboard Data!") + "\n\n" + repr(e), "ok")
+            return
         if not text:
             return
         if self.image.selection and self.image.selection.textbox_mode:
