@@ -167,7 +167,10 @@ class Window(Container):
             # Toggle the display of the content.
             self.content.display = not self.content.display
             # Disable the maximize button when minimized.
-            self.title_bar.query_one(".window_maximize").disabled = minimizing
+            try:
+                self.title_bar.query_one(".window_maximize").disabled = minimizing
+            except NoMatches:
+                pass
         elif event.button.has_class("window_maximize"):
             self.title_bar.query_one(".window_maximize").display = False
             self.title_bar.query_one(".window_restore").display = True
@@ -178,7 +181,10 @@ class Window(Container):
             self.styles.width = "100%"
             self.styles.height = "100%"
             # Disable the minimize button when maximized.
-            self.title_bar.query_one(".window_minimize").disabled = True
+            try:
+                self.title_bar.query_one(".window_minimize").disabled = True
+            except NoMatches:
+                pass
         elif event.button.has_class("window_restore"):
             self.title_bar.query_one(".window_maximize").display = True
             self.title_bar.query_one(".window_restore").display = False
@@ -186,7 +192,10 @@ class Window(Container):
             self.styles.width = self._original_width
             self.styles.height = self._original_height
             # Enable the minimize button when restored.
-            self.title_bar.query_one(".window_minimize").disabled = False
+            try:
+                self.title_bar.query_one(".window_minimize").disabled = False
+            except NoMatches:
+                pass
     
     def on_mouse_down(self, event: events.MouseDown) -> None:
         """Called when the user presses the mouse button."""
