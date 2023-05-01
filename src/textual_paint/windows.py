@@ -156,11 +156,10 @@ class Window(Container):
             # if minimizing:
             #     if self.query_one(".window_restore", Button).display:
             #         self.query_one(".window_restore", Button).press()
-            # TODO: get border dynamically
-            border = 2  # 1 on each side
             # Freeze the width, since auto width from the content won't apply.
-            self.styles.width = self.size.width + border
+            self.styles.width = self.outer_size.width
             # Offset by half the height of the content, because the window has a center anchor.
+            border = self.outer_size.height - self.size.height
             y_offset = - self.content.size.height / 2 - border if minimizing else self._original_content_height / 2 + border
             self.styles.offset = (int(self.styles.offset.x.value), int(self.styles.offset.y.value + y_offset))
             if minimizing:
