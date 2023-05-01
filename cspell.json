@@ -3,15 +3,23 @@
 		"**",
 		".*/**"
 	],
+	"enableFiletypes": [
+		"pip-requirements",
+		"shellscript",
+		"tlaplus_cfg", // file type detected wrong, I'm just trying to match *.cfg
+		"toml"
+	],
 	"ignorePaths": [
 		".git",
 		"*.(bmp|png|jpg|jpeg|gif|svg|ico|tiff|tif)",
 		"*.log",
-		"localization/*/**/*",
-		"localization/*.sh",
-		"__pycache__"
+		"**/localization/*/**/*",
+		"**/localization/*.sh",
+		"__pycache__",
+		"*.egg-info/**/*"
 	],
 	"words": [
+		"appscript",
 		"bezier",
 		"Bresenham",
 		"Bresenham's",
@@ -22,9 +30,11 @@
 		"Haha",
 		"hkey",
 		"humbnail",
+		"linewrap",
 		"𝗟𝙇",
 		"llpaper",
 		"modd",
+		"mspaint",
 		"Odhner",
 		"pagedown",
 		"pageup",
@@ -36,9 +46,15 @@
 		"pyperclip",
 		"pypixelart",
 		"pyright",
+		"pyxdg",
+		"rmam",
+		"setterm",
+		"setuptools",
 		"Shft",
+		"smam",
 		"stransi",
 		"STRINGTABLE",
+		"tlaplus",
 		"ufeff",
 		"undoable",
 		"undos",
