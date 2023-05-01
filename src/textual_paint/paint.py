@@ -2296,9 +2296,25 @@ class PaintApp(App[None]):
     def action_help_topics(self) -> None:
         """Show the Help Topics dialog."""
         self.close_windows("#help_dialog")
+        # "Paint Help" is the title in MS Paint,
+        # but we don't have translations for that.
+        # This works in English, but probably sounds weird in other languages.
+        title = _("Paint") + " " + _("Help")
+        # The icon is a document with a yellow question mark.
+        # I can almost represent that with emoji, but this causes issues
+        # where the emoji and the first letter of the title
+        # can disappear depending on the x position of the window.
+        # icon = "📄❓"
+        # This icon can disappear too, but it doesn't seem
+        # to cause the title to get cut off.
+        # icon = "📄"
+        # Actually, I can make a yellow question mark!
+        # Just don't use emoji for it.
+        icon = "📄[#ffff00]?[/]"
+        title = icon + " " + title
         window = DialogWindow(
             id="help_dialog",
-            title=_("Help"),  # _("Help Topics") not really apt yet since it's just the usage
+            title=title,
             handle_button=lambda button: window.close(),
             allow_maximize=True,
             allow_minimize=True,
