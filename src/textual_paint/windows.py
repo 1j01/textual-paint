@@ -151,16 +151,15 @@ class Window(Container):
         if event.button.has_class("window_close"):
             self.request_close()
         elif event.button.has_class("window_minimize"):
-            # TODO: Handle minimize for maximized windows, and maximize for minimized windows.
             minimizing = self.content.display
-            # if minimizing:
-            #     if self.query_one(".window_restore", Button).display:
-            #         self.query_one(".window_restore", Button).press()
             # Freeze the width, since auto width from the content won't apply.
             self.styles.width = self.outer_size.width
             # Offset by half the height of the content, because the window has a center anchor.
-            border = self.outer_size.height - self.size.height
-            y_offset = - self.content.outer_size.height / 2 - border if minimizing else self._original_content_height / 2 + border
+            border_h = self.outer_size.height - self.size.height
+            if minimizing:
+                y_offset = - self.content.outer_size.height / 2 - border_h
+            else:
+                y_offset = self._original_content_height / 2 + border_h
             self.styles.offset = (int(self.styles.offset.x.value), int(self.styles.offset.y.value + y_offset))
             if minimizing:
                 self._original_content_height = self.content.outer_size.height
@@ -168,9 +167,10 @@ class Window(Container):
             # Toggle the display of the content.
             self.content.display = not self.content.display
             # minimal_height = "auto" # doesn't work
-            minimal_height = self.title_bar.outer_size.height + border
+            minimal_height = self.title_bar.outer_size.height + border_h
             self.styles.height = minimal_height if minimizing else self._original_window_height_for_minimize
             # Disable the maximize button when minimized.
+            # TODO: Handle minimize for maximized windows, and maximize for minimized windows.
             try:
                 self.title_bar.query_one(".window_maximize").disabled = minimizing
             except NoMatches:
