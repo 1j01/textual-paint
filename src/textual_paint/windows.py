@@ -165,8 +165,12 @@ class Window(Container):
             self.styles.offset = (int(self.styles.offset.x.value), int(self.styles.offset.y.value + y_offset))
             if minimizing:
                 self._original_content_height = self.content.size.height
+                self._original_window_height_for_minimize = self.styles.height
             # Toggle the display of the content.
             self.content.display = not self.content.display
+            # minimal_height = "auto" # doesn't work
+            minimal_height = self.title_bar.size.height + border
+            self.styles.height = minimal_height if minimizing else self._original_window_height_for_minimize
             # Disable the maximize button when minimized.
             try:
                 self.title_bar.query_one(".window_maximize").disabled = minimizing
