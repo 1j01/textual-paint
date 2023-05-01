@@ -49,7 +49,7 @@ def restart_program():
         # It's meant to eventually call this, but we need it immediately (unless we delay with asyncio perhaps)
         # Otherwise the terminal will be left in a state where you can't (visibly) type anything
         # if you exit the app after reloading, since the new process will pick up the old terminal state.
-        app._driver.stop_application_mode() # type: ignore
+        app._driver.stop_application_mode()  # type: ignore
     except Exception as e:
         print("Error stopping application mode. The command line may not work as expected. The `reset` command should restore it on Linux.", e)
 
@@ -219,28 +219,28 @@ class Tool(Enum):
         # - Rounded Rectangle: ▢⬜⬛
         if ascii_only_icons:
             return {
-                Tool.free_form_select: "<[u]^[/]7", # "*" "<^>" "<[u]^[/]7"
-                Tool.select: "::", # "#" "::" ":_:" ":[u]:[/]:" ":[u]'[/]:"
-                Tool.eraser: "[u]/[/]7", # "47" "27" "/_/" "[u]/[/]7"
-                Tool.fill: "[u i]H[/]?", # "#?" "H?" "[u i]F[/]?"
-                Tool.pick_color: "[u i] P[/]", # "[u].[/]" "[u i]\\P[/]"
-                Tool.magnifier: ",O", # ",O" "o-" "O-" "o=" "O=" "Q"
-                Tool.pencil: "-==", # "c==>" "==-"
-                Tool.brush: "E)=", # "[u],h.[/u]" "[u],|.[/u]" "[u]h[/u]"
-                Tool.airbrush: "[u i]H[/]`<", # "H`" "H`<" "[u i]H[/]`<" "[u i]6[/]<"
-                Tool.text: "A", # "Abc"
+                Tool.free_form_select: "<[u]^[/]7",  # "*" "<^>" "<[u]^[/]7"
+                Tool.select: "::",  # "#" "::" ":_:" ":[u]:[/]:" ":[u]'[/]:"
+                Tool.eraser: "[u]/[/]7",  # "47" "27" "/_/" "[u]/[/]7"
+                Tool.fill: "[u i]H[/]?",  # "#?" "H?" "[u i]F[/]?"
+                Tool.pick_color: "[u i] P[/]",  # "[u].[/]" "[u i]\\P[/]"
+                Tool.magnifier: ",O",  # ",O" "o-" "O-" "o=" "O=" "Q"
+                Tool.pencil: "-==",  # "c==>" "==-"
+                Tool.brush: "E)=",  # "[u],h.[/u]" "[u],|.[/u]" "[u]h[/u]"
+                Tool.airbrush: "[u i]H[/]`<",  # "H`" "H`<" "[u i]H[/]`<" "[u i]6[/]<"
+                Tool.text: "A",  # "Abc"
                 Tool.line: "\\",
-                Tool.curve: "~", # "~" "S" "s"
-                Tool.rectangle: "[_]", # "[]"
-                Tool.polygon: "[b]L[/b]", # "L"
-                Tool.ellipse: "O", # "()"
+                Tool.curve: "~",  # "~" "S" "s"
+                Tool.rectangle: "[_]",  # "[]"
+                Tool.polygon: "[b]L[/b]",  # "L"
+                Tool.ellipse: "O",  # "()"
                 Tool.rounded_rectangle: "(_)",
             }[self]
         return {
             Tool.free_form_select: "⚝",
             Tool.select: "⬚",
             Tool.eraser: "🧼",
-            Tool.fill: "🌊", # "🫗" causes jutting out in Ubuntu terminal, "🪣" causes the opposite in VS Code terminal
+            Tool.fill: "🌊",  # "🫗" causes jutting out in Ubuntu terminal, "🪣" causes the opposite in VS Code terminal
             Tool.pick_color: "💉",
             Tool.magnifier: "🔍",
             Tool.pencil: "✏️",
@@ -280,14 +280,14 @@ class Tool(Enum):
 
 
 palette = [
-    "rgb(0,0,0)", # Black
-    "rgb(128,128,128)", # Dark Gray
-    "rgb(128,0,0)", # Dark Red
-    "rgb(128,128,0)", # Pea Green
-    "rgb(0,128,0)", # Dark Green
-    "rgb(0,128,128)", # Slate
-    "rgb(0,0,128)", # Dark Blue
-    "rgb(128,0,128)", # Lavender
+    "rgb(0,0,0)",  # Black
+    "rgb(128,128,128)",  # Dark Gray
+    "rgb(128,0,0)",  # Dark Red
+    "rgb(128,128,0)",  # Pea Green
+    "rgb(0,128,0)",  # Dark Green
+    "rgb(0,128,128)",  # Slate
+    "rgb(0,0,128)",  # Dark Blue
+    "rgb(128,0,128)",  # Lavender
     "rgb(128,128,64)",
     "rgb(0,64,64)",
     "rgb(0,128,255)",
@@ -295,14 +295,14 @@ palette = [
     "rgb(64,0,255)",
     "rgb(128,64,0)",
 
-    "rgb(255,255,255)", # White
-    "rgb(192,192,192)", # Light Gray
-    "rgb(255,0,0)", # Bright Red
-    "rgb(255,255,0)", # Yellow
-    "rgb(0,255,0)", # Bright Green
-    "rgb(0,255,255)", # Cyan
-    "rgb(0,0,255)", # Bright Blue
-    "rgb(255,0,255)", # Magenta
+    "rgb(255,255,255)",  # White
+    "rgb(192,192,192)",  # Light Gray
+    "rgb(255,0,0)",  # Bright Red
+    "rgb(255,255,0)",  # Yellow
+    "rgb(0,255,0)",  # Bright Green
+    "rgb(0,255,255)",  # Cyan
+    "rgb(0,0,255)",  # Bright Blue
+    "rgb(255,0,255)",  # Magenta
     "rgb(255,255,128)",
     "rgb(0,255,128)",
     "rgb(128,255,255)",
@@ -349,11 +349,11 @@ class CharInput(Input, inherit_bindings=False):
         """Limit the value to a single character."""
         return value[-1] if value else " "
     
-    # This caused a bug where the character would oscillate between multiple values
-    # due to the events queuing up.
-    # watch_value would send CharSelected, and then on_char_input_char_selected would
-    # set the value to an old value, which would cause watch_value to queue up another
-    # CharSelected event, and it would cycle through values.
+    # Using watch_value caused a bug where the character would oscillate between multiple values
+    # due to a feedback loop between watch_value and on_char_input_char_selected.
+    # watch_value would queue up a CharSelected message, and then on_char_input_char_selected would
+    # receive an older CharSelected message and set the value to the old value,
+    # which would cause watch_value to queue up another CharSelected event, and it would cycle through values.
     # (Usually it wasn't a problem because the key events would be processed in time.)
     # async def watch_value(self, value: str) -> None:
     #     """Called when value changes."""
@@ -361,8 +361,8 @@ class CharInput(Input, inherit_bindings=False):
     # Instead, we override on_key to send the message.
     async def on_key(self, event: events.Key) -> None:
         """Called when a key is pressed."""
-        # await super().on_key(event)
-        if event.is_printable and event.character: # redundance for type checker
+        if event.is_printable:
+            assert event.character is not None, "is_printable should imply character is not None"
             self.value = event.character
             self.post_message(self.CharSelected(self.value))
 
@@ -377,10 +377,14 @@ class CharInput(Input, inherit_bindings=False):
     def render_line(self, y: int) -> Strip:
         """Overrides rendering to color the character, since Input doesn't seem to support the color style."""
         assert isinstance(self.app, PaintApp)
+        # Textural style, repeating the character:
+        # This doesn't support a blinking cursor, and it doesn't extend all the way to the left for some reason.
         # return Strip([Segment(self.value * self.size.width, Style(color=self.app.selected_fg_color, bgcolor=self.app.selected_bg_color))])
+
+        # Single-character style, by filtering the Input's rendering:
         # There's a LineFilter class that can be subclassed to do stuff like this, but I'm not sure why you'd want a class for it.
         # Is it a typechecking thing? Does python not have good interfaces support?
-        # Anyways, this code is based on how that works, 
+        # Anyways, this code is based on how that works, transforming the segments into a new list.
         super_class_strip = super().render_line(y)
         new_segments: list[Segment] = []
         style_mod: Style = Style(color=self.app.selected_fg_color, bgcolor=self.app.selected_bg_color)
@@ -423,7 +427,7 @@ class ColorsBox(Container):
                 self.color_by_button[button] = color
                 yield button
 
-    def update_palette(self) -> None: # , palette: list[str]) -> None:
+    def update_palette(self) -> None:  # , palette: list[str]) -> None:
         """Update the palette with new colors."""
         for button, color in zip(self.query(".color_button").nodes, palette):
             assert isinstance(button, Button)
@@ -562,7 +566,7 @@ class AnsiArtDocument:
             target_region = Region(0, 0, source_region.width, source_region.height)
         source_offset = source_region.offset
         target_offset = target_region.offset
-        random_color: Optional[str] = None # avoid "possibly unbound"
+        random_color: Optional[str] = None  # avoid "possibly unbound"
         if debug_region_updates:
             random_color = "rgb(" + str(randint(0, 255)) + "," + str(randint(0, 255)) + "," + str(randint(0, 255)) + ")"
         for y in range(target_region.height):
@@ -1129,7 +1133,7 @@ class Canvas(Widget):
     def on_mouse_down(self, event: events.MouseDown) -> None:
         """Called when a mouse button is pressed.
         Start drawing, or if both mouse buttons are pressed, cancel the current action."""
-        self.fix_mouse_event(event) # not needed, pointer isn't captured yet.
+        self.fix_mouse_event(event)  # not needed, pointer isn't captured yet.
         event.x //= self.magnification
         event.y //= self.magnification
 
@@ -1163,7 +1167,7 @@ class Canvas(Widget):
         #     offset = offset - node.offset
         #     node = node.parent
         # assert isinstance(self.parent, Widget)
-        offset = offset - self.region.offset #+ Offset(int(self.parent.scroll_x), int(self.parent.scroll_y))
+        offset = offset - self.region.offset  #+ Offset(int(self.parent.scroll_x), int(self.parent.scroll_y))
         event.x = offset.x
         event.y = offset.y
 
@@ -1326,8 +1330,8 @@ class PaintApp(App[None]):
     # KEEP IN SYNC with the README.md Usage section, please.
     BINDINGS = [
         # There is a built-in "quit" action, but it will quit without asking to save.
-        # It's also bound to Ctrl+C by default, so for now I'll rebind it,
-        # but eventually Ctrl+C will become Edit > Copy.
+        # It's also bound to Ctrl+C by default, so it needs to be rebound, either to
+        # action_exit, which prompts to save, or to action_copy, like a desktop app.
         Binding("ctrl+q", "exit", _("Quit")),
         Binding("ctrl+s", "save", _("Save")),
         Binding("ctrl+shift+s", "save_as", _("Save As")),
@@ -1342,7 +1346,7 @@ class PaintApp(App[None]):
         # it ignores the Shift.
         Binding("ctrl+shift+z,shift+ctrl+z,ctrl+y,f4", "redo", _("Repeat")),
         Binding("ctrl+x", "cut", _("Cut")),
-        Binding("ctrl+c", "copy", _("Copy")), # Quit, for now
+        Binding("ctrl+c", "copy", _("Copy")),
         Binding("ctrl+v", "paste", _("Paste")),
         Binding("ctrl+g", "toggle_grid", _("Show Grid")),
         Binding("ctrl+f", "view_bitmap", _("View Bitmap")),
@@ -1361,8 +1365,11 @@ class PaintApp(App[None]):
         # dev helper
         # f5 would be more traditional, but I need something not bound to anything
         # in the context of the terminal in VS Code, and not used by this app, like Ctrl+R, and detectable in the terminal.
+        # This isn't super important now that I have automatic reloading.
         Binding("f2", "reload", _("Reload")),
-        # 
+        # Temporary quick access to work on a specific dialog.
+        # Can be used together with `--press f3` when using `textual run` to open the dialog at startup.
+        # Would be better if all dialogs were accessible from the keyboard.
         Binding("f3", "custom_zoom", _("Custom Zoom"))
     ]
 
@@ -1515,7 +1522,7 @@ class PaintApp(App[None]):
                     if square or (i - brush_diameter // 2) ** 2 + (j - brush_diameter // 2) ** 2 <= (brush_diameter // 2) ** 2:
                         self.stamp_char(x + i - brush_diameter // 2, y + j - brush_diameter // 2)
         # expand the affected region to include the brush
-        brush_diameter += 2 # safety margin
+        brush_diameter += 2  # safety margin
         affected_region = Region(x - brush_diameter // 2, y - brush_diameter // 2, brush_diameter, brush_diameter)
         if affected_region_base:
             return affected_region_base.union(affected_region)
@@ -1949,7 +1956,7 @@ class PaintApp(App[None]):
                     window.close()
                     return
                 with open(file_path, "r") as f:
-                    content = f.read() # f is out of scope in go_ahead()
+                    content = f.read()  # f is out of scope in go_ahead()
                     def go_ahead():
                         try:
                             new_image = AnsiArtDocument.from_text(content)
@@ -2140,7 +2147,7 @@ class PaintApp(App[None]):
         y: int = max(0, min(self.image.height - 1, int(self.editing_area.scroll_y // self.magnification)))
         self.image.selection = Selection(Region(x, y, pasted_image.width, pasted_image.height))
         self.image.selection.contained_image = pasted_image
-        self.image.selection.pasted = True # create undo state when finalizing selection
+        self.image.selection.pasted = True  # create undo state when finalizing selection
         self.canvas.refresh_scaled_region(self.image.selection.region)
         self.selected_tool = Tool.select
     
@@ -2283,7 +2290,7 @@ class PaintApp(App[None]):
         self.close_windows("#help_dialog")
         window = DialogWindow(
             id="help_dialog",
-            title=_("Help"), # _("Help Topics"),
+            title=_("Help"),  # _("Help Topics") not really apt yet since it's just the usage
             handle_button=lambda button: window.close(),
         )
         help_text = parser.format_usage()
@@ -2483,7 +2490,8 @@ class PaintApp(App[None]):
             if self.selected_tool == Tool.curve:
                 self.make_preview(self.draw_current_curve)
             else:
-                self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True) # polyline until finished
+                # polyline until finished
+                self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True)
             return
 
         if self.selected_tool == Tool.free_form_select:
@@ -2614,14 +2622,15 @@ class PaintApp(App[None]):
             if self.selected_tool == Tool.curve:
                 self.make_preview(self.draw_current_curve)
             elif self.selected_tool == Tool.polygon:
-                self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True) # polyline until finished
+                # polyline until finished
+                self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True)
             else:
                 self.make_preview(lambda: self.stamp_brush(event.mouse_move_event.x, event.mouse_move_event.y))
         elif self.selected_tool == Tool.magnifier:
             prospective_magnification = self.get_prospective_magnification()
 
             if prospective_magnification < self.magnification:
-                return # hide if clicking would zoom out
+                return  # hide if clicking would zoom out
 
             # prospective viewport size in document coords
             w = self.editing_area.size.width // prospective_magnification
@@ -2726,7 +2735,7 @@ class PaintApp(App[None]):
         self.selecting_text = False
 
         if make_undo_state:
-            action = action # type: ignore
+            action = action  # type: ignore
             affected_region = region
             # TODO: DRY with other undo state creation
             action.region = affected_region
@@ -2762,7 +2771,7 @@ class PaintApp(App[None]):
             return
 
         if self.selected_tool != Tool.select:
-            if self.selected_tool in [Tool.line, Tool.rectangle, Tool.ellipse, Tool.rounded_rectangle]: # , Tool.curve
+            if self.selected_tool in [Tool.line, Tool.rectangle, Tool.ellipse, Tool.rounded_rectangle]:  # , Tool.curve
                 # Display is allowed to go negative, unlike for the Select tool, handled below.
                 # Also, Polygon gets both coords and dimensions.
                 # Unlike MS Paint, Free-Form Select displays the dimensions of the resulting selection,
@@ -2823,7 +2832,8 @@ class PaintApp(App[None]):
             if self.selected_tool == Tool.curve:
                 self.make_preview(self.draw_current_curve)
             elif self.selected_tool == Tool.polygon:
-                self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True) # polyline until finished
+                # polyline until finished
+                self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True)
             return
 
         # The remaining tools work by updating an undo state created on mouse down.
@@ -2834,7 +2844,7 @@ class PaintApp(App[None]):
         affected_region = None
 
         replace_action = self.selected_tool in [Tool.ellipse, Tool.rectangle, Tool.line, Tool.rounded_rectangle]
-        old_action: Optional[Action] = None # avoid "possibly unbound"
+        old_action: Optional[Action] = None  # avoid "possibly unbound"
         if replace_action:
             old_action = self.undos.pop()
             old_action.undo(self.image)
@@ -2911,7 +2921,7 @@ class PaintApp(App[None]):
 
         self.get_widget_by_id("status_dimensions", Static).update("")
 
-        self.color_eraser_mode = False # reset for preview
+        self.color_eraser_mode = False  # reset for preview
 
         if self.mouse_gesture_cancelled:
             return
@@ -2990,7 +3000,7 @@ class PaintApp(App[None]):
                 self.finalize_polygon_or_curve()
             else:
                 # Most likely just drawing the preview we just cancelled.
-                self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True) # polyline until finished
+                self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True)  # polyline until finished
 
             self.polygon_last_click_time = event.time
         elif self.selected_tool in [Tool.pick_color, Tool.magnifier]:
@@ -3049,7 +3059,8 @@ class PaintApp(App[None]):
 
             def delete_selected_text() -> None:
                 """Deletes the selected text, if any."""
-                assert textbox.contained_image is not None, "Textbox mode should always have contained_image, to edit as text." # Come on, Pyright.
+                # This was JUST checked above, but Pyright doesn't know that.
+                assert textbox.contained_image is not None, "Textbox mode should always have contained_image, to edit as text."
                 # Delete the selected text.
                 for offset in selected_text_range(textbox):
                     textbox.contained_image.ch[offset.y][offset.x] = " "
@@ -3111,7 +3122,8 @@ class PaintApp(App[None]):
                 y = 0
             elif key == "pagedown":
                 y = textbox.contained_image.height - 1
-            elif event.is_printable and event.character: # Redundance for type checker
+            elif event.is_printable:
+                assert event.character is not None, "is_printable should imply character is not None"
                 # Type a character into the textbox
                 textbox.contained_image.ch[y][x] = event.character
                 # x = min(textbox.contained_image.width - 1, x + 1)
@@ -3146,7 +3158,7 @@ class PaintApp(App[None]):
 
     def on_tools_box_tool_selected(self, event: ToolsBox.ToolSelected) -> None:
         """Called when a tool is selected in the palette."""
-        self.finalize_polygon_or_curve() # must come before setting selected_tool
+        self.finalize_polygon_or_curve()  # must come before setting selected_tool
         self.meld_selection()
         self.tool_points = []
 
