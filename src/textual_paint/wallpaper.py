@@ -141,7 +141,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
             try:
                 if desktop_conf.has_option("razor",config_option): #only replacing a value
                     desktop_conf.set("razor",config_option,file_loc)
-                    with codecs.open(desktop_conf_file, "w", encoding="utf-8", errors="replace") as f:
+                    with open(desktop_conf_file, "w", encoding="utf-8", errors="replace") as f:
                         desktop_conf.write(f)
             except Exception:
                 pass
