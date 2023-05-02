@@ -139,6 +139,8 @@ parser.add_argument('--version', action='version', version=f'%(prog)s {__version
 parser.add_argument('--theme', default='light', help='Theme to use, either "light" or "dark"', choices=['light', 'dark'])
 parser.add_argument('--language', default='en', help='Language to use', choices=['ar', 'cs', 'da', 'de', 'el', 'en', 'es', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko', 'nl', 'no', 'pl', 'pt', 'pt-br', 'ru', 'sk', 'sl', 'sv', 'tr', 'zh', 'zh-simplified'])
 parser.add_argument('--ascii-only-icons', action='store_true', help='Use only ASCII characters for tool icons')
+
+# TODO: hide development options from help? there's quite a few of them now
 parser.add_argument('--inspect-layout', action='store_true', help='Inspect the layout with middle click, for development')
 # This flag is for development, because it's very confusing
 # to see the error message from the previous run,
@@ -147,6 +149,8 @@ parser.add_argument('--inspect-layout', action='store_true', help='Inspect the l
 # I really don't want false ones mixed in. You want to reward your brain for finding good solutions, after all.
 parser.add_argument('--clear-screen', action='store_true', help='Clear the screen before starting; useful for development, to avoid seeing fixed errors')
 parser.add_argument('--restart-on-changes', action='store_true', help='Restart the app when the source code is changed, for development')
+parser.add_argument('--recode-samples', action='store_true', help='Open and save each file in samples/, for testing')
+
 parser.add_argument('filename', nargs='?', default=None, help='File to open')
 
 # Automatically update the readme with the current arguments.
@@ -3407,6 +3411,27 @@ if args.filename:
         app.image = AnsiArtDocument.from_text(my_file.read())
         app.image_initialized = True
         app.file_path = os.path.abspath(args.filename)
+if args.recode_samples:
+    # Re-encode the sample files to test for changes/inconsistency in encoding.
+    # For each file, open and save it. All files are directly under samples/.
+    async def recode_samples() -> None:
+        for filename in os.listdir("samples"):
+            if not filename.endswith(".ans"):
+                continue
+            with open(os.path.join("samples", filename), "r") as my_file:
+                app.image = AnsiArtDocument.from_text(my_file.read())
+                app.image_initialized = True
+                app.file_path = os.path.abspath(os.path.join("samples", filename))
+            await app.save()
+            print(f"Saved {filename}")
+    # asyncio.run(recode_samples())
+    # have to wait for the app to be initialized
+    def callback() -> None:
+        # RuntimeError: asyncio.run() cannot be called from a running event loop
+        # asyncio.run(recode_samples())
+        asyncio.create_task(recode_samples())
+    app.call_later(callback)
+
 if args.clear_screen:
     os.system("cls||clear")
 
