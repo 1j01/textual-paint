@@ -664,18 +664,18 @@ class AnsiArtDocument:
         if width == self.width and height == self.height:
             return
         new_ch = [[" " for _ in range(width)] for _ in range(height)]
-        new_bg = [[default_bg for _ in range(width)] for _ in range(height)]
-        new_fg = [[default_fg for _ in range(width)] for _ in range(height)]
+        # new_bg = [[default_bg for _ in range(width)] for _ in range(height)]
+        # new_fg = [[default_fg for _ in range(width)] for _ in range(height)]
         for y in range(min(height, self.height)):
             for x in range(min(width, self.width)):
                 new_ch[y][x] = self.ch[y][x]
-                new_bg[y][x] = self.bg[y][x]
-                new_fg[y][x] = self.fg[y][x]
+                # new_bg[y][x] = self.bg[y][x]
+                # new_fg[y][x] = self.fg[y][x]
         self.width = width
         self.height = height
         self.ch = new_ch
-        self.bg = new_bg
-        self.fg = new_fg
+        # self.bg = new_bg
+        # self.fg = new_fg
 
     def get_ansi(self) -> str:
         """Get the ANSI representation of the document."""
