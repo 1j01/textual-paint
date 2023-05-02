@@ -724,7 +724,7 @@ class AnsiArtDocument:
                 ansi += style.render(text)
             else:
                 ansi += text
-        return ansi
+        return ansi + "\n"
 
     def get_plain(self) -> str:
         """Get the plain text representation of the document."""
