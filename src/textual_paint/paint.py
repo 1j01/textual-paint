@@ -134,7 +134,6 @@ ascii_only_icons = False
 inspect_layout = False
 
 # Command line arguments
-# Please keep in sync with the README
 parser = argparse.ArgumentParser(description='Paint in the terminal.', usage='%(prog)s [options] [filename]')
 parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
 parser.add_argument('--theme', default='light', help='Theme to use, either "light" or "dark"', choices=['light', 'dark'])
@@ -149,6 +148,20 @@ parser.add_argument('--inspect-layout', action='store_true', help='Inspect the l
 parser.add_argument('--clear-screen', action='store_true', help='Clear the screen before starting; useful for development, to avoid seeing fixed errors')
 parser.add_argument('--restart-on-changes', action='store_true', help='Restart the app when the source code is changed, for development')
 parser.add_argument('filename', nargs='?', default=None, help='File to open')
+
+# Automatically update the readme with the current arguments.
+# TODO: disable for release builds (or I could make this another dev flag, but I like the idea of it being automatic)
+# (maybe a pre-commit hook!? That might be ideal, but it might also be cumbersome to set up.)
+readme_help_start = re.compile(r"```\n.*--help\n")
+readme_help_end = re.compile(r"```")
+with open("README.md", "r+") as f:
+    md = f.read()
+    start = readme_help_start.search(md).end()
+    end = readme_help_end.search(md, start).start()
+    md = md[:start] + parser.format_help() + md[end:]
+    f.seek(0)
+    f.write(md)
+    f.truncate()
 
 # print("__name__:", __name__)
 # sys.exit()
