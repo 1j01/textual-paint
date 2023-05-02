@@ -2316,6 +2316,8 @@ class PaintApp(App[None]):
                     if width < 1 or height < 1:
                         raise ValueError
 
+                    self.cancel_preview()
+
                     # TODO: DRY undo state creation (at least the undos/redos part)
                     action = Action(_("Attributes"), Region(0, 0, self.image.width, self.image.height))
                     action.is_resize = True
