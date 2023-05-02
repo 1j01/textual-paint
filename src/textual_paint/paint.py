@@ -541,8 +541,13 @@ debug_region_updates = False
 
 ansi_escape_pattern = re.compile(r"(\N{ESC}\[[\d;]*[a-zA-Z])")
 
-CONSOLE_SVG_FORMAT = """\
-<svg class="rich-terminal" viewBox="0 0 {width} {height}" xmlns="http://www.w3.org/2000/svg">
+# This SVG template is based on the template in rich/_export_format.py
+# It removes the simulated window frame, and crops the SVG to just the terminal content.
+# It was very nice during development to automate saving a file as SVG:
+# textual run --dev "src/textual_paint/paint.py --restart-on-changes samples/ship.ans" --press ctrl+shift+s,.,s,v,g,enter
+# (The Ctrl+Shift+S shortcut doesn't work when actually trying it as a user, but it works to simulate it.)
+CUSTOM_CONSOLE_SVG_FORMAT = """\
+<svg class="rich-terminal" viewBox="0 0 {terminal_width} {terminal_height}" xmlns="http://www.w3.org/2000/svg">
     <!-- Generated with Rich https://www.textualize.io -->
     <style>
 
@@ -586,8 +591,7 @@ CONSOLE_SVG_FORMAT = """\
     {lines}
     </defs>
 
-    {chrome}
-    <g transform="translate({terminal_x}, {terminal_y})" clip-path="url(#{unique_id}-clip-terminal)">
+    <g clip-path="url(#{unique_id}-clip-terminal)">
     {backgrounds}
     <g class="{unique_id}-matrix">
     {matrix}
@@ -759,7 +763,7 @@ pre {
 # """
 #         return svg
         console = self.get_console()
-        return console.export_svg(title=_("Painting"))
+        return console.export_svg(title=_("Painting"), code_format=CUSTOM_CONSOLE_SVG_FORMAT)
     
     def get_renderable(self) -> RenderableType:
         """Get a Rich renderable for the document."""
