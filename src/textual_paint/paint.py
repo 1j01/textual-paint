@@ -664,19 +664,10 @@ class AnsiArtDocument:
         """Get the ANSI representation of the document."""
         # TODO: try using Rich API to generate ANSI, like how the Canvas renders to the screen
         # TODO: generate more efficient ANSI, e.g. don't repeat the same color codes
-        def color_to_rgb(color_code: str) -> str:
-            """Convert a color code to the RGB values format used for ANSI escape codes."""
-            if color_code.startswith('#'):
-                # Convert hex code to RGB values
-                color_code = color_code.lstrip('#')
-                rgb = tuple(int(color_code[i:i+2], 16) for i in (0, 2, 4))
-            elif color_code.startswith('rgb(') and color_code.endswith(')'):
-                # Convert "rgb(r,g,b)" style to RGB values
-                rgb_str = color_code[4:-1]
-                rgb = tuple(int(x.strip()) for x in rgb_str.split(','))
-            else:
-                raise ValueError("Invalid color code")
-            return f"{rgb[0]};{rgb[1]};{rgb[2]}"
+        def color_to_rgb(color_str: str) -> str:
+            """Convert a hex or rgb() color to semicolon separated RGB format used for ANSI escape codes."""
+            r, g, b = Color.parse(color_str).rgb
+            return f"{r};{g};{b}"
 
         ansi = ""
         for y in range(self.height):
