@@ -3440,6 +3440,7 @@ if args.recode_samples:
                 app.file_path = os.path.abspath(os.path.join("samples", filename))
             await app.save()
             print(f"Saved {filename}")
+        app.exit()
     # asyncio.run(recode_samples())
     # have to wait for the app to be initialized
     def callback() -> None:
