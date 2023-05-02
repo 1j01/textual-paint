@@ -772,8 +772,22 @@ pre {
     @staticmethod
     def from_ansi(text: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
         """Creates a document from the given ANSI text."""
+
         # TODO: use Rich API to render ANSI to a virtual screen,
         # and remove dependency on stransi
+        # or improve ANSI handling based on Playscii's code
+        # It kind of looks like Rich's API isn't designed to handle absolute positioning,
+        # since it parses a line at a time, but I only looked at it briefly.
+
+        # rich_text = Text.from_ansi(text, style=Style(bgcolor=default_bg, color=default_fg))
+        # # This takes a console and options, but I want the width of the console to come from the text...
+        # # Do I need to create a console huge and then resize it (or make a new one)?
+        # measurement = Measurement.get(console, options, rich_text)
+        # document = AnsiArtDocument(measurement.width, measurement.height, default_bg, default_fg)
+        # console = document.get_console(rich_text)
+        # # then see export_html et. al. for how to get the data out? or just use the rich_text?
+
+
         ansi = stransi.Ansi(text)
 
         # Initial document is zero wide to avoid an extraneous character at (0,0),
