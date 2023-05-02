@@ -696,40 +696,11 @@ class AnsiArtDocument:
             text += "\n"
         return text
 
-    def get_pre_inner_xhtml(self) -> str:
-        """Get an XHTML snippet which should be placed in a <pre> tag."""
-        html = ""
-        for y in range(self.height):
-            for x in range(self.width):
-                html += "<span style='background-color:" + self.bg[y][x] + ";color:" + self.fg[y][x] + "'>" + self.ch[y][x] + "</span>"
-            html += "<br/>"
-        return html
-
     def get_html(self) -> str:
         """Get the HTML representation of the document."""
-        return """<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<style>
-html,
-body,
-pre {
-    margin: 0;
-    padding: 0;
-}
-pre {
-    font-family: monospace;
-    line-height: 1;
-}
-</style>
-</head>
-<body>
-<pre>""" + self.get_pre_inner_xhtml() + """</pre>
-</body>
-</html>
-"""
-
+        console = self.get_console()
+        return console.export_html()
+    
     def get_svg(self) -> str:
         """Get the SVG representation of the document."""
         console = self.get_console()
