@@ -1,6 +1,7 @@
 import os
 import sys
 import subprocess
+from typing import Callable
 
 # There are too many desktop environment names and programs,
 # it would pollute the spellings list (unless I moved this file
@@ -92,27 +93,31 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
     if desktop_env in ["gnome", "unity", "cinnamon"]:
         uri = "'file://%s'" % file_loc
         try:
-            def set_wallpaper_with_portal(file, user_data):
-                """Set the wallpaper, in a way that it should update immediately."""
+            def set_wallpaper_with_portal(file: str, callback: Callable[[], None]) -> None:
+                """Set the wallpaper, in a way that it should update immediately.
+                
+                This code is based off of what Nautilus does to set the wallpaper."""
                 import gi
                 gi.require_version('Xdp', '1.0')
                 gi.require_version('Gtk', '3.0')
-                from gi.repository import Xdp, Gtk
+                gi.require_version('Gdk', '3.0')
+                from gi.repository import Xdp, Gtk, Gdk
 
                 portal = Xdp.Portal.new()
-                toplevel = Gtk.Widget.get_ancestor(user_data, Gtk.Window)
-                parent = Xdp.Parent.new_gtk(Gtk.Window(toplevel))
-                uri = file.get_uri()
+                # toplevel = Gtk.Widget.get_ancestor(user_data, Gtk.Window)
+                # parent = Xdp.Parent.new_gtk(Gtk.Window(toplevel))
+                parent = Xdp.Parent.new_gtk(Gdk.get_default_root_window())
+                uri = "file://%s" % file
 
                 portal.set_wallpaper(parent,
                                     uri,
-                                    Xdp.WALLPAPER_FLAG_BACKGROUND | Xdp.WALLPAPER_FLAG_PREVIEW,
+                                    Xdp.WallpaperFlags.BACKGROUND | Xdp.WallpaperFlags.PREVIEW,
                                     None,
-                                    set_wallpaper_with_portal_cb,
+                                    callback,
                                     None)
                 parent.free()
             try:
-                set_wallpaper_with_portal(file_loc, None)
+                set_wallpaper_with_portal(file_loc, lambda: print("Wallpaper set"))
             except Exception as e:
                 print("First strategy to set wallpaper failed", repr(e))
                 from gi.repository import Gio  # type: ignore
