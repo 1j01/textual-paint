@@ -146,7 +146,6 @@ cat samples/ship.ans
 - The canvas flickers when zooming in with the Magnifier tool.
 - Some languages don't display correctly.
 - Large files can make the program very slow, as can magnifying the canvas. There is a 500 KB limit when opening files to prevent it from freezing.
-- Saved ANSI files are unnecessarily large, because they include escape sequences for every cell, even if the colors match the previous cell.
 - Free-Form Select stamping/finalizing is incorrect when the selection is off-screen to the left or top.
 - Moving the selection with the arrow keys does not cut out the selection from the canvas, it only moves the selection box.
 - Status bar description can be left blank when selecting a menu item <!--I'm guessing Leave can come after close-->

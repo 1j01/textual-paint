@@ -768,20 +768,17 @@ class AnsiArtDocument:
 
     def get_ansi(self) -> str:
         """Get the ANSI representation of the document."""
-        # TODO: try using Rich API to generate ANSI, like how the Canvas renders to the screen
-        # TODO: generate more efficient ANSI, e.g. don't repeat the same color codes
-        def color_to_rgb(color_str: str) -> str:
-            """Convert a hex or rgb() color to semicolon separated RGB format used for ANSI escape codes."""
-            r, g, b = Color.parse(color_str).rgb
-            return f"{r};{g};{b}"
-
+        renderable = self.get_renderable()
+        console = self.get_console(render_contents=False)
+        segments = renderable.render(console=console)
         ansi = ""
-        for y in range(self.height):
-            for x in range(self.width):
-                if x == 0:
-                    ansi += "\033[0m"
-                ansi += "\033[48;2;" + color_to_rgb(self.bg[y][x]) + ";38;2;" + color_to_rgb(self.fg[y][x]) + "m" + self.ch[y][x]
-            ansi += "\033[0m\r\n"
+        for text, style, _ in Segment.filter_control(
+            Segment.simplify(segments)
+        ):
+            if style:
+                ansi += style.render(text)
+            else:
+                ansi += text
         return ansi
 
     def get_plain(self) -> str:
@@ -809,10 +806,6 @@ class AnsiArtDocument:
     
     def get_renderable(self) -> Text:
         """Get a Rich renderable for the document."""
-        # This works, but I'm trying to use Rich's API directly instead of going through ANSI encoding.
-        # That way I can make ANSI encoding use this method, and it's more efficient for SVG export.
-        # return Text.from_ansi(self.get_ansi())
-
         joiner = Text("\n")
         lines: List[Text] = []
         for y in range(self.height):
@@ -823,8 +816,7 @@ class AnsiArtDocument:
         result = joiner.join(lines)
         return result
 
-
-    def get_console(self) -> Console:
+    def get_console(self, render_contents: bool = True) -> Console:
         """Get a Rich Console with the document rendered in it."""
         console = Console(
             width=self.width,
@@ -835,7 +827,8 @@ class AnsiArtDocument:
             record=True,
             legacy_windows=False,
         )
-        console.print(self.get_renderable())
+        if render_contents:
+            console.print(self.get_renderable())
         return console
 
     @staticmethod
