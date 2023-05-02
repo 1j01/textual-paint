@@ -695,7 +695,7 @@ class AnsiArtDocument:
             ansi += "\033[0m\r\n"
         return ansi
 
-    def get_text(self) -> str:
+    def get_plain(self) -> str:
         """Get the plain text representation of the document."""
         text = ""
         for y in range(self.height):
@@ -746,8 +746,8 @@ class AnsiArtDocument:
         return console
 
     @staticmethod
-    def from_ascii(text: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
-        """Creates a document from the given ASCII plain text."""
+    def from_plain(text: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
+        """Creates a document from the given plain text."""
         lines = text.splitlines()
         width = 0
         for line in lines:
@@ -842,7 +842,7 @@ class AnsiArtDocument:
         if ansi_escape_pattern.search(text):
             return AnsiArtDocument.from_ansi(text, default_bg, default_fg)
         else:
-            return AnsiArtDocument.from_ascii(text, default_bg, default_fg)
+            return AnsiArtDocument.from_plain(text, default_bg, default_fg)
 
 class Action:
     """An action that can be undone efficiently using a region update.
@@ -1822,7 +1822,7 @@ class PaintApp(App[None]):
                 elif file_type == "HTML" or file_type == "HTM":
                     content = self.image.get_html()
                 elif file_type == "TXT":
-                    content = self.image.get_text()
+                    content = self.image.get_plain()
                 else:
                     content = self.image.get_ansi()
                 with open(self.file_path, "w") as f:
