@@ -91,14 +91,14 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
     desktop_env = get_desktop_environment()
     if desktop_env in ["gnome", "unity", "cinnamon"]:
         uri = "'file://%s'" % file_loc
+        SCHEMA = "org.cinnamon.desktop.background" if desktop_env=="cinnamon" else "org.gnome.desktop.background"
+        KEY = "picture-uri"
         try:
             from gi.repository import Gio  # type: ignore
-            SCHEMA = "org.gnome.desktop.background"
-            KEY = "picture-uri"
             gsettings = Gio.Settings.new(SCHEMA)
             gsettings.set_string(KEY, uri)
         except Exception:
-            args = ["gsettings", "set", "org.gnome.desktop.background", "picture-uri", uri]
+            args = ["gsettings", "set", SCHEMA, KEY, uri]
             subprocess.Popen(args)
     elif desktop_env=="mate":
         try: # MATE >= 1.6
