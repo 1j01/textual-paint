@@ -144,7 +144,7 @@ cat samples/ship.ans
 - Moving the selection with the arrow keys does not cut out the selection from the canvas, it only moves the selection box.
 - Status bar description can be left blank when selecting a menu item <!--I'm guessing Leave can come after close-->
 - Menu items like Copy/Cut/Paste are not grayed out when inapplicable. Only unimplemented items are grayed out.
-- Set As Wallpaper is unlikely to work on your system, and certainly doesn't work on mine. The exported SVG uses embedded HTML, which isn't supported by Ubuntu's desktop, and I was also unable to set my wallpaper programmatically to any image. There is however untested support for many other desktop environments.
+- Set As Wallpaper may not work on your system. For me, on Ubuntu, the wallpaper setting is updated but the picture is not, unless I manually pick it. There is however untested support for many platforms, and you may have better luck than me.
 
 The program has only been tested on Linux. Issues on other platforms are as-yet _unknown_ :)
 
