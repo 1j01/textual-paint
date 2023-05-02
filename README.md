@@ -88,8 +88,10 @@ options:
                         Language to use
   --ascii-only-icons    Use only ASCII characters for tool icons
   --inspect-layout      Inspect the layout with middle click, for development
-  --clear-screen        Clear the screen before starting; useful for development, to avoid seeing fixed errors
-  --restart-on-changes  Restart the app when the source code is changed, for development
+  --clear-screen        Clear the screen before starting; useful for
+                        development, to avoid seeing fixed errors
+  --restart-on-changes  Restart the app when the source code is changed, for
+                        development
   --recode-samples      Open and save each file in samples/, for testing
 ```
 

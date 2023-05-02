@@ -159,10 +159,20 @@ parser.add_argument('filename', nargs='?', default=None, help='File to open')
 readme_help_start = re.compile(r"```\n.*--help\n")
 readme_help_end = re.compile(r"```")
 with open("README.md", "r+") as f:
+    # This is a hacky way to have to fix the width without creating a separate ArgumentParser,
+    # and without breaking the wrapping if you use --help.
+    # https://stackoverflow.com/questions/44333577/explain-lambda-argparse-helpformatterprog-width
+    # This lambda only works because python uses the same syntax for construction and function calls.
+    width = 80
+    old_formatter_class = parser.formatter_class
+    parser.formatter_class = lambda prog: argparse.HelpFormatter(prog, width=width)
+    help_text = parser.format_help()
+    parser.formatter_class = old_formatter_class
+    
     md = f.read()
     start = readme_help_start.search(md).end()
     end = readme_help_end.search(md, start).start()
-    md = md[:start] + parser.format_help() + md[end:]
+    md = md[:start] + help_text + md[end:]
     f.seek(0)
     f.write(md)
     f.truncate()
