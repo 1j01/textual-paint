@@ -92,12 +92,36 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
     if desktop_env in ["gnome", "unity", "cinnamon"]:
         uri = "'file://%s'" % file_loc
         try:
-            from gi.repository import Gio  # type: ignore
-            SCHEMA = "org.gnome.desktop.background"
-            KEY = "picture-uri"
-            gsettings = Gio.Settings.new(SCHEMA)
-            gsettings.set_string(KEY, uri)
-        except Exception:
+            def set_wallpaper_with_portal(file, user_data):
+                """Set the wallpaper, in a way that it should update immediately."""
+                import gi
+                gi.require_version('Xdp', '1.0')
+                gi.require_version('Gtk', '3.0')
+                from gi.repository import Xdp, Gtk
+
+                portal = Xdp.Portal.new()
+                toplevel = Gtk.Widget.get_ancestor(user_data, Gtk.Window)
+                parent = Xdp.Parent.new_gtk(Gtk.Window(toplevel))
+                uri = file.get_uri()
+
+                portal.set_wallpaper(parent,
+                                    uri,
+                                    Xdp.WALLPAPER_FLAG_BACKGROUND | Xdp.WALLPAPER_FLAG_PREVIEW,
+                                    None,
+                                    set_wallpaper_with_portal_cb,
+                                    None)
+                parent.free()
+            try:
+                set_wallpaper_with_portal(file_loc, None)
+            except Exception as e:
+                print("First strategy to set wallpaper failed", repr(e))
+                from gi.repository import Gio  # type: ignore
+                SCHEMA = "org.gnome.desktop.background"
+                KEY = "picture-uri"
+                gsettings = Gio.Settings.new(SCHEMA)
+                gsettings.set_string(KEY, uri)
+        except Exception as e:
+            print("Second strategy to set wallpaper failed", repr(e))
             args = ["gsettings", "set", "org.gnome.desktop.background", "picture-uri", uri]
             subprocess.Popen(args)
     elif desktop_env=="mate":
