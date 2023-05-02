@@ -738,30 +738,6 @@ pre {
 
     def get_svg(self) -> str:
         """Get the SVG representation of the document."""
-#         css = """
-# pre {
-#     overflow: hidden;
-#     margin: 0;
-#     padding: 0;
-# }
-# svg {
-#     font: 10px monospace;
-#     line-height: 1;
-# }
-# span,
-# font {
-#     display: inline-block;
-# }
-# """
-#         svg = f"""<?xml version="1.0" encoding="UTF-8"?>
-# <svg xmlns="http://www.w3.org/2000/svg" width="{self.width}ch" height="{self.height}lh">
-# <style>{css}</style>
-# <foreignObject x="0" y="0" width="80ch" height="38lh">
-# <pre xmlns="http://www.w3.org/1999/xhtml">{self.get_pre_inner_xhtml()}</pre>
-# </foreignObject>
-# </svg>
-# """
-#         return svg
         console = self.get_console()
         return console.export_svg(title=_("Painting"), code_format=CUSTOM_CONSOLE_SVG_FORMAT)
     
