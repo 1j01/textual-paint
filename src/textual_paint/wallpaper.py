@@ -104,20 +104,28 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
                 from gi.repository import Xdp, Gtk, Gdk
 
                 portal = Xdp.Portal.new()
-                # toplevel = Gtk.Widget.get_ancestor(user_data, Gtk.Window)
-                # parent = Xdp.Parent.new_gtk(Gtk.Window(toplevel))
-                parent = Xdp.Parent.new_gtk(Gdk.get_default_root_window())
+                # toplevel = gtk_widget_get_ancestor (GTK_WIDGET (user_data), GTK_TYPE_WINDOW);
+                # parent = xdp_parent_new_gtk (GTK_WINDOW (toplevel));
+                win = Gdk.get_default_root_window()
+                # parent = win # wrong type, it needs this super abstract Parent type with no constructor
+                # parent = Xdp.Parent.new_gtk(win) # new_gtk doesn't exist
+                # parent = Xdp.Parent(win) # "TypeError: boxed cannot be created directly; try using a constructor"
+                # parent = win.get_parent() # None, because it's the root window (and None isn't allowed)
+                # There seems to be no xdp_parent_new_gtk equivalent in Python.
+                raise NotImplementedError("No aparent way to get Xdp.Parent object")
                 uri = "file://%s" % file
 
-                portal.set_wallpaper(parent,
-                                    uri,
-                                    Xdp.WallpaperFlags.BACKGROUND | Xdp.WallpaperFlags.PREVIEW,
-                                    None,
-                                    callback,
-                                    None)
+                portal.set_wallpaper(
+                    parent,
+                    uri,
+                    Xdp.WallpaperFlags.BACKGROUND | Xdp.WallpaperFlags.PREVIEW,
+                    None,
+                    callback,
+                    None,
+                )
                 parent.free()
             try:
-                set_wallpaper_with_portal(file_loc, lambda: print("Wallpaper set"))
+                set_wallpaper_with_portal(file_loc, lambda: print("Wallpaper set, hopefully. Would need to check set_wallpaper_finish result to know for sure."))
             except Exception as e:
                 print("First strategy to set wallpaper failed", repr(e))
                 from gi.repository import Gio  # type: ignore
