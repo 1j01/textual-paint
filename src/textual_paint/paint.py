@@ -159,10 +159,14 @@ parser.add_argument('filename', nargs='?', default=None, help='File to open')
 readme_help_start = re.compile(r"```\n.*--help\n")
 readme_help_end = re.compile(r"```")
 with open("README.md", "r+") as f:
-    # This is a hacky way to have to fix the width without creating a separate ArgumentParser,
-    # and without breaking the wrapping if you use --help.
-    # https://stackoverflow.com/questions/44333577/explain-lambda-argparse-helpformatterprog-width
-    # This lambda only works because python uses the same syntax for construction and function calls.
+    # By default, argparse uses the terminal width for formatting help text,
+    # even when using format_help() to get a string.
+    # The only way to override that is to override the formatter_class.
+    # This is hacky, but it seems like the simplest way to fix the width
+    # without creating a separate ArgumentParser, and without breaking the wrapping for --help.
+    # This lambda works because python uses the same syntax for construction and function calls,
+    # so formatter_class doesn't need to be an actual class.
+    # See: https://stackoverflow.com/questions/44333577/explain-lambda-argparse-helpformatterprog-width
     width = 80
     old_formatter_class = parser.formatter_class
     parser.formatter_class = lambda prog: argparse.HelpFormatter(prog, width=width)
