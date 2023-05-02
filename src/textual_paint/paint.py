@@ -737,9 +737,20 @@ pre {
     
     def get_renderable(self) -> RenderableType:
         """Get a Rich renderable for the document."""
-        # This is kind of roundabout.
-        # TODO: self.get_ansi should use this, not the other way around.
-        return Text.from_ansi(self.get_ansi())
+        # This works, but I'm trying to use Rich's API directly instead of going through ANSI encoding.
+        # That way I can make ANSI encoding use this method, and it's more efficient for SVG export.
+        # return Text.from_ansi(self.get_ansi())
+
+        joiner = Text("\n")
+        lines: List[Text] = []
+        for y in range(self.height):
+            line = Text()
+            for x in range(self.width):
+                line.append(self.ch[y][x], style=Style(bgcolor=self.bg[y][x], color=self.fg[y][x]))
+            lines.append(line)
+        result = joiner.join(lines)
+        return result
+
 
     def get_console(self) -> Console:
         """Get a Rich Console with the document rendered in it."""
