@@ -548,7 +548,7 @@ ansi_escape_pattern = re.compile(r"(\N{ESC}\[[\d;]*[a-zA-Z])")
 # (The Ctrl+Shift+S shortcut doesn't work when actually trying it as a user, but it works to simulate it.)
 CUSTOM_CONSOLE_SVG_FORMAT = """\
 <svg class="rich-terminal" viewBox="0 0 {terminal_width} {terminal_height}" xmlns="http://www.w3.org/2000/svg">
-    <!-- Generated with Rich https://www.textualize.io -->
+    <!-- Generated with Rich https://www.textualize.io and Textual Paint https://github.com/1j01/textual-paint -->
     <style>
 
     @font-face {{
@@ -573,12 +573,6 @@ CUSTOM_CONSOLE_SVG_FORMAT = """\
         font-size: {char_height}px;
         line-height: {line_height}px;
         font-variant-east-asian: full-width;
-    }}
-
-    .{unique_id}-title {{
-        font-size: 18px;
-        font-weight: bold;
-        font-family: arial;
     }}
 
     {styles}
@@ -739,7 +733,7 @@ pre {
     def get_svg(self) -> str:
         """Get the SVG representation of the document."""
         console = self.get_console()
-        return console.export_svg(title=_("Painting"), code_format=CUSTOM_CONSOLE_SVG_FORMAT)
+        return console.export_svg(code_format=CUSTOM_CONSOLE_SVG_FORMAT)
     
     def get_renderable(self) -> RenderableType:
         """Get a Rich renderable for the document."""
