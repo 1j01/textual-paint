@@ -867,13 +867,12 @@ class AnsiArtDocument:
                 raise ValueError("Unknown instruction type")
         document.width = width
         document.height = height
-        # Fill in the rest of the lines
-        # just using the last color, not sure if that's correct...
+        # Pad rows to a consistent width.
         for y in range(document.height):
             for x in range(document.width - len(document.ch[y])):
                 document.ch[y].append(' ')
-                document.bg[y].append(bg_color)
-                document.fg[y].append(fg_color)
+                document.bg[y].append(default_bg)
+                document.fg[y].append(default_fg)
         return document
     
     @staticmethod
