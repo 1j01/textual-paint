@@ -741,7 +741,7 @@ class AnsiArtDocument:
     def get_html(self) -> str:
         """Get the HTML representation of the document."""
         console = self.get_console()
-        return console.export_html(code_format=CUSTOM_CONSOLE_HTML_FORMAT)
+        return console.export_html(inline_styles=True, code_format=CUSTOM_CONSOLE_HTML_FORMAT)
     
     def get_svg(self) -> str:
         """Get the SVG representation of the document."""
