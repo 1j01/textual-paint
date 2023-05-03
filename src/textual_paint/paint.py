@@ -814,8 +814,9 @@ class AnsiArtDocument:
 
         # Workaround for unwanted color rounding
         # RGB.__post_init__ rounds the color components, in decimal, causing 128 to become 127.
+        # That's all the function does, and I do my own rounding, so I can just delete it.
         from ochre.spaces import RGB
-        RGB.__post_init__ = lambda self: None
+        del RGB.__post_init__
 
 
         ansi = stransi.Ansi(text)
