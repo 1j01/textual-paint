@@ -3449,9 +3449,14 @@ if args.filename:
     #     app.image = AnsiArtDocument.from_text(sys.stdin.read())
     #     app.filename = "<stdin>"
     # else:
-    with open(args.filename, 'r') as my_file:
-        app.image = AnsiArtDocument.from_text(my_file.read())
-        app.image_initialized = True
+    try:
+        with open(args.filename, 'r') as my_file:
+            app.image = AnsiArtDocument.from_text(my_file.read())
+            app.image_initialized = True
+            app.file_path = os.path.abspath(args.filename)
+    except FileNotFoundError:
+        # Sometimes you just want to name a new file from the command line.
+        # Hopefully this won't be too confusing since it will be blank.
         app.file_path = os.path.abspath(args.filename)
 if args.recode_samples:
     # Re-encode the sample files to test for changes/inconsistency in encoding.
