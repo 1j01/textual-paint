@@ -142,7 +142,6 @@ cat samples/ship.ans
 - Large files can make the program very slow, as can magnifying the canvas.
 - The program may crash or freeze up randomly, and there's no auto-save feature.
 - Saved ANSI files are unnecessarily large, because they include escape sequences for every cell, even if the colors match the previous cell.
-- Loading and saving a file without making any edits can change color values slightly, e.g. 128 → 127. The Color Eraser feature compensates for this with a slight tolerance, but the fill tool does not.
 - Free-Form Select stamping/finalizing is incorrect when the selection is off-screen to the left or top.
 - Moving the selection with the arrow keys does not cut out the selection from the canvas, it only moves the selection box.
 - Status bar description can be left blank when selecting a menu item <!--I'm guessing Leave can come after close-->

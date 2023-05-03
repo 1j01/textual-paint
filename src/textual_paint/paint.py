@@ -812,6 +812,12 @@ class AnsiArtDocument:
         # # then see export_html et. al. for how to get the data out? or just use the rich_text?
 
 
+        # Workaround for unwanted color rounding
+        # RGB.__post_init__ rounds the color components, in decimal, causing 128 to become 127.
+        from ochre.spaces import RGB
+        RGB.__post_init__ = lambda self: None
+
+
         ansi = stransi.Ansi(text)
 
         # Initial document is zero wide to avoid an extraneous character at (0,0),
