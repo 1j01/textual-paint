@@ -3462,13 +3462,15 @@ if args.recode_samples:
     # Re-encode the sample files to test for changes/inconsistency in encoding.
     # For each file, open and save it. All files are directly under samples/.
     async def recode_samples() -> None:
-        for filename in os.listdir("samples"):
+        samples_folder = os.path.join(os.path.dirname(__file__), "../../samples")
+        for filename in os.listdir(samples_folder):
             if not filename.endswith(".ans"):
                 continue
-            with open(os.path.join("samples", filename), "r") as my_file:
+            file_path = os.path.join(samples_folder, filename)
+            with open(file_path, "r") as my_file:
                 app.image = AnsiArtDocument.from_text(my_file.read())
                 app.image_initialized = True
-                app.file_path = os.path.abspath(os.path.join("samples", filename))
+                app.file_path = file_path
             await app.save()
             print(f"Saved {filename}")
         app.exit()
