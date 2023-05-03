@@ -4,10 +4,14 @@
 # Prevent line ending normalization for ANSI files,
 # since it's important to distinguish carriage return and line feed characters,
 # and either may be used without the other.
-*.ans binary
-*.ANS binary
-*.nfo binary
-*.NFO binary
+# To visualize ANSI control codes when diffing, first check that `cat --show-all` is supported,
+# then run `git config --local "diff.cat-show-all.textconv" "cat --show-all"`
+# which will add a [diff "cat-show-all"] section to the local .git/config file.
+# This might not affect your Git GUI of choice, but it will affect Git's command line.
+*.ans binary diff=cat-show-all
+*.ANS binary diff=cat-show-all
+*.nfo binary diff=cat-show-all
+*.NFO binary diff=cat-show-all
 
 # Custom for Visual Studio
 *.cs     diff=csharp
