@@ -3473,7 +3473,21 @@ if args.recode_samples:
     def callback() -> None:
         # RuntimeError: asyncio.run() cannot be called from a running event loop
         # asyncio.run(recode_samples())
-        asyncio.create_task(recode_samples())
+        # Ignores exceptions:
+        # asyncio.create_task(recode_samples())
+        # Also ignores exceptions:
+        # asyncio.get_event_loop().create_task(recode_samples())
+        # Just gives TimeoutError and no exception:
+        future = asyncio.run_coroutine_threadsafe(recode_samples(), asyncio.get_event_loop())
+        try:
+            future.result(timeout=1)
+        except TimeoutError:
+            print("Timed out waiting for recode_samples to finish")
+            try:
+                print(future.exception(timeout=1))
+            except TimeoutError:
+                print("Timed out getting exception")
+
     app.call_later(callback)
 
 if args.clear_screen:
