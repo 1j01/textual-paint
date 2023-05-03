@@ -1,6 +1,14 @@
 # Auto detect text files and perform LF normalization
 * text=auto
 
+# Prevent line ending normalization for ANSI files,
+# since it's important to distinguish carriage return and line feed characters,
+# and either may be used without the other.
+*.ans binary
+*.ANS binary
+*.nfo binary
+*.NFO binary
+
 # Custom for Visual Studio
 *.cs     diff=csharp
 *.sln    merge=union
