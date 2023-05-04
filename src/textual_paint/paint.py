@@ -2047,6 +2047,31 @@ class PaintApp(App[None]):
         )
         self.mount(window)
 
+    def action_paste_from(self) -> None:
+        """Paste a file as a selection."""
+        def handle_selected_file_path(file_path: str) -> None:
+            # TODO: DRY error handling with open_from_file_path
+            try:
+                with open(file_path, "r") as f:
+                    self.paste(f.read())
+                window.close()
+            except FileNotFoundError:
+                self.warning_message_box(_("Paint"), Static(_("File not found.") + "\n" + _("Please verify that the correct path and file name are given.")), "ok")
+            except IsADirectoryError:
+                self.warning_message_box(_("Paint"), Static(_("Invalid file.")), "ok")
+            except PermissionError:
+                self.warning_message_box(_("Paint"), Static(_("Access denied.")), "ok")
+            except Exception as e:
+                self.warning_message_box(_("Paint"), Static(_("An unexpected error occurred while reading %1.", file_path) + "\n\n" + repr(e)), "ok")
+
+        self.close_windows("SaveAsDialogWindow, OpenDialogWindow")
+        window = OpenDialogWindow(
+            title=_("Paste From"),
+            handle_selected_file_path=handle_selected_file_path,
+            selected_file_path=self.file_path or "",
+        )
+        self.mount(window)
+
     def action_new(self, *, force: bool = False) -> None:
         """Create a new image."""
         if self.is_document_modified() and not force:
@@ -2206,7 +2231,7 @@ class PaintApp(App[None]):
         self.image.selection.pasted = True  # create undo state when finalizing selection
         self.canvas.refresh_scaled_region(self.image.selection.region)
         self.selected_tool = Tool.select
-    
+
     def action_select_all(self) -> None:
         """Select the entire image, or in a textbox, all the text."""
         if self.image.selection and self.image.selection.textbox_mode:
@@ -2219,18 +2244,22 @@ class PaintApp(App[None]):
             self.image.selection = Selection(Region(0, 0, self.image.width, self.image.height))
             self.canvas.refresh()
             self.selected_tool = Tool.select
+    
     def action_copy_to(self) -> None:
+        """Save the selection to a file."""
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
-    def action_paste_from(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+
     def action_text_toolbar(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+    
     def action_normal_size(self) -> None:
         """Zoom to 1x."""
         self.magnification = 1
+    
     def action_large_size(self) -> None:
         """Zoom to 4x."""
         self.magnification = 4
+    
     def action_custom_zoom(self) -> None:
         """Show dialog to set zoom level."""
         self.close_windows("#zoom_dialog")
@@ -2431,7 +2460,7 @@ class PaintApp(App[None]):
                     MenuItem(_("Select &All\tCtrl+A"), self.action_select_all, 57642, description=_("Selects everything.")),
                     Separator(),
                     MenuItem(_("C&opy To..."), self.action_copy_to, 37663, grayed=True, description=_("Copies the selection to a file.")),
-                    MenuItem(_("Paste &From..."), self.action_paste_from, 37664, grayed=True, description=_("Pastes a file into the selection.")),
+                    MenuItem(_("Paste &From..."), self.action_paste_from, 37664, description=_("Pastes a file into the selection.")),
                 ])),
                 MenuItem(remove_hotkey(_("&View")), submenu=Menu([
                     MenuItem(_("&Tool Box\tCtrl+T"), self.action_toggle_tools_box, 59415, description=_("Shows or hides the tool box.")),
