@@ -481,6 +481,25 @@ get_warning_icon = lambda: Static("""
 [#000000]🮃🮃🮃🮃🮃🮃🮃🮃🮃[/]
 """, classes="warning_icon message_box_icon")
 
+# question_icon_ansi = ""
+# def get_question_icon() -> Static:
+#     global question_icon_ansi
+#     if not question_icon_ansi:
+#         with open("question_icon.ans", "r") as f:
+#             question_icon_ansi = f.read()
+#     return Static(question_icon_ansi, classes="question_icon message_box_icon")
+
+# I added a little stopgap to save as Rich console markup by using file extension "._RICH_CONSOLE_MARKUP".
+# It's very messy markup because it's generated from the ANSI art.
+# TODO: make background transparent
+get_question_icon = lambda: Static("""
+[rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)]_[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)]_[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)]_[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)]_[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)]_[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)]_[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)] [/rgb(0,0,0) on rgb(128,128,128)]
+[rgb(255,255,255) on rgb(128,128,128)]▄[rgb(0,0,0) on rgb(255,255,255)][/rgb(255,255,255) on rgb(128,128,128)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(255,255,255) on rgb(128,128,128)][/rgb(0,0,0) on rgb(255,255,255)]▄[rgb(0,0,0) on rgb(128,128,128)][/rgb(255,255,255) on rgb(128,128,128)] [/rgb(0,0,0) on rgb(128,128,128)]
+[rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,255) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)]𝟔[rgb(0,0,255) on rgb(255,255,255)][/rgb(0,0,255) on rgb(255,255,255)]❩[rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,255) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(255,255,255)]▌[/rgb(0,0,0) on rgb(128,128,128)]
+[rgb(255,255,255) on rgb(128,128,128)]▀[rgb(0,0,0) on rgb(255,255,255)][/rgb(255,255,255) on rgb(128,128,128)]▂[rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,255) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)]•[rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,255) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)]▁[rgb(255,255,255) on rgb(0,0,0)][/rgb(0,0,0) on rgb(255,255,255)]▀[rgb(0,0,0) on rgb(128,128,128)][/rgb(255,255,255) on rgb(0,0,0)]▘[/rgb(0,0,0) on rgb(128,128,128)]
+[rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)]🮂[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)]🮂[rgb(255,255,255) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)]◥[rgb(0,0,0) on rgb(128,128,128)][/rgb(255,255,255) on rgb(128,128,128)]▛[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)]🮂[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)] [/rgb(0,0,0) on rgb(128,128,128)]
+""", classes="question_icon message_box_icon")
+
 class MessageBox(DialogWindow):
     """A simple dialog window that displays a message, a group of buttons, and an optional icon."""
 

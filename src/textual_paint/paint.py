@@ -34,7 +34,7 @@ from textual.binding import Binding
 from textual.color import Color
 
 from menus import MenuBar, Menu, MenuItem, Separator
-from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon
+from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon, get_question_icon
 from file_dialogs import SaveAsDialogWindow, OpenDialogWindow
 from edit_colors import EditColorsDialogWindow
 from localization.i18n import get as _, load_language, remove_hotkey
@@ -2022,11 +2022,14 @@ class PaintApp(App[None]):
         else:
             restart_program()
 
+    # TODO: rename since it supports an icon parameter (it's not just for warning messages)
+    # It's just a wrapper around MessageBox.
     def warning_message_box(self,
         title: str,
         message_widget: Widget|str,
         button_types: str = "ok",
         callback: Callable[[Button], None]|None = None,
+        icon_widget: Widget|None = get_warning_icon(),
     ) -> None:
         """Show a warning message box with the given title, message, and buttons."""
         self.close_windows("#message_box")
@@ -2043,7 +2046,7 @@ class PaintApp(App[None]):
         window = MessageBox(
             id="message_box",
             title=title,
-            icon_widget=get_warning_icon(),
+            icon_widget=icon_widget,
             message_widget=message_widget,
             button_types=button_types,
             handle_button=handle_button,
@@ -2284,16 +2287,30 @@ class PaintApp(App[None]):
             textbox.textbox_edited = True
             self.canvas.refresh_scaled_region(textbox.region)
             return
+        # paste as selection
         pasted_image = AnsiArtDocument.from_text(text)
-        self.stop_action_in_progress()
-        # paste at top left corner of viewport
-        x: int = max(0, min(self.image.width - 1, int(self.editing_area.scroll_x // self.magnification)))
-        y: int = max(0, min(self.image.height - 1, int(self.editing_area.scroll_y // self.magnification)))
-        self.image.selection = Selection(Region(x, y, pasted_image.width, pasted_image.height))
-        self.image.selection.contained_image = pasted_image
-        self.image.selection.pasted = True  # create undo state when finalizing selection
-        self.canvas.refresh_scaled_region(self.image.selection.region)
-        self.selected_tool = Tool.select
+        def do_the_paste():
+            self.stop_action_in_progress()
+            # paste at top left corner of viewport
+            x: int = max(0, min(self.image.width - 1, int(self.editing_area.scroll_x // self.magnification)))
+            y: int = max(0, min(self.image.height - 1, int(self.editing_area.scroll_y // self.magnification)))
+            self.image.selection = Selection(Region(x, y, pasted_image.width, pasted_image.height))
+            self.image.selection.contained_image = pasted_image
+            self.image.selection.pasted = True  # create undo state when finalizing selection
+            self.canvas.refresh_scaled_region(self.image.selection.region)
+            self.selected_tool = Tool.select
+        if pasted_image.width > self.image.width or pasted_image.height > self.image.height:
+            # "bitmap" is inaccurate for ANSI art, but it's what MS Paint says, so we have translation coverage.
+            message = _("The image in the clipboard is larger than the bitmap.") + "\n" + _("Would you like the bitmap enlarged?")
+            def handle_button(button: Button) -> None:
+                if button.has_class("yes"):
+                    self.resize_document(max(pasted_image.width, self.image.width), max(pasted_image.height, self.image.height))
+                    do_the_paste()
+                elif button.has_class("no"):
+                    do_the_paste()
+            self.warning_message_box(_("Paint"), Static(message, markup=False), "yes/no/cancel", handle_button, icon_widget=get_question_icon())
+        else:
+            do_the_paste()
 
     def action_select_all(self) -> None:
         """Select the entire image, or in a textbox, all the text."""
@@ -2373,6 +2390,22 @@ class PaintApp(App[None]):
     def action_invert_colors(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     
+    def resize_document(self, width: int, height: int) -> None:
+        """Resize the document, creating an undo state, and refresh the canvas."""
+        self.cancel_preview()
+
+        # TODO: DRY undo state creation (at least the undos/redos part)
+        action = Action(_("Attributes"), Region(0, 0, self.image.width, self.image.height))
+        action.is_resize = True
+        action.update(self.image)
+        if len(self.redos) > 0:
+            self.redos = []
+        self.undos.append(action)
+
+        self.image.resize(width, height, default_bg=self.selected_bg_color, default_fg=self.selected_fg_color)
+        
+        self.canvas.refresh(layout=True)
+
     def action_attributes(self) -> None:
         """Show dialog to set the image attributes."""
         self.close_windows("#attributes_dialog")
@@ -2384,18 +2417,7 @@ class PaintApp(App[None]):
                     if width < 1 or height < 1:
                         raise ValueError
 
-                    self.cancel_preview()
-
-                    # TODO: DRY undo state creation (at least the undos/redos part)
-                    action = Action(_("Attributes"), Region(0, 0, self.image.width, self.image.height))
-                    action.is_resize = True
-                    action.update(self.image)
-                    if len(self.redos) > 0:
-                        self.redos = []
-                    self.undos.append(action)
-
-                    self.image.resize(width, height, default_bg=self.selected_bg_color, default_fg=self.selected_fg_color)
-                    self.canvas.refresh(layout=True)
+                    self.resize_document(width, height)
                     window.close()
 
                 except ValueError:
