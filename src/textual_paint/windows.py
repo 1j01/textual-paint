@@ -140,7 +140,10 @@ class Window(Container):
 
     def on_descendant_focus(self, event: events.DescendantFocus) -> None:
         """Called when a descendant is focused."""
-        # Reorder this window to the top.
+        self.bring_to_front()
+
+    def bring_to_front(self) -> None:
+        """Reorder the window to be last so it renders on top."""
         assert isinstance(self.parent, Widget)
         if self.parent.children[-1] is not self:
             self.parent.move_child(self, after=self.parent.children[-1])
@@ -221,6 +224,9 @@ class Window(Container):
 
     def on_mouse_down(self, event: events.MouseDown) -> None:
         """Called when the user presses the mouse button."""
+
+        self.bring_to_front()
+
         # detect if the mouse is over the title bar,
         # and not window content or title bar buttons
         if not self.parent:
