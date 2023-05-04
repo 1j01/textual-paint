@@ -137,7 +137,7 @@ cat samples/ship.ans
 - Pressing both mouse buttons stops the current tool, but doesn't undo the current action.
 - Due to limitations of the terminal, shortcuts using Shift or Alt might not work.
 - Menus are not keyboard navigable.
-- Clicking the Zoom submenu doesn't always work. You just have to click it a few times before it opens. <!--(It may be technically open but positioned off screen, or lacking width/height, or infinitely sized. I don't know. It seems to explode in size before disappearing.)-->
+- Clicking the Zoom submenu doesn't always work. You just have to click it a few times before it opens. <!--It tries to position itself based on its size, but its size isn't known until it's opened — at least, not reliably.-->
 - Some languages don't display correctly.
 - Large files can make the program very slow, as can magnifying the canvas.
 - The program may crash or freeze up randomly, and there's no auto-save feature.

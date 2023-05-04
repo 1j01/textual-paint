@@ -117,8 +117,11 @@ class Menu(Container):
         self.add_class("menu_popup")
 
         if isinstance(parent_menu, MenuBar):
-            self.styles.offset = (parent_menu_item.region.x, parent_menu_item.region.y + parent_menu_item.region.height)
+            y = parent_menu_item.region.y + parent_menu_item.region.height
+            self.styles.offset = (parent_menu_item.region.x, y)
+            self.styles.max_height = self.screen.size.height - y
         else:
+            self.styles.max_height = self.screen.size.height
             # JS code for reference
             # https://github.com/1j01/os-gui/blob/bb4df0f0c26969c089858118130975cd137cdac8/MenuBar.js#L618-L644
             # submenu_popup_el corresponds to self
@@ -150,9 +153,14 @@ class Menu(Container):
             # }
 
             rect = parent_menu_item.region
+            y = rect.y
+            if y + self.region.height > self.screen.size.height:
+                y = self.screen.size.height - self.region.height
+                if y < 0:
+                    y = 0
             self.styles.offset = (
                 rect.x - self.region.width if get_direction() == "rtl" else rect.x + rect.width,
-                rect.y
+                y
             )
             if get_direction() == "rtl":
                 if self.region.x < 0:
