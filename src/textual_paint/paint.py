@@ -1914,6 +1914,50 @@ class PaintApp(App[None]):
         await self.mount(window)
         await saved_future
 
+    def action_copy_to(self) -> None:
+        """Save the selection to a file."""
+        # DON'T stop_action_in_progress() here, because we want to keep the selection.
+        self.close_windows("SaveAsDialogWindow, OpenDialogWindow")
+
+        # TODO: pick file type based on file extension
+        text = self.get_selected_content()
+        if text is None:
+            # TODO: disable the menu item instead
+            self.warning_message_box(_("Copy To"), _("No selection."), "ok")
+            return
+
+        def handle_selected_file_path(file_path: str) -> None:
+
+            def on_save_confirmed():
+                async def async_on_save_confirmed():
+                    try:
+                        with open(file_path, "w") as f:
+                            f.write(text)
+                    except PermissionError:
+                        self.warning_message_box(_("Copy To"), _("Access denied."), "ok")
+                    except FileNotFoundError: 
+                        self.warning_message_box(_("Copy To"), _("%1 contains an invalid path.", file_path), "ok")
+                    except OSError as e:
+                        self.warning_message_box(_("Copy To"), _("Failed to save document.") + "\n\n" + repr(e), "ok")
+                    except Exception as e:
+                        self.warning_message_box(_("Copy To"), _("An unexpected error occurred while writing %1.", file_path) + "\n\n" + repr(e), "ok")
+                    window.close()
+                # https://textual.textualize.io/blog/2023/02/11/the-heisenbug-lurking-in-your-async-code/
+                task = asyncio.create_task(async_on_save_confirmed())
+                self.background_tasks.add(task)
+                task.add_done_callback(self.background_tasks.discard)
+            if os.path.exists(file_path):
+                self.confirm_overwrite(file_path, on_save_confirmed)
+            else:
+                on_save_confirmed()
+        
+        window = SaveAsDialogWindow(
+            title=_("Copy To"),
+            handle_selected_file_path=handle_selected_file_path,
+            selected_file_path=self.file_path or _("Untitled") # TODO: only the directory
+        )
+        self.mount(window)
+
     def confirm_overwrite(self, file_path: str, callback: Callable[[], None]) -> None:
         """Asks the user if they want to overwrite a file."""
         message = _("%1 already exists.\nDo you want to replace it?", file_path)
@@ -2168,15 +2212,18 @@ class PaintApp(App[None]):
         if self.action_copy():
             self.action_clear_selection()
 
-    def action_copy(self) -> bool:
-        """Copy the selection to the clipboard."""
+    def get_selected_content(self) -> str | None:
+        """Returns the content of the selection, or underlying the selection if it hasn't been cut out yet.
+        
+        For a textbox, returns the selected text within the textbox. May include ANSI escape sequences, either way.
+        """
         sel = self.image.selection
         if sel is None:
-            return False
+            return None
         had_contained_image = sel.contained_image is not None
         try:
             if sel.contained_image is None:
-                # Copy underlying image.
+                # Temporarily copy underlying image.
                 # Don't want to make an undo state, unlike when cutting out a selection when you drag it.
                 sel.copy_from_document(self.image)
                 assert sel.contained_image is not None
@@ -2184,14 +2231,22 @@ class PaintApp(App[None]):
                 text = selected_text(sel)
             else:
                 text = sel.contained_image.get_ansi()
+        finally:
+            if not had_contained_image:
+                sel.contained_image = None
+        return text
+
+    def action_copy(self) -> bool:
+        """Copy the selection to the clipboard."""
+        try:
+            text = self.get_selected_content()
+            if text is None:
+                return False
             import pyperclip
             pyperclip.copy(text)
         except Exception as e:
             self.warning_message_box(_("Paint"), _("Failed to copy to the clipboard.") + "\n\n" + repr(e), "ok")
             return False
-        finally:
-            if not had_contained_image:
-                sel.contained_image = None
         return True
 
     def action_paste(self) -> None:
@@ -2245,10 +2300,6 @@ class PaintApp(App[None]):
             self.canvas.refresh()
             self.selected_tool = Tool.select
     
-    def action_copy_to(self) -> None:
-        """Save the selection to a file."""
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
-
     def action_text_toolbar(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     
@@ -2459,7 +2510,7 @@ class PaintApp(App[None]):
                     MenuItem(_("C&lear Selection\tDel"), self.action_clear_selection, 57632, description=_("Deletes the selection.")),
                     MenuItem(_("Select &All\tCtrl+A"), self.action_select_all, 57642, description=_("Selects everything.")),
                     Separator(),
-                    MenuItem(_("C&opy To..."), self.action_copy_to, 37663, grayed=True, description=_("Copies the selection to a file.")),
+                    MenuItem(_("C&opy To..."), self.action_copy_to, 37663, description=_("Copies the selection to a file.")),
                     MenuItem(_("Paste &From..."), self.action_paste_from, 37664, description=_("Pastes a file into the selection.")),
                 ])),
                 MenuItem(remove_hotkey(_("&View")), submenu=Menu([
