@@ -130,7 +130,7 @@ class Menu(Container):
             # self.refresh(layout=True)
             # self.styles.visibility = "hidden"
             # self.hidden = True
-            self.app.refresh(layout=True)
+            self.app.refresh(layout=True, repaint=False)
             # self.styles.visibility = "visible"
             # self.hidden = False
             # I also tried call_after_refresh for the below.
