@@ -3379,6 +3379,7 @@ if args.recode_samples:
     # Re-encode the sample files to test for changes/inconsistency in encoding.
     # For each file, open and save it. All files are directly under samples/.
     async def recode_samples() -> None:
+        """Re-encodes all sample files, by opening and saving them, in serial."""
         samples_folder = os.path.join(os.path.dirname(__file__), "../../samples")
         for filename in os.listdir(samples_folder):
             if not filename.endswith(".ans"):
@@ -3391,25 +3392,19 @@ if args.recode_samples:
             await app.save()
             print(f"Saved {filename}")
     # have to wait for the app to be initialized
-    def callback() -> None:
+    def once_running() -> None:
         task = asyncio.create_task(recode_samples())
         app.background_tasks.add(task)
         def done_callback(future: asyncio.Future[None]) -> None:
-            # print("Done callback")
             exception = future.exception()
-            # print("Done callback: exception:", repr(exception))
             app.background_tasks.discard(task)
-            # app.exit(1 if exception else 0, exception) # nope
-            # app.exit(None, exception) # nope
-            # if exception:
-            #     raise exception # nope
             if exception:
                 def raise_exception() -> None:
                     raise exception
                 app.call_later(raise_exception)
             app.exit()
         task.add_done_callback(done_callback)
-    app.call_later(callback)
+    app.call_later(once_running)
 
 if args.clear_screen:
     os.system("cls||clear")
