@@ -122,45 +122,11 @@ class Menu(Container):
             self.styles.max_height = self.screen.size.height - y
         else:
             self.styles.max_height = self.screen.size.height
-            # JS code for reference
-            # https://github.com/1j01/os-gui/blob/bb4df0f0c26969c089858118130975cd137cdac8/MenuBar.js#L618-L644
-            # submenu_popup_el corresponds to self
-            # submenu_popup_rect corresponds to self.region
-            # rect corresponds to parent_menu_item.region
-            # scroll offset doesn't apply here
-
-            # const rect = item_el.getBoundingClientRect();
-            # let submenu_popup_rect = submenu_popup_el.getBoundingClientRect();
-            # submenu_popup_el.style.left = `${(get_direction() === "rtl" ? rect.left - submenu_popup_rect.width : rect.right) + window.scrollX}px`;
-            # submenu_popup_el.style.top = `${rect.top + window.scrollY}px`;
-            # submenu_popup_rect = submenu_popup_el.getBoundingClientRect();
-            # if (get_direction() === "rtl") {
-            #     if (submenu_popup_rect.left < 0) {
-            #         submenu_popup_el.style.left = `${rect.right}px`;
-            #         submenu_popup_rect = submenu_popup_el.getBoundingClientRect();
-            #         if (submenu_popup_rect.right > innerWidth) {
-            #             submenu_popup_el.style.left = `${innerWidth - submenu_popup_rect.width}px`;
-            #         }
-            #     }
-            # } else {
-            #     if (submenu_popup_rect.right > innerWidth) {
-            #         submenu_popup_el.style.left = `${rect.left - submenu_popup_rect.width}px`;
-            #         submenu_popup_rect = submenu_popup_el.getBoundingClientRect();
-            #         if (submenu_popup_rect.left < 0) {
-            #             submenu_popup_el.style.left = "0";
-            #         }
-            #     }
-            # }
 
             rect = parent_menu_item.region
-            y = rect.y
-            if y + self.region.height > self.screen.size.height:
-                y = self.screen.size.height - self.region.height
-                if y < 0:
-                    y = 0
             self.styles.offset = (
                 rect.x - self.region.width if get_direction() == "rtl" else rect.x + rect.width,
-                y
+                max(0, min(rect.y, self.screen.size.height - self.region.height))
             )
             if get_direction() == "rtl":
                 if self.region.x < 0:
