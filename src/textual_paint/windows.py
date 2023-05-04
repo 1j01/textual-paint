@@ -138,6 +138,13 @@ class Window(Container):
         if controls:
             controls[0].focus()
 
+    def on_descendant_focus(self, event: events.DescendantFocus) -> None:
+        """Called when a descendant is focused."""
+        # Reorder this window to the top.
+        assert isinstance(self.parent, Widget)
+        if self.parent.children[-1] is not self:
+            self.parent.move_child(self, after=self.parent.children[-1])
+
     # def compose(self) -> ComposeResult:
     #     """Add our widgets."""
     #     self.title_bar = yield WindowTitleBar(title=self.title)
