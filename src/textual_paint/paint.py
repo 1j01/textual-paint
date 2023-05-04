@@ -737,6 +737,10 @@ class AnsiArtDocument:
             text += "\n"
         return text
 
+    def get_rich_console_markup(self) -> str:
+        """Get the Rich API markup representation of the document."""
+        return self.get_renderable().markup
+    
     def get_html(self) -> str:
         """Get the HTML representation of the document."""
         console = self.get_console()
@@ -1850,13 +1854,17 @@ class PaintApp(App[None]):
         if self.file_path:
             try:
                 file_type = os.path.splitext(self.file_path)[1][1:].upper()
+                print("File extension (normalized to uppercase):", file_type)
                 if file_type == "SVG":
                     content = self.image.get_svg()
                 elif file_type == "HTML" or file_type == "HTM":
                     content = self.image.get_html()
                 elif file_type == "TXT":
                     content = self.image.get_plain()
+                elif file_type == "_RICH_CONSOLE_MARKUP":
+                    content = self.image.get_rich_console_markup()
                 else:
+                    print("Saving as ANSI")
                     content = self.image.get_ansi()
                 with open(self.file_path, "w") as f:
                     f.write(content)
