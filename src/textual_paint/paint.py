@@ -3390,13 +3390,25 @@ if args.recode_samples:
                 app.file_path = file_path
             await app.save()
             print(f"Saved {filename}")
-        app.exit()
-    # asyncio.run(recode_samples())
     # have to wait for the app to be initialized
     def callback() -> None:
-        # RuntimeError: asyncio.run() cannot be called from a running event loop
-        # asyncio.run(recode_samples())
-        asyncio.create_task(recode_samples())
+        task = asyncio.create_task(recode_samples())
+        app.background_tasks.add(task)
+        def done_callback(future: asyncio.Future[None]) -> None:
+            # print("Done callback")
+            exception = future.exception()
+            # print("Done callback: exception:", repr(exception))
+            app.background_tasks.discard(task)
+            # app.exit(1 if exception else 0, exception) # nope
+            # app.exit(None, exception) # nope
+            # if exception:
+            #     raise exception # nope
+            if exception:
+                def raise_exception() -> None:
+                    raise exception
+                app.call_later(raise_exception)
+            app.exit()
+        task.add_done_callback(done_callback)
     app.call_later(callback)
 
 if args.clear_screen:

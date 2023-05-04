@@ -182,8 +182,6 @@ This also makes it run slower.
 Often it's useful to exclude events with `textual console -x EVENT`.
 
 To test file encoding, run `textual run --dev "src/textual_paint/paint.py --recode-samples"`.
-(If the program doesn't exit automatically, use `textual console -x EVENT` to check for errors.
-I'm new to asyncio in Python, and I wasn't able to get it to handle exceptions, at least not without putting a try/except inside the task, and frankly it was so obnoxiously difficult that I just had to set aside the problem for now.)
 
 If there are differences in the ANSI files, you can set up a special diff like this:
 ```bash
