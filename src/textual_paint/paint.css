@@ -202,20 +202,20 @@ DialogWindow .window_content {
     background: $surface;
 }
 
-.file_dialog_window .window_content {
+FileDialogWindow .window_content {
     padding: 2 4;
     width: 80;
     height: 30;
 }
-.file_dialog_window .window_content Input {
+FileDialogWindow .window_content Input {
     width: 100%;
     margin-bottom: 1;
 }
-.file_dialog_window .window_content DirectoryTree {
+FileDialogWindow .window_content DirectoryTree {
     height: 15;
     margin-bottom: 1;
 }
-.file_dialog_window .window_content Button {
+FileDialogWindow .window_content Button {
     width: auto;
     height: auto;
 }

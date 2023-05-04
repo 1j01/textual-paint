@@ -29,16 +29,15 @@ from textual.reactive import var, reactive
 from textual.strip import Strip
 from textual.dom import DOMNode
 from textual.widget import Widget
-from textual.widgets import Button, Static, Input, Tree, Header
-from textual.widgets._directory_tree import DirEntry
+from textual.widgets import Button, Static, Input, Header
 from textual.binding import Binding
 from textual.color import Color
 
 from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon
+from file_dialogs import SaveAsDialogWindow, OpenDialogWindow
 from edit_colors import EditColorsDialogWindow
 from localization.i18n import get as _, load_language, remove_hotkey
-from enhanced_directory_tree import EnhancedDirectoryTree
 from wallpaper import get_config_dir, set_wallpaper
 
 from __init__ import __version__
@@ -1494,11 +1493,6 @@ class PaintApp(App[None]):
     file_path = var(None)
     """The path to the file being edited."""
 
-    directory_tree_selected_path: str|None = None
-    """Last highlighted item in Open/Save As dialogs"""
-    expanding_directory_tree = False
-    """Flag to prevent setting the filename input when initially expanding the directory tree"""
-
     image = var(AnsiArtDocument.from_text("Not Loaded"))
     """The document being edited. Contains the selection, if any."""
     image_initialized = False
@@ -1892,22 +1886,11 @@ class PaintApp(App[None]):
         # which is more important than here, since the dialog isn't (currently) modal.
         # You could make a selection while the dialog is open, for example.
         self.stop_action_in_progress()
-        self.close_windows("#save_as_dialog, #open_dialog")
+        self.close_windows("SaveAsDialogWindow, OpenDialogWindow")
         
         saved_future: asyncio.Future[None] = asyncio.Future()
 
-        def handle_button(button: Button) -> None:
-            if not button.has_class("save"):
-                window.close()
-                return
-            name = self.query_one("#save_as_dialog .filename_input", Input).value
-            if not name:
-                return
-            # TODO: allow entering an absolute or relative path, not just a filename
-            if self.directory_tree_selected_path:
-                file_path = os.path.join(self.directory_tree_selected_path, name)
-            else:
-                file_path = name
+        def handle_selected_file_path(file_path: str) -> None:
             def on_save_confirmed():
                 async def async_on_save_confirmed():
                     self.file_path = file_path
@@ -1923,37 +1906,13 @@ class PaintApp(App[None]):
             else:
                 on_save_confirmed()
 
-        window = DialogWindow(
-            id="save_as_dialog",
-            classes="file_dialog_window",
+        window = SaveAsDialogWindow(
             title=_("Save As"),
-            handle_button=handle_button,
+            handle_selected_file_path=handle_selected_file_path,
+            selected_file_path=self.file_path or _("Untitled")
         )
-        filename: str = os.path.basename(self.file_path) if self.file_path else _("Untitled")
-        window.content.mount(
-            EnhancedDirectoryTree(id="save_as_dialog_directory_tree", path="/"),
-            Input(classes="filename_input", placeholder=_("Filename"), value=filename),
-            Container(
-                Button(_("Save"), classes="save submit", variant="primary"),
-                Button(_("Cancel"), classes="cancel"),
-                classes="buttons",
-            ),
-        )
-        self.mount(window)
-        self.expand_directory_tree(window.content.query_one("#save_as_dialog_directory_tree", EnhancedDirectoryTree))
+        await self.mount(window)
         await saved_future
-
-    def expand_directory_tree(self, tree: EnhancedDirectoryTree) -> None:
-        """Expand the directory tree to the target directory, either the folder of the open file or the current working directory."""
-        self.expanding_directory_tree = True
-        target_dir = (self.file_path or os.getcwd()).rstrip(os.path.sep)
-        tree.expand_to_path(target_dir)
-        # There are currently some timers in expand_to_path.
-        # In particular, it waits before selecting the target node,
-        # and this flag is for avoiding responding to that.
-        def done_expanding():
-            self.expanding_directory_tree = False
-        self.set_timer(0.1, done_expanding)
 
     def confirm_overwrite(self, file_path: str, callback: Callable[[], None]) -> None:
         """Asks the user if they want to overwrite a file."""
@@ -2077,38 +2036,16 @@ class PaintApp(App[None]):
     def action_open(self) -> None:
         """Show dialog to open an image from a file."""
 
-        def handle_button(button: Button) -> None:
-            if not button.has_class("open"):
-                window.close()
-                return
-            filename = window.content.query_one("#open_dialog .filename_input", Input).value
-            if not filename:
-                return
-            # TODO: allow entering an absolute or relative path, not just a filename
-            if self.directory_tree_selected_path:
-                file_path = os.path.join(self.directory_tree_selected_path, filename)
-            else:
-                file_path = filename
+        def handle_selected_file_path(file_path: str) -> None:
             self.open_from_file_path(file_path, window.close)
 
-        self.close_windows("#save_as_dialog, #open_dialog")
-        window = DialogWindow(
-            id="open_dialog",
-            classes="file_dialog_window",
+        self.close_windows("SaveAsDialogWindow, OpenDialogWindow")
+        window = OpenDialogWindow(
             title=_("Open"),
-            handle_button=handle_button,
-        )
-        window.content.mount(
-            EnhancedDirectoryTree(id="open_dialog_directory_tree", path="/"),
-            Input(classes="filename_input", placeholder=_("Filename")),
-            Container(
-                Button(_("Open"), classes="open submit", variant="primary"),
-                Button(_("Cancel"), classes="cancel"),
-                classes="buttons",
-            ),
+            handle_selected_file_path=handle_selected_file_path,
+            selected_file_path=self.file_path or "",
         )
         self.mount(window)
-        self.expand_directory_tree(window.content.query_one("#open_dialog_directory_tree", EnhancedDirectoryTree))
 
     def action_new(self, *, force: bool = False) -> None:
         """Create a new image."""
@@ -3348,25 +3285,6 @@ class PaintApp(App[None]):
             self.selected_fg_color = event.color
         else:
             self.selected_bg_color = event.color
-
-    def on_tree_node_highlighted(self, event: Tree.NodeHighlighted[DirEntry]) -> None:
-        """
-        Called when a file/folder is selected in the DirectoryTree.
-        
-        This message comes from Tree.
-        DirectoryTree gives FileSelected but only for files.
-        """
-        assert event.node.data
-        if event.node.data.is_dir:
-            self.directory_tree_selected_path = event.node.data.path
-        elif event.node.parent:
-            assert event.node.parent.data
-            self.directory_tree_selected_path = event.node.parent.data.path
-            name = os.path.basename(event.node.data.path)
-            if not self.expanding_directory_tree:
-                self.query_one(".file_dialog_window .filename_input", Input).value = name
-        else:
-            self.directory_tree_selected_path = None
 
     def on_menu_status_info(self, event: Menu.StatusInfo) -> None:
         """Called when a menu item is hovered."""
