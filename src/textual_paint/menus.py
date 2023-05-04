@@ -123,6 +123,17 @@ class Menu(Container):
         else:
             self.styles.max_height = self.screen.size.height
 
+            # Needed to recompute self.region
+            # This makes it much more reliable to open and open in the correct spot,
+            # but unfortunately none of these things work to avoid flickering:
+            # self.styles.offset = (0, 0)
+            # self.refresh(layout=True)
+            # self.styles.visibility = "hidden"
+            # self.hidden = True
+            self.app.refresh(layout=True)
+            # self.styles.visibility = "visible"
+            # self.hidden = False
+            # I also tried call_after_refresh for the below.
             rect = parent_menu_item.region
             self.styles.offset = (
                 rect.x - self.region.width if get_direction() == "rtl" else rect.x + rect.width,

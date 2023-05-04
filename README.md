@@ -137,7 +137,8 @@ cat samples/ship.ans
 - Pressing both mouse buttons stops the current tool, but doesn't undo the current action.
 - Due to limitations of the terminal, shortcuts using Shift or Alt might not work.
 - Menus are not keyboard navigable.
-- Clicking the Zoom submenu doesn't always work. You just have to click it a few times before it opens. <!--It tries to position itself based on its size, but its size isn't known until it's opened — at least, not reliably.-->
+- The Zoom submenu flickers as it opens, and may not always open in the right place.
+- The canvas flickers when zooming in with the Magnifier tool.
 - Some languages don't display correctly.
 - Large files can make the program very slow, as can magnifying the canvas.
 - The program may crash or freeze up randomly, and there's no auto-save feature.
