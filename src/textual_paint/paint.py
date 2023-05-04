@@ -3392,18 +3392,9 @@ if args.recode_samples:
             await app.save()
             print(f"Saved {filename}")
     # have to wait for the app to be initialized
-    def once_running() -> None:
-        task = asyncio.create_task(recode_samples())
-        app.background_tasks.add(task)
-        def done_callback(future: asyncio.Future[None]) -> None:
-            exception = future.exception()
-            app.background_tasks.discard(task)
-            if exception:
-                def raise_exception() -> None:
-                    raise exception
-                app.call_later(raise_exception)
-            app.exit()
-        task.add_done_callback(done_callback)
+    async def once_running() -> None:
+        await recode_samples()
+        app.exit()
     app.call_later(once_running)
 
 if args.clear_screen:
