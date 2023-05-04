@@ -20,6 +20,7 @@
 	],
 	"words": [
 		"appscript",
+		"asyncio",
 		"bezier",
 		"Bresenham",
 		"Bresenham's",
@@ -56,6 +57,7 @@
 		"smam",
 		"stransi",
 		"STRINGTABLE",
+		"textconv",
 		"tlaplus",
 		"truecolor",
 		"ufeff",

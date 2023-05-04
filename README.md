@@ -179,6 +179,19 @@ Note that it runs slower in VS Code's debugger.
 To see logs, run [`textual console`](https://textual.textualize.io/guide/devtools/#console) and then run the program via `textual run --dev`.
 This also makes it run slower.
 
+Often it's useful to exclude events with `textual console -x EVENT`.
+
+To test file encoding, run `textual run --dev "src/textual_paint/paint.py --recode-samples"`.
+(If the program doesn't exit automatically, use `textual console -x EVENT` to check for errors.
+I'm new to asyncio in Python, and I wasn't able to get it to handle exceptions, at least not without putting a try/except inside the task, and frankly it was so obnoxiously difficult that I just had to set aside the problem for now.)
+
+If there are differences in the ANSI files, you can set up a special diff like this:
+```bash
+git config --local "diff.cat-show-all.textconv" "cat --show-all"
+```
+but you should check that `cat --show-all samples/2x2.ans` works on your system first.
+Also, note that it might not work with your Git GUI of choice; you may need to use the command line.
+
 ### Linting
   
 ```bash
