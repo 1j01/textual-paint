@@ -2170,7 +2170,7 @@ class PaintApp(App[None]):
         return True
 
     def action_paste(self) -> None:
-        """Paste the clipboard as a selection."""
+        """Paste the clipboard (ANSI art allowed), either as a selection, or into a textbox."""
         try:
             import pyperclip
             text: str = pyperclip.paste()
@@ -2179,6 +2179,10 @@ class PaintApp(App[None]):
             return
         if not text:
             return
+        self.paste(text)
+
+    def paste(self, text: str) -> None:
+        """Paste the given text (ANSI art allowed), either as a selection, or into a textbox."""
         if self.image.selection and self.image.selection.textbox_mode:
             # paste into textbox
             pasted_image = AnsiArtDocument.from_text(text, default_bg=self.selected_bg_color, default_fg=self.selected_fg_color)
