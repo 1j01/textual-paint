@@ -156,12 +156,14 @@ class Window(Container):
             if self.within_content(self.last_focused_descendant):
                 self.last_focused_descendant.focus(scroll_visible=scroll_visible)
                 return self
-        # Otherwise the submit button or first control
+        # Otherwise the submit button or first focusable control
         # TODO: does this actually prioritize the submit button, or does it need a separate query?
         controls = self.content.query(".submit, Input, Button")
         if controls:
-            controls[0].focus(scroll_visible=scroll_visible)
-            return self
+            for control in controls:
+                if control.focusable:
+                    control.focus(scroll_visible=scroll_visible)
+                    return self
         # Fall back to focusing the window itself
         # Don't use scroll_visible parameter, because you probably don't want to scroll the screen to the window.
         super().focus()
