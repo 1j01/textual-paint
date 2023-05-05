@@ -2380,8 +2380,11 @@ class PaintApp(App[None]):
                 #     Input(id="zoom_input", value=str(self.magnification)),
                 # # ),
                 RadioSet(
-                    RadioButton(_("100%"), id="value_1"), RadioButton(_("400%"), id="value_4"), RadioButton(_("800%"), id="value_8"),
-                    RadioButton(_("200%"), id="value_2"), RadioButton(_("600%"), id="value_6"),
+                    RadioButton(_("100%"), id="value_1"),
+                    RadioButton(_("200%"), id="value_2"),
+                    RadioButton(_("400%"), id="value_4"),
+                    RadioButton(_("600%"), id="value_6"),
+                    RadioButton(_("800%"), id="value_8"),
                 )
             ),
             Container(
