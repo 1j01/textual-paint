@@ -527,9 +527,6 @@ question_icon_console_markup = question_icon_console_markup.replace(" on rgb(128
 #     return QuestionIcon()
 
 
-# tweak colors for light theme, since the white has bad contrast
-# and I haven't gotten it to work detecting changes to the theme
-question_icon_console_markup = question_icon_console_markup.replace("rgb(255,255,255)", "rgb(255,255,80)")
 # also the shadow is normally gray, I just drew it black because I was using gray as the background
 question_icon_console_markup = question_icon_console_markup.replace("rgb(0,0,0)", "rgb(128,128,128)")
 # Underline "❩" to make it look like the question mark has a serif. Looks bad because it's a wide character.

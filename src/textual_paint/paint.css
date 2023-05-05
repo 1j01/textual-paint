@@ -142,7 +142,7 @@ Menu.menu_popup Button {
 Window {
     dock: top;
     layer: window;
-    background: $surface;
+    background: $surface-darken-1; /* match to DialogWindow .window_content */
     border: outer $panel-darken-2;
     layout: vertical;
     align: center middle;
@@ -196,7 +196,7 @@ WindowTitleBar Button.-active {
     background: $background;
 }
 DialogWindow .window_content {
-    background: $surface;
+    background: $surface-darken-1; /* match to Window */
 }
 
 FileDialogWindow .window_content {
