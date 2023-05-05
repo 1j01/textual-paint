@@ -2344,6 +2344,13 @@ class PaintApp(App[None]):
         self.magnification = 4
     
     def action_custom_zoom(self) -> None:
+        """Show dialog to set zoom level. This is a stupid sync wrapper around show_custom_zoom."""
+        # TODO: make menus able to call async functions, or maybe make them use run_action
+        task = asyncio.create_task(self.show_custom_zoom())
+        self.background_tasks.add(task)
+        task.add_done_callback(self.background_tasks.discard)
+    
+    async def show_custom_zoom(self) -> None:
         """Show dialog to set zoom level."""
         self.close_windows("#zoom_dialog")
         def handle_button(button: Button) -> None:
@@ -2411,9 +2418,8 @@ class PaintApp(App[None]):
                 relative_position = radio_button_absolute_target_position - radio_button_absolute_position
                 print(radio_button, relative_position)
                 radio_button.styles.offset = relative_position
-        self.mount(window)
-        # TODO: avoid flash of incorrect ordering by doing this before rendering but after layout
-        self.call_after_refresh(reorder_radio_buttons)
+        await self.mount(window)
+        reorder_radio_buttons()
     def action_show_grid(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_show_thumbnail(self) -> None:
