@@ -2400,7 +2400,7 @@ class PaintApp(App[None]):
 
             (If I reorder them in the DOM, the navigation order won't be right.)
 
-            This needs to be run after the buttons are mounted so that they're positions are known.
+            This needs to be run after the buttons are mounted so that their positions are known.
             """
             radio_buttons = window.content.query(RadioButton)
             radio_button_absolute_positions = [radio_button.region.offset for radio_button in radio_buttons]
