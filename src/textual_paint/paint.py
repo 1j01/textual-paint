@@ -29,7 +29,7 @@ from textual.reactive import var, reactive
 from textual.strip import Strip
 from textual.dom import DOMNode
 from textual.widget import Widget
-from textual.widgets import Button, Static, Input, Header
+from textual.widgets import Button, Static, Input, Header, RadioSet, RadioButton
 from textual.binding import Binding
 from textual.color import Color
 
@@ -2348,16 +2348,19 @@ class PaintApp(App[None]):
         self.close_windows("#zoom_dialog")
         def handle_button(button: Button) -> None:
             if button.has_class("ok"):
-                min_zoom = 1
-                max_zoom = 16
-                try:
-                    n = int(window.content.query_one("#zoom_input", Input).value)
-                    if n < min_zoom or n > max_zoom:
-                        raise ValueError
-                    self.magnification = n
-                    window.close()
-                except ValueError:
-                    self.warning_message_box(_("Zoom"), _("Please enter an integer between %1 and %2.", str(min_zoom), str(max_zoom)), "ok")
+                # min_zoom = 1
+                # max_zoom = 16
+                # try:
+                #     n = int(window.content.query_one("#zoom_input", Input).value)
+                #     if n < min_zoom or n > max_zoom:
+                #         raise ValueError
+                #     self.magnification = n
+                #     window.close()
+                # except ValueError:
+                #     self.warning_message_box(_("Zoom"), _("Please enter an integer between %1 and %2.", str(min_zoom), str(max_zoom)), "ok")
+                radio_button = window.content.query_one(RadioSet).pressed_button
+                self.magnification = int(radio_button.id.split("_")[1])
+                window.close()
             else:
                 window.close()
         window = DialogWindow(
@@ -2366,16 +2369,23 @@ class PaintApp(App[None]):
             handle_button=handle_button,
         )
         window.content.mount(
-            # TODO: radio button group, and show as percentage
             Vertical(
                 Horizontal(
                     Static(_("Current zoom:")),
-                    Static(str(self.magnification) + "x"),
+                    # Static(str(self.magnification) + "x"),
+                    Static(str(self.magnification * 100) + "%"),
                 ),
-                # Horizontal(
-                    Static(_("Zoom to")),
-                    Input(id="zoom_input", value=str(self.magnification)),
-                # ),
+                # # Horizontal(
+                #     Static(_("Zoom to")),
+                #     Input(id="zoom_input", value=str(self.magnification)),
+                # # ),
+                RadioSet(
+                    RadioButton(_("100%"), id="value_1"),
+                    RadioButton(_("200%"), id="value_2"),
+                    RadioButton(_("400%"), id="value_4"),
+                    RadioButton(_("600%"), id="value_6"),
+                    RadioButton(_("800%"), id="value_8"),
+                )
             ),
             Container(
                 Button(_("OK"), classes="ok submit", variant="primary"),
@@ -2383,6 +2393,8 @@ class PaintApp(App[None]):
                 classes="buttons",
             )
         )
+        window.content.query_one("#value_" + str(self.magnification), RadioButton).value = True
+        window.content.query_one(RadioSet).border_title = _("Zoom to")
         self.mount(window)
     def action_show_grid(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")

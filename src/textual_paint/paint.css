@@ -263,6 +263,27 @@ CharacterSelectorDialogWindow .cancel {
     height: auto;
     width: 1fr;
 }
+RadioSet {
+    layout: grid;
+    width: 35;
+    grid-size: 3;
+    grid-gutter: 0 1;
+    grid-columns: 10;
+    grid-rows: 2;
+    padding: 1 1;
+    height: auto;
+    /* Why is border-title-color not recognized? */
+    /* https://textual.textualize.io/styles/border_title_color/ */
+    /* It's documented, maybe it was removed from the library? */
+    /* border-title-color: $text; */
+    /* Also this isn't accepting $text */
+    /* border: round $text; */
+    border: round black;
+}
+.-dark-mode RadioSet {
+    border: round white;
+}
+
 DialogWindow .buttons {
     layout: horizontal;
     height: auto;
