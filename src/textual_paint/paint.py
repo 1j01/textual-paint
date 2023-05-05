@@ -1564,10 +1564,8 @@ class PaintApp(App[None]):
         """Called when selected_tool changes."""
         for button in self.query(".tool_button"):
             assert isinstance(button, Button)
-            if selected_tool == self.query_one("ToolsBox", ToolsBox).tool_by_button[button]:
-                button.add_class("selected")
-            else:
-                button.remove_class("selected")
+            button_tool = self.query_one("ToolsBox", ToolsBox).tool_by_button[button]
+            button.set_class(selected_tool == button_tool, "selected")
 
     def watch_selected_bg_color(self, selected_bg_color: str) -> None:
         """Called when selected_bg_color changes."""
