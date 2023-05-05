@@ -1,4 +1,5 @@
 from typing import Any, Optional, Callable
+from typing_extensions import Self
 from textual import events
 from textual.message import Message
 from textual.app import ComposeResult
@@ -85,6 +86,7 @@ class Window(Container):
         # must be after title_bar is defined
         self.title = title
         self.can_focus = True
+        self.last_focused_descendant: Widget | None = None
         if not self.id:
             # ID is needed for focus cycling
             global id_counter
@@ -110,6 +112,18 @@ class Window(Container):
             node = node.parent
         return False
 
+    def within_content(self, widget: Widget | None) -> bool:
+        """Returns True if widget exists and is within this window's content container."""
+        # TODO: DRY using a function like JS's closest()
+        if not widget:
+            return False
+        node = widget
+        while node:
+            if node is self.content:
+                return True
+            node = node.parent
+        return False
+
     def action_focus_next_button(self) -> None:
         """Action to focus the next button within .buttons IF a button is focused within .buttons."""
         if self.within_buttons(self.screen.focused):
@@ -129,14 +143,30 @@ class Window(Container):
 
     def on_focus(self, event: events.Focus) -> None:
         """Called when the window is focused."""
-        # TODO: focus last focused widget if re-focusing
+        self.focus()
+    
+    def focus(self, scroll_visible: bool = True) -> Self:
+        """Focus the window. Note that scroll_visible may scroll a descendant into view, but never the window into view within the screen."""
+        # Focus last focused widget if re-focusing
+        if self.last_focused_descendant:
+            if self.within_content(self.last_focused_descendant):
+                self.last_focused_descendant.focus(scroll_visible=scroll_visible)
+                return self
+        # Otherwise the submit button or first control
+        # TODO: does this actually prioritize the submit button, or does it need a separate query?
         controls = self.content.query(".submit, Input, Button")
         if controls:
-            controls[0].focus()
+            controls[0].focus(scroll_visible=scroll_visible)
+            return self
+        # Fall back to focusing the window itself
+        # Don't use scroll_visible parameter, because you probably don't want to scroll the screen to the window.
+        super().focus()
+        return self
 
     def on_descendant_focus(self, event: events.DescendantFocus) -> None:
         """Called when a descendant is focused."""
         self.bring_to_front()
+        self.last_focused_descendant = self.app.focused
 
     def bring_to_front(self) -> None:
         """Reorder the window to be last so it renders on top."""
@@ -227,6 +257,7 @@ class Window(Container):
         """Called when the user presses the mouse button."""
 
         self.bring_to_front()
+        self.focus()
 
         # detect if the mouse is over the title bar,
         # and not window content or title bar buttons
