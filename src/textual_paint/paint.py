@@ -2349,6 +2349,8 @@ class PaintApp(App[None]):
         def handle_button(button: Button) -> None:
             if button.has_class("ok"):
                 radio_button = window.content.query_one(RadioSet).pressed_button
+                assert radio_button is not None
+                assert radio_button.id is not None
                 self.magnification = int(radio_button.id.split("_")[1])
                 window.close()
             else:
