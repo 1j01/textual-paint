@@ -157,7 +157,8 @@ parser.add_argument('filename', nargs='?', default=None, help='File to open')
 # (maybe a pre-commit hook!? That might be ideal, but it might also be cumbersome to set up.)
 readme_help_start = re.compile(r"```\n.*--help\n")
 readme_help_end = re.compile(r"```")
-with open("README.md", "r+") as f:
+readme_file_path = os.path.join(os.path.dirname(__file__), "../../README.md")
+with open(readme_file_path, "r+") as f:
     # By default, argparse uses the terminal width for formatting help text,
     # even when using format_help() to get a string.
     # The only way to override that is to override the formatter_class.
