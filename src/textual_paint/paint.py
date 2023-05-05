@@ -2395,7 +2395,25 @@ class PaintApp(App[None]):
         )
         window.content.query_one("#value_" + str(self.magnification), RadioButton).value = True
         window.content.query_one(RadioSet).border_title = _("Zoom to")
+        def reorder_radio_buttons() -> None:
+            """Visually reorder the radio buttons to top-down, left-right.
+
+            (If I reorder them in the DOM, the navigation order won't be right.)
+
+            This needs to be run after the buttons are mounted so that they're positions are known.
+            """
+            radio_buttons = window.content.query(RadioButton)
+            radio_button_absolute_positions = [radio_button.region.offset for radio_button in radio_buttons]
+            print("radio_button_absolute_positions", radio_button_absolute_positions)
+            order = [0, 3, 1, 4, 2]
+            radio_button_absolute_target_positions = [radio_button_absolute_positions[order[i]] for i in range(len(radio_buttons))]
+            for radio_button, radio_button_absolute_position, radio_button_absolute_target_position in zip(radio_buttons, radio_button_absolute_positions, radio_button_absolute_target_positions):
+                relative_position = radio_button_absolute_target_position - radio_button_absolute_position
+                print(radio_button, relative_position)
+                radio_button.styles.offset = relative_position
         self.mount(window)
+        # TODO: avoid flash of incorrect ordering by doing this before rendering but after layout
+        self.call_after_refresh(reorder_radio_buttons)
     def action_show_grid(self) -> None:
         self.warning_message_box(_("Paint"), "Not implemented.", "ok")
     def action_show_thumbnail(self) -> None:
