@@ -79,7 +79,8 @@ usage: paint.py [options] [filename]
 Paint in the terminal.
 
 positional arguments:
-  filename              File to open
+  filename              Path to a file to open. File will be created if it
+                        doesn't exist.
 
 options:
   -h, --help            show this help message and exit

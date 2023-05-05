@@ -150,7 +150,7 @@ parser.add_argument('--clear-screen', action='store_true', help='Clear the scree
 parser.add_argument('--restart-on-changes', action='store_true', help='Restart the app when the source code is changed, for development')
 parser.add_argument('--recode-samples', action='store_true', help='Open and save each file in samples/, for testing')
 
-parser.add_argument('filename', nargs='?', default=None, help='File to open')
+parser.add_argument('filename', nargs='?', default=None, help='Path to a file to open. File will be created if it doesn\'t exist.')
 
 # Automatically update the readme with the current arguments.
 # TODO: disable for release builds (or I could make this another dev flag, but I like the idea of it being automatic)
