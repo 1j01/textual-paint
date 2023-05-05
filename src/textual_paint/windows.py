@@ -157,7 +157,7 @@ class Window(Container):
                 self.last_focused_descendant.focus(scroll_visible=scroll_visible)
                 return self
         # Otherwise the submit button or first focusable control
-        for query in [".submit", "Input, Button"]:
+        for query in [".submit", "Widget"]:
             controls = self.content.query(query)
             if controls:
                 for control in controls:
