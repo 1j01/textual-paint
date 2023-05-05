@@ -1845,6 +1845,22 @@ class PaintApp(App[None]):
         self.background_tasks.add(task)
         task.add_done_callback(self.background_tasks.discard)
 
+    def write_file_path(self, file_path: str, content: str, dialog_title: str) -> bool:
+        """Write a file, showing an error message and returning False if it fails."""
+        try:
+            with open(file_path, "w") as f:
+                f.write(content)
+            return True
+        except PermissionError:
+            self.warning_message_box(dialog_title, _("Access denied."), "ok")
+        except FileNotFoundError: 
+            self.warning_message_box(dialog_title, _("%1 contains an invalid path.", file_path), "ok")
+        except OSError as e:
+            self.warning_message_box(dialog_title, _("Failed to save document.") + "\n\n" + repr(e), "ok")
+        except Exception as e:
+            self.warning_message_box(dialog_title, _("An unexpected error occurred while writing %1.", file_path) + "\n\n" + repr(e), "ok")
+        return False
+
     async def save(self, from_save_as: bool = False) -> None:
         """Save the image to a file."""
         self.stop_action_in_progress()
@@ -1864,15 +1880,8 @@ class PaintApp(App[None]):
                 else:
                     print("Saving as ANSI")
                     content = self.image.get_ansi()
-                with open(self.file_path, "w") as f:
-                    f.write(content)
-                self.saved_undo_count = len(self.undos)
-            except PermissionError:
-                self.warning_message_box(dialog_title, _("Access denied."), "ok")
-            except FileNotFoundError: 
-                self.warning_message_box(dialog_title, _("%1 contains an invalid path.", self.file_path), "ok")
-            except OSError as e:
-                self.warning_message_box(dialog_title, _("Failed to save document.") + "\n\n" + repr(e), "ok")
+                if self.write_file_path(self.file_path, content, dialog_title):
+                    self.saved_undo_count = len(self.undos)
             except Exception as e:
                 self.warning_message_box(dialog_title, _("An unexpected error occurred while writing %1.", self.file_path) + "\n\n" + repr(e), "ok")
         else:
@@ -1936,17 +1945,7 @@ class PaintApp(App[None]):
 
             def on_save_confirmed():
                 async def async_on_save_confirmed():
-                    try:
-                        with open(file_path, "w") as f:
-                            f.write(text)
-                    except PermissionError:
-                        self.warning_message_box(_("Copy To"), _("Access denied."), "ok")
-                    except FileNotFoundError: 
-                        self.warning_message_box(_("Copy To"), _("%1 contains an invalid path.", file_path), "ok")
-                    except OSError as e:
-                        self.warning_message_box(_("Copy To"), _("Failed to save document.") + "\n\n" + repr(e), "ok")
-                    except Exception as e:
-                        self.warning_message_box(_("Copy To"), _("An unexpected error occurred while writing %1.", file_path) + "\n\n" + repr(e), "ok")
+                    self.write_file_path(file_path, text, _("Copy To"))
                     window.close()
                 # https://textual.textualize.io/blog/2023/02/11/the-heisenbug-lurking-in-your-async-code/
                 task = asyncio.create_task(async_on_save_confirmed())
