@@ -2308,7 +2308,16 @@ class PaintApp(App[None]):
                     do_the_paste()
                 elif button.has_class("no"):
                     do_the_paste()
-            self.warning_message_box(_("Paint"), Static(message, markup=False), "yes/no/cancel", handle_button, icon_widget=get_question_icon())
+
+            # logo_icon = "🌈🪟"
+            # logo_icon = "🏳️‍🌈🪟"  # this would be closer, but I can't do the rainbow flag in the terminal, it uses ZWJ
+            # logo_icon = "[blue on red]▀[/][green on yellow]▀[/]" # this gives dim colors
+            # logo_icon = "[#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # good
+            # logo_icon = "[#000000][b]≈[/][/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # trying to add the trailing flag effect
+            logo_icon = "[#000000]⣿[/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # ah, that's brilliant! that worked way better than I expected
+
+            title = logo_icon + " " + _("Paint")
+            self.warning_message_box(title, Static(message, markup=False), "yes/no/cancel", handle_button, icon_widget=get_question_icon())
         else:
             do_the_paste()
 
