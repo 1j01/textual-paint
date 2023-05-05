@@ -140,6 +140,10 @@ class Window(Container):
         self.mount(self.content)
         # Set focus. (In the future, some windows will not want default focus...)
         self.focus()
+        # Fix for incorrect layout that would only resolve on mouse over
+        # (I peaked into mouse over handling and it calls update_styles.)
+        # This can still briefly show the incorrect layout, since it relies on a timer.
+        self.set_timer(0.01, lambda: self.app.update_styles(self))
 
     def on_focus(self, event: events.Focus) -> None:
         """Called when the window is focused."""
