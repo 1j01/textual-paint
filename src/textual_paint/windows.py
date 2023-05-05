@@ -500,6 +500,44 @@ question_icon_console_markup = """
 """
 # make background transparent
 question_icon_console_markup = question_icon_console_markup.replace(" on rgb(128,128,128)", "")
+# class QuestionIcon(Static):
+#     """A question mark icon."""
+#
+#     def __init__(self) -> None:
+#         """Initialize the icon."""
+#         super().__init__("", classes="question_icon message_box_icon")
+#         # This assertion fails.
+#         # > type(self.app)
+#         # <class '<run_path>.PaintApp'>
+#         # > type(PaintApp())
+#         # <class 'paint.PaintApp'>
+#         # from paint import PaintApp
+#         # assert isinstance(self.app, PaintApp), "QuestionIcon should be used in PaintApp, but got: " + repr(self.app)
+#         self.watch(self.app, "dark", self._on_dark_changed, init=False)
+#         self._on_dark_changed(False, self.app.dark)
+#
+#     def _on_dark_changed(self, old_value: bool, dark: bool) -> None:
+#         # tweak colors according to the theme
+#         if dark:
+#             # Never happens?
+#             self.update(question_icon_console_markup.replace("rgb(0,0,0)", "rgb(255,0,255)"))
+#         else:
+#             self.update(question_icon_console_markup.replace("rgb(0,0,0)", "rgb(128,128,128)"))
+#
+# def get_question_icon() -> QuestionIcon:
+#     return QuestionIcon()
+
+
+# tweak colors for light theme, since the white has bad contrast
+# and I haven't gotten it to work detecting changes to the theme
+question_icon_console_markup = question_icon_console_markup.replace("rgb(255,255,255)", "rgb(255,255,80)")
+# also the shadow is normally gray, I just drew it black because I was using gray as the background
+question_icon_console_markup = question_icon_console_markup.replace("rgb(0,0,0)", "rgb(128,128,128)")
+# Underscores look silly. I started out by drawing a line art version, which is why they're there,
+# but it's silly to have a border on just the top.
+question_icon_console_markup = question_icon_console_markup.replace("_", " ")
+# Underline "❩" to make it look like the question mark has a serif. Looks bad because it's a wide character.
+# question_icon_console_markup = question_icon_console_markup.replace("❩", "[u]❩[/u]")
 get_question_icon = lambda: Static(question_icon_console_markup, classes="question_icon message_box_icon")
 
 class MessageBox(DialogWindow):
