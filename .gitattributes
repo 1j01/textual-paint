@@ -13,6 +13,14 @@
 *.nfo binary diff=cat-show-all
 *.NFO binary diff=cat-show-all
 
+# Localization data shouldn't affect the language statistics on GitHub.
+# Note 1: This also makes the files not show in diffs on GitHub by default, which I don't necessarily want,
+# but hopefully these files won't be changing much, and I'll put new localization data in a separate folder.
+# Note 2: This shouldn't match files directly under the localization folder, which is actually what I want,
+# since there is some python code in there! I probably should separate the data from the modules though.
+# localization/* linguist-generated=... # Don't want to exclude python files!
+localization/**/* linguist-generated=true
+
 # Custom for Visual Studio
 *.cs     diff=csharp
 *.sln    merge=union
