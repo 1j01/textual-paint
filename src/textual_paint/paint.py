@@ -267,17 +267,25 @@ class Tool(Enum):
                 Tool.text: "A",  # "Abc"
                 Tool.line: "\\",
                 Tool.curve: "~",  # "~" "S" "s"
-                Tool.rectangle: "[_]",  # "[]"
+                Tool.rectangle: "[_]",  # "[]" "[_]" ("[\x1B[53m_\x1B[55m]" doesn't work right, is there no overline tag?)
                 Tool.polygon: "[b]L[/b]",  # "L"
                 Tool.ellipse: "O",  # "()"
-                Tool.rounded_rectangle: "(_)",
+                Tool.rounded_rectangle: "(_)", # "(_)" ("(\x1B[53m_\x1B[55m)" doesn't work right, is there no overline tag?)
             }
             return enum_to_icon[self]
+        # "🫗" causes jutting out in Ubuntu terminal, "🪣" causes the opposite in VS Code terminal
+        # VS Code sets TERM_PROGRAM to "vscode", so we can use that to detect it
+        if os.environ.get("TERM_PROGRAM") == "vscode":
+            # fill_icon = "🫗" # is also hard to see in the light theme
+            fill_icon = "🌊" # is a safe alternative
+            # fill_icon = "[on black]🫗 [/]" # no way to make this not look like a selection highlight
+        else:
+            fill_icon = "🪣"
         return {
             Tool.free_form_select: "⚝",
             Tool.select: "⬚",
             Tool.eraser: "🧼",
-            Tool.fill: "🌊",  # "🫗" causes jutting out in Ubuntu terminal, "🪣" causes the opposite in VS Code terminal
+            Tool.fill: fill_icon,
             Tool.pick_color: "💉",
             Tool.magnifier: "🔍",
             Tool.pencil: "✏️",
