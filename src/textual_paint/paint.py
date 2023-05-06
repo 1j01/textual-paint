@@ -254,7 +254,7 @@ class Tool(Enum):
         # - Ellipse: ⬭⭕🔴🟠🟡🟢🔵🟣🟤⚫⚪🫧
         # - Rounded Rectangle: ▢⬜⬛
         if ascii_only_icons:
-            return {
+            enum_to_icon = {
                 Tool.free_form_select: "<[u]^[/]7",  # "*" "<^>" "<[u]^[/]7"
                 Tool.select: "::",  # "#" "::" ":_:" ":[u]:[/]:" ":[u]'[/]:"
                 Tool.eraser: "[u]/[/]7",  # "47" "27" "/_/" "[u]/[/]7"
@@ -271,7 +271,8 @@ class Tool(Enum):
                 Tool.polygon: "[b]L[/b]",  # "L"
                 Tool.ellipse: "O",  # "()"
                 Tool.rounded_rectangle: "(_)",
-            }[self]
+            }
+            return enum_to_icon[self]
         return {
             Tool.free_form_select: "⚝",
             Tool.select: "⬚",
