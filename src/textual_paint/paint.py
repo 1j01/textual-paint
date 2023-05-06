@@ -279,8 +279,11 @@ class Tool(Enum):
             # fill_icon = "🫗" # is also hard to see in the light theme
             fill_icon = "🌊" # is a safe alternative
             # fill_icon = "[on black]🫗 [/]" # no way to make this not look like a selection highlight
+            # "✏️" doesn't display in color in VS Code
+            pencil_icon = "🖍️" # or "🖊️", "🖋️"
         else:
             fill_icon = "🪣"
+            pencil_icon = "✏️"
         return {
             Tool.free_form_select: "⚝",
             Tool.select: "⬚",
@@ -288,7 +291,7 @@ class Tool(Enum):
             Tool.fill: fill_icon,
             Tool.pick_color: "💉",
             Tool.magnifier: "🔍",
-            Tool.pencil: "✏️",
+            Tool.pencil: pencil_icon,
             Tool.brush: "🖌️",
             Tool.airbrush: "💨",
             Tool.text: "Ａ",
