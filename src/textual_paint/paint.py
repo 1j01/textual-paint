@@ -2070,12 +2070,16 @@ class PaintApp(App[None]):
         """Returns whether the document has been modified since the last save."""
         return len(self.undos) != self.saved_undo_count
 
-    def discard_backup_and_exit(self) -> None:
-        """Exit the program immediately, deleting the backup file."""
+    def discard_backup(self) -> None:
+        """Deletes the backup file, if it exists."""
         try:
             os.remove(self.get_backup_file_path())
         except FileNotFoundError:
             pass
+
+    def discard_backup_and_exit(self) -> None:
+        """Exit the program immediately, deleting the backup file."""
+        self.discard_backup()
         self.exit()
     
     def action_exit(self) -> None:
@@ -2124,6 +2128,7 @@ class PaintApp(App[None]):
         self.mount(window)
 
     def open_from_file_path(self, file_path: str, opened_callback: Callable[[], None]) -> None:
+        """Opens the given file for editing, prompting to save changes if necessary."""
         try:
             # Note that os.path.samefile can raise FileNotFoundError
             if self.file_path and os.path.samefile(file_path, self.file_path):
@@ -2132,7 +2137,6 @@ class PaintApp(App[None]):
             with open(file_path, "r") as f:
                 content = f.read()  # f is out of scope in go_ahead()
                 def go_ahead():
-                    # TODO: delete backup file corresponding to the old file_path
                     try:
                         new_image = AnsiArtDocument.from_text(content)
                     except Exception as e:
@@ -2141,6 +2145,7 @@ class PaintApp(App[None]):
                         # at least not until we support bitmap files.
                         self.warning_message_box(_("Open"), Static(_("Paint cannot open this file.") + "\n\n" + repr(e)), "ok")
                         return
+                    # action_new handles discarding the backup for the old file, so we don't need self.discard_backup() here
                     self.action_new(force=True, recover=False)
                     self.canvas.image = self.image = new_image
                     self.canvas.refresh(layout=True)
@@ -2200,7 +2205,12 @@ class PaintApp(App[None]):
         self.mount(window)
 
     def action_new(self, *, force: bool = False, recover: bool = True) -> None:
-        """Create a new image."""
+        """Create a new image, discarding the backup file for the old file path, and undos/redos.
+        
+        This method is used as part of opening files as well,
+        in which case force=True and recover=False,
+        because prompting and recovering are handled outside.
+        """
         if self.is_document_modified() and not force:
             def go_ahead():
                 # Cancel doesn't call this callback.
@@ -2208,10 +2218,11 @@ class PaintApp(App[None]):
                 # If Yes, a save dialog should already have been shown,
                 # or the open file saved.
                 # Go ahead and create a new image.
-                # Note: I doubt anything should use (force=True, recover=False) but I'm passing it along.
+                # Note: I doubt anything should use (force=False, recover=False) but I'm passing it along.
                 self.action_new(force=True, recover=recover)
             self.prompt_save_changes(self.file_path or _("Untitled"), go_ahead)
             return
+        self.discard_backup() # for OLD file_path (must be done before changing self.file_path)
         self.image = AnsiArtDocument(80, 24)
         self.canvas.image = self.image
         self.canvas.refresh(layout=True)
