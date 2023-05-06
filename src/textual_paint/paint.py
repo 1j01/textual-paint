@@ -1027,7 +1027,7 @@ def is_inside_polygon(x: int, y: int, points: List[Offset]) -> bool:
 #                 yield x, y
 
 # adapted from https://github.com/Pomax/bezierjs
-def compute_bezier(t: float, start_x: float, start_y: float, control_1_x: float, control_1_y: float, control_2_x: float, control_2_y: float, end_x: float, end_y: float):
+def compute_bezier(t: float, start_x: float, start_y: float, control_1_x: float, control_1_y: float, control_2_x: float, control_2_y: float, end_x: float, end_y: float) -> Tuple[float, float]:
     """Returns a point along a bezier curve."""
     mt = 1 - t
     mt2 = mt * mt
@@ -1045,7 +1045,7 @@ def compute_bezier(t: float, start_x: float, start_y: float, control_1_x: float,
 
 # It's possible to walk a bezier curve more correctly,
 # but is it possible to tell the difference?
-def bezier_curve_walk(start_x: float, start_y: float, control_1_x: float, control_1_y: float, control_2_x: float, control_2_y: float, end_x: float, end_y: float):
+def bezier_curve_walk(start_x: float, start_y: float, control_1_x: float, control_1_y: float, control_2_x: float, control_2_y: float, end_x: float, end_y: float) -> Iterator[Tuple[int, int]]:
     """Yields points along a bezier curve."""
     steps = 100
     point_a = (start_x, start_y)
@@ -1057,7 +1057,7 @@ def bezier_curve_walk(start_x: float, start_y: float, control_1_x: float, contro
         yield from bresenham_walk(int(point_a[0]), int(point_a[1]), int(point_b[0]), int(point_b[1]))
         point_a = point_b
 
-def quadratic_curve_walk(start_x: float, start_y: float, control_x: float, control_y: float, end_x: float, end_y: float):
+def quadratic_curve_walk(start_x: float, start_y: float, control_x: float, control_y: float, end_x: float, end_y: float) -> Iterator[Tuple[int, int]]:
     """Yields points along a quadratic curve."""
     return bezier_curve_walk(start_x, start_y, control_x, control_y, control_x, control_y, end_x, end_y)
 
