@@ -21,7 +21,7 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
   - [x] Fancy file dialogs
   - [x] Drag and drop files to open
   - [x] Warnings when overwriting an existing file, or closing with unsaved changes
-  - [x] Auto-saves a `.ans~` backup file alongside the file you're editing, for crash recovery
+  - [x] Automatically saves a temporary `.ans~` backup file alongside the file you're editing, for recovery in case of a crash
   - File formats, chosen by typing a file extension in the Save As dialog:
     - [x] ANSI (.ans) — Note that while it can load the files that it saves, you may have limited success loading other ANSI files that you find on the web, or create with other tools. ANSI files can vary a lot and even encode animations!
     - [x] Plain Text (.txt) — discards color information

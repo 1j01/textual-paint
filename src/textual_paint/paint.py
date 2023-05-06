@@ -1872,7 +1872,7 @@ class PaintApp(App[None]):
                 self.auto_save_after_cancel_preview = True
                 return
             ansi = self.image.get_ansi()
-            self.write_file_path(self.get_backup_file_path(), ansi, _("Auto-Save Failed"))
+            self.write_file_path(self.get_backup_file_path(), ansi, _("Backup Save Failed"))
             self.auto_saved_undo_count = len(self.undos)
 
     def recover_from_backup(self) -> None:
