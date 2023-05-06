@@ -138,6 +138,7 @@ parser.add_argument('--version', action='version', version=f'%(prog)s {__version
 parser.add_argument('--theme', default='light', help='Theme to use, either "light" or "dark"', choices=['light', 'dark'])
 parser.add_argument('--language', default='en', help='Language to use', choices=['ar', 'cs', 'da', 'de', 'el', 'en', 'es', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko', 'nl', 'no', 'pl', 'pt', 'pt-br', 'ru', 'sk', 'sl', 'sv', 'tr', 'zh', 'zh-simplified'])
 parser.add_argument('--ascii-only-icons', action='store_true', help='Use only ASCII characters for tool icons')
+parser.add_argument('--backup-folder', default=None, metavar="FOLDER", help='Folder to save backups to. By default a backup is saved alongside the edited file.')
 
 # TODO: hide development options from help? there's quite a few of them now
 parser.add_argument('--inspect-layout', action='store_true', help='Inspect the layout with middle click, for development')
@@ -1518,6 +1519,8 @@ class PaintApp(App[None]):
     """Used to determine if the document has been modified since the last save, in is_document_modified()"""
     auto_saved_undo_count = 0
     """Used to determine if the document has been modified since the last auto-save"""
+    backup_folder: Optional[str] = None
+    """The folder to auto-save to, or None to save alongside the file being edited"""
 
     mouse_gesture_cancelled = False
     """For Undo/Redo, to interrupt the current action"""
@@ -1850,8 +1853,11 @@ class PaintApp(App[None]):
     def auto_save(self) -> None:
         """Auto-save the image if it has been modified since the last save."""
         if self.auto_saved_undo_count != len(self.undos):
+            auto_save_file_path = self.file_path or _("Untitled")
+            if self.backup_folder:
+                auto_save_file_path = os.path.join(self.backup_folder, os.path.basename(auto_save_file_path))
             # FOO.ANS -> FOO.ans~; FOO.TXT -> FOO.TXT.ans~; None -> Untitled.ans~
-            auto_save_file_path = re.sub(r"\.ans$", "", self.file_path or _("Untitled"), re.IGNORECASE) + ".ans~"
+            auto_save_file_path = re.sub(r"\.ans$", "", auto_save_file_path or _("Untitled"), re.IGNORECASE) + ".ans~"
             ansi = self.image.get_ansi()
             self.write_file_path(auto_save_file_path, ansi, _("Auto-Save Failed"))
             self.auto_saved_undo_count = len(self.undos)
@@ -3554,6 +3560,12 @@ if args.recode_samples:
 
 if args.clear_screen:
     os.system("cls||clear")
+
+if args.backup_folder:
+    backup_folder = os.path.abspath(args.backup_folder)
+    if not os.path.exists(backup_folder):
+        os.makedirs(backup_folder)
+    app.backup_folder = backup_folder
 
 app.dark = args.theme == "dark"
 
