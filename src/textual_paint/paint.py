@@ -1850,7 +1850,8 @@ class PaintApp(App[None]):
     def auto_save(self) -> None:
         """Auto-save the image if it has been modified since the last save."""
         if self.auto_saved_undo_count != len(self.undos):
-            auto_save_file_path = (self.file_path or _("Untitled")) + "~"
+            # FOO.ANS -> FOO.ans~; FOO.TXT -> FOO.TXT.ans~; None -> Untitled.ans~
+            auto_save_file_path = re.sub(r"\.ans$", "", self.file_path or _("Untitled"), re.IGNORECASE) + ".ans~"
             ansi = self.image.get_ansi()
             self.write_file_path(auto_save_file_path, ansi, _("Auto-Save Failed"))
             self.auto_saved_undo_count = len(self.undos)
