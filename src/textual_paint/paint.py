@@ -1519,6 +1519,8 @@ class PaintApp(App[None]):
     """Used to determine if the document has been modified since the last save, in is_document_modified()"""
     auto_saved_undo_count = 0
     """Used to determine if the document has been modified since the last auto-save"""
+    auto_save_after_cancel_preview = False
+    """Flag to postpone auto-saving until a tool preview is reverted, so as not to save it into the backup file"""
     backup_folder: Optional[str] = None
     """The folder to auto-save to, or None to save alongside the file being edited"""
 
@@ -1862,6 +1864,13 @@ class PaintApp(App[None]):
     def auto_save(self) -> None:
         """Auto-save the image if it has been modified since the last save."""
         if self.auto_saved_undo_count != len(self.undos):
+            if self.image_has_preview():
+                # Postpone auto-save until the preview is reverted, so it's not saved into the backup file.
+                # Since the preview exists as long as you're hovering over the canvas,
+                # instead of just delaying and hoping to save at some point,
+                # set a flag to auto-save as soon as the preview is reverted.
+                self.auto_save_after_cancel_preview = True
+                return
             ansi = self.image.get_ansi()
             self.write_file_path(self.get_backup_file_path(), ansi, _("Auto-Save Failed"))
             self.auto_saved_undo_count = len(self.undos)
@@ -2840,6 +2849,18 @@ class PaintApp(App[None]):
             region = self.canvas.select_preview_region
             self.canvas.select_preview_region = None
             self.canvas.refresh_scaled_region(region)
+        
+        # To avoid auto saving with a preview, or interrupting the user's flow by canceling it occasionally to auto save,
+        # we postpone auto saving until the image is clean of any previews.
+        if self.auto_save_after_cancel_preview:
+            self.auto_save()
+            self.auto_save_after_cancel_preview = False
+
+    def image_has_preview(self) -> bool:
+        """Return whether the image data contains a tool preview. The document should not be saved in this state."""
+        return self.preview_action is not None
+        # Regarding self.canvas.magnifier_preview_region, self.canvas.select_preview_region:
+        # These previews are not stored in the image data, so they don't count.
 
     def make_preview(self, draw_proc: Callable[[], Region], show_dimensions_in_status_bar: bool = False) -> None:
         """Preview the result of a draw operation, using a temporary action. Optionally preview dimensions in status bar."""
