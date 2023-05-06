@@ -1875,6 +1875,35 @@ class PaintApp(App[None]):
             self.write_file_path(self.get_backup_file_path(), ansi, _("Auto-Save Failed"))
             self.auto_saved_undo_count = len(self.undos)
 
+    def recover_from_backup(self) -> None:
+        backup_file_path = self.get_backup_file_path()
+        print("Checking for backup at:", backup_file_path, "...it exists" if os.path.exists(backup_file_path) else "...it does not exist")
+        if os.path.exists(backup_file_path):
+            # Recover from backup
+            try:
+                with open(backup_file_path, "r") as f:
+                    backup_content = f.read()
+                    backup_image = AnsiArtDocument.from_text(backup_content)
+            except Exception as e:
+                self.warning_message_box(_("Paint"), _("A backup file was found, but was not recovered.") + "\n" + _("An unexpected error occurred while reading %1.", backup_file_path) + "\n\n" + repr(e), "ok")
+                return
+            # This creates an undo
+            self.resize_document(backup_image.width, backup_image.height)
+            self.undos[-1].name = _("Recover from backup")
+            self.canvas.image = self.image = backup_image
+            self.canvas.refresh(layout=True)
+            # Don't need to auto-save the backup file as-is
+            self.auto_saved_undo_count = len(self.undos)
+            # Don't set self.saved_undo_count, since the recovered contents are not saved to the main file
+            # Don't delete the backup file, since it's not saved to the main file yet
+
+            def handle_button(button: Button) -> None:
+                if button.has_class("no"):
+                    self.action_undo()
+            # This message may be ambiguous if the main file has been changed since the backup was made.
+            # TODO: UX design; maybe compare file modification times
+            self.warning_message_box(_("Paint"), _("Recovered document from backup.\nKeep changes?"), "yes/no", handle_button)
+
     def action_save(self) -> None:
         """Start the save action, but don't wait for the Save As dialog to close if it's a new file."""
         task = asyncio.create_task(self.save())
@@ -2103,6 +2132,7 @@ class PaintApp(App[None]):
             with open(file_path, "r") as f:
                 content = f.read()  # f is out of scope in go_ahead()
                 def go_ahead():
+                    # TODO: delete backup file corresponding to the old file_path
                     try:
                         new_image = AnsiArtDocument.from_text(content)
                     except Exception as e:
@@ -2111,11 +2141,12 @@ class PaintApp(App[None]):
                         # at least not until we support bitmap files.
                         self.warning_message_box(_("Open"), Static(_("Paint cannot open this file.") + "\n\n" + repr(e)), "ok")
                         return
-                    self.action_new(force=True)
+                    self.action_new(force=True, recover=False)
                     self.canvas.image = self.image = new_image
                     self.canvas.refresh(layout=True)
                     self.file_path = file_path
                     opened_callback()
+                    self.recover_from_backup()
                 if self.is_document_modified():
                     self.prompt_save_changes(self.file_path or _("Untitled"), go_ahead)
                 else:
@@ -2168,7 +2199,7 @@ class PaintApp(App[None]):
         )
         self.mount(window)
 
-    def action_new(self, *, force: bool = False) -> None:
+    def action_new(self, *, force: bool = False, recover: bool = True) -> None:
         """Create a new image."""
         if self.is_document_modified() and not force:
             def go_ahead():
@@ -2177,7 +2208,8 @@ class PaintApp(App[None]):
                 # If Yes, a save dialog should already have been shown,
                 # or the open file saved.
                 # Go ahead and create a new image.
-                self.action_new(force=True)
+                # Note: I doubt anything should use (force=True, recover=False) but I'm passing it along.
+                self.action_new(force=True, recover=recover)
             self.prompt_save_changes(self.file_path or _("Untitled"), go_ahead)
             return
         self.image = AnsiArtDocument(80, 24)
@@ -2194,6 +2226,9 @@ class PaintApp(App[None]):
         self.selected_bg_color = palette[0]
         self.selected_fg_color = palette[len(palette) // 2]
         self.selected_char = " "
+
+        if recover:
+            self.recover_from_backup()
     
     def action_open_character_selector(self) -> None:
         """Show dialog to select a character."""
@@ -2462,6 +2497,8 @@ class PaintApp(App[None]):
         """Resize the document, creating an undo state, and refresh the canvas."""
         self.cancel_preview()
 
+        # NOTE: This function is relied on to create an undo even if the size doesn't change,
+        # when recovering from a backup.
         # TODO: DRY undo state creation (at least the undos/redos part)
         action = Action(_("Attributes"), Region(0, 0, self.image.width, self.image.height))
         action.is_resize = True
@@ -3551,16 +3588,34 @@ class PaintApp(App[None]):
 # and it would create a new app instance, and all arguments would be ignored.
 app = PaintApp()
 
+# Passive arguments
+# (with the exception of making directories)
+
+app.dark = args.theme == "dark"
 if args.ascii_only_icons:
     ascii_only_icons = True
 if args.inspect_layout:
     inspect_layout = True
+
+if args.backup_folder:
+    backup_folder = os.path.abspath(args.backup_folder)
+    # I could move this elsewhere, but it's kind of good to fail early
+    # if you don't have permissions to create the backup folder.
+    if not os.path.exists(backup_folder):
+        os.makedirs(backup_folder)
+    app.backup_folder = backup_folder
+
+# Active arguments
+# The backup_folder must be set before recover_from_backup() is called below.
+
 if args.filename:
     # if args.filename == "-" and not sys.stdin.isatty():
     #     app.image = AnsiArtDocument.from_text(sys.stdin.read())
     #     app.filename = "<stdin>"
     # else:
     try:
+        # REMINDER: if changing this to use a method that calls recover_from_backup(),
+        # remove the call below.
         with open(args.filename, 'r') as my_file:
             app.image = AnsiArtDocument.from_text(my_file.read())
             app.image_initialized = True
@@ -3569,6 +3624,14 @@ if args.filename:
         # Sometimes you just want to name a new file from the command line.
         # Hopefully this won't be too confusing since it will be blank.
         app.file_path = os.path.abspath(args.filename)
+        # Also, it's good to recover the backup in case the file was deleted,
+        # which wouldn't happen if we exited with an error.
+    # This requires the canvas to exist, hence call_later().
+    app.call_later(app.recover_from_backup)
+else:
+    # This is done inside action_new() but we're not using that for the initial blank state.
+    app.call_later(app.recover_from_backup)
+
 if args.recode_samples:
     # Re-encode the sample files to test for changes/inconsistency in encoding.
     # For each file, open and save it. All files are directly under samples/.
@@ -3593,14 +3656,6 @@ if args.recode_samples:
 
 if args.clear_screen:
     os.system("cls||clear")
-
-if args.backup_folder:
-    backup_folder = os.path.abspath(args.backup_folder)
-    if not os.path.exists(backup_folder):
-        os.makedirs(backup_folder)
-    app.backup_folder = backup_folder
-
-app.dark = args.theme == "dark"
 
 app.call_later(app.start_auto_save_interval)
 
