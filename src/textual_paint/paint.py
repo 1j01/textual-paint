@@ -1850,16 +1850,20 @@ class PaintApp(App[None]):
         self.auto_save_interval = 10
         self.set_interval(self.auto_save_interval, self.auto_save)
 
+    def get_backup_file_path(self) -> str:
+        """Returns the path to the backup file."""
+        backup_file_path = self.file_path or _("Untitled")
+        if self.backup_folder:
+            backup_file_path = os.path.join(self.backup_folder, os.path.basename(backup_file_path))
+        # FOO.ANS -> FOO.ans~; FOO.TXT -> FOO.TXT.ans~; Untitled -> Untitled.ans~
+        backup_file_path = re.sub(r"\.ans$", "", backup_file_path, re.IGNORECASE) + ".ans~"
+        return backup_file_path
+
     def auto_save(self) -> None:
         """Auto-save the image if it has been modified since the last save."""
         if self.auto_saved_undo_count != len(self.undos):
-            auto_save_file_path = self.file_path or _("Untitled")
-            if self.backup_folder:
-                auto_save_file_path = os.path.join(self.backup_folder, os.path.basename(auto_save_file_path))
-            # FOO.ANS -> FOO.ans~; FOO.TXT -> FOO.TXT.ans~; None -> Untitled.ans~
-            auto_save_file_path = re.sub(r"\.ans$", "", auto_save_file_path or _("Untitled"), re.IGNORECASE) + ".ans~"
             ansi = self.image.get_ansi()
-            self.write_file_path(auto_save_file_path, ansi, _("Auto-Save Failed"))
+            self.write_file_path(self.get_backup_file_path(), ansi, _("Auto-Save Failed"))
             self.auto_saved_undo_count = len(self.undos)
 
     def action_save(self) -> None:
@@ -2028,12 +2032,20 @@ class PaintApp(App[None]):
         """Returns whether the document has been modified since the last save."""
         return len(self.undos) != self.saved_undo_count
 
+    def discard_backup_and_exit(self) -> None:
+        """Exit the program immediately, deleting the backup file."""
+        try:
+            os.remove(self.get_backup_file_path())
+        except FileNotFoundError:
+            pass
+        self.exit()
+    
     def action_exit(self) -> None:
         """Exit the program, prompting to save changes if necessary."""
         if self.is_document_modified():
-            self.prompt_save_changes(self.file_path or _("Untitled"), self.exit)
+            self.prompt_save_changes(self.file_path or _("Untitled"), self.discard_backup_and_exit)
         else:
-            self.exit()
+            self.discard_backup_and_exit()
     
     def action_reload(self) -> None:
         """Reload the program, prompting to save changes if necessary."""
