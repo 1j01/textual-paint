@@ -1517,12 +1517,12 @@ class PaintApp(App[None]):
     """A temporary undo state for tool previews"""
     saved_undo_count = 0
     """Used to determine if the document has been modified since the last save, in is_document_modified()"""
-    auto_saved_undo_count = 0
-    """Used to determine if the document has been modified since the last auto-save"""
-    auto_save_after_cancel_preview = False
-    """Flag to postpone auto-saving until a tool preview is reverted, so as not to save it into the backup file"""
+    backup_saved_undo_count = 0
+    """Used to determine if the document has been modified since the last backup save"""
+    save_backup_after_cancel_preview = False
+    """Flag to postpone saving the backup until a tool preview action is reverted, so as not to save it into the backup file"""
     backup_folder: Optional[str] = None
-    """The folder to auto-save to, or None to save alongside the file being edited"""
+    """The folder to save a temporary backup file to. If None, will save alongside the file being edited."""
 
     mouse_gesture_cancelled = False
     """For Undo/Redo, to interrupt the current action"""
@@ -1847,10 +1847,10 @@ class PaintApp(App[None]):
             assert isinstance(window, Window), f"Expected a Window for query '{selector}', but got {window.css_identifier}"
             window.close()
 
-    def start_auto_save_interval(self) -> None:
-        """Auto-save periodically."""
-        self.auto_save_interval = 10
-        self.set_interval(self.auto_save_interval, self.auto_save)
+    def start_backup_interval(self) -> None:
+        """Auto-save a backup file periodically."""
+        self.backup_interval = 10
+        self.set_interval(self.backup_interval, self.save_backup)
 
     def get_backup_file_path(self) -> str:
         """Returns the path to the backup file."""
@@ -1861,25 +1861,25 @@ class PaintApp(App[None]):
         backup_file_path = re.sub(r"\.ans$", "", backup_file_path, re.IGNORECASE) + ".ans~"
         return backup_file_path
 
-    def auto_save(self) -> None:
-        """Auto-save the image if it has been modified since the last save."""
-        if self.auto_saved_undo_count != len(self.undos):
+    def save_backup(self) -> None:
+        """Save to the backup file if there have been changes since it was saved."""
+        if self.backup_saved_undo_count != len(self.undos):
             if self.image_has_preview():
-                # Postpone auto-save until the preview is reverted, so it's not saved into the backup file.
+                # Postpone saving the backup until the preview is reverted, so it's not saved into the backup file.
                 # Since the preview exists as long as you're hovering over the canvas,
-                # instead of just delaying and hoping to save at some point,
-                # set a flag to auto-save as soon as the preview is reverted.
-                self.auto_save_after_cancel_preview = True
+                # we don't want to just delay and hope to be able to save at some point.
+                # Instead, set a flag to save the backup exactly as soon as the preview action is reverted.
+                self.save_backup_after_cancel_preview = True
                 return
             ansi = self.image.get_ansi()
             self.write_file_path(self.get_backup_file_path(), ansi, _("Backup Save Failed"))
-            self.auto_saved_undo_count = len(self.undos)
+            self.backup_saved_undo_count = len(self.undos)
 
     def recover_from_backup(self) -> None:
+        """Recover from the backup file, if it exists."""
         backup_file_path = self.get_backup_file_path()
         print("Checking for backup at:", backup_file_path, "...it exists" if os.path.exists(backup_file_path) else "...it does not exist")
         if os.path.exists(backup_file_path):
-            # Recover from backup
             try:
                 with open(backup_file_path, "r") as f:
                     backup_content = f.read()
@@ -1892,8 +1892,8 @@ class PaintApp(App[None]):
             self.undos[-1].name = _("Recover from backup")
             self.canvas.image = self.image = backup_image
             self.canvas.refresh(layout=True)
-            # Don't need to auto-save the backup file as-is
-            self.auto_saved_undo_count = len(self.undos)
+            # No point in saving the backup file as-is, so mark it as up-to-date
+            self.backup_saved_undo_count = len(self.undos)
             # Don't set self.saved_undo_count, since the recovered contents are not saved to the main file
             # Don't delete the backup file, since it's not saved to the main file yet
 
@@ -2228,7 +2228,7 @@ class PaintApp(App[None]):
         self.canvas.refresh(layout=True)
         self.file_path = None
         self.saved_undo_count = 0
-        self.auto_saved_undo_count = 0
+        self.backup_saved_undo_count = 0
         self.undos = []
         self.redos = []
         self.preview_action = None
@@ -2898,11 +2898,12 @@ class PaintApp(App[None]):
             self.canvas.select_preview_region = None
             self.canvas.refresh_scaled_region(region)
         
-        # To avoid auto saving with a preview, or interrupting the user's flow by canceling it occasionally to auto save,
-        # we postpone auto saving until the image is clean of any previews.
-        if self.auto_save_after_cancel_preview:
-            self.auto_save()
-            self.auto_save_after_cancel_preview = False
+        # To avoid saving with a tool preview as part of the image data,
+        # or interrupting the user's flow by canceling the preview occasionally to auto-save a backup,
+        # we postpone auto-saving the backup until the image is clean of any previews.
+        if self.save_backup_after_cancel_preview:
+            self.save_backup()
+            self.save_backup_after_cancel_preview = False
 
     def image_has_preview(self) -> bool:
         """Return whether the image data contains a tool preview. The document should not be saved in this state."""
@@ -3668,7 +3669,7 @@ if args.recode_samples:
 if args.clear_screen:
     os.system("cls||clear")
 
-app.call_later(app.start_auto_save_interval)
+app.call_later(app.start_backup_interval)
 
 if __name__ == "__main__":
     app.run()
