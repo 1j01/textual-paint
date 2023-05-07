@@ -1945,21 +1945,21 @@ class PaintApp(App[None]):
             self.warning_message_box(dialog_title, _("An unexpected error occurred while writing %1.", file_path) + "\n\n" + repr(e), "ok")
         return False
 
-    def encode_image(self, file_path: str) -> str:
+    def encode_image(self, file_path: str, image: AnsiArtDocument) -> str:
         """Encode the image according to the file extension."""
         file_type = os.path.splitext(file_path)[1][1:].upper()
         print("File extension (normalized to uppercase):", file_type)
         if file_type == "SVG":
-            return self.image.get_svg()
+            return image.get_svg()
         elif file_type == "HTML" or file_type == "HTM":
-            return self.image.get_html()
+            return image.get_html()
         elif file_type == "TXT":
-            return self.image.get_plain()
+            return image.get_plain()
         elif file_type == "_RICH_CONSOLE_MARKUP":
-            return self.image.get_rich_console_markup()
+            return image.get_rich_console_markup()
         else:
             print("Saving as ANSI")
-            return self.image.get_ansi()
+            return image.get_ansi()
 
     async def save(self) -> bool:
         """Save the image to a file.
@@ -1970,7 +1970,7 @@ class PaintApp(App[None]):
         dialog_title = _("Save")
         if self.file_path:
             try:
-                content = self.encode_image(self.file_path)
+                content = self.encode_image(self.file_path, self.image)
                 if self.write_file_path(self.file_path, content, dialog_title):
                     self.saved_undo_count = len(self.undos)
                     return True
@@ -2006,7 +2006,7 @@ class PaintApp(App[None]):
             def on_save_confirmed():
                 async def async_on_save_confirmed():
                     self.stop_action_in_progress()
-                    content = self.encode_image(file_path)
+                    content = self.encode_image(file_path, self.image)
                     success = self.write_file_path(file_path, content, _("Save As"))
                     if success:
                         self.discard_backup() # for OLD file_path (must be done before changing self.file_path)
@@ -2042,9 +2042,7 @@ class PaintApp(App[None]):
         # DON'T stop_action_in_progress() here, because we want to keep the selection.
         self.close_windows("SaveAsDialogWindow, OpenDialogWindow")
 
-        # TODO: pick file type based on file extension
-        text = self.get_selected_content()
-        if text is None:
+        if self.get_selected_content() is None:
             # TODO: disable the menu item instead
             self.warning_message_box(_("Copy To"), _("No selection."), "ok")
             return
@@ -2053,6 +2051,11 @@ class PaintApp(App[None]):
 
             def on_save_confirmed():
                 async def async_on_save_confirmed():
+                    text = self.get_selected_content(file_path)
+                    if text is None:
+                        # confirm_overwrite dialog isn't modal, so we need to check again
+                        self.warning_message_box(_("Copy To"), _("No selection."), "ok")
+                        return
                     self.write_file_path(file_path, text, _("Copy To"))
                     window.close()
                 # https://textual.textualize.io/blog/2023/02/11/the-heisenbug-lurking-in-your-async-code/
@@ -2357,7 +2360,7 @@ class PaintApp(App[None]):
         if self.action_copy():
             self.action_clear_selection()
 
-    def get_selected_content(self) -> str | None:
+    def get_selected_content(self, file_path: str|None = None) -> str | None:
         """Returns the content of the selection, or underlying the selection if it hasn't been cut out yet.
         
         For a textbox, returns the selected text within the textbox. May include ANSI escape sequences, either way.
@@ -2375,7 +2378,8 @@ class PaintApp(App[None]):
             if sel.textbox_mode:
                 text = selected_text(sel)
             else:
-                text = sel.contained_image.get_ansi()
+                string_for_ext_detection = file_path or "this_text_before_the_dot_is_needed.ans"
+                text = self.encode_image(string_for_ext_detection, sel.contained_image)
         finally:
             if not had_contained_image:
                 sel.contained_image = None
