@@ -37,6 +37,8 @@ class FileDialogWindow(DialogWindow):
         # I don't know what the exact preconditions are for the expansion to work.
         # self.call_after_refresh(self._expand_directory_tree)
 
+        self.call_later(lambda: self.query_one("FileDialogWindow .filename_input", Input).focus())
+
     def on_tree_node_highlighted(self, event: Tree.NodeHighlighted[DirEntry]) -> None:
         """
         Called when a file/folder is selected in the DirectoryTree.
