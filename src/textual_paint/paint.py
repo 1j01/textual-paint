@@ -2001,6 +2001,23 @@ class PaintApp(App[None]):
                     # 1. the backup is not left behind on exit
                     # 2. it doesn't (try to) save to the wrong file if you Save
                     # 3. it doesn't (try to) backup to a file corresponding to the failed save, if you make changes
+                    # TODO: instead of storing and restoring the file path,
+                    # which could have a race condition where an automatic backup is saved to the wrong file,
+                    # add a parameter to save() to specify the file path to save to,
+                    # or break the function up into two.
+                    # In principle I like breaking it up into two;
+                    # we don't need the call to save_as() instead of save_as()'s call to save(), for instance.
+                    # But it gets hard to name the functions, when there's already call paths:
+                    # action_save()->save()->write_file_path() and
+                    # action_save_as()->save_as()->save()->write_file_path().
+                    # It would be like:
+                    # action_save()->save()->write_file_path_with_image()->write_file_path() and
+                    # action_save_as()->save_as()->write_file_path_with_image()->write_file_path().
+                    # Or better:
+                    # action_save()->save()->write_file_path(encode_file()) and
+                    # action_save_as()->save_as()->write_file_path(encode_file()).
+                    # Either way I should also tackle exporting to multiple file types for Edit > Copy To,
+                    # which currently only saves as ANSI.
                     old_backup = self.get_backup_file_path()
                     old_file_path = self.file_path
                     self.file_path = file_path
