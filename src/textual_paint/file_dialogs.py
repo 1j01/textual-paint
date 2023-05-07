@@ -19,13 +19,16 @@ class FileDialogWindow(DialogWindow):
         file_name: str = "",
         selected_file_path: str | None,
         handle_selected_file_path: Callable[[str], None],
+        submit_label: str,
         **kwargs: Any,
     ) -> None:
         """Initialize the dialog window."""
         super().__init__(handle_button=self.handle_button, *children, **kwargs)
         self._starting_file_name: str = file_name
         self._selected_file_path: str | None = selected_file_path
+        self._submit_label: str = submit_label
         self.handle_selected_file_path = handle_selected_file_path
+        """Callback called when the user selects a file."""
         self._directory_tree_selected_path: str | None = None
         """Last highlighted item in the directory tree"""
         self._expanding_directory_tree: bool = False
@@ -33,10 +36,25 @@ class FileDialogWindow(DialogWindow):
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
+        self.content.mount(
+            EnhancedDirectoryTree(path="/"),
+            Horizontal(
+                Label(_("File name:")),
+                Input(classes="filename_input", value=self._starting_file_name),
+            ),
+            Container(
+                Button(self._submit_label, classes="submit", variant="primary"),
+                Button(_("Cancel"), classes="cancel"),
+                classes="buttons",
+            ),
+        )
+
         self._expand_directory_tree()
         # This MIGHT be more reliable even though it's hacky.
         # I don't know what the exact preconditions are for the expansion to work.
         # self.call_after_refresh(self._expand_directory_tree)
+
+        # TODO: can I remove timers and call_later?
 
         self.call_later(lambda: self.query_one("FileDialogWindow .filename_input", Input).focus())
 
@@ -87,27 +105,12 @@ class OpenDialogWindow(FileDialogWindow):
         **kwargs: Any,
     ) -> None:
         """Initialize the dialog window."""
-        super().__init__(*children, file_name="", selected_file_path=selected_file_path, handle_selected_file_path=handle_selected_file_path, **kwargs)
-
-    def on_mount(self) -> None:
-        """Called when the window is mounted."""
-        self.content.mount(
-            EnhancedDirectoryTree(path="/"),
-            Horizontal(
-                Label(_("File name:")),
-                Input(classes="filename_input"),
-            ),
-            Container(
-                Button(_("Open"), classes="open submit", variant="primary"),
-                Button(_("Cancel"), classes="cancel"),
-                classes="buttons",
-            ),
-        )
+        super().__init__(*children, submit_label=_("Open"), file_name="", selected_file_path=selected_file_path, handle_selected_file_path=handle_selected_file_path, **kwargs)
 
     def handle_button(self, button: Button) -> None:
         """Called when a button is clicked or activated with the keyboard."""
         # TODO: DRY with Save As
-        if not button.has_class("open"):
+        if not button.has_class("submit"):
             self.close()
             return
         filename = self.content.query_one(".filename_input", Input).value
@@ -137,29 +140,14 @@ class SaveAsDialogWindow(FileDialogWindow):
         **kwargs: Any,
     ) -> None:
         """Initialize the dialog window."""
-        super().__init__(*children, file_name=file_name, selected_file_path=selected_file_path, handle_selected_file_path=handle_selected_file_path, **kwargs)
+        super().__init__(*children, submit_label=_("Save"), file_name=file_name, selected_file_path=selected_file_path, handle_selected_file_path=handle_selected_file_path, **kwargs)
 
-    def on_mount(self) -> None:
-        """Called when the window is mounted."""
-        self.content.mount(
-            EnhancedDirectoryTree(path="/"),
-            Horizontal(
-                Label(_("File name:")),
-                Input(classes="filename_input", value=self._starting_file_name),
-            ),
-            Container(
-                Button(_("Save"), classes="save submit", variant="primary"),
-                Button(_("Cancel"), classes="cancel"),
-                classes="buttons",
-            ),
-        )
-    
     def handle_button(self, button: Button) -> None:
         """Called when a button is clicked or activated with the keyboard."""
         # TODO: DRY with Open
         if button.has_class("cancel"):
             self.request_close()
-        elif button.has_class("save"):
+        elif button.has_class("submit"):
             name = self.query_one(".filename_input", Input).value
             if not name:
                 return
