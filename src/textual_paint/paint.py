@@ -1901,6 +1901,8 @@ class PaintApp(App[None]):
                 with open(backup_file_path, "r") as f:
                     backup_content = f.read()
                     backup_image = AnsiArtDocument.from_text(backup_content)
+                    if not self.validate_image(backup_image):
+                        return
             except Exception as e:
                 self.message_box(_("Paint"), _("A backup file was found, but was not recovered.") + "\n" + _("An unexpected error occurred while reading %1.", backup_file_path) + "\n\n" + repr(e), "ok")
                 return
@@ -2181,6 +2183,14 @@ class PaintApp(App[None]):
         )
         self.mount(window)
 
+    def validate_image(self, image: AnsiArtDocument) -> bool:
+        """Show an error message and return False if the given image is too large."""
+        # TODO: improve performance of app, then increase this limit
+        if image.width > 500 or image.height > 500:
+            self.message_box(_("Paint"), _("The file is too large to open."))
+            return False
+        return True
+
     def open_from_file_path(self, file_path: str, opened_callback: Callable[[], None]) -> None:
         """Opens the given file for editing, prompting to save changes if necessary."""
 
@@ -2222,6 +2232,8 @@ class PaintApp(App[None]):
                 def go_ahead():
                     try:
                         new_image = AnsiArtDocument.from_text(content)
+                        if not self.validate_image(new_image):
+                            return
                     except Exception as e:
                         # "This is not a valid bitmap file, or its format is not currently supported."
                         # string from MS Paint doesn't apply well here,
@@ -2463,6 +2475,8 @@ class PaintApp(App[None]):
         if self.image.selection and self.image.selection.textbox_mode:
             # paste into textbox
             pasted_image = AnsiArtDocument.from_text(text, default_bg=self.selected_bg_color, default_fg=self.selected_fg_color)
+            if not self.validate_image(pasted_image):
+                return
             textbox = self.image.selection
             assert textbox.contained_image is not None
             paste_region = Region(*textbox.text_selection_start, pasted_image.width, pasted_image.height)
@@ -2475,6 +2489,8 @@ class PaintApp(App[None]):
             return
         # paste as selection
         pasted_image = AnsiArtDocument.from_text(text)
+        if not self.validate_image(pasted_image):
+            return
         def do_the_paste():
             self.stop_action_in_progress()
             # paste at top left corner of viewport
@@ -2630,6 +2646,9 @@ class PaintApp(App[None]):
                     height = int(window.content.query_one("#height_input", Input).value)
                     if width < 1 or height < 1:
                         raise ValueError
+                        # This message is what MS Paint says, but we don't edit bitmap files (yet).
+                        # self.message_box(_("Attributes"), _("Bitmaps must be greater than one pixel on a side."), "ok")
+                        # return
 
                     self.resize_document(width, height)
                     window.close()
@@ -3727,9 +3746,11 @@ if args.filename:
         # REMINDER: if changing this to use a method that calls recover_from_backup(),
         # remove the call below.
         with open(args.filename, 'r') as my_file:
-            app.image = AnsiArtDocument.from_text(my_file.read())
-            app.image_initialized = True
-            app.file_path = os.path.abspath(args.filename)
+            image = AnsiArtDocument.from_text(my_file.read())
+            if app.validate_image(image):
+                app.image = image
+                app.image_initialized = True
+                app.file_path = os.path.abspath(args.filename)
     except FileNotFoundError:
         # Sometimes you just want to name a new file from the command line.
         # Hopefully this won't be too confusing since it will be blank.
