@@ -48,6 +48,11 @@ def restart_program():
     """Restarts the current program, after file objects and descriptors cleanup"""
 
     try:
+        app.discard_backup()
+    except Exception as e:
+        print("Error discarding backup:", e)
+
+    try:
         app.exit()
         # It's meant to eventually call this, but we need it immediately (unless we delay with asyncio perhaps)
         # Otherwise the terminal will be left in a state where you can't (visibly) type anything
@@ -94,7 +99,7 @@ class RestartHandler(PatternMatchingEventHandler):
         app.screen.styles.background = "red"
         # The unsaved changes prompt seems to need call_from_thread,
         # or else it gets "no running event loop",
-        # whereas restart_program() needs to not use it,
+        # whereas restart_program() (inside or outside action_reload) needs to NOT use it,
         # or else nothing happens.
         # However, when app.action_reload is called from the key binding,
         # it seems to work fine with or without unsaved changes.
@@ -2131,6 +2136,7 @@ class PaintApp(App[None]):
     
     def action_reload(self) -> None:
         """Reload the program, prompting to save changes if necessary."""
+        # restart_program() calls discard_backup()
         if self.is_document_modified():
             self.prompt_save_changes(self.file_path or _("Untitled"), restart_program)
         else:
