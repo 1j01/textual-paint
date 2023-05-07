@@ -1985,11 +1985,18 @@ class PaintApp(App[None]):
         def handle_selected_file_path(file_path: str) -> None:
             def on_save_confirmed():
                 async def async_on_save_confirmed():
-                    self.discard_backup()
+                    # Don't discard the backup until after the save is complete
+                    # TODO: what should happen if the save fails?
+                    # Right now the file_path is set to the new file that failed to save,
+                    # the backup is preserved but "abandoned" (it won't be deleted on close),
+                    # and new changes to the file will be backed up in corresponance with the new file_path.
+                    # Probably it should revert to the old file_path.
+                    old_backup = self.get_backup_file_path()
                     self.file_path = file_path
                     await self.save(from_save_as=True)
                     window.close()
                     saved_future.set_result(None)
+                    self.discard_backup(old_backup)
                     # TODO: should this look for a backup file and offer to recover it?
                     # Seems kinda weird? But the backup file will be deleted on close,
                     # so it also seems weird to just silently delete it.
@@ -2088,11 +2095,13 @@ class PaintApp(App[None]):
         """Returns whether the document has been modified since the last save."""
         return len(self.undos) != self.saved_undo_count
 
-    def discard_backup(self) -> None:
+    def discard_backup(self, backup_file_path: str|None = None) -> None:
         """Deletes the backup file, if it exists."""
-        print("Discarding backup (if it exists):", self.get_backup_file_path())
+        if backup_file_path is None:
+            backup_file_path = self.get_backup_file_path()
+        print("Discarding backup (if it exists):", backup_file_path)
         try:
-            os.remove(self.get_backup_file_path())
+            os.remove(backup_file_path)
         except FileNotFoundError:
             pass
 
