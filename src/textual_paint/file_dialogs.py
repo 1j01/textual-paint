@@ -110,18 +110,18 @@ class OpenDialogWindow(FileDialogWindow):
     def handle_button(self, button: Button) -> None:
         """Called when a button is clicked or activated with the keyboard."""
         # TODO: DRY with Save As
-        if not button.has_class("submit"):
-            self.close()
-            return
-        filename = self.content.query_one(".filename_input", Input).value
-        if not filename:
-            return
-        # TODO: allow entering an absolute or relative path, not just a filename
-        if self._directory_tree_selected_path:
-            file_path = os.path.join(self._directory_tree_selected_path, filename)
-        else:
-            file_path = filename
-        self.handle_selected_file_path(file_path)
+        if button.has_class("cancel"):
+            self.request_close()
+        elif button.has_class("submit"):
+            filename = self.content.query_one(".filename_input", Input).value
+            if not filename:
+                return
+            # TODO: allow entering an absolute or relative path, not just a filename
+            if self._directory_tree_selected_path:
+                file_path = os.path.join(self._directory_tree_selected_path, filename)
+            else:
+                file_path = filename
+            self.handle_selected_file_path(file_path)
 
 
 class SaveAsDialogWindow(FileDialogWindow):
@@ -148,12 +148,12 @@ class SaveAsDialogWindow(FileDialogWindow):
         if button.has_class("cancel"):
             self.request_close()
         elif button.has_class("submit"):
-            name = self.query_one(".filename_input", Input).value
-            if not name:
+            filename = self.content.query_one(".filename_input", Input).value
+            if not filename:
                 return
             # TODO: allow entering an absolute or relative path, not just a filename
             if self._directory_tree_selected_path:
-                file_path = os.path.join(self._directory_tree_selected_path, name)
+                file_path = os.path.join(self._directory_tree_selected_path, filename)
             else:
-                file_path = name
+                file_path = filename
             self.handle_selected_file_path(file_path)
