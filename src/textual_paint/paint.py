@@ -2153,9 +2153,15 @@ class PaintApp(App[None]):
         message_widget: Widget|str,
         button_types: str = "ok",
         callback: Callable[[Button], None]|None = None,
-        icon_widget: Widget|None = get_warning_icon(),
+        icon_widget: Widget|None = None,
     ) -> None:
         """Show a warning message box with the given title, message, and buttons."""
+
+        # Must not be a default argument, because it needs a fresh copy each time,
+        # or it won't show up.
+        if icon_widget is None:
+            icon_widget = get_warning_icon()
+
         self.close_windows("#message_box")
         
         self.bell()
