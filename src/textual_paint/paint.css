@@ -205,8 +205,13 @@ FileDialogWindow .window_content {
     height: 30;
 }
 FileDialogWindow .window_content Input {
-    width: 100%;
+    width: 1fr;
     margin-bottom: 1;
+}
+FileDialogWindow .window_content Label {
+    height: 1fr;
+    content-align-vertical: middle;
+    min-width: 12;
 }
 FileDialogWindow .window_content DirectoryTree {
     height: 15;
@@ -320,6 +325,7 @@ DialogWindow .buttons Button {
 #attributes_dialog .window_content Horizontal Static {
     width: 10;
     height: 3; /* matching Input height; 1fr or auto didn't work */
+    /* TODO: what's different between this and the FileDialogWindow, where 1fr works? */
     content-align-vertical: middle;
 }
 #attributes_dialog Input {

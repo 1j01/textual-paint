@@ -2,7 +2,8 @@ import os
 from typing import Any, Callable
 from textual.containers import Container
 from textual.widget import Widget
-from textual.widgets import Button, Input, Tree
+from textual.widgets import Button, Input, Tree, Label
+from textual.containers import Horizontal
 from textual.widgets._directory_tree import DirEntry
 from textual.containers import Container
 from localization.i18n import get as _
@@ -92,7 +93,10 @@ class OpenDialogWindow(FileDialogWindow):
         """Called when the window is mounted."""
         self.content.mount(
             EnhancedDirectoryTree(path="/"),
-            Input(classes="filename_input", placeholder=_("Filename")),
+            Horizontal(
+                Label(_("File name:")),
+                Input(classes="filename_input"),
+            ),
             Container(
                 Button(_("Open"), classes="open submit", variant="primary"),
                 Button(_("Cancel"), classes="cancel"),
@@ -139,7 +143,10 @@ class SaveAsDialogWindow(FileDialogWindow):
         """Called when the window is mounted."""
         self.content.mount(
             EnhancedDirectoryTree(path="/"),
-            Input(classes="filename_input", placeholder=_("Filename"), value=self._starting_file_name),
+            Horizontal(
+                Label(_("File name:")),
+                Input(classes="filename_input", value=self._starting_file_name),
+            ),
             Container(
                 Button(_("Save"), classes="save submit", variant="primary"),
                 Button(_("Cancel"), classes="cancel"),
