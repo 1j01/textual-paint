@@ -1876,7 +1876,7 @@ class PaintApp(App[None]):
             backup_file_path = os.path.join(self.backup_folder, os.path.basename(backup_file_path))
         # FOO.ANS -> FOO.ans~; FOO.TXT -> FOO.TXT.ans~; Untitled -> Untitled.ans~
         backup_file_path = re.sub(r"\.ans$", "", backup_file_path, re.IGNORECASE) + ".ans~"
-        return backup_file_path
+        return os.path.abspath(backup_file_path)
 
     def save_backup(self) -> None:
         """Save to the backup file if there have been changes since it was saved."""
