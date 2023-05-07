@@ -1902,7 +1902,7 @@ class PaintApp(App[None]):
                     backup_content = f.read()
                     backup_image = AnsiArtDocument.from_text(backup_content)
             except Exception as e:
-                self.warning_message_box(_("Paint"), _("A backup file was found, but was not recovered.") + "\n" + _("An unexpected error occurred while reading %1.", backup_file_path) + "\n\n" + repr(e), "ok")
+                self.message_box(_("Paint"), _("A backup file was found, but was not recovered.") + "\n" + _("An unexpected error occurred while reading %1.", backup_file_path) + "\n\n" + repr(e), "ok")
                 return
             # This creates an undo
             self.resize_document(backup_image.width, backup_image.height)
@@ -1919,7 +1919,7 @@ class PaintApp(App[None]):
                     self.action_undo()
             # This message may be ambiguous if the main file has been changed since the backup was made.
             # TODO: UX design; maybe compare file modification times
-            self.warning_message_box(_("Paint"), _("Recovered document from backup.\nKeep changes?"), "yes/no", handle_button)
+            self.message_box(_("Paint"), _("Recovered document from backup.\nKeep changes?"), "yes/no", handle_button)
 
     def action_save(self) -> None:
         """Start the save action, but don't wait for the Save As dialog to close if it's a new file."""
@@ -1936,13 +1936,13 @@ class PaintApp(App[None]):
                 f.write(content)
             return True
         except PermissionError:
-            self.warning_message_box(dialog_title, _("Access denied."), "ok")
+            self.message_box(dialog_title, _("Access denied."), "ok")
         except FileNotFoundError: 
-            self.warning_message_box(dialog_title, _("%1 contains an invalid path.", file_path), "ok")
+            self.message_box(dialog_title, _("%1 contains an invalid path.", file_path), "ok")
         except OSError as e:
-            self.warning_message_box(dialog_title, _("Failed to save document.") + "\n\n" + repr(e), "ok")
+            self.message_box(dialog_title, _("Failed to save document.") + "\n\n" + repr(e), "ok")
         except Exception as e:
-            self.warning_message_box(dialog_title, _("An unexpected error occurred while writing %1.", file_path) + "\n\n" + repr(e), "ok")
+            self.message_box(dialog_title, _("An unexpected error occurred while writing %1.", file_path) + "\n\n" + repr(e), "ok")
         return False
 
     def encode_image(self, file_path: str, image: AnsiArtDocument) -> str:
@@ -1977,7 +1977,7 @@ class PaintApp(App[None]):
                 else:
                     return False
             except Exception as e:
-                self.warning_message_box(dialog_title, _("An unexpected error occurred while writing %1.", self.file_path) + "\n\n" + repr(e), "ok")
+                self.message_box(dialog_title, _("An unexpected error occurred while writing %1.", self.file_path) + "\n\n" + repr(e), "ok")
                 return False
         else:
             await self.save_as()
@@ -2045,7 +2045,7 @@ class PaintApp(App[None]):
 
         if self.get_selected_content() is None:
             # TODO: disable the menu item instead
-            self.warning_message_box(_("Copy To"), _("No selection."), "ok")
+            self.message_box(_("Copy To"), _("No selection."), "ok")
             return
 
         def handle_selected_file_path(file_path: str) -> None:
@@ -2055,7 +2055,7 @@ class PaintApp(App[None]):
                     text = self.get_selected_content(file_path)
                     if text is None:
                         # confirm_overwrite dialog isn't modal, so we need to check again
-                        self.warning_message_box(_("Copy To"), _("No selection."), "ok")
+                        self.message_box(_("Copy To"), _("No selection."), "ok")
                         return
                     self.write_file_path(file_path, text, _("Copy To"))
                     window.close()
@@ -2082,7 +2082,7 @@ class PaintApp(App[None]):
             if not button.has_class("yes"):
                 return
             callback()
-        self.warning_message_box(_("Save As"), Static(message, markup=False), "yes/no", handle_button)
+        self.message_box(_("Save As"), Static(message, markup=False), "yes/no", handle_button)
 
     def confirm_no_undo(self, callback: Callable[[], None]) -> None:
         """Asks the user to confirm that they want to continue with a permanent action."""
@@ -2093,7 +2093,7 @@ class PaintApp(App[None]):
             if not button.has_class("yes"):
                 return
             callback()
-        self.warning_message_box(_("Paint"), Static(message, markup=False), "yes/no", handle_button)
+        self.message_box(_("Paint"), Static(message, markup=False), "yes/no", handle_button)
 
     def prompt_save_changes(self, file_path: str, callback: Callable[[], None]) -> None:
         """Asks the user if they want to save changes to a file."""
@@ -2111,7 +2111,7 @@ class PaintApp(App[None]):
             self.background_tasks.add(task)
             task.add_done_callback(self.background_tasks.discard)
 
-        self.warning_message_box(_("Paint"), Static(message, markup=False), "yes/no/cancel", handle_button)
+        self.message_box(_("Paint"), Static(message, markup=False), "yes/no/cancel", handle_button)
 
     def is_document_modified(self) -> bool:
         """Returns whether the document has been modified since the last save."""
@@ -2146,9 +2146,7 @@ class PaintApp(App[None]):
         else:
             restart_program()
 
-    # TODO: rename since it supports an icon parameter (it's not just for warning messages)
-    # It's just a wrapper around MessageBox.
-    def warning_message_box(self,
+    def message_box(self,
         title: str,
         message_widget: Widget|str,
         button_types: str = "ok",
@@ -2199,7 +2197,7 @@ class PaintApp(App[None]):
                         # "This is not a valid bitmap file, or its format is not currently supported."
                         # string from MS Paint doesn't apply well here,
                         # at least not until we support bitmap files.
-                        self.warning_message_box(_("Open"), Static(_("Paint cannot open this file.") + "\n\n" + repr(e)), "ok")
+                        self.message_box(_("Open"), Static(_("Paint cannot open this file.") + "\n\n" + repr(e)), "ok")
                         return
                     # action_new handles discarding the backup for the old file, so we don't need self.discard_backup() here
                     self.action_new(force=True, recover=False)
@@ -2213,13 +2211,13 @@ class PaintApp(App[None]):
                 else:
                     go_ahead()
         except FileNotFoundError:
-            self.warning_message_box(_("Open"), Static(_("File not found.") + "\n" + _("Please verify that the correct path and file name are given.")), "ok")
+            self.message_box(_("Open"), Static(_("File not found.") + "\n" + _("Please verify that the correct path and file name are given.")), "ok")
         except IsADirectoryError:
-            self.warning_message_box(_("Open"), Static(_("Invalid file.")), "ok")
+            self.message_box(_("Open"), Static(_("Invalid file.")), "ok")
         except PermissionError:
-            self.warning_message_box(_("Open"), Static(_("Access denied.")), "ok")
+            self.message_box(_("Open"), Static(_("Access denied.")), "ok")
         except Exception as e:
-            self.warning_message_box(_("Open"), Static(_("An unexpected error occurred while reading %1.", file_path) + "\n\n" + repr(e)), "ok")
+            self.message_box(_("Open"), Static(_("An unexpected error occurred while reading %1.", file_path) + "\n\n" + repr(e)), "ok")
 
     def action_open(self) -> None:
         """Show dialog to open an image from a file."""
@@ -2244,13 +2242,13 @@ class PaintApp(App[None]):
                     self.paste(f.read())
                 window.close()
             except FileNotFoundError:
-                self.warning_message_box(_("Paint"), Static(_("File not found.") + "\n" + _("Please verify that the correct path and file name are given.")), "ok")
+                self.message_box(_("Paint"), Static(_("File not found.") + "\n" + _("Please verify that the correct path and file name are given.")), "ok")
             except IsADirectoryError:
-                self.warning_message_box(_("Paint"), Static(_("Invalid file.")), "ok")
+                self.message_box(_("Paint"), Static(_("Invalid file.")), "ok")
             except PermissionError:
-                self.warning_message_box(_("Paint"), Static(_("Access denied.")), "ok")
+                self.message_box(_("Paint"), Static(_("Access denied.")), "ok")
             except Exception as e:
-                self.warning_message_box(_("Paint"), Static(_("An unexpected error occurred while reading %1.", file_path) + "\n\n" + repr(e)), "ok")
+                self.message_box(_("Paint"), Static(_("An unexpected error occurred while reading %1.", file_path) + "\n\n" + repr(e)), "ok")
 
         self.close_windows("SaveAsDialogWindow, OpenDialogWindow")
         window = OpenDialogWindow(
@@ -2334,13 +2332,13 @@ class PaintApp(App[None]):
         self.mount(window)
 
     def action_print_preview(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_page_setup(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_print(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_send(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.message_box(_("Paint"), "Not implemented.", "ok")
     
     def action_set_as_wallpaper_tiled(self) -> None:
         """Set the image as the wallpaper."""
@@ -2357,10 +2355,10 @@ class PaintApp(App[None]):
                 f.write(svg)
             set_wallpaper(image_path)
         except Exception as e:
-            self.warning_message_box(_("Paint"), Static(_("Failed to set the wallpaper.") + "\n\n" + repr(e)), "ok")
+            self.message_box(_("Paint"), Static(_("Failed to set the wallpaper.") + "\n\n" + repr(e)), "ok")
     
     def action_recent_file(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.message_box(_("Paint"), "Not implemented.", "ok")
 
     def action_cut(self) -> None:
         """Cut the selection to the clipboard."""
@@ -2401,7 +2399,7 @@ class PaintApp(App[None]):
             import pyperclip
             pyperclip.copy(text)
         except Exception as e:
-            self.warning_message_box(_("Paint"), _("Failed to copy to the clipboard.") + "\n\n" + repr(e), "ok")
+            self.message_box(_("Paint"), _("Failed to copy to the clipboard.") + "\n\n" + repr(e), "ok")
             return False
         return True
 
@@ -2411,7 +2409,7 @@ class PaintApp(App[None]):
             import pyperclip
             text: str = pyperclip.paste()
         except Exception as e:
-            self.warning_message_box(_("Paint"), _("Error getting the Clipboard Data!") + "\n\n" + repr(e), "ok")
+            self.message_box(_("Paint"), _("Error getting the Clipboard Data!") + "\n\n" + repr(e), "ok")
             return
         if not text:
             return
@@ -2426,7 +2424,7 @@ class PaintApp(App[None]):
             assert textbox.contained_image is not None
             paste_region = Region(*textbox.text_selection_start, pasted_image.width, pasted_image.height)
             if paste_region.right > textbox.region.width or paste_region.bottom > textbox.region.height:
-                self.warning_message_box(_("Paint"), _("Not enough room to paste text.") + "\n\n" + _("Enlarge the text area and try again."), "ok")
+                self.message_box(_("Paint"), _("Not enough room to paste text.") + "\n\n" + _("Enlarge the text area and try again."), "ok")
                 return
             textbox.contained_image.copy_region(source=pasted_image, target_region=paste_region)
             textbox.textbox_edited = True
@@ -2462,7 +2460,7 @@ class PaintApp(App[None]):
             logo_icon = "[#000000]⣿[/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # ah, that's brilliant! that worked way better than I expected
 
             title = logo_icon + " " + _("Paint")
-            self.warning_message_box(title, Static(message, markup=False), "yes/no/cancel", handle_button, icon_widget=get_question_icon())
+            self.message_box(title, Static(message, markup=False), "yes/no/cancel", handle_button, icon_widget=get_question_icon())
         else:
             do_the_paste()
 
@@ -2480,7 +2478,7 @@ class PaintApp(App[None]):
             self.selected_tool = Tool.select
     
     def action_text_toolbar(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.message_box(_("Paint"), "Not implemented.", "ok")
     
     def action_normal_size(self) -> None:
         """Zoom to 1x."""
@@ -2549,17 +2547,17 @@ class PaintApp(App[None]):
         # TODO: avoid flash of incorrect ordering by doing this before rendering but after layout
         self.call_after_refresh(reorder_radio_buttons)
     def action_show_grid(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_show_thumbnail(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_view_bitmap(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_flip_rotate(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_stretch_skew(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_invert_colors(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.message_box(_("Paint"), "Not implemented.", "ok")
     
     def resize_document(self, width: int, height: int) -> None:
         """Resize the document, creating an undo state, and refresh the canvas."""
@@ -2594,7 +2592,7 @@ class PaintApp(App[None]):
                     window.close()
 
                 except ValueError:
-                    self.warning_message_box(_("Attributes"), _("Please enter a positive integer."), "ok")
+                    self.message_box(_("Attributes"), _("Please enter a positive integer."), "ok")
             else:
                 window.close()
         window = DialogWindow(
@@ -2622,9 +2620,9 @@ class PaintApp(App[None]):
         self.mount(window)
     
     def action_clear_image(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_draw_opaque(self) -> None:
-        self.warning_message_box(_("Paint"), "Not implemented.", "ok")
+        self.message_box(_("Paint"), "Not implemented.", "ok")
     
     def action_help_topics(self) -> None:
         """Show the Help Topics dialog."""
