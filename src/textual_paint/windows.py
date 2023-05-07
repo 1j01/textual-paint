@@ -367,10 +367,14 @@ class DialogWindow(Window):
                 submit_button = self.query_one(".submit", Button)
             except NoMatches:
                 return
+            event.stop()
             self.handle_button(submit_button)
         elif event.key == "escape":
+            event.stop()
             # Like the title bar close button,
             # this doesn't call handle_button...
+            # If you want to know if the dialog is canceled by closing,
+            # you can listen for the CloseRequest/Closed messages.
             self.request_close()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
