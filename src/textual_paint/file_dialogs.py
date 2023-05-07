@@ -34,6 +34,21 @@ class FileDialogWindow(DialogWindow):
         self._expanding_directory_tree: bool = False
         """Flag to prevent setting the filename input when initially expanding the directory tree"""
 
+    def handle_button(self, button: Button) -> None:
+        """Called when a button is clicked or activated with the keyboard."""
+        if button.has_class("cancel"):
+            self.request_close()
+        elif button.has_class("submit"):
+            filename = self.content.query_one(".filename_input", Input).value
+            if not filename:
+                return
+            # TODO: allow entering an absolute or relative path, not just a filename
+            if self._directory_tree_selected_path:
+                file_path = os.path.join(self._directory_tree_selected_path, filename)
+            else:
+                file_path = filename
+            self.handle_selected_file_path(file_path)
+
     def on_mount(self) -> None:
         """Called when the window is mounted."""
         self.content.mount(
@@ -107,23 +122,6 @@ class OpenDialogWindow(FileDialogWindow):
         """Initialize the dialog window."""
         super().__init__(*children, submit_label=_("Open"), file_name="", selected_file_path=selected_file_path, handle_selected_file_path=handle_selected_file_path, **kwargs)
 
-    def handle_button(self, button: Button) -> None:
-        """Called when a button is clicked or activated with the keyboard."""
-        # TODO: DRY with Save As
-        if button.has_class("cancel"):
-            self.request_close()
-        elif button.has_class("submit"):
-            filename = self.content.query_one(".filename_input", Input).value
-            if not filename:
-                return
-            # TODO: allow entering an absolute or relative path, not just a filename
-            if self._directory_tree_selected_path:
-                file_path = os.path.join(self._directory_tree_selected_path, filename)
-            else:
-                file_path = filename
-            self.handle_selected_file_path(file_path)
-
-
 class SaveAsDialogWindow(FileDialogWindow):
     """A dialog window that lets the user select a file to save to.
     
@@ -141,19 +139,3 @@ class SaveAsDialogWindow(FileDialogWindow):
     ) -> None:
         """Initialize the dialog window."""
         super().__init__(*children, submit_label=_("Save"), file_name=file_name, selected_file_path=selected_file_path, handle_selected_file_path=handle_selected_file_path, **kwargs)
-
-    def handle_button(self, button: Button) -> None:
-        """Called when a button is clicked or activated with the keyboard."""
-        # TODO: DRY with Open
-        if button.has_class("cancel"):
-            self.request_close()
-        elif button.has_class("submit"):
-            filename = self.content.query_one(".filename_input", Input).value
-            if not filename:
-                return
-            # TODO: allow entering an absolute or relative path, not just a filename
-            if self._directory_tree_selected_path:
-                file_path = os.path.join(self._directory_tree_selected_path, filename)
-            else:
-                file_path = filename
-            self.handle_selected_file_path(file_path)
