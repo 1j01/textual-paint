@@ -2187,13 +2187,14 @@ class PaintApp(App[None]):
         # First, check if the file is already open.
         # We can't use os.path.samefile because it doesn't provide
         # enough granularity to distinguish which file got an error.
-        # It shouldn't error if the current file was deleted
-        # (which can happen easily* after you open the backup file corresponding to the current file —
-        # it immediately gets discarded after opening, since it "belonged" to the now-closed file —
-        # but also if it's just deleted externally).
+        # It shouldn't error if the current file was deleted.
+        # - It may be deleted in a file manager, which should be fine.
+        # - This also used to happen when opening the backup file corresponding to the current file;
+        #   it got discarded immediately after opening it, since it "belonged" to the now-closed file;
+        #   now that's prevented by checking if the backup file is being opened before discarding it.
+        #   (TODO: also hide backup files in the file dialogs)
         # But if the file to be opened was deleted,
         # then it should show an error message (although it would anyways when trying to read the file).
-        # (*TODO: prevent deleting backup file if it gets opened, and hide backup files in the file dialogs)
         if self.file_path:
             current_file_stat = None
             try:
@@ -2227,8 +2228,23 @@ class PaintApp(App[None]):
                         # at least not until we support bitmap files.
                         self.message_box(_("Open"), _("Paint cannot open this file.") + "\n\n" + repr(e), "ok")
                         return
-                    # action_new handles discarding the backup for the old file, so we don't need self.discard_backup() here
-                    self.action_new(force=True, recover=False)
+                    # action_new handles discarding the backup, and recovering from Untitled.ans~, by default
+                    # but we need to 1. handle the case where the backup is the file to be opened,
+                    # and 2. recover from <file to be opened>.ans~ instead of Untitled.ans~
+                    # so manage_backup=False prevents these behaviors.
+                    opening_backup = False
+                    try:
+                        backup_file_path = self.get_backup_file_path()
+                        print("Comparing files:", file_path, backup_file_path)
+                        if os.path.samefile(file_path, backup_file_path):
+                            print("Not discarding backup because it is now open in the editor:", backup_file_path)
+                            opening_backup = True
+                    except OSError as e:
+                        print("Error comparing files:", e)
+                    if not opening_backup:
+                        self.discard_backup()
+                    
+                    self.action_new(force=True, manage_backup=False)
                     self.canvas.image = self.image = new_image
                     self.canvas.refresh(layout=True)
                     self.file_path = file_path
@@ -2286,7 +2302,7 @@ class PaintApp(App[None]):
         )
         self.mount(window)
 
-    def action_new(self, *, force: bool = False, recover: bool = True) -> None:
+    def action_new(self, *, force: bool = False, manage_backup: bool = True) -> None:
         """Create a new image, discarding the backup file for the old file path, and undos/redos.
         
         This method is used as part of opening files as well,
@@ -2295,16 +2311,21 @@ class PaintApp(App[None]):
         """
         if self.is_document_modified() and not force:
             def go_ahead():
+                # TODO: I hate this comment, haha. rewrite or remove.
                 # Cancel doesn't call this callback.
                 # Yes or No has been selected.
                 # If Yes, a save dialog should already have been shown,
                 # or the open file saved.
                 # Go ahead and create a new image.
-                # Note: I doubt anything should use (force=False, recover=False) but I'm passing it along.
-                self.action_new(force=True, recover=recover)
+                # Note: I doubt anything should use (force=False, manage_backup=False) but I'm passing it along.
+                # TODO: would this be cleaner as an inner and outer function? what would I call the inner function?
+                self.action_new(force=True, manage_backup=manage_backup)
             self.prompt_save_changes(self.file_path or _("Untitled"), go_ahead)
             return
-        self.discard_backup() # for OLD file_path (must be done before changing self.file_path)
+
+        if manage_backup:
+            self.discard_backup() # for OLD file_path (must be done before changing self.file_path)
+
         self.image = AnsiArtDocument(80, 24)
         self.canvas.image = self.image
         self.canvas.refresh(layout=True)
@@ -2320,7 +2341,7 @@ class PaintApp(App[None]):
         self.selected_fg_color = palette[len(palette) // 2]
         self.selected_char = " "
 
-        if recover:
+        if manage_backup:
             self.recover_from_backup()
     
     def action_open_character_selector(self) -> None:
