@@ -2148,7 +2148,7 @@ class PaintApp(App[None]):
 
     def message_box(self,
         title: str,
-        message_widget: Widget|str,
+        message: Widget|str,
         button_types: str = "ok",
         callback: Callable[[Button], None]|None = None,
         icon_widget: Widget|None = None,
@@ -2175,7 +2175,7 @@ class PaintApp(App[None]):
             id="message_box",
             title=title,
             icon_widget=icon_widget,
-            message_widget=message_widget,
+            message=message,
             button_types=button_types,
             handle_button=handle_button,
         )

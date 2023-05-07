@@ -580,7 +580,7 @@ class MessageBox(DialogWindow):
     def __init__(
         self,
         *children: Widget,
-        message_widget: Widget | str,
+        message: Widget | str,
         button_types: str = "ok",
         icon_widget: Optional[Widget],
         handle_button: Callable[[Button], None],
@@ -588,11 +588,12 @@ class MessageBox(DialogWindow):
     ) -> None:
         """Initialize the message box."""
         super().__init__(*children, handle_button=handle_button, **kwargs)
-        if isinstance(message_widget, str):
-            message_widget = Static(message_widget, markup=False)
+        if isinstance(message, str):
+            self.message_widget = Static(message, markup=False)
+        else:
+            self.message_widget = message
         if not icon_widget:
             icon_widget = Static("")
-        self.message_widget = message_widget
         self.icon_widget = icon_widget
         self.button_types = button_types
 
