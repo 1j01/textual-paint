@@ -2237,11 +2237,11 @@ class PaintApp(App[None]):
                 else:
                     go_ahead()
         except FileNotFoundError:
-            self.message_box(_("Open"), _("File not found.") + "\n" + _("Please verify that the correct path and file name are given."), "ok")
+            self.message_box(_("Open"), file_path + "\n" + _("File not found.") + "\n" + _("Please verify that the correct path and file name are given."), "ok")
         except IsADirectoryError:
-            self.message_box(_("Open"), _("Invalid file."), "ok")
+            self.message_box(_("Open"), file_path + "\n" + _("Invalid file."), "ok")
         except PermissionError:
-            self.message_box(_("Open"), _("Access denied."), "ok")
+            self.message_box(_("Open"), file_path + "\n" + _("Access denied."), "ok")
         except Exception as e:
             self.message_box(_("Open"), _("An unexpected error occurred while reading %1.", file_path) + "\n\n" + repr(e), "ok")
 
@@ -2268,11 +2268,11 @@ class PaintApp(App[None]):
                     self.paste(f.read())
                 window.close()
             except FileNotFoundError:
-                self.message_box(_("Paint"), _("File not found.") + "\n" + _("Please verify that the correct path and file name are given."), "ok")
+                self.message_box(_("Paint"), file_path + "\n" + _("File not found.") + "\n" + _("Please verify that the correct path and file name are given."), "ok")
             except IsADirectoryError:
-                self.message_box(_("Paint"), _("Invalid file."), "ok")
+                self.message_box(_("Paint"), file_path + "\n" + _("Invalid file."), "ok")
             except PermissionError:
-                self.message_box(_("Paint"), _("Access denied."), "ok")
+                self.message_box(_("Paint"), file_path + "\n" + _("Access denied."), "ok")
             except Exception as e:
                 self.message_box(_("Paint"), _("An unexpected error occurred while reading %1.", file_path) + "\n\n" + repr(e), "ok")
 
