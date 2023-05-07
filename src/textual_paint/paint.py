@@ -2183,11 +2183,37 @@ class PaintApp(App[None]):
 
     def open_from_file_path(self, file_path: str, opened_callback: Callable[[], None]) -> None:
         """Opens the given file for editing, prompting to save changes if necessary."""
-        try:
-            # Note that os.path.samefile can raise FileNotFoundError
-            if self.file_path and os.path.samefile(file_path, self.file_path):
-                opened_callback()
+
+        # First, check if the file is already open.
+        # We can't use os.path.samefile because it doesn't provide
+        # enough granularity to distinguish which file got an error.
+        # It shouldn't error if the current file was deleted,
+        # but if the file to be opened was deleted
+        # (which can happen easily* if you try to open the backup file corresponding to the current file)
+        # then it should show an error message (although it would anyways when trying to read the file).
+        # (*TODO: hide backup files in the file dialogs)
+        if self.file_path:
+            current_file_stat = None
+            try:
+                current_file_stat = os.stat(self.file_path)
+                try:
+                    file_to_be_opened_stat = os.stat(file_path)
+                    if os.path.samestat(current_file_stat, file_to_be_opened_stat):
+                        opened_callback()
+                        return
+                except FileNotFoundError:
+                    self.message_box(_("Open"), file_path + "\n" + _("File not found.") + "\n" + _("Please verify that the correct path and file name are given."), "ok")
+                    return
+                except Exception as e:
+                    self.message_box(_("Open"), _("An unknown error occurred while accessing %1.", file_path) + "\n" + repr(e), "ok")
+                    return
+            except FileNotFoundError:
+                pass
+            except Exception as e:
+                self.message_box(_("Open"), _("An unknown error occurred while accessing %1.", self.file_path) + "\n" + repr(e), "ok")
                 return
+
+        try:
             with open(file_path, "r") as f:
                 content = f.read()  # f is out of scope in go_ahead()
                 def go_ahead():
