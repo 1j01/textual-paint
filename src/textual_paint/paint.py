@@ -2072,7 +2072,6 @@ class PaintApp(App[None]):
             title=_("Copy To"),
             handle_selected_file_path=handle_selected_file_path,
             selected_file_path=self.file_path, # TODO: only the directory
-            file_name=os.path.basename(self.file_path or _("Untitled")),
         )
         self.mount(window)
 
