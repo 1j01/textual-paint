@@ -1985,10 +1985,16 @@ class PaintApp(App[None]):
         def handle_selected_file_path(file_path: str) -> None:
             def on_save_confirmed():
                 async def async_on_save_confirmed():
+                    self.discard_backup()
                     self.file_path = file_path
                     await self.save(from_save_as=True)
                     window.close()
                     saved_future.set_result(None)
+                    # TODO: should this look for a backup file and offer to recover it?
+                    # Seems kinda weird? But the backup file will be deleted on close,
+                    # so it also seems weird to just silently delete it.
+                    # Could give a different message, or could rename the backup file so it's not deleted.
+                    # Probably should give a different message.
                 # https://textual.textualize.io/blog/2023/02/11/the-heisenbug-lurking-in-your-async-code/
                 task = asyncio.create_task(async_on_save_confirmed())
                 self.background_tasks.add(task)
@@ -2084,6 +2090,7 @@ class PaintApp(App[None]):
 
     def discard_backup(self) -> None:
         """Deletes the backup file, if it exists."""
+        print("Discarding backup (if it exists):", self.get_backup_file_path())
         try:
             os.remove(self.get_backup_file_path())
         except FileNotFoundError:
