@@ -2032,7 +2032,8 @@ class PaintApp(App[None]):
         window = SaveAsDialogWindow(
             title=_("Save As"),
             handle_selected_file_path=handle_selected_file_path,
-            selected_file_path=self.file_path or _("Untitled")
+            selected_file_path=self.file_path,
+            file_name=os.path.basename(self.file_path or _("Untitled")),
         )
         await self.mount(window)
         await saved_future
@@ -2070,7 +2071,8 @@ class PaintApp(App[None]):
         window = SaveAsDialogWindow(
             title=_("Copy To"),
             handle_selected_file_path=handle_selected_file_path,
-            selected_file_path=self.file_path or _("Untitled") # TODO: only the directory
+            selected_file_path=self.file_path, # TODO: only the directory
+            file_name=os.path.basename(self.file_path or _("Untitled")),
         )
         self.mount(window)
 
@@ -2224,7 +2226,7 @@ class PaintApp(App[None]):
         window = OpenDialogWindow(
             title=_("Open"),
             handle_selected_file_path=handle_selected_file_path,
-            selected_file_path=self.file_path or "",
+            selected_file_path=self.file_path,
         )
         self.mount(window)
 
@@ -2249,7 +2251,7 @@ class PaintApp(App[None]):
         window = OpenDialogWindow(
             title=_("Paste From"),
             handle_selected_file_path=handle_selected_file_path,
-            selected_file_path=self.file_path or "",
+            selected_file_path=self.file_path,
         )
         self.mount(window)
 

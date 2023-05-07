@@ -15,12 +15,14 @@ class FileDialogWindow(DialogWindow):
     def __init__(
         self,
         *children: Widget,
+        file_name: str = "",
         selected_file_path: str | None,
         handle_selected_file_path: Callable[[str], None],
         **kwargs: Any,
     ) -> None:
         """Initialize the dialog window."""
         super().__init__(handle_button=self.handle_button, *children, **kwargs)
+        self._starting_file_name: str = file_name
         self._selected_file_path: str | None = selected_file_path
         self.handle_selected_file_path = handle_selected_file_path
         self._directory_tree_selected_path: str | None = None
@@ -82,7 +84,7 @@ class OpenDialogWindow(FileDialogWindow):
         **kwargs: Any,
     ) -> None:
         """Initialize the dialog window."""
-        super().__init__(*children, selected_file_path=selected_file_path, handle_selected_file_path=handle_selected_file_path, **kwargs)
+        super().__init__(*children, file_name="", selected_file_path=selected_file_path, handle_selected_file_path=handle_selected_file_path, **kwargs)
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
@@ -98,6 +100,7 @@ class OpenDialogWindow(FileDialogWindow):
 
     def handle_button(self, button: Button) -> None:
         """Called when a button is clicked or activated with the keyboard."""
+        # TODO: DRY with Save As
         if not button.has_class("open"):
             self.close()
             return
@@ -122,19 +125,19 @@ class SaveAsDialogWindow(FileDialogWindow):
     def __init__(
         self,
         *children: Widget,
+        file_name: str = "",
         selected_file_path: str | None,
         handle_selected_file_path: Callable[[str], None],
         **kwargs: Any,
     ) -> None:
         """Initialize the dialog window."""
-        super().__init__(*children, selected_file_path=selected_file_path, handle_selected_file_path=handle_selected_file_path, **kwargs)
+        super().__init__(*children, file_name=file_name, selected_file_path=selected_file_path, handle_selected_file_path=handle_selected_file_path, **kwargs)
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
-        filename: str = os.path.basename(self._selected_file_path) if self._selected_file_path else ""
         self.content.mount(
             EnhancedDirectoryTree(path="/"),
-            Input(classes="filename_input", placeholder=_("Filename"), value=filename),
+            Input(classes="filename_input", placeholder=_("Filename"), value=self._starting_file_name),
             Container(
                 Button(_("Save"), classes="save submit", variant="primary"),
                 Button(_("Cancel"), classes="cancel"),
@@ -144,12 +147,10 @@ class SaveAsDialogWindow(FileDialogWindow):
     
     def handle_button(self, button: Button) -> None:
         """Called when a button is clicked or activated with the keyboard."""
+        # TODO: DRY with Open
         if button.has_class("cancel"):
             self.request_close()
         elif button.has_class("save"):
-            if self._selected_file_path is None:
-                return
-            
             name = self.query_one(".filename_input", Input).value
             if not name:
                 return
