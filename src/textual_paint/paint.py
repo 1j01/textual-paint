@@ -1940,6 +1940,22 @@ class PaintApp(App[None]):
             self.warning_message_box(dialog_title, _("An unexpected error occurred while writing %1.", file_path) + "\n\n" + repr(e), "ok")
         return False
 
+    def encode_image(self, file_path: str) -> str:
+        """Encode the image according to the file extension."""
+        file_type = os.path.splitext(file_path)[1][1:].upper()
+        print("File extension (normalized to uppercase):", file_type)
+        if file_type == "SVG":
+            return self.image.get_svg()
+        elif file_type == "HTML" or file_type == "HTM":
+            return self.image.get_html()
+        elif file_type == "TXT":
+            return self.image.get_plain()
+        elif file_type == "_RICH_CONSOLE_MARKUP":
+            return self.image.get_rich_console_markup()
+        else:
+            print("Saving as ANSI")
+            return self.image.get_ansi()
+
     async def save(self, from_save_as: bool = False) -> bool:
         """Save the image to a file.
         
@@ -1949,19 +1965,7 @@ class PaintApp(App[None]):
         dialog_title = _("Save As") if from_save_as else _("Save")
         if self.file_path:
             try:
-                file_type = os.path.splitext(self.file_path)[1][1:].upper()
-                print("File extension (normalized to uppercase):", file_type)
-                if file_type == "SVG":
-                    content = self.image.get_svg()
-                elif file_type == "HTML" or file_type == "HTM":
-                    content = self.image.get_html()
-                elif file_type == "TXT":
-                    content = self.image.get_plain()
-                elif file_type == "_RICH_CONSOLE_MARKUP":
-                    content = self.image.get_rich_console_markup()
-                else:
-                    print("Saving as ANSI")
-                    content = self.image.get_ansi()
+                content = self.encode_image(self.file_path)
                 if self.write_file_path(self.file_path, content, dialog_title):
                     self.saved_undo_count = len(self.undos)
                     return True
