@@ -1956,13 +1956,13 @@ class PaintApp(App[None]):
             print("Saving as ANSI")
             return self.image.get_ansi()
 
-    async def save(self, from_save_as: bool = False) -> bool:
+    async def save(self) -> bool:
         """Save the image to a file.
         
         Note that this method will never return if the user cancels the Save As dialog.
         """
         self.stop_action_in_progress()
-        dialog_title = _("Save As") if from_save_as else _("Save")
+        dialog_title = _("Save")
         if self.file_path:
             try:
                 content = self.encode_image(self.file_path)
@@ -1989,7 +1989,7 @@ class PaintApp(App[None]):
 
     async def save_as(self) -> None:
         """Save the image as a new file."""
-        # stop_action_in_progress() will also be called once the dialog is closed, in save()
+        # stop_action_in_progress() will also be called once the dialog is closed,
         # which is more important than here, since the dialog isn't (currently) modal.
         # You could make a selection while the dialog is open, for example.
         self.stop_action_in_progress()
@@ -2000,40 +2000,15 @@ class PaintApp(App[None]):
         def handle_selected_file_path(file_path: str) -> None:
             def on_save_confirmed():
                 async def async_on_save_confirmed():
-                    # Don't discard the backup until after the save is complete
-                    # If save fails, revert to the old file_path, so that
-                    # 1. the backup is not left behind on exit
-                    # 2. it doesn't (try to) save to the wrong file if you Save
-                    # 3. it doesn't (try to) backup to a file corresponding to the failed save, if you make changes
-                    # TODO: instead of storing and restoring the file path,
-                    # which could have a race condition where an automatic backup is saved to the wrong file,
-                    # add a parameter to save() to specify the file path to save to,
-                    # or break the function up into two.
-                    # In principle I like breaking it up into two;
-                    # we don't need the call to save_as() instead of save_as()'s call to save(), for instance.
-                    # But it gets hard to name the functions, when there's already call paths:
-                    # action_save()->save()->write_file_path() and
-                    # action_save_as()->save_as()->save()->write_file_path().
-                    # It would be like:
-                    # action_save()->save()->write_file_path_with_image()->write_file_path() and
-                    # action_save_as()->save_as()->write_file_path_with_image()->write_file_path().
-                    # Or better:
-                    # action_save()->save()->write_file_path(encode_file()) and
-                    # action_save_as()->save_as()->write_file_path(encode_file()).
-                    # Either way I should also tackle exporting to multiple file types for Edit > Copy To,
-                    # which currently only saves as ANSI.
-                    old_backup = self.get_backup_file_path()
-                    old_file_path = self.file_path
-                    self.file_path = file_path
-                    success = await self.save(from_save_as=True)
+                    self.stop_action_in_progress()
+                    content = self.encode_image(file_path)
+                    success = self.write_file_path(file_path, content, _("Save As"))
                     if success:
-                        print("Saved:", file_path)
+                        self.discard_backup() # for OLD file_path (must be done before changing self.file_path)
+                        self.file_path = file_path
+                        self.saved_undo_count = len(self.undos)
                         window.close()
                         saved_future.set_result(None)
-                        self.discard_backup(old_backup)
-                    else:
-                        print("Save failed, restoring old file_path:", old_file_path)
-                        self.file_path = old_file_path
 
                     # TODO: should this look for a backup file and offer to recover it?
                     # Seems kinda weird? But the backup file will be deleted on close,
@@ -2133,10 +2108,9 @@ class PaintApp(App[None]):
         """Returns whether the document has been modified since the last save."""
         return len(self.undos) != self.saved_undo_count
 
-    def discard_backup(self, backup_file_path: str|None = None) -> None:
+    def discard_backup(self) -> None:
         """Deletes the backup file, if it exists."""
-        if backup_file_path is None:
-            backup_file_path = self.get_backup_file_path()
+        backup_file_path = self.get_backup_file_path()
         print("Discarding backup (if it exists):", backup_file_path)
         try:
             os.remove(backup_file_path)
