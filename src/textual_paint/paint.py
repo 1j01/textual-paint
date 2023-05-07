@@ -2187,11 +2187,13 @@ class PaintApp(App[None]):
         # First, check if the file is already open.
         # We can't use os.path.samefile because it doesn't provide
         # enough granularity to distinguish which file got an error.
-        # It shouldn't error if the current file was deleted,
-        # but if the file to be opened was deleted
-        # (which can happen easily* if you try to open the backup file corresponding to the current file)
+        # It shouldn't error if the current file was deleted
+        # (which can happen easily* after you open the backup file corresponding to the current file —
+        # it immediately gets discarded after opening, since it "belonged" to the now-closed file —
+        # but also if it's just deleted externally).
+        # But if the file to be opened was deleted,
         # then it should show an error message (although it would anyways when trying to read the file).
-        # (*TODO: hide backup files in the file dialogs)
+        # (*TODO: prevent deleting backup file if it gets opened, and hide backup files in the file dialogs)
         if self.file_path:
             current_file_stat = None
             try:
