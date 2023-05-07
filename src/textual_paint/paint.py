@@ -1918,7 +1918,9 @@ class PaintApp(App[None]):
 
     def action_save(self) -> None:
         """Start the save action, but don't wait for the Save As dialog to close if it's a new file."""
-        task = asyncio.create_task(self.save())
+        async def save_ignoring_result() -> None:
+            await self.save()
+        task = asyncio.create_task(save_ignoring_result())
         self.background_tasks.add(task)
         task.add_done_callback(self.background_tasks.discard)
 
@@ -1938,8 +1940,11 @@ class PaintApp(App[None]):
             self.warning_message_box(dialog_title, _("An unexpected error occurred while writing %1.", file_path) + "\n\n" + repr(e), "ok")
         return False
 
-    async def save(self, from_save_as: bool = False) -> None:
-        """Save the image to a file."""
+    async def save(self, from_save_as: bool = False) -> bool:
+        """Save the image to a file.
+        
+        Note that this method will never return if the user cancels the Save As dialog.
+        """
         self.stop_action_in_progress()
         dialog_title = _("Save As") if from_save_as else _("Save")
         if self.file_path:
@@ -1959,10 +1964,16 @@ class PaintApp(App[None]):
                     content = self.image.get_ansi()
                 if self.write_file_path(self.file_path, content, dialog_title):
                     self.saved_undo_count = len(self.undos)
+                    return True
+                else:
+                    return False
             except Exception as e:
                 self.warning_message_box(dialog_title, _("An unexpected error occurred while writing %1.", self.file_path) + "\n\n" + repr(e), "ok")
+                return False
         else:
             await self.save_as()
+            # If the user cancels the Save As dialog, we'll never get here.
+            return True
     
     def action_save_as(self) -> None:
         """Show the save as dialog, without waiting for it to close."""
@@ -1986,17 +1997,23 @@ class PaintApp(App[None]):
             def on_save_confirmed():
                 async def async_on_save_confirmed():
                     # Don't discard the backup until after the save is complete
-                    # TODO: what should happen if the save fails?
-                    # Right now the file_path is set to the new file that failed to save,
-                    # the backup is preserved but "abandoned" (it won't be deleted on close),
-                    # and new changes to the file will be backed up in corresponance with the new file_path.
-                    # Probably it should revert to the old file_path.
+                    # If save fails, revert to the old file_path, so that
+                    # 1. the backup is not left behind on exit
+                    # 2. it doesn't (try to) save to the wrong file if you Save
+                    # 3. it doesn't (try to) backup to a file corresponding to the failed save, if you make changes
                     old_backup = self.get_backup_file_path()
+                    old_file_path = self.file_path
                     self.file_path = file_path
-                    await self.save(from_save_as=True)
-                    window.close()
-                    saved_future.set_result(None)
-                    self.discard_backup(old_backup)
+                    success = await self.save(from_save_as=True)
+                    if success:
+                        print("Saved:", file_path)
+                        window.close()
+                        saved_future.set_result(None)
+                        self.discard_backup(old_backup)
+                    else:
+                        print("Save failed, restoring old file_path:", old_file_path)
+                        self.file_path = old_file_path
+
                     # TODO: should this look for a backup file and offer to recover it?
                     # Seems kinda weird? But the backup file will be deleted on close,
                     # so it also seems weird to just silently delete it.
