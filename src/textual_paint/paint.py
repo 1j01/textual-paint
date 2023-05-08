@@ -1566,6 +1566,14 @@ class PaintApp(App[None]):
 
     TITLE = _("Paint")
 
+    # def watch_image(self, image: AnsiArtDocument) -> None:
+    #     print("watch_image", image)
+    def validate_image(self, image: AnsiArtDocument) -> AnsiArtDocument:
+        print("validate_image", image)
+        # if image is None:
+        #     return AnsiArtDocument.from_text("Not Loaded")
+        # return image
+
     def watch_file_path(self, file_path: Optional[str]) -> None:
         """Called when file_path changes."""
         if file_path is None:
