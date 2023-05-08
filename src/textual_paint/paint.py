@@ -1945,6 +1945,7 @@ class PaintApp(App[None]):
             self.message_box(dialog_title, _("An unexpected error occurred while writing %1.", file_path) + "\n\n" + repr(e), "ok")
         return False
 
+    # TODO: make this a method of AnsiArtDocument
     def encode_image(self, file_path: str, image: AnsiArtDocument) -> str:
         """Encode the image according to the file extension."""
         file_type = os.path.splitext(file_path)[1][1:].upper()
@@ -3743,26 +3744,27 @@ else:
 
 if args.recode_samples:
     # Re-encode the sample files to test for changes/inconsistency in encoding.
-    # For each file, open and save it. All files are directly under samples/.
+    # All files are assumed to be directly under samples/.
+
+    async def recode_sample(file_path: str) -> None:
+        """Re-encodes a single sample file."""
+        print(f"Re-encoding {file_path}")
+        with open(file_path, "r") as f:
+            image = AnsiArtDocument.from_text(f.read())
+        with open(file_path, "w") as f:
+            f.write(app.encode_image(file_path, image))
+        print(f"Saved {file_path}")
+
     async def recode_samples() -> None:
-        """Re-encodes all sample files, by opening and saving them, in serial."""
+        """Re-encodes all sample files in parallel."""
         samples_folder = os.path.join(os.path.dirname(__file__), "../../samples")
+        tasks = []
         for filename in os.listdir(samples_folder):
-            if not filename.endswith(".ans"):
-                continue
-            file_path = os.path.join(samples_folder, filename)
+            if filename.endswith(".ans"):
+                file_path = os.path.join(samples_folder, filename)
+                tasks.append(recode_sample(file_path))
+        await asyncio.gather(*tasks)
 
-            print(f"Re-encoding {filename}")
-            # We need to use the await the callback using a future
-            # in order to do this serially.
-            future = asyncio.get_event_loop().create_future()
-            def callback() -> None:
-                future.set_result(None)
-            app.open_from_file_path(file_path, callback)
-            await future
-
-            await app.save()
-            print(f"Saved {filename}")
     # have to wait for the app to be initialized
     async def once_running() -> None:
         await recode_samples()
