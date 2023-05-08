@@ -2191,8 +2191,8 @@ class PaintApp(App[None]):
         # - It may be deleted in a file manager, which should be fine.
         # - This also used to happen when opening the backup file corresponding to the current file;
         #   it got discarded immediately after opening it, since it "belonged" to the now-closed file;
-        #   now that's prevented by checking if the backup file is being opened before discarding it.
-        #   (TODO: also hide backup files in the file dialogs)
+        #   now that's prevented by checking if the backup file is being opened before discarding it,
+        #   and also backup files are now hidden in the file dialogs (though you can type the name manually).
         # But if the file to be opened was deleted,
         # then it should show an error message (although it would anyways when trying to read the file).
         if self.file_path:
