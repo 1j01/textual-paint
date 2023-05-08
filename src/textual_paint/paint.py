@@ -3723,23 +3723,22 @@ if args.filename:
     #     app.image = AnsiArtDocument.from_text(sys.stdin.read())
     #     app.filename = "<stdin>"
     # else:
-    try:
-        # REMINDER: if changing this to use a method that calls recover_from_backup(),
-        # remove the call below.
-        with open(args.filename, 'r') as my_file:
-            app.image = AnsiArtDocument.from_text(my_file.read())
-            app.image_initialized = True
-            app.file_path = os.path.abspath(args.filename)
-    except FileNotFoundError:
+    if os.path.exists(args.filename):
+        # This calls recover_from_backup().
+        # This requires the canvas to exist, hence call_later().
+        def open_file_from_cli_arg() -> None:
+            app.open_from_file_path(os.path.abspath(args.filename), lambda: None)
+        app.call_later(open_file_from_cli_arg)
+    else:
         # Sometimes you just want to name a new file from the command line.
         # Hopefully this won't be too confusing since it will be blank.
         app.file_path = os.path.abspath(args.filename)
-        # Also, it's good to recover the backup in case the file was deleted,
-        # which wouldn't happen if we exited with an error.
-    # This requires the canvas to exist, hence call_later().
-    app.call_later(app.recover_from_backup)
+        # Also, it's good to recover the backup in case the file was deleted.
+        # This requires the canvas to exist, hence call_later().
+        app.call_later(app.recover_from_backup)
 else:
     # This is done inside action_new() but we're not using that for the initial blank state.
+    # This requires the canvas to exist, hence call_later().
     app.call_later(app.recover_from_backup)
 
 if args.recode_samples:
