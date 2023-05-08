@@ -2311,12 +2311,6 @@ class PaintApp(App[None]):
         """
         if self.is_document_modified() and not force:
             def go_ahead():
-                # TODO: I hate this comment, haha. rewrite or remove.
-                # Cancel doesn't call this callback.
-                # Yes or No has been selected.
-                # If Yes, a save dialog should already have been shown,
-                # or the open file saved.
-                # Go ahead and create a new image.
                 # Note: I doubt anything should use (force=False, manage_backup=False) but I'm passing it along.
                 # TODO: would this be cleaner as an inner and outer function? what would I call the inner function?
                 self.action_new(force=True, manage_backup=manage_backup)
