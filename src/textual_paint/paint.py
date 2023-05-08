@@ -3751,10 +3751,16 @@ if args.recode_samples:
             if not filename.endswith(".ans"):
                 continue
             file_path = os.path.join(samples_folder, filename)
-            with open(file_path, "r") as my_file:
-                app.image = AnsiArtDocument.from_text(my_file.read())
-                app.image_initialized = True
-                app.file_path = file_path
+
+            print(f"Re-encoding {filename}")
+            # We need to use the await the callback using a future
+            # in order to do this serially.
+            future = asyncio.get_event_loop().create_future()
+            def callback() -> None:
+                future.set_result(None)
+            app.open_from_file_path(file_path, callback)
+            await future
+
             await app.save()
             print(f"Saved {filename}")
     # have to wait for the app to be initialized
