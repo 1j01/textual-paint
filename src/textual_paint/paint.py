@@ -2131,6 +2131,8 @@ class PaintApp(App[None]):
             os.remove(backup_file_path)
         except FileNotFoundError:
             pass
+        except Exception as e:
+            self.message_box(_("Paint"), backup_file_path + "\n\n" + _("Error removing temporary file.") + "\n\n" + repr(e), "ok")
 
     def discard_backup_and_exit(self) -> None:
         """Exit the program immediately, deleting the backup file."""
