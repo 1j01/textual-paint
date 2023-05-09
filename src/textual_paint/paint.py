@@ -1421,11 +1421,9 @@ class Canvas(Widget):
     
     def big_ch(self, ch: str, x: int, y: int) -> str:
         """Return a character part of a meta-glyph."""
+        if ch in " ░▒▓█":
+            return ch
         match ch:
-            case " ":
-                return " "
-            case "█":
-                return "█"
             case "▄":
                 return "█" if y >= self.magnification // 2 else " "
             case "▀":
