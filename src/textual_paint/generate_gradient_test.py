@@ -1,21 +1,38 @@
 #!/usr/bin/env python3
 
 import os
+import math
 
 # ANSI escape codes for truecolor
 CSI = '\u001b['
 RESET = CSI + '0m'
 
-# Glyphs ordered by visual weight
-GLYPHS = [' ', '.', ':', '!', '*', 'x', '%', '#']
+# Glyphs to use for the gradient
+GLYPHS = ['🌸', '🌷', '🌹', '🌺', '🌻', '🌼']
 
 def generate_ansi_art(width, height, file):
+    # Calculate the center coordinates of the image
+    center_x = width // 2
+    center_y = height // 2
+
+    # Calculate the maximum distance from the center to the corner
+    max_distance = math.sqrt(center_x**2 + center_y**2)
+
     for y in range(height):
         for x in range(width):
-            # Calculate the color based on position
-            r = int((x / width) * 255)
-            g = int(((width - x) / width) * 255)
-            b = int((y / height) * 255)
+            # Calculate the angle from the center to the current position
+            angle = math.atan2(y - center_y, x - center_x)
+            
+            # Calculate the distance from the current position to the center
+            distance = math.sqrt((x - center_x)**2 + (y - center_y)**2)
+
+            # Calculate the normalized distance
+            normalized_distance = distance / max_distance
+
+            # Calculate the color based on normalized distance
+            r = int(normalized_distance * 255)
+            g = int((1 - normalized_distance) * 255)
+            b = int(normalized_distance * 255)
 
             # Generate the truecolor escape code
             # background:
@@ -24,7 +41,7 @@ def generate_ansi_art(width, height, file):
             color += CSI + f'38;2;{r/10};{g/10};{b/10}m'
 
             # Calculate the index of the glyph based on visual weight
-            glyph_index = int(((width - x) + y) / (width + height) * (len(GLYPHS) - 1))
+            glyph_index = int((angle / (2 * math.pi)) * (len(GLYPHS) - 1))
 
             # Write the colored glyph to the file
             file.write(color + GLYPHS[glyph_index])
