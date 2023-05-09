@@ -115,7 +115,7 @@ def restart_on_changes():
     """Restarts the current program when a file is changed"""
     global observer
     observer = Observer()
-    observer.schedule(RestartHandler(
+    handler = RestartHandler(
         # Don't need to restart on changes to .css, since Textual will reload them in --dev mode
         # Could include localization files, but I'm not actively localizing this app at this point.
         # WET: WatchDog doesn't match zero directories for **, so we have to split up any patterns that use it.
@@ -131,7 +131,8 @@ def restart_on_changes():
             "venv/**/*", "venv/*",
         ],
         ignore_directories=True,
-    ), path='.', recursive=True)
+    )
+    observer.schedule(handler, path='.', recursive=True)  # type: ignore
     observer.start()
 
 
