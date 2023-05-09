@@ -2269,6 +2269,8 @@ class PaintApp(App[None]):
             self.message_box(_("Open"), file_path + "\n" + _("Invalid file."), "ok")
         except PermissionError:
             self.message_box(_("Open"), file_path + "\n" + _("Access denied."), "ok")
+        except UnicodeDecodeError:
+            self.message_box(_("Open"), file_path + "\n" + _("Paint cannot read this file.") + "\n" + _("Unexpected file format."), "ok")
         except Exception as e:
             self.message_box(_("Open"), _("An unexpected error occurred while reading %1.", file_path) + "\n\n" + repr(e), "ok")
 
