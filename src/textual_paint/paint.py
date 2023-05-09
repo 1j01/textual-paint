@@ -884,11 +884,61 @@ class AnsiArtDocument:
                 elif instruction.role == stransi.color.ColorRole.BACKGROUND:
                     rgb = instruction.color.rgb
                     bg_color = "rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"
+            elif isinstance(instruction, stransi.SetCursor):
+                if instruction.move.relative:
+                    x += instruction.move.x
+                    y += instruction.move.y
+                else:
+                    x = instruction.move.x
+                    y = instruction.move.y
+                x = max(0, x)
+                y = max(0, y)
+                width = max(x, width)
+                height = max(y, height)
+                while len(document.ch) <= y:
+                    document.ch.append([])
+                    document.bg.append([])
+                    document.fg.append([])
+            elif isinstance(instruction, stransi.SetClear):
+                def clear_line(row_to_clear: int, before: bool, after: bool):
+                    cols_to_clear: List[int] = []
+                    if before:
+                        cols_to_clear += range(0, len(document.ch[row_to_clear]))
+                    if after:
+                        cols_to_clear += range(x, len(document.ch[row_to_clear]))
+                    for col_to_clear in cols_to_clear:
+                        document.ch[row_to_clear][col_to_clear] = ' '
+                        document.bg[row_to_clear][col_to_clear] = default_bg
+                        document.fg[row_to_clear][col_to_clear] = default_fg
+                match instruction.region:
+                    case stransi.clear.Clear.LINE:
+                        # Clear the current line
+                        clear_line(y, True, True)
+                    case stransi.clear.Clear.LINE_AFTER:
+                        # Clear the current line after the cursor
+                        clear_line(y, False, True)
+                    case stransi.clear.Clear.LINE_BEFORE:
+                        # Clear the current line before the cursor
+                        clear_line(y, True, False)
+                    case stransi.clear.Clear.SCREEN:
+                        # Clear the entire screen
+                        for row_to_clear in range(len(document.ch)):
+                            clear_line(row_to_clear, True, True)
+                        # and reset the cursor to home
+                        x, y = 0, 0
+                    case stransi.clear.Clear.SCREEN_AFTER:
+                        # Clear the screen after the cursor
+                        for row_to_clear in range(y, len(document.ch)):
+                            clear_line(row_to_clear, row_to_clear > y, True)
+                    case stransi.clear.Clear.SCREEN_BEFORE:
+                        # Clear the screen before the cursor
+                        for row_to_clear in range(y):
+                            clear_line(row_to_clear, True, row_to_clear < y)
             elif isinstance(instruction, stransi.SetAttribute):
                 # Attribute
                 pass
             else:
-                raise ValueError("Unknown instruction type")
+                raise ValueError("Unknown instruction type " + str(type(instruction)))
         document.width = width
         document.height = height
         # Pad rows to a consistent width.
