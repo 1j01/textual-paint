@@ -216,4 +216,15 @@ def waitForNewPaste(timeout=...): # -> str:
     the clipboard."""
     ...
 
+# Implementations for these functions are loaded dynamically,
+# so I had to add these definitions manually.
+
+def copy(text): # -> None:
+    """Copy text to the clipboard."""
+    ...
+
+def paste(): # -> str:
+    """Paste text from the clipboard and return it."""
+    ...
+
 __all__ = ['copy', 'paste', 'waitForPaste', 'waitForNewPaste', 'set_clipboard', 'determine_clipboard']
