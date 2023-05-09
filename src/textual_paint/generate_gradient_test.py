@@ -36,6 +36,11 @@ def generate_ansi_art(width, height, file):
             g = int(((1 - v) * 255)*0.8)
             b = int(v * 255)
 
+            # Add linear gradient to the color
+            r = int(r * (1 - y / height))
+            # g = int(g * (1 - y / height))
+            # b = int(b * (1 - y / height))
+
             # Generate the truecolor escape code
             # background:
             color = CSI + f'48;2;{r};{g};{b}m'
