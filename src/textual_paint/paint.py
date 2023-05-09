@@ -872,11 +872,15 @@ class AnsiArtDocument:
                             document.bg.append([])
                             document.fg.append([])
                     else:
+                        while len(document.ch[y]) <= x:
+                            document.ch[y].append(' ')
+                            document.bg[y].append(default_bg)
+                            document.fg[y].append(default_fg)
+                        document.ch[y][x] = char
+                        document.bg[y][x] = bg_color
+                        document.fg[y][x] = fg_color
                         x += 1
                         width = max(x, width)
-                        document.ch[y].append(char)
-                        document.bg[y].append(bg_color)
-                        document.fg[y].append(fg_color)
             elif isinstance(instruction, stransi.SetColor) and instruction.color is not None:
                 # Color (I'm not sure why instruction.color would be None, but it's typed as Optional[Color])
                 # (maybe just for initial state?)
