@@ -2,6 +2,7 @@
 
 import os
 import math
+from typing import TextIO
 
 # ANSI escape codes for truecolor
 CSI = '\u001b['
@@ -10,13 +11,13 @@ RESET = CSI + '0m'
 # Glyphs to use for the gradient
 GLYPHS = ['🌸', '🌷', '🌹', '🌺', '🌻', '🌼']
 
-def spiral(m):
+def spiral(m: tuple[float, float]) -> float:
     r = math.sqrt(m[0]**2 + m[1]**2) * .05
     a = math.atan2(m[1], m[0])
     v = math.sin(100. * (math.sqrt(r) - 0.02 * a))
     return max(0., min(1., v))
 
-def generate_ansi_art(width, height, file):
+def generate_ansi_art(width: int, height: int, file: TextIO) -> None:
     # Calculate the center coordinates of the image
     center_x = width // 2
     center_y = height // 2
@@ -45,6 +46,7 @@ def generate_ansi_art(width, height, file):
             # background:
             color = CSI + f'48;2;{r};{g};{b}m'
             # and foreground:
+            # THIS WON'T DO MUCH for emoji, but it's here to INCREASE FILE SIZE
             color += CSI + f'38;2;{r//10};{g//10};{b//10}m'
 
             # Calculate the index of the glyph based on visual weight
