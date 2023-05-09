@@ -887,12 +887,16 @@ class AnsiArtDocument:
                     rgb = instruction.color.rgb
                     bg_color = "rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"
             elif isinstance(instruction, stransi.SetCursor):
+                # Cursor position is given as y;x, so stransi understandably gets this backwards.
+                # TODO: fix stransi to interpret ESC[<y>;<x>H correctly
+                # (or update it if it gets fixed)
+                # Note that stransi gives 0-based coordinates; the underlying ANSI is 1-based.
                 if instruction.move.relative:
-                    x += instruction.move.x
-                    y += instruction.move.y
+                    x += instruction.move.y
+                    y += instruction.move.x
                 else:
-                    x = instruction.move.x
-                    y = instruction.move.y
+                    x = instruction.move.y
+                    y = instruction.move.x
                 x = max(0, x)
                 y = max(0, y)
                 width = max(x, width)
