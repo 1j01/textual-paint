@@ -42,6 +42,8 @@ from wallpaper import get_config_dir, set_wallpaper
 
 from __init__ import __version__
 
+MAX_FILE_SIZE = 500000 # 500 KB
+
 observer = None
 
 def restart_program():
@@ -1898,6 +1900,9 @@ class PaintApp(App[None]):
         print("Checking for backup at:", backup_file_path, "...it exists" if os.path.exists(backup_file_path) else "...it does not exist")
         if os.path.exists(backup_file_path):
             try:
+                if os.path.getsize(backup_file_path) > MAX_FILE_SIZE:
+                    self.message_box(_("Open"), _("A backup file was found, but was not recovered.") + "\n" + _("The file is too large to open."), "ok")
+                    return
                 with open(backup_file_path, "r") as f:
                     backup_content = f.read()
                     backup_image = AnsiArtDocument.from_text(backup_content)
@@ -2218,6 +2223,9 @@ class PaintApp(App[None]):
                 return
 
         try:
+            if os.path.getsize(file_path) > MAX_FILE_SIZE:
+                self.message_box(_("Open"), _("The file is too large to open."), "ok")
+                return
             with open(file_path, "r") as f:
                 content = f.read()  # f is out of scope in go_ahead()
                 def go_ahead():
@@ -2283,6 +2291,9 @@ class PaintApp(App[None]):
         def handle_selected_file_path(file_path: str) -> None:
             # TODO: DRY error handling with open_from_file_path
             try:
+                if os.path.getsize(file_path) > MAX_FILE_SIZE:
+                    self.message_box(_("Paste"), _("The file is too large to open."), "ok")
+                    return
                 with open(file_path, "r") as f:
                     self.paste(f.read())
                 window.close()
