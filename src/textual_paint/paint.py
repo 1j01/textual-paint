@@ -65,10 +65,11 @@ def restart_program():
 
     try:
         try:
-            observer.stop()
-            observer.join(timeout=1)
-            if observer.is_alive:
-                print("Timed out waiting for file change observer thread to stop.")
+            if observer:
+                observer.stop()
+                observer.join(timeout=1)
+                if observer.is_alive():
+                    print("Timed out waiting for file change observer thread to stop.")
         except RuntimeError as e:
             # Ignore "cannot join current thread" error
             # join() might be redundant, but I'm keeping it just in case something with threading changes in the future
