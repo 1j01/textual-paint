@@ -871,6 +871,17 @@ class AnsiArtDocument:
                             document.ch.append([])
                             document.bg.append([])
                             document.fg.append([])
+                    elif char == '\t':
+                        x += 8 - (x % 8)
+                    elif char == '\b':
+                        x -= 1
+                        if x < 0:
+                            x = 0
+                            # on some terminals, backspace at the start of a line moves the cursor up,
+                            # but we're not defining a width for the document up front, so we can't do that
+                    elif char == '\x07':
+                        # ignore bell
+                        pass
                     else:
                         while len(document.ch[y]) <= x:
                             document.ch[y].append(' ')
