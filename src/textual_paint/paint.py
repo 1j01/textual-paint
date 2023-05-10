@@ -899,11 +899,8 @@ class AnsiArtDocument:
                     elif char == '\n':
                         x = 0
                         y += 1
-                        height = max(y, height)
-                        if len(document.ch) <= y:
-                            document.ch.append([])
-                            document.bg.append([])
-                            document.fg.append([])
+                        # Don't increase height until there's a character to put in the new row.
+                        # This avoids an extra row if the file ends with a newline.
                     elif char == '\t':
                         x += 8 - (x % 8)
                     elif char == '\b':
@@ -916,6 +913,10 @@ class AnsiArtDocument:
                         # ignore bell
                         pass
                     else:
+                        while len(document.ch) <= y:
+                            document.ch.append([])
+                            document.bg.append([])
+                            document.fg.append([])
                         while len(document.ch[y]) <= x:
                             document.ch[y].append(' ')
                             document.bg[y].append(default_bg)
@@ -923,8 +924,9 @@ class AnsiArtDocument:
                         document.ch[y][x] = char
                         document.bg[y][x] = bg_color
                         document.fg[y][x] = fg_color
+                        width = max(x + 1, width)
+                        height = max(y + 1, height)
                         x += 1
-                        width = max(x, width)
             elif isinstance(instruction, stransi.SetColor) and instruction.color is not None:
                 # Color (I'm not sure why instruction.color would be None, but it's typed as Optional[Color])
                 # (maybe just for initial state?)
@@ -947,8 +949,8 @@ class AnsiArtDocument:
                     y = instruction.move.x
                 x = max(0, x)
                 y = max(0, y)
-                width = max(x, width)
-                height = max(y, height)
+                width = max(x + 1, width)
+                height = max(y + 1, height)
                 while len(document.ch) <= y:
                     document.ch.append([])
                     document.bg.append([])
