@@ -872,10 +872,8 @@ class AnsiArtDocument:
 
         ansi = stransi.Ansi(text)
 
-        # Initial document is zero wide to avoid an extraneous character at (0,0),
-        # but needs one row to avoid IndexError.
-        document = AnsiArtDocument(0, 1, default_bg, default_fg)
-        # Ultimately, the minimum size is 1x1.
+        document = AnsiArtDocument(0, 0, default_bg, default_fg)
+        # Minimum size of 1x1, so that the document is never empty.
         width = 1
         height = 1
 
@@ -885,7 +883,7 @@ class AnsiArtDocument:
         fg_color = default_fg
         for instruction in ansi.instructions():
             if isinstance(instruction, str):
-                # Text
+                # Text and control characters other than escape sequences
                 for char in instruction:
                     if char == '\r':
                         x = 0
@@ -904,6 +902,7 @@ class AnsiArtDocument:
                             # but we're not defining a width for the document up front, so we can't do that
                     elif char == '\x07':
                         # ignore bell
+                        # TODO: ignore other unhandled control characters
                         pass
                     else:
                         while len(document.ch) <= y:
@@ -930,7 +929,7 @@ class AnsiArtDocument:
                     rgb = instruction.color.rgb
                     bg_color = "rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"
             elif isinstance(instruction, stransi.SetCursor):
-                # Cursor position is given as y;x, so stransi understandably gets this backwards.
+                # Cursor position is encoded as y;x, so stransi understandably gets this backwards.
                 # TODO: fix stransi to interpret ESC[<y>;<x>H correctly
                 # (or update it if it gets fixed)
                 # Note that stransi gives 0-based coordinates; the underlying ANSI is 1-based.
@@ -990,6 +989,11 @@ class AnsiArtDocument:
                 raise ValueError("Unknown instruction type " + str(type(instruction)))
         document.width = width
         document.height = height
+        # Handle minimum height.
+        while len(document.ch) <= document.height:
+            document.ch.append([])
+            document.bg.append([])
+            document.fg.append([])
         # Pad rows to a consistent width.
         for y in range(document.height):
             for x in range(len(document.ch[y]), document.width):
