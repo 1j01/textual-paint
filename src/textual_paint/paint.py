@@ -985,6 +985,8 @@ class AnsiArtDocument:
             elif isinstance(instruction, stransi.SetAttribute):
                 # Attribute
                 pass
+            elif isinstance(instruction, stransi.Unsupported):
+                raise ValueError("Unknown instruction " + repr(instruction.token))
             else:
                 raise ValueError("Unknown instruction type " + str(type(instruction)))
         document.width = width
