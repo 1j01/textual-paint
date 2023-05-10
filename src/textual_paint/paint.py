@@ -592,7 +592,40 @@ def selected_text(textbox: Selection) -> str:
 
 debug_region_updates = False
 
-ansi_escape_pattern = re.compile(r"(\N{ESC}\[[\d;]*[a-zA-Z])")
+
+# Detects ANSI escape sequences.
+# ansi_escape_pattern = re.compile(r"(\N{ESC}\[[\d;]*[a-zA-Z])")
+
+# Detects all control codes, including newlines and tabs.
+# ansi_control_code_pattern = re.compile(r'[\x00-\x1F\x7F]')
+
+# Detects all control codes, including tabs and carriage return (CR) if used alone, but excluding line feed (LF) and CR+LF.
+ansi_detector_pattern = re.compile(r'[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]|\r(?!\n)')
+# Explanation:
+# [\x00-\x09\x0B\x0C\x0E-\x1F\x7F]: Matches any control character except CR (\x0D) or LF (\x0A).
+# \r(?<!\r\n): Matches CR (\x0D) if it's not part of CRLF (\x0D\x0A).
+#   (?<!\r\n): Negative lookbehind assertion to ensure that the matched CR (if any) is not part of CRLF.
+# Tabs are included because they need to be expanded to spaces or they'll mess up the layout, currently,
+# and if the text isn't detected as ANSI, it won't currently be expanded.
+# Development strategy:
+# I used https://www.debuggex.com/ to develop a simpler regex that operates on letters as stand-ins for control codes,
+# since I don't know that I could input isolated control codes into the site.
+# e|r(?!n)
+# using test data:
+# ---e--- (e representing any control code except CR or LF)
+# ---r---
+# ---n--- <- shouldn't match
+# ---rn-- <- shouldn't match
+# ---nr--
+
+assert ansi_detector_pattern.search("\x0A") is None, "LF should not be matched by ansi_detector_pattern"
+assert ansi_detector_pattern.search("\x0D") is not None, "CR by itself (not part of CRLF) should be matched by ansi_detector_pattern"
+assert ansi_detector_pattern.search("\x0D\x0A") is None, "CRLF should not be matched by ansi_detector_pattern"
+assert ansi_detector_pattern.search("\x09") is not None, "TAB should be matched by ansi_detector_pattern"
+assert ansi_detector_pattern.search("\x1B") is not None, "ESC should be matched by ansi_detector_pattern"
+assert ansi_detector_pattern.search("\x7F") is not None, "DEL should be matched by ansi_detector_pattern"
+assert ansi_detector_pattern.search("\x00") is not None, "NUL should be matched by ansi_detector_pattern"
+assert ansi_detector_pattern.search("\x80") is None, "Ç (in CP 437) or € (U+0080) should not be matched by ansi_detector_pattern"
 
 # This SVG template is based on the template in rich/_export_format.py
 # It removes the simulated window frame, and crops the SVG to just the terminal content.
@@ -972,8 +1005,8 @@ class AnsiArtDocument:
     
     @staticmethod
     def from_text(text: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
-        """Creates a document from the given text, detecting if uses ANSI or not."""
-        if ansi_escape_pattern.search(text):
+        """Creates a document from the given text, detecting if it uses ANSI control codes or not."""
+        if ansi_detector_pattern.search(text):
             return AnsiArtDocument.from_ansi(text, default_bg, default_fg)
         else:
             return AnsiArtDocument.from_plain(text, default_bg, default_fg)
