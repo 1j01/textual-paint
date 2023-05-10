@@ -842,10 +842,10 @@ class AnsiArtDocument:
     def from_plain(text: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
         """Creates a document from the given plain text."""
         lines = text.splitlines()
-        width = 0
+        width = 1
         for line in lines:
             width = max(len(line), width)
-        height = len(lines)
+        height = max(len(lines), 1)
         document = AnsiArtDocument(width, height, default_bg, default_fg)
         for y, line in enumerate(lines):
             for x, char in enumerate(line):
