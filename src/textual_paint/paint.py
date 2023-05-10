@@ -17,7 +17,7 @@ from watchdog.observers import Observer
 import stransi
 from rich.segment import Segment
 from rich.style import Style
-from rich.console import Console, RenderableType
+from rich.console import Console
 from rich.text import Text
 from textual import events
 from textual.message import Message
@@ -807,7 +807,7 @@ class AnsiArtDocument:
         console = self.get_console()
         return console.export_svg(code_format=CUSTOM_CONSOLE_SVG_FORMAT)
     
-    def get_renderable(self) -> RenderableType:
+    def get_renderable(self) -> Text:
         """Get a Rich renderable for the document."""
         # This works, but I'm trying to use Rich's API directly instead of going through ANSI encoding.
         # That way I can make ANSI encoding use this method, and it's more efficient for SVG export.
