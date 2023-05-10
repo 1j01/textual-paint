@@ -23,7 +23,7 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
   - [x] Warnings when overwriting an existing file, or closing with unsaved changes
   - [x] Automatically saves a temporary `.ans~` backup file alongside the file you're editing, for recovery in case of a crash
   - File formats, chosen by typing a file extension in the Save As dialog:
-    - [x] ANSI (.ans) — Note that while it can load the files that it saves, you may have limited success loading other ANSI files that you find on the web, or create with other tools. ANSI files can vary a lot and even encode animations!
+    - [x] ANSI (.ans) — Note that while it handles many more ANSI control codes when loading than those that it uses to save files, you may have limited success loading other ANSI files that you find on the web, or create with other tools. ANSI files can vary a lot and even encode animations!
     - [x] Plain Text (.txt) — discards color information
     - [x] SVG (.svg) — save only
     - [x] HTML (.html) — save only
@@ -118,6 +118,11 @@ The rest match MS Paint's keyboard shortcuts:
 - <kbd>Ctrl</kbd>+<kbd>Y</kbd>: Redo
 - <kbd>F4</kbd>: Redo
 - <kbd>Ctrl</kbd>+<kbd>A</kbd>: Select All
+- <kbd>Delete</kbd>: Clear Selection
+- <kbd>Ctrl</kbd>+<kbd>C</kbd>: Copy
+- <kbd>Ctrl</kbd>+<kbd>V</kbd>: Paste
+- <kbd>Ctrl</kbd>+<kbd>X</kbd>: Cut
+- <kbd>Ctrl</kbd>+<kbd>E</kbd>: Image Attributes
 - <kbd>Ctrl</kbd>+<kbd>PageUp</kbd>: Large Size
 - <kbd>Ctrl</kbd>+<kbd>PageDown</kbd>: Normal Size
 
