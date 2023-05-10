@@ -1321,28 +1321,34 @@ class Canvas(Widget):
         """Message when starting drawing."""
 
         def __init__(self, mouse_down_event: events.MouseDown) -> None:
-            self.mouse_down_event = mouse_down_event
+            self.x = mouse_down_event.x
+            self.y = mouse_down_event.y
+            self.button = mouse_down_event.button
+            self.ctrl = mouse_down_event.ctrl
             super().__init__()
     
     class ToolUpdate(Message):
         """Message when dragging on the canvas."""
 
         def __init__(self, mouse_move_event: events.MouseMove) -> None:
-            self.mouse_move_event = mouse_move_event
+            self.x = mouse_move_event.x
+            self.y = mouse_move_event.y
             super().__init__()
 
     class ToolStop(Message):
         """Message when releasing the mouse."""
 
         def __init__(self, mouse_up_event: events.MouseUp) -> None:
-            self.mouse_up_event = mouse_up_event
+            self.x = mouse_up_event.x
+            self.y = mouse_up_event.y
             super().__init__()
 
     class ToolPreviewUpdate(Message):
         """Message when moving the mouse while the mouse is up."""
 
         def __init__(self, mouse_move_event: events.MouseMove) -> None:
-            self.mouse_move_event = mouse_move_event
+            self.x = mouse_move_event.x
+            self.y = mouse_move_event.y
             super().__init__()
 
     class ToolPreviewStop(Message):
@@ -2991,19 +2997,19 @@ class PaintApp(App[None]):
         self.mouse_gesture_cancelled = False
 
         if self.selected_tool == Tool.pick_color:
-            self.pick_color(event.mouse_down_event.x, event.mouse_down_event.y)
+            self.pick_color(event.x, event.y)
             return
 
         if self.selected_tool == Tool.magnifier:
-            self.magnifier_click(event.mouse_down_event.x, event.mouse_down_event.y)
+            self.magnifier_click(event.x, event.y)
             return
 
-        self.mouse_at_start = Offset(event.mouse_down_event.x, event.mouse_down_event.y)
+        self.mouse_at_start = Offset(event.x, event.y)
         self.mouse_previous = self.mouse_at_start
-        self.color_eraser_mode = self.selected_tool == Tool.eraser and event.mouse_down_event.button == 3
+        self.color_eraser_mode = self.selected_tool == Tool.eraser and event.button == 3
 
         if self.selected_tool in [Tool.curve, Tool.polygon]:
-            self.tool_points.append(Offset(event.mouse_down_event.x, event.mouse_down_event.y))
+            self.tool_points.append(Offset(event.x, event.y))
             if self.selected_tool == Tool.curve:
                 self.make_preview(self.draw_current_curve)
             else:
@@ -3012,7 +3018,7 @@ class PaintApp(App[None]):
             return
 
         if self.selected_tool == Tool.free_form_select:
-            self.tool_points = [Offset(event.mouse_down_event.x, event.mouse_down_event.y)]
+            self.tool_points = [Offset(event.x, event.y)]
 
         if self.selected_tool in [Tool.select, Tool.free_form_select, Tool.text]:
             sel = self.image.selection
@@ -3034,7 +3040,7 @@ class PaintApp(App[None]):
                 if sel.contained_image:
                     # Already cut out, don't replace the image data.
                     # But if you hold Ctrl, stamp the selection.
-                    if event.mouse_down_event.ctrl:
+                    if event.ctrl:
                         sel.copy_to_document(self.image)
                     return
                 # Cut out the selected part of the image from the document to use as the selection's image data.
@@ -3046,7 +3052,7 @@ class PaintApp(App[None]):
                     self.redos = []
                 self.undos.append(action)
                 sel.copy_from_document(self.image)
-                if not event.mouse_down_event.ctrl:
+                if not event.ctrl:
                     self.erase_region(sel.region, sel.mask)
  
                 # TODO: Optimize the region storage for selection tools, and Text tool.
@@ -3081,9 +3087,9 @@ class PaintApp(App[None]):
         
         affected_region = None
         if self.selected_tool == Tool.pencil or self.selected_tool == Tool.brush:
-            affected_region = self.stamp_brush(event.mouse_down_event.x, event.mouse_down_event.y)
+            affected_region = self.stamp_brush(event.x, event.y)
         elif self.selected_tool == Tool.fill:
-            affected_region = flood_fill(self.image, event.mouse_down_event.x, event.mouse_down_event.y, self.selected_char, self.selected_fg_color, self.selected_bg_color)
+            affected_region = flood_fill(self.image, event.x, event.y, self.selected_char, self.selected_fg_color, self.selected_bg_color)
 
         if affected_region:
             action.region = affected_region
@@ -3147,7 +3153,7 @@ class PaintApp(App[None]):
         event.stop()
         self.cancel_preview()
 
-        self.get_widget_by_id("status_coords", Static).update(f"{event.mouse_move_event.x},{event.mouse_move_event.y}")
+        self.get_widget_by_id("status_coords", Static).update(f"{event.x},{event.y}")
 
         if self.selected_tool in [Tool.brush, Tool.pencil, Tool.eraser, Tool.curve, Tool.polygon]:
             if self.selected_tool == Tool.curve:
@@ -3156,7 +3162,7 @@ class PaintApp(App[None]):
                 # polyline until finished
                 self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True)
             else:
-                self.make_preview(lambda: self.stamp_brush(event.mouse_move_event.x, event.mouse_move_event.y))
+                self.make_preview(lambda: self.stamp_brush(event.x, event.y))
         elif self.selected_tool == Tool.magnifier:
             prospective_magnification = self.get_prospective_magnification()
 
@@ -3167,8 +3173,8 @@ class PaintApp(App[None]):
             w = self.editing_area.size.width // prospective_magnification
             h = self.editing_area.size.height // prospective_magnification
 
-            rect_x1 = (event.mouse_move_event.x - w // 2)
-            rect_y1 = (event.mouse_move_event.y - h // 2)
+            rect_x1 = (event.x - w // 2)
+            rect_y1 = (event.y - h // 2)
 
             # try to move rect into bounds without squishing
             rect_x1 = max(0, rect_x1)
@@ -3314,12 +3320,12 @@ class PaintApp(App[None]):
                 # so it wouldn't match MS Paint unless I changed that or used the tool_points list.
                 # I don't know that anyone looks at the status bar while drawing a curve.
                 # If they do, they should probably be using a graphing calculator instead or something.
-                self.get_widget_by_id("status_dimensions", Static).update(f"{event.mouse_move_event.x - self.mouse_at_start.x}x{event.mouse_move_event.y - self.mouse_at_start.y}")
+                self.get_widget_by_id("status_dimensions", Static).update(f"{event.x - self.mouse_at_start.x}x{event.y - self.mouse_at_start.y}")
             else:
-                self.get_widget_by_id("status_coords", Static).update(f"{event.mouse_move_event.x},{event.mouse_move_event.y}")
+                self.get_widget_by_id("status_coords", Static).update(f"{event.x},{event.y}")
 
         if self.selected_tool == Tool.pick_color:
-            self.pick_color(event.mouse_move_event.x, event.mouse_move_event.y)
+            self.pick_color(event.x, event.y)
             return
 
         if self.selected_tool in [Tool.fill, Tool.magnifier]:
@@ -3329,7 +3335,7 @@ class PaintApp(App[None]):
             sel = self.image.selection
             if self.selecting_text:
                 assert sel is not None, "selecting_text should only be set if there's a selection"
-                offset_in_textbox = Offset(*event.mouse_move_event.offset) - sel.region.offset
+                offset_in_textbox = Offset(event.x, event.y) - sel.region.offset
                 offset_in_textbox = Offset(
                     min(max(0, offset_in_textbox.x), sel.region.width - 1),
                     min(max(0, offset_in_textbox.y), sel.region.height - 1),
@@ -3339,16 +3345,16 @@ class PaintApp(App[None]):
             elif self.selection_drag_offset is not None:
                 assert sel is not None, "selection_drag_offset should only be set if there's a selection"
                 offset = (
-                    self.selection_drag_offset.x + event.mouse_move_event.x,
-                    self.selection_drag_offset.y + event.mouse_move_event.y,
+                    self.selection_drag_offset.x + event.x,
+                    self.selection_drag_offset.y + event.y,
                 )
                 # Handles constraints and canvas refresh.
                 self.move_selection_absolute(*offset)
             elif self.selected_tool == Tool.free_form_select:
-                self.tool_points.append(Offset(event.mouse_move_event.x, event.mouse_move_event.y))
+                self.tool_points.append(Offset(event.x, event.y))
                 self.make_preview(self.draw_current_free_form_select_polyline, show_dimensions_in_status_bar=True)
             else:
-                self.canvas.select_preview_region = self.get_select_region(self.mouse_at_start, event.mouse_move_event.offset)
+                self.canvas.select_preview_region = self.get_select_region(self.mouse_at_start, Offset(event.x, event.y))
                 self.canvas.refresh_scaled_region(self.canvas.select_preview_region)
                 self.get_widget_by_id("status_dimensions", Static).update(
                     f"{self.canvas.select_preview_region.width}x{self.canvas.select_preview_region.height}"
@@ -3357,8 +3363,8 @@ class PaintApp(App[None]):
 
         if self.selected_tool in [Tool.curve, Tool.polygon]:
             if len(self.tool_points) < 2:
-                self.tool_points.append(Offset(event.mouse_move_event.x, event.mouse_move_event.y))
-            self.tool_points[-1] = Offset(event.mouse_move_event.x, event.mouse_move_event.y)
+                self.tool_points.append(Offset(event.x, event.y))
+            self.tool_points[-1] = Offset(event.x, event.y)
 
             if self.selected_tool == Tool.curve:
                 self.make_preview(self.draw_current_curve)
@@ -3370,7 +3376,6 @@ class PaintApp(App[None]):
         # The remaining tools work by updating an undo state created on mouse down.
         assert len(self.undos) > 0, "No undo state to update. The undo state should have been created in on_canvas_tool_start, or if the gesture was canceled, execution shouldn't reach here."
 
-        mm = event.mouse_move_event
         action = self.undos[-1]
         affected_region = None
 
@@ -3383,23 +3388,23 @@ class PaintApp(App[None]):
             self.undos.append(action)
         
         if self.selected_tool in [Tool.pencil, Tool.brush, Tool.eraser, Tool.airbrush]:
-            for x, y in bresenham_walk(self.mouse_previous.x, self.mouse_previous.y, mm.x, mm.y):
+            for x, y in bresenham_walk(self.mouse_previous.x, self.mouse_previous.y, event.x, event.y):
                 affected_region = self.stamp_brush(x, y, affected_region)
         elif self.selected_tool == Tool.line:
-            for x, y in bresenham_walk(self.mouse_at_start.x, self.mouse_at_start.y, mm.x, mm.y):
+            for x, y in bresenham_walk(self.mouse_at_start.x, self.mouse_at_start.y, event.x, event.y):
                 affected_region = self.stamp_brush(x, y, affected_region)
         elif self.selected_tool == Tool.rectangle:
-            for x in range(min(self.mouse_at_start.x, mm.x), max(self.mouse_at_start.x, mm.x) + 1):
-                for y in range(min(self.mouse_at_start.y, mm.y), max(self.mouse_at_start.y, mm.y) + 1):
-                    if x in range(min(self.mouse_at_start.x, mm.x) + 1, max(self.mouse_at_start.x, mm.x)) and y in range(min(self.mouse_at_start.y, mm.y) + 1, max(self.mouse_at_start.y, mm.y)):
+            for x in range(min(self.mouse_at_start.x, event.x), max(self.mouse_at_start.x, event.x) + 1):
+                for y in range(min(self.mouse_at_start.y, event.y), max(self.mouse_at_start.y, event.y) + 1):
+                    if x in range(min(self.mouse_at_start.x, event.x) + 1, max(self.mouse_at_start.x, event.x)) and y in range(min(self.mouse_at_start.y, event.y) + 1, max(self.mouse_at_start.y, event.y)):
                         continue
                     affected_region = self.stamp_brush(x, y, affected_region)
         elif self.selected_tool == Tool.rounded_rectangle:
-            arc_radius = min(2, abs(self.mouse_at_start.x - mm.x) // 2, abs(self.mouse_at_start.y - mm.y) // 2)
-            min_x = min(self.mouse_at_start.x, mm.x)
-            max_x = max(self.mouse_at_start.x, mm.x)
-            min_y = min(self.mouse_at_start.y, mm.y)
-            max_y = max(self.mouse_at_start.y, mm.y)
+            arc_radius = min(2, abs(self.mouse_at_start.x - event.x) // 2, abs(self.mouse_at_start.y - event.y) // 2)
+            min_x = min(self.mouse_at_start.x, event.x)
+            max_x = max(self.mouse_at_start.x, event.x)
+            min_y = min(self.mouse_at_start.y, event.y)
+            max_y = max(self.mouse_at_start.y, event.y)
             for x, y in midpoint_ellipse(0, 0, arc_radius, arc_radius):
                 if x < 0:
                     x = min_x + x + arc_radius
@@ -3417,10 +3422,10 @@ class PaintApp(App[None]):
                 affected_region = self.stamp_brush(min_x, y, affected_region)
                 affected_region = self.stamp_brush(max_x, y, affected_region)
         elif self.selected_tool == Tool.ellipse:
-            center_x = (self.mouse_at_start.x + mm.x) // 2
-            center_y = (self.mouse_at_start.y + mm.y) // 2
-            radius_x = abs(self.mouse_at_start.x - mm.x) // 2
-            radius_y = abs(self.mouse_at_start.y - mm.y) // 2
+            center_x = (self.mouse_at_start.x + event.x) // 2
+            center_y = (self.mouse_at_start.y + event.y) // 2
+            radius_x = abs(self.mouse_at_start.x - event.x) // 2
+            radius_y = abs(self.mouse_at_start.y - event.y) // 2
             for x, y in midpoint_ellipse(center_x, center_y, radius_x, radius_y):
                 affected_region = self.stamp_brush(x, y, affected_region)
         else:
@@ -3442,7 +3447,7 @@ class PaintApp(App[None]):
                 affected_region = affected_region.union(old_action.region)
             self.canvas.refresh_scaled_region(affected_region)
         
-        self.mouse_previous = mm.offset
+        self.mouse_previous = Offset(event.x, event.y)
 
     def on_canvas_tool_stop(self, event: Canvas.ToolStop) -> None:
         """Called when releasing the mouse button after drawing/dragging on the canvas."""
@@ -3484,7 +3489,7 @@ class PaintApp(App[None]):
                 select_region = Region(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
                 select_region = select_region.intersection(Region(0, 0, self.image.width, self.image.height))
             else:
-                select_region = self.get_select_region(self.mouse_at_start, event.mouse_up_event.offset)
+                select_region = self.get_select_region(self.mouse_at_start, Offset(event.x, event.y))
             if self.image.selection:
                 # This shouldn't happen, because it should meld
                 # the selection on mouse down.
@@ -3519,13 +3524,13 @@ class PaintApp(App[None]):
             time_since_last_click = event.time - self.polygon_last_click_time
             enough_points = len(self.tool_points) >= 3
             closed_gap = (
-                abs(self.tool_points[0].x - event.mouse_up_event.x) <= close_gap_threshold_cells and
-                abs(self.tool_points[0].y - event.mouse_up_event.y) <= close_gap_threshold_cells
+                abs(self.tool_points[0].x - event.x) <= close_gap_threshold_cells and
+                abs(self.tool_points[0].y - event.y) <= close_gap_threshold_cells
             )
             double_clicked = (
                 time_since_last_click < double_click_threshold_seconds and
-                abs(self.mouse_at_start.x - event.mouse_up_event.x) <= double_click_threshold_cells and
-                abs(self.mouse_at_start.y - event.mouse_up_event.y) <= double_click_threshold_cells
+                abs(self.mouse_at_start.x - event.x) <= double_click_threshold_cells and
+                abs(self.mouse_at_start.y - event.y) <= double_click_threshold_cells
             )
             if enough_points and (closed_gap or double_clicked):
                 self.finalize_polygon_or_curve()
