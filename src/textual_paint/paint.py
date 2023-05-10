@@ -999,7 +999,7 @@ class AnsiArtDocument:
         document.height = height
         # Pad rows to a consistent width.
         for y in range(document.height):
-            for x in range(document.width - len(document.ch[y])):
+            for x in range(len(document.ch[y]), document.width):
                 document.ch[y].append(' ')
                 document.bg[y].append(default_bg)
                 document.fg[y].append(default_fg)
