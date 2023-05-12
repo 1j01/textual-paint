@@ -3,6 +3,25 @@
 import os
 from PIL import Image
 
+block_char_lookup = {
+    0x0: ' ',
+    0x1: '▘',
+    0x2: '▝',
+    0x3: '▀',
+    0x4: '▖',
+    0x5: '▌',
+    0x6: '▞',
+    0x7: '▛',
+    0x8: '▗',
+    0x9: '▚',
+    0xA: '▐',
+    0xB: '▜',
+    0xC: '▄',
+    0xD: '▙',
+    0xE: '▟',
+    0xF: '█',
+}
+
 def extract_textures(image_path: str):
     # Open the image
     image = Image.open(image_path)
@@ -19,6 +38,7 @@ def extract_textures(image_path: str):
 
     # Create a new image to store the extracted textures
     extracted_image = Image.new('RGB', (num_textures_x * texture_width, num_textures_y * texture_height))
+    extracted_text = ""
 
     # Extract textures
     for row in range(num_textures_y):
@@ -39,12 +59,37 @@ def extract_textures(image_path: str):
             # Paste the texture onto the extracted image
             extracted_image.paste(texture, (paste_x, paste_y))
 
-    return extracted_image
+            # Extract as text
+            for y in range(0, texture_height, 2):
+                for x in range(0, texture_width, 2):
+                    # Get the four pixels that make up a character
+                    fg_palette_index = 1
+                    aa = texture.getpixel((x, y)) == fg_palette_index
+                    ab = texture.getpixel((x, y + 1)) == fg_palette_index
+                    ba = texture.getpixel((x + 1, y)) == fg_palette_index
+                    bb = texture.getpixel((x + 1, y + 1)) == fg_palette_index
+
+                    # Convert the pixel to a character
+                    # char = block_char_lookup[(aa << 3) | (ab << 2) | (ba << 1) | bb]
+                    char = block_char_lookup[(bb << 3) | (ab << 2) | (ba << 1) | aa]
+
+                    # Add the character to the extracted text
+                    extracted_text += char
+
+                # Add a newline after each row
+                extracted_text += '\n'
+            # extracted_text += '(end of character ' + str(row * num_textures_x + col) + ')\n'
+
+    return extracted_image, extracted_text
 
 samples_folder = os.path.join(os.path.dirname(__file__), '../../samples')
 image_path = os.path.join(samples_folder, 'NanoTiny_v14.png')
 output_path = os.path.join(samples_folder, 'NanoTiny_v14_no_border.png')
+text_output_path = os.path.join(samples_folder, 'NanoTiny_v14_2x2.txt')
 
-extracted_image = extract_textures(image_path)
+extracted_image, extracted_text = extract_textures(image_path)
 extracted_image.save(output_path)
 print(f'Wrote extracted textures to {output_path}')
+with open(text_output_path, 'w') as f:
+    f.write(extracted_text)
+print(f'Wrote extracted textures to {text_output_path}')
