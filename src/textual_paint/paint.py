@@ -238,7 +238,12 @@ with open(os.path.join(os.path.dirname(__file__), "../../NanoTiny_v14_2x2.txt"),
         if i % meta_glyph_height == 0:
             glyph = []
             ch_code = i // meta_glyph_height
-            ch = chr(ch_code)
+            # this makes more characters work
+            # TODO: figure out what's wrong
+            # I might've been confused by different character sets when making the font
+            ch_code = (ch_code - 2) % 256
+            ch_byte = bytes([ch_code])
+            ch = ch_byte.decode('cp437')
             meta_glyphs_font[ch] = glyph
         glyph.append(line)
         i += 1
