@@ -224,6 +224,25 @@ if args.restart_on_changes:
 
 # Most arguments are handled at the end of the file.
 
+meta_glyphs_font: dict[str, list[str]] = {}
+meta_glyph_width = 2
+meta_glyph_height = 2
+with open(os.path.join(os.path.dirname(__file__), "../../NanoTiny_v14_2x2.txt"), "r") as f:
+    i = 0
+    glyph: list[str] = []
+    for line in f:
+        if line.startswith("#"):
+            continue
+        # Note that whitespace should be preserved.
+        line = line.rstrip("\n")
+        if i % meta_glyph_height == 0:
+            glyph = []
+            ch_code = i // meta_glyph_height
+            ch = chr(ch_code)
+            meta_glyphs_font[ch] = glyph
+        glyph.append(line)
+        i += 1
+
 class Tool(Enum):
     """The tools available in the Paint app."""
     free_form_select = 1
@@ -1532,6 +1551,16 @@ class Canvas(Widget):
     
     def big_ch(self, ch: str, x: int, y: int) -> str:
         """Return a character part of a meta-glyph."""
+        if ch in meta_glyphs_font:
+            glyph_lines = meta_glyphs_font[ch]
+            x -= (self.magnification - meta_glyph_width) // 2
+            y -= (self.magnification - meta_glyph_height) // 2
+            if y >= len(glyph_lines) or y < 0:
+                return " "
+            glyph_line = glyph_lines[y]
+            if x >= len(glyph_line) or x < 0:
+                return " "
+            return glyph_line[x]
         if ch in " ░▒▓█":
             return ch
         match ch:
@@ -1544,8 +1573,7 @@ class Canvas(Widget):
             case "▐":
                 return "█" if x >= self.magnification // 2 else " "
             case _: pass
-        # Fall back to showing the character for a single cell.
-        # if x == 0 and y == 0:
+        # Fall back to showing the character in a single cell, approximately centered.
         if x == self.magnification // 2 and y == self.magnification // 2:
             return ch
         else:
