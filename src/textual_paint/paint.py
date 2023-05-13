@@ -34,6 +34,7 @@ from textual.widgets import Button, Static, Input, Header, RadioSet, RadioButton
 from textual.binding import Binding
 from textual.color import Color
 from PIL import Image, UnidentifiedImageError
+from pyfiglet import Figlet, FigletFont
 
 from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon, get_question_icon
@@ -241,37 +242,29 @@ class MetaGlyphFont:
         self.load()
     
     def load(self):
-        """Load the font from the file.
-        
-        The format is simply the rows of each glyph. There is no more separation between glyphs than between rows of a glyph.
-        TODO: support loading FIGlet fonts
-        """
-        with open(self.file_path, "r") as f:
-            i = 0
-            glyph: list[str] = []
-            for line in f:
-                if line.startswith("#"):
-                    continue
-                # Note that whitespace should be preserved.
-                line = line.rstrip("\n")
-                if i % self.height == 0:
-                    glyph = []
-                    ch_code = i // self.height
-                    # this makes more characters work
-                    # TODO: figure out what's wrong
-                    # I might've been confused by different character sets when making the font
-                    ch_code = (ch_code - 2) % 256
-                    ch_byte = bytes([ch_code])
-                    ch = ch_byte.decode('cp437')
-                    if ch in self.covered_characters:
-                        self.glyphs[ch] = glyph
-                glyph.append(line)
-                i += 1
+        """Load the font from the .flf FIGlet font file."""
+        # fig = Figlet(font=self.file_path) # gives FontNotFound error!
+        # Figlet constructor only supports looking for installed fonts.
+        # I could install the font, with FigletFont.installFonts,
+        # maybe with some prefixed name, but I don't want to do that.
+
+        with open(self.file_path) as f:
+            flf = f.read()
+            fig_font = FigletFont()
+            fig_font.data = flf
+            fig_font.loadFont()
+            fig = Figlet()
+            # fig.setFont(font=fig_font) # nope, that's also looking for a font name
+            fig.font = self.file_path  # may not be used
+            fig.Font = fig_font  # this feels so wrong
+            for char in self.covered_characters:
+                meta_glyph = fig.renderText(char)  # type: ignore
+                self.glyphs[char] = meta_glyph.split("\n")
 
 covered_characters = R""" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"""
 meta_glyph_fonts: dict[int, MetaGlyphFont] = {
-    2: MetaGlyphFont(os.path.join(os.path.dirname(__file__), "../../NanoTiny_v14_2x2.txt"), 2, 2, covered_characters),
-    # 4: MetaGlyphFont(os.path.join(os.path.dirname(__file__), "../../NanoTiny_v14_4x4.txt"), 4, 4, covered_characters),
+    2: MetaGlyphFont(os.path.join(os.path.dirname(__file__), "../../NanoTiny_v14_2x2.flf"), 2, 2, covered_characters),
+    # 4: MetaGlyphFont(os.path.join(os.path.dirname(__file__), "../../NanoTiny_v14_4x4.flf"), 4, 4, covered_characters),
     # TODO: less specialized (more practical) fonts for larger sizes
 }
 
