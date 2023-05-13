@@ -286,8 +286,8 @@ def extract_textures(image_path: str):
     # Create a new image to store the extracted textures
     extracted_image = Image.new('RGB', (num_textures_x * texture_width, num_textures_y * texture_height))
     
-    half_size_meta_glyphs = {}
-    full_size_meta_glyphs = {}
+    half_size_meta_glyphs: dict[int, str] = {}
+    full_size_meta_glyphs: dict[int, str] = {}
 
     # Extract textures
     for row in range(num_textures_y):
@@ -353,14 +353,24 @@ def extract_textures(image_path: str):
                 extracted_text_full += '\n'
             
             full_size_meta_glyphs[ordinal] = extracted_text_full
-            
     
+    for figChars in [half_size_meta_glyphs, full_size_meta_glyphs]:
+        # Fill in the space characters with hard blanks
+        # figChars[32] = figChars[32].replace(' ', '$')
+        # Or just half of the max width of the FIGcharacters
+        figChars[32] = '\n'.join(['$' * (len(row) // 2) for row in figChars[32].split('\n')])
+        # Add hard blanks to the end of non-whitespace of each row of each FIGcharacter
+        # With the "Full" layout, this will ensure a space between rendered FIGcharacters.
+        # The fixup code (_fixFigChars) will handle the ragged right edge.
+        for ordinal in figChars:
+            figChars[ordinal] = '\n'.join([row.rstrip() + '$' for row in figChars[ordinal].split('\n')])
+
     half_size_font = FIGletFontWriter(
         fontName="NanoTiny 2x2",
         figChars=half_size_meta_glyphs,
         height=2,
         baseline=2,
-        maxLength=2,
+        maxLength=2+3,
         commentLines=[
             "NanoTiny 2x2",
             "by Isaiah Odhner",
@@ -373,7 +383,7 @@ def extract_textures(image_path: str):
         figChars=full_size_meta_glyphs,
         height=4,
         baseline=4,
-        maxLength=4,
+        maxLength=4+3,
         commentLines=[
             "NanoTiny 4x4",
             "by Isaiah Odhner",
