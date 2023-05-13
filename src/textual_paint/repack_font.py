@@ -62,7 +62,7 @@ class FIGletFontWriter:
         self.horizontalLayout = horizontalLayout
         self.verticalLayout = verticalLayout
         self.hRule = [False] * 7
-        self.vRule = [False] * 7
+        self.vRule = [False] * 6
         self.caseInsensitive = caseInsensitive
 
     def getOldLayoutValue(self) -> int:
