@@ -139,7 +139,7 @@ Additional characters must use code tagged characters, which are not yet support
         self.caseInsensitive = caseInsensitive
         """Makes lowercase same as uppercase. Note that this is one-way overwrite. It doesn't check if a character already exists, and it won't fill in uppercase using lowercase."""
 
-    def getOldLayoutValue(self) -> int:
+    def _getOldLayoutValue(self) -> int:
         val = 0
         if self.horizontalLayout == 'Full':
             return -1
@@ -156,7 +156,7 @@ Additional characters must use code tagged characters, which are not yet support
             val += 32 if self.hRule[6] else 0
         return val
 
-    def getFullLayoutValue(self) -> int:
+    def _getFullLayoutValue(self) -> int:
         val = 0
 
         # horizontal rules
@@ -206,15 +206,15 @@ Additional characters must use code tagged characters, which are not yet support
         header.append(str(self.height))
         header.append(str(baseline))
         header.append(str(self.maxLength))
-        header.append(str(self.getOldLayoutValue()))
+        header.append(str(self._getOldLayoutValue()))
         header.append(str(len(self.commentLines)))
         header.append("1" if self.rightToLeft else "0")
-        header.append(str(self.getFullLayoutValue()))
+        header.append(str(self._getFullLayoutValue()))
         header.append(str(self.codeTagCount))
 
         return ' '.join(header)
 
-    def fixFigChars(self):
+    def _fixFigChars(self):
         height = 0
         charWidth: dict[int, int] = {}
         maxWidth = 0
@@ -253,7 +253,7 @@ Additional characters must use code tagged characters, which are not yet support
     def createFigFileData(self) -> str:
         """Generates the FIGlet file data for the current font."""
         output = ''
-        self.fixFigChars()
+        self._fixFigChars()
 
         output = self.generateFigFontHeader() + '\n'
         output += "\n".join(self.commentLines) + '\n'
