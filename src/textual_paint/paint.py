@@ -224,7 +224,7 @@ if args.restart_on_changes:
 
 # Most arguments are handled at the end of the file.
 
-meta_glyphs_font: dict[str, list[str]] = {}
+meta_glyph_font: dict[str, list[str]] = {}
 meta_glyph_width = 2
 meta_glyph_height = 2
 with open(os.path.join(os.path.dirname(__file__), "../../NanoTiny_v14_2x2.txt"), "r") as f:
@@ -244,7 +244,7 @@ with open(os.path.join(os.path.dirname(__file__), "../../NanoTiny_v14_2x2.txt"),
             ch_code = (ch_code - 2) % 256
             ch_byte = bytes([ch_code])
             ch = ch_byte.decode('cp437')
-            meta_glyphs_font[ch] = glyph
+            meta_glyph_font[ch] = glyph
         glyph.append(line)
         i += 1
 
@@ -1556,8 +1556,8 @@ class Canvas(Widget):
     
     def big_ch(self, ch: str, x: int, y: int) -> str:
         """Return a character part of a meta-glyph."""
-        if ch in meta_glyphs_font:
-            glyph_lines = meta_glyphs_font[ch]
+        if ch in meta_glyph_font:
+            glyph_lines = meta_glyph_font[ch]
             x -= (self.magnification - meta_glyph_width) // 2
             y -= (self.magnification - meta_glyph_height) // 2
             if y >= len(glyph_lines) or y < 0:
