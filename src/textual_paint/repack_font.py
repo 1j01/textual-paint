@@ -366,9 +366,7 @@ def extract_textures(image_path: str):
 
     half_size_font = FIGletFontWriter(
         figChars=half_size_meta_glyphs,
-        height=2,
         baseline=2,
-        maxLength=2+3,
         commentLines=[
             "NanoTiny 2x2 (version 14)",
             "by Isaiah Odhner",
@@ -378,9 +376,7 @@ def extract_textures(image_path: str):
     )
     full_size_font = FIGletFontWriter(
         figChars=full_size_meta_glyphs,
-        height=4,
         baseline=4,
-        maxLength=4+3,
         commentLines=[
             "NanoTiny 4x4 (version 14)",
             "by Isaiah Odhner",
