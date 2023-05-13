@@ -47,6 +47,7 @@ class FIGletFontWriter:
         codeTagCount: int = 0,
         hardBlank: str = "$",
         endMark: str = "@",
+        caseInsensitive: bool = False
     ):
         self.fontName = fontName
         self.figChars: dict[int, str] = figChars
@@ -62,7 +63,7 @@ class FIGletFontWriter:
         self.verticalLayout = verticalLayout
         self.hRule = [False] * 7
         self.vRule = [False] * 7
-        self.caseInsensitive = False
+        self.caseInsensitive = caseInsensitive
 
     def getOldLayoutValue(self) -> int:
         val = 0
