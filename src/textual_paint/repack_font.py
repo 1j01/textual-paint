@@ -94,18 +94,18 @@ Additional characters must use code tagged characters, which are not yet support
 
     def __init__(
         self,
-        figChars: dict[int, str],
-        height: int,
-        baseline: int,
-        maxLength: int,
-        commentLines: list[str],
+        figChars: dict[int, str] = {},
+        height: int | None = None,
+        baseline: int | None = None,
+        maxLength: int | None = None,
+        commentLines: list[str] = [],
         rightToLeft: bool = False,
         horizontalLayout: str = 'Universal Smushing',
         verticalLayout: str = 'Universal Smushing',
         codeTagCount: int = 0,
         hardBlank: str = "$",
         endMark: str = "@",
-        caseInsensitive: bool = False
+        caseInsensitive: bool = False,
     ):
         self.figChars: dict[int, str] = figChars
         """Dictionary that maps character codes to FIGcharacter strings."""
@@ -193,7 +193,9 @@ Additional characters must use code tagged characters, which are not yet support
         header: list[str] = []
         baseline = self.baseline
 
-        if not baseline:
+        if self.height is None:
+            raise ValueError("Height must be specified, or should be automatically determined.")
+        if baseline is None:
             baseline = self.height
         baseline = int(baseline)
         if baseline <= 0 or baseline > self.height:
