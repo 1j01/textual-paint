@@ -38,7 +38,8 @@ def extract_textures(image_path: str):
 
     # Create a new image to store the extracted textures
     extracted_image = Image.new('RGB', (num_textures_x * texture_width, num_textures_y * texture_height))
-    extracted_text = ""
+    extracted_text_half = ""
+    extracted_text_full = ""
 
     # Extract textures
     for row in range(num_textures_y):
@@ -74,22 +75,43 @@ def extract_textures(image_path: str):
                     char = block_char_lookup[(bb << 3) | (ab << 2) | (ba << 1) | aa]
 
                     # Add the character to the extracted text
-                    extracted_text += char
+                    extracted_text_half += char
 
                 # Add a newline after each row
-                extracted_text += '\n'
+                extracted_text_half += '\n'
             # extracted_text += '(end of character ' + str(row * num_textures_x + col) + ')\n'
 
-    return extracted_image, extracted_text
+            # Extract as text 2
+            for y in range(texture_height):
+                for x in range(texture_width):
+                    # Get the pixel
+                    fg_palette_index = 1
+                    pixel = texture.getpixel((x, y)) == fg_palette_index
 
-samples_folder = os.path.join(os.path.dirname(__file__), '../../samples')
+                    # Convert the pixel to a character
+                    char = '█' if pixel else ' '
+
+                    # Add the character to the extracted text
+                    extracted_text_full += char
+
+                # Add a newline after each row
+                extracted_text_full += '\n'
+
+    return extracted_image, extracted_text_half, extracted_text_full
+
+base_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+samples_folder = os.path.join(base_folder, 'samples')
 image_path = os.path.join(samples_folder, 'NanoTiny_v14.png')
 output_path = os.path.join(samples_folder, 'NanoTiny_v14_no_border.png')
-text_output_path = os.path.join(samples_folder, 'NanoTiny_v14_2x2.txt')
+half_size_text_output_path = os.path.join(base_folder, 'NanoTiny_v14_2x2.txt')
+full_size_text_output_path = os.path.join(base_folder, 'NanoTiny_v14_4x4.txt')
 
-extracted_image, extracted_text = extract_textures(image_path)
+extracted_image, extracted_text_half, extracted_text_full = extract_textures(image_path)
 extracted_image.save(output_path)
 print(f'Wrote extracted textures to {output_path}')
-with open(text_output_path, 'w') as f:
-    f.write(extracted_text)
-print(f'Wrote extracted textures to {text_output_path}')
+with open(full_size_text_output_path, 'w') as f:
+    f.write(extracted_text_full)
+print(f'Wrote extracted textures to {full_size_text_output_path}')
+with open(half_size_text_output_path, 'w') as f:
+    f.write(extracted_text_half)
+print(f'Wrote extracted textures to {half_size_text_output_path}')
