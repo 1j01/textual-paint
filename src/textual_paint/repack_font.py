@@ -366,26 +366,26 @@ def extract_textures(image_path: str):
             figChars[ordinal] = '\n'.join([row.rstrip() + '$' for row in figChars[ordinal].split('\n')])
 
     half_size_font = FIGletFontWriter(
-        fontName="NanoTiny 2x2",
+        fontName="NanoTiny 2x2 (version 14)",
         figChars=half_size_meta_glyphs,
         height=2,
         baseline=2,
         maxLength=2+3,
         commentLines=[
-            "NanoTiny 2x2",
+            "NanoTiny 2x2 (version 14)",
             "by Isaiah Odhner",
         ],
         horizontalLayout="Full",
         verticalLayout="Full",
     )
     full_size_font = FIGletFontWriter(
-        fontName="NanoTiny 4x4",
+        fontName="NanoTiny 4x4 (version 14)",
         figChars=full_size_meta_glyphs,
         height=4,
         baseline=4,
         maxLength=4+3,
         commentLines=[
-            "NanoTiny 4x4",
+            "NanoTiny 4x4 (version 14)",
             "by Isaiah Odhner",
         ],
         horizontalLayout="Full",
