@@ -94,7 +94,6 @@ Additional characters must use code tagged characters, which are not yet support
 
     def __init__(
         self,
-        fontName: str,
         figChars: dict[int, str],
         height: int,
         baseline: int,
@@ -108,8 +107,6 @@ Additional characters must use code tagged characters, which are not yet support
         endMark: str = "@",
         caseInsensitive: bool = False
     ):
-        self.fontName = fontName
-        """Name of the font."""
         self.figChars: dict[int, str] = figChars
         """Dictionary that maps character codes to FIGcharacter strings."""
         self.height = height
@@ -366,7 +363,6 @@ def extract_textures(image_path: str):
             figChars[ordinal] = '\n'.join([row.rstrip() + '$' for row in figChars[ordinal].split('\n')])
 
     half_size_font = FIGletFontWriter(
-        fontName="NanoTiny 2x2 (version 14)",
         figChars=half_size_meta_glyphs,
         height=2,
         baseline=2,
@@ -379,7 +375,6 @@ def extract_textures(image_path: str):
         verticalLayout="Full",
     )
     full_size_font = FIGletFontWriter(
-        fontName="NanoTiny 4x4 (version 14)",
         figChars=full_size_meta_glyphs,
         height=4,
         baseline=4,
