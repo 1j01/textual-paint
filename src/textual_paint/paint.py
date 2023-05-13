@@ -224,31 +224,63 @@ if args.restart_on_changes:
 
 # Most arguments are handled at the end of the file.
 
-meta_glyph_font: dict[str, list[str]] = {}
-meta_glyph_width = 2
-meta_glyph_height = 2
-meta_glyph_covered_characters = R""" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"""
-with open(os.path.join(os.path.dirname(__file__), "../../NanoTiny_v14_2x2.txt"), "r") as f:
-    i = 0
-    glyph: list[str] = []
-    for line in f:
-        if line.startswith("#"):
-            continue
-        # Note that whitespace should be preserved.
-        line = line.rstrip("\n")
-        if i % meta_glyph_height == 0:
-            glyph = []
-            ch_code = i // meta_glyph_height
-            # this makes more characters work
-            # TODO: figure out what's wrong
-            # I might've been confused by different character sets when making the font
-            ch_code = (ch_code - 2) % 256
-            ch_byte = bytes([ch_code])
-            ch = ch_byte.decode('cp437')
-            if ch in meta_glyph_covered_characters:
-                meta_glyph_font[ch] = glyph
-        glyph.append(line)
-        i += 1
+class MetaGlyphFont:
+    def __init__(self, file_path: str, width: int, height: int, covered_characters: str):
+        self.file_path = file_path
+        """The path to the font file."""
+        self.glyphs: dict[str, list[str]] = {}
+        """Maps characters to meta-glyphs, where each meta-glyph is a list of rows of characters."""
+        self.width = width
+        """The width in characters of a meta-glyph."""
+        self.height = height
+        """The height in characters of a meta-glyph."""
+        self.covered_characters = covered_characters
+        """The characters supported by this font."""
+        self.load()
+    
+    def load(self):
+        """Load the font from the file.
+        
+        The format is simply the rows of each glyph. There is no more separation between glyphs than between rows of a glyph.
+        TODO: support loading FIGlet fonts
+        """
+        with open(self.file_path, "r") as f:
+            i = 0
+            glyph: list[str] = []
+            for line in f:
+                if line.startswith("#"):
+                    continue
+                # Note that whitespace should be preserved.
+                line = line.rstrip("\n")
+                if i % self.height == 0:
+                    glyph = []
+                    ch_code = i // self.height
+                    # this makes more characters work
+                    # TODO: figure out what's wrong
+                    # I might've been confused by different character sets when making the font
+                    ch_code = (ch_code - 2) % 256
+                    ch_byte = bytes([ch_code])
+                    ch = ch_byte.decode('cp437')
+                    if ch in self.covered_characters:
+                        self.glyphs[ch] = glyph
+                glyph.append(line)
+                i += 1
+
+covered_characters = R""" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"""
+meta_glyph_fonts: dict[int, MetaGlyphFont] = {
+    2: MetaGlyphFont(os.path.join(os.path.dirname(__file__), "../../NanoTiny_v14_2x2.txt"), 2, 2, covered_characters),
+    # 4: MetaGlyphFont(os.path.join(os.path.dirname(__file__), "../../NanoTiny_v14_4x4.txt"), 4, 4, covered_characters),
+    # TODO: less specialized (more practical) fonts for larger sizes
+}
+
+def largest_font_that_fits(max_width: int, max_height: int) -> MetaGlyphFont | None:
+    """Get the largest font with glyphs that can all fit in the given dimensions."""
+    for font_size in sorted(meta_glyph_fonts.keys(), reverse=True):
+        font = meta_glyph_fonts[font_size]
+        if font.width <= max_width and font.height <= max_height:
+            return font
+    return None
+
 
 class Tool(Enum):
     """The tools available in the Paint app."""
@@ -1556,12 +1588,16 @@ class Canvas(Widget):
             (region.height + 2) * self.magnification,
         ))
     
+    def watch_magnification(self) -> None:
+        """Called when magnification changes."""
+        self.active_meta_glyph_font = largest_font_that_fits(self.magnification, self.magnification)
+
     def big_ch(self, ch: str, x: int, y: int) -> str:
         """Return a character part of a meta-glyph."""
-        if ch in meta_glyph_font:
-            glyph_lines = meta_glyph_font[ch]
-            x -= (self.magnification - meta_glyph_width) // 2
-            y -= (self.magnification - meta_glyph_height) // 2
+        if self.active_meta_glyph_font and ch in self.active_meta_glyph_font.glyphs:
+            glyph_lines = self.active_meta_glyph_font.glyphs[ch]
+            x -= (self.magnification - self.active_meta_glyph_font.width) // 2
+            y -= (self.magnification - self.active_meta_glyph_font.height) // 2
             if y >= len(glyph_lines) or y < 0:
                 return " "
             glyph_line = glyph_lines[y]
