@@ -227,6 +227,7 @@ if args.restart_on_changes:
 meta_glyph_font: dict[str, list[str]] = {}
 meta_glyph_width = 2
 meta_glyph_height = 2
+meta_glyph_covered_characters = R""" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"""
 with open(os.path.join(os.path.dirname(__file__), "../../NanoTiny_v14_2x2.txt"), "r") as f:
     i = 0
     glyph: list[str] = []
@@ -244,7 +245,8 @@ with open(os.path.join(os.path.dirname(__file__), "../../NanoTiny_v14_2x2.txt"),
             ch_code = (ch_code - 2) % 256
             ch_byte = bytes([ch_code])
             ch = ch_byte.decode('cp437')
-            meta_glyph_font[ch] = glyph
+            if ch in meta_glyph_covered_characters:
+                meta_glyph_font[ch] = glyph
         glyph.append(line)
         i += 1
 
