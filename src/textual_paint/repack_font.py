@@ -151,9 +151,6 @@ class FIGletFontWriter:
 
         # Calculate max height and ensure consistent width for each character
         for idx in self.figChars:
-            if idx == -1:
-                continue  # ignore comment header
-
             figChar = self.figChars[idx].replace('\r\n', '\n').split('\n')
             height = max(height, len(figChar))
             charWidth[idx] = 0
@@ -171,9 +168,6 @@ class FIGletFontWriter:
 
         # Fix any height issues
         for idx in self.figChars:
-            if idx == -1:
-                continue  # ignore comment header
-
             figChar = self.figChars[idx].replace('\r\n', '\n').split('\n')
             if len(figChar) < height:
                 self.figChars[idx] = '\n'.join(figChar) + '\n' + blankLines(height - len(figChar), charWidth[idx])
