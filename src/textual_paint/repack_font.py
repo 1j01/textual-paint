@@ -363,13 +363,23 @@ def extract_textures(image_path: str):
         # The fixup code (_fixFigChars) will handle the ragged right edge.
         for ordinal in figChars:
             figChars[ordinal] = '\n'.join([row.rstrip() + '$' for row in figChars[ordinal].split('\n')])
-
+    
+    shared_comment_lines = [
+        "by Isaiah Odhner",
+        "",
+        "Copyright (c) 2023, Isaiah Odhner (https://isaiahodhner.io),",
+        "with Reserved Font Name NanoTiny.",
+        "",
+        "This Font Software is licensed under the SIL Open Font License, Version 1.1.",
+        "This license is available in OFL.txt and is also available with a FAQ at:",
+        "http://scripts.sil.org/OFL",
+    ]
     half_size_font = FIGletFontWriter(
         figChars=half_size_meta_glyphs,
         baseline=2,
         commentLines=[
             "NanoTiny 2x2 (version 14)",
-            "by Isaiah Odhner",
+            *shared_comment_lines,
         ],
         horizontalLayout="Full",
         verticalLayout="Full",
@@ -379,7 +389,7 @@ def extract_textures(image_path: str):
         baseline=4,
         commentLines=[
             "NanoTiny 4x4 (version 14)",
-            "by Isaiah Odhner",
+            *shared_comment_lines,
         ],
         horizontalLayout="Full",
         verticalLayout="Full",
