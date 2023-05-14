@@ -11,7 +11,7 @@
 	],
 	"ignorePaths": [
 		".git",
-		"*.(bmp|png|jpg|jpeg|gif|svg|ico|tiff|tif|ans)",
+		"*.(bmp|png|jpg|jpeg|gif|svg|ico|tiff|tif|ans|flf)",
 		"*.log",
 		"**/localization/*/**/*",
 		"**/localization/*.sh",
