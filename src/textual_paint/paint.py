@@ -263,8 +263,8 @@ class MetaGlyphFont:
 
 covered_characters = R""" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"""
 meta_glyph_fonts: dict[int, MetaGlyphFont] = {
-    2: MetaGlyphFont(os.path.join(os.path.dirname(__file__), "../../NanoTiny_v14_2x2.flf"), 2, 2, covered_characters),
-    # 4: MetaGlyphFont(os.path.join(os.path.dirname(__file__), "../../NanoTiny_v14_4x4.flf"), 4, 4, covered_characters),
+    2: MetaGlyphFont(os.path.join(os.path.dirname(__file__), "../../fonts/NanoTiny/NanoTiny_v14_2x2.flf"), 2, 2, covered_characters),
+    # 4: MetaGlyphFont(os.path.join(os.path.dirname(__file__), "../../fonts/NanoTiny/NanoTiny_v14_4x4.flf"), 4, 4, covered_characters),
     # TODO: less specialized (more practical) fonts for larger sizes
 }
 

@@ -387,16 +387,16 @@ def extract_textures(image_path: str):
 
     return extracted_image, half_size_font.createFigFileData(), full_size_font.createFigFileData()
 
-base_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-samples_folder = os.path.join(base_folder, 'samples')
-image_path = os.path.join(samples_folder, 'NanoTiny_v14.png')
-output_path = os.path.join(samples_folder, 'NanoTiny_v14_no_border.png')
-half_size_flf_output_path = os.path.join(base_folder, 'NanoTiny_v14_2x2.flf')
-full_size_flf_output_path = os.path.join(base_folder, 'NanoTiny_v14_4x4.flf')
+repo_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+font_folder = os.path.join(repo_folder, 'fonts/NanoTiny')
+image_input_path = os.path.join(font_folder, 'NanoTiny_v14.png')
+image_output_path = os.path.join(font_folder, 'NanoTiny_v14_no_border.png')
+half_size_flf_output_path = os.path.join(font_folder, 'NanoTiny_v14_2x2.flf')
+full_size_flf_output_path = os.path.join(font_folder, 'NanoTiny_v14_4x4.flf')
 
-extracted_image, extracted_text_half, extracted_text_full = extract_textures(image_path)
-extracted_image.save(output_path)
-print(f'Wrote extracted textures to {output_path}')
+extracted_image, extracted_text_half, extracted_text_full = extract_textures(image_input_path)
+extracted_image.save(image_output_path)
+print(f'Wrote extracted textures to {image_output_path}')
 with open(full_size_flf_output_path, 'w') as f:
     f.write(extracted_text_full)
 print(f'Wrote FIGlet font {full_size_flf_output_path}')
