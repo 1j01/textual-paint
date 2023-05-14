@@ -824,6 +824,23 @@ class AnsiArtDocument:
         self.bg = new_bg
         self.fg = new_fg
 
+    def encode_based_on_file_extension(self, file_path: str) -> str:
+        """Encode the image according to the file extension."""
+        file_type = os.path.splitext(file_path)[1][1:].upper()
+        print("File extension (normalized to uppercase):", file_type)
+        if file_type == "SVG":
+            return self.get_svg()
+        elif file_type == "HTML" or file_type == "HTM":
+            return self.get_html()
+        elif file_type == "TXT":
+            return self.get_plain()
+        elif file_type == "_RICH_CONSOLE_MARKUP":
+            return self.get_rich_console_markup()
+        else:
+            if file_type not in ["ANS", "NFO"]:
+                print("Falling back to ANSI")
+            return self.get_ansi()
+
     def get_ansi(self) -> str:
         """Get the ANSI representation of the document."""
         renderable = self.get_renderable()
@@ -2130,23 +2147,6 @@ class PaintApp(App[None]):
             self.message_box(dialog_title, _("An unexpected error occurred while writing %1.", file_path) + "\n\n" + repr(e), "ok")
         return False
 
-    # TODO: make this a method of AnsiArtDocument
-    def encode_image(self, file_path: str, image: AnsiArtDocument) -> str:
-        """Encode the image according to the file extension."""
-        file_type = os.path.splitext(file_path)[1][1:].upper()
-        print("File extension (normalized to uppercase):", file_type)
-        if file_type == "SVG":
-            return image.get_svg()
-        elif file_type == "HTML" or file_type == "HTM":
-            return image.get_html()
-        elif file_type == "TXT":
-            return image.get_plain()
-        elif file_type == "_RICH_CONSOLE_MARKUP":
-            return image.get_rich_console_markup()
-        else:
-            print("Saving as ANSI")
-            return image.get_ansi()
-
     async def save(self) -> bool:
         """Save the image to a file.
         
@@ -2156,7 +2156,7 @@ class PaintApp(App[None]):
         dialog_title = _("Save")
         if self.file_path:
             try:
-                content = self.encode_image(self.file_path, self.image)
+                content = self.image.encode_based_on_file_extension(self.file_path)
                 if self.write_file_path(self.file_path, content, dialog_title):
                     self.saved_undo_count = len(self.undos)
                     return True
@@ -2192,7 +2192,7 @@ class PaintApp(App[None]):
             def on_save_confirmed():
                 async def async_on_save_confirmed():
                     self.stop_action_in_progress()
-                    content = self.encode_image(file_path, self.image)
+                    content = self.image.encode_based_on_file_extension(file_path)
                     success = self.write_file_path(file_path, content, _("Save As"))
                     if success:
                         self.discard_backup() # for OLD file_path (must be done before changing self.file_path)
@@ -2621,7 +2621,7 @@ class PaintApp(App[None]):
                 text = selected_text(sel)
             else:
                 string_for_ext_detection = file_path or "this_text_before_the_dot_is_needed.ans"
-                text = self.encode_image(string_for_ext_detection, sel.contained_image)
+                text = sel.contained_image.encode_based_on_file_extension(string_for_ext_detection)
         finally:
             if not had_contained_image:
                 sel.contained_image = None
@@ -3944,7 +3944,7 @@ if args.recode_samples:
         with open(file_path, "r") as f:
             image = AnsiArtDocument.from_text(f.read())
         with open(file_path, "w") as f:
-            f.write(app.encode_image(file_path, image))
+            f.write(image.encode_based_on_file_extension(file_path))
         print(f"Saved {file_path}")
 
     async def recode_samples() -> None:
