@@ -267,7 +267,7 @@ Additional characters must use code tagged characters, which are not yet support
         return output
 
 def extract_textures(image_path: str):
-    """Removes the border around glyphs in an image, saves a new image without the border, and converts the image into FIGlet format font files."""
+    """Removes the border around glyphs in an image, creates a new image without the border, and converts the image into FIGlet format font files."""
 
     # Open the image
     image = Image.open(image_path)
