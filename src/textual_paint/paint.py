@@ -828,32 +828,31 @@ class AnsiArtDocument:
 
     def encode_based_on_file_extension(self, file_path: str) -> bytes:
         """Encode the image according to the file extension."""
-        file_type = os.path.splitext(file_path)[1][1:].upper()
-        print("File extension (normalized to uppercase):", file_type)
-        exts = Image.registered_extensions()
-        supported_extensions = [ext[1:].upper() for ext, f in exts.items() if f in Image.SAVE]
+        file_ext_with_dot = os.path.splitext(file_path)[1].lower()
+        print("File extension:", file_ext_with_dot)
+        ext_to_id = Image.registered_extensions() # maps extension to format ID, e.g. '.jp2': 'JPEG2000' (most format IDs are similar to the extension)
         print("Supported image formats by extension:", Image.EXTENSION)
-        print("Supported image formats:", Image.SAVE)
-        print("Supported image format file extensions:", supported_extensions)
-        if file_type == "SVG":
+        print("Supported image formats for writing:", Image.SAVE)
+        if file_ext_with_dot == ".svg":
             return self.get_svg().encode("utf-8")
-        elif file_type == "HTML" or file_type == "HTM":
+        elif file_ext_with_dot == ".html" or file_ext_with_dot == ".htm":
             return self.get_html().encode("utf-8")
-        elif file_type == "TXT":
+        elif file_ext_with_dot == ".txt":
             return self.get_plain().encode("utf-8")
-        elif file_type == "_RICH_CONSOLE_MARKUP":
+        elif file_ext_with_dot == "._rich_console_markup":
             return self.get_rich_console_markup().encode("utf-8")
-        elif file_type in supported_extensions:
-            return self.encode_image_format(file_type)
+        elif file_ext_with_dot in ext_to_id:
+            if ext_to_id[file_ext_with_dot] in Image.SAVE:
+                return self.encode_image_format(ext_to_id[file_ext_with_dot])
+            raise Exception("Image format not supported for writing: " + ext_to_id[file_ext_with_dot])
         else:
-            if file_type not in ["ANS", "NFO"]:
+            if file_ext_with_dot not in [".ans", ".nfo"]:
                 print("Falling back to ANSI")
                 # TODO: show message to user instead of silently using a different format
-                # This is especially important now that we have read-only formats like .CUR
             # This maybe shouldn't use UTF-8...
             return self.get_ansi().encode("utf-8")
 
-    def encode_image_format(self, file_type: str) -> bytes:
+    def encode_image_format(self, pil_format_id: str) -> bytes:
         """Encode the document as an image file."""
         size = (self.width, self.height)
         image = Image.new("RGB", size, color="#000000")
@@ -863,11 +862,8 @@ class AnsiArtDocument:
             for x in range(self.width):
                 color = Color.parse(self.bg[y][x])
                 pixels[x, y] = (color.r, color.g, color.b)
-        file_type = file_type.lower()
-        if file_type == "jpg":
-            file_type = "jpeg"
         buffer = io.BytesIO()
-        image.save(buffer, file_type, lossless=True)
+        image.save(buffer, pil_format_id, lossless=True)
         return buffer.getvalue()
 
     def get_ansi(self) -> str:
@@ -1132,12 +1128,18 @@ class AnsiArtDocument:
     @staticmethod
     def decode_based_on_file_extension(content: bytes, file_path: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
         """Creates a document from the given bytes, detecting the file format."""
-        file_type = os.path.splitext(file_path)[1][1:].upper()
-        exts = Image.registered_extensions()
-        supported_extensions = [ext[1:].upper() for ext, f in exts.items() if f in Image.OPEN]
-        print("Supported extensions for loading images:", supported_extensions)
-        if file_type in supported_extensions:
-            return AnsiArtDocument.from_image_format(content)
+
+        file_ext_with_dot = os.path.splitext(file_path)[1].lower()
+        print("File extension:", file_ext_with_dot)
+        ext_to_id = Image.registered_extensions() # maps extension to format ID, e.g. '.jp2': 'JPEG2000' (most format IDs are similar to the extension)
+        print("Supported image formats by extension:", Image.EXTENSION)
+        print("Supported image formats for reading:", Image.OPEN)
+        # TODO: try loading as image first, then as text if that fails with UnidentifiedImageError
+        # That way it can handle images without file extensions.
+        if file_ext_with_dot in ext_to_id:
+            if ext_to_id[file_ext_with_dot] in Image.OPEN:
+                return AnsiArtDocument.from_image_format(content)
+            raise Exception("Image format not supported for reading: " + ext_to_id[file_ext_with_dot])
         else:
             return AnsiArtDocument.from_text(content.decode('utf-8'), default_bg, default_fg)
 
