@@ -141,7 +141,8 @@ cat samples/ship.ans
 
 ## Known Issues
 
-- Undo/Redo doesn't work with text. Ctrl+Z will delete the textbox. (Also note that the Text tool works differently from MS Paint; it will overwrite characters and the cursor can move freely, which makes it better for ASCII art and worse for prose.)
+- When saving as a TXT file, color information is discarded without warning. It is considered saved, so the backup will be discarded, even though the saved file doesn't match the visible document.
+- Undo/Redo doesn't work inside the Text tool's textbox. Ctrl+Z will delete the textbox. (Also note that the Text tool works differently from MS Paint; it will overwrite characters and the cursor can move freely, which makes it better for ASCII art and worse for prose.)
 - The selection box border appears inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
 - Pick Color can't be cancelled (with Esc or by pressing both mouse buttons), since it samples the color continuously.
 - Pressing both mouse buttons stops the current tool, but doesn't undo the current action.
@@ -157,6 +158,11 @@ cat samples/ship.ans
 - Menu items like Copy/Cut/Paste are not grayed out when inapplicable. Only unimplemented items are grayed out.
 - Set As Wallpaper may not work on your system. For me, on Ubuntu, the wallpaper setting is updated but the picture is not, unless I manually pick it. There is however untested support for many platforms, and you may have better luck than me.
 - If you paste and then stamp the selection with Ctrl+Click, the stamp(s) can't be undone. An undo state is only created when finalizing the selection, for pasted selections.
+- Pasting with middle click can crash the program if the clipboard is empty. See [textual issue #2563](https://github.com/Textualize/textual/issues/2563)
+- Clicking a folder in the file dialogs can cause the program to exit if there's a permission error. See [textual issue #2564](https://github.com/Textualize/textual/issues/2564)
+- The Open dialog's file tree view doesn't scroll down to the initially selected file/folder.
+- ANSI files (.ans) are treated as UTF-8 when saving and loading, rather than CP437 or Windows-1252 or any other encodings. Unicode is nice and modern terminals support it, but it's not the standard for ANSI files. There isn't really a standard for ANSI files.
+- ANSI files are loaded with a white background. This may make sense as a default for text files, but ANSI files either draw a background or assume a black background, being designed for terminals.
 
 The program has only been tested on Linux. Issues on other platforms are as-yet _unknown_ :)
 
