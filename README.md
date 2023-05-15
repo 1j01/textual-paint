@@ -27,8 +27,17 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
     - [x] Plain Text (.txt) — discards color information
     - [x] SVG (.svg) — save only
     - [x] HTML (.html) — save only
-    - [ ] PNG (.png) — not yet
-    - [ ] Bitmap (.bmp) — not yet
+    - [x] PNG (.png)
+    - [x] Bitmap (.bmp)
+    - [x] GIF (.gif)
+    - [x] TIFF (.tiff)
+    - [x] WebP (.webp) — low quality <-- (TODO: lossless mode) -->
+    - [x] JPEG (.jpg) — low quality <-- (TODO: set quality level? maybe enlarge image before saving?) -->
+    - [x] Windows Icon (.ico) — opens largest size in the file
+    - [x] Mac OS Icon (.icns) — opens largest size in the file
+    - [x] Windows Cursor (.cur) — open only
+    - and more, see [Pillow's documentation](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html)
+    - Note that metadata is not preserved when opening and saving image files. (This is however common for many image editors.)
 - Tools
     - [x] Free-Form Select
     - [x] Select

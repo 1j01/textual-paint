@@ -32,6 +32,7 @@ from textual.widget import Widget
 from textual.widgets import Button, Static, Input, Header, RadioSet, RadioButton
 from textual.binding import Binding
 from textual.color import Color
+from PIL import Image, UnidentifiedImageError
 
 from menus import MenuBar, Menu, MenuItem, Separator
 from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon, get_question_icon
@@ -829,6 +830,9 @@ class AnsiArtDocument:
         """Encode the image according to the file extension."""
         file_type = os.path.splitext(file_path)[1][1:].upper()
         print("File extension (normalized to uppercase):", file_type)
+        exts = Image.registered_extensions()
+        supported_extensions = [ext[1:].upper() for ext, f in exts.items() if f in Image.SAVE]
+        print("Supported image format file extensions:", supported_extensions)
         if file_type == "SVG":
             return self.get_svg().encode("utf-8")
         elif file_type == "HTML" or file_type == "HTM":
@@ -837,11 +841,30 @@ class AnsiArtDocument:
             return self.get_plain().encode("utf-8")
         elif file_type == "_RICH_CONSOLE_MARKUP":
             return self.get_rich_console_markup().encode("utf-8")
+        elif file_type in supported_extensions:
+            return self.encode_image_format(file_type)
         else:
             if file_type not in ["ANS", "NFO"]:
                 print("Falling back to ANSI")
             # This maybe shouldn't use UTF-8...
             return self.get_ansi().encode("utf-8")
+
+    def encode_image_format(self, file_type: str) -> bytes:
+        """Encode the document as an image file."""
+        size = (self.width, self.height)
+        image = Image.new("RGB", size, color="#000000")
+        pixels = image.load()
+        assert pixels is not None, "failed to load pixels for new image"
+        for y in range(self.height):
+            for x in range(self.width):
+                color = Color.parse(self.bg[y][x])
+                pixels[x, y] = (color.r, color.g, color.b)
+        file_type = file_type.lower()
+        if file_type == "jpg":
+            file_type = "jpeg"
+        buffer = io.BytesIO()
+        image.save(buffer, file_type)
+        return buffer.getvalue()
 
     def get_ansi(self) -> str:
         """Get the ANSI representation of the document."""
@@ -1088,6 +1111,31 @@ class AnsiArtDocument:
             return AnsiArtDocument.from_ansi(text, default_bg, default_fg)
         else:
             return AnsiArtDocument.from_plain(text, default_bg, default_fg)
+
+    @staticmethod
+    def from_image_format(content: bytes) -> 'AnsiArtDocument':
+        """Creates a document from the given bytes, detecting the file format."""
+        image = Image.open(io.BytesIO(content))
+        rgb_image = image.convert('RGB')
+        width, height = rgb_image.size
+        document = AnsiArtDocument(width, height)
+        for y in range(height):
+            for x in range(width):
+                r, g, b = rgb_image.getpixel((x, y))  # type: ignore
+                document.bg[y][x] = "#" + hex(r)[2:].zfill(2) + hex(g)[2:].zfill(2) + hex(b)[2:].zfill(2)
+        return document
+
+    @staticmethod
+    def decode_based_on_file_extension(content: bytes, file_path: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
+        """Creates a document from the given bytes, detecting the file format."""
+        file_type = os.path.splitext(file_path)[1][1:].upper()
+        exts = Image.registered_extensions()
+        supported_extensions = [ext[1:].upper() for ext, f in exts.items() if f in Image.OPEN]
+        print("Supported extensions for loading images:", supported_extensions)
+        if file_type in supported_extensions:
+            return AnsiArtDocument.from_image_format(content)
+        else:
+            return AnsiArtDocument.from_text(content.decode('utf-8'), default_bg, default_fg)
 
 class Action:
     """An action that can be undone efficiently using a region update.
@@ -2111,6 +2159,7 @@ class PaintApp(App[None]):
                 with open(backup_file_path, "r") as f:
                     backup_content = f.read()
                     backup_image = AnsiArtDocument.from_text(backup_content)
+                    # TODO: make backup use image format when appropriate
             except Exception as e:
                 self.message_box(_("Paint"), _("A backup file was found, but was not recovered.") + "\n" + _("An unexpected error occurred while reading %1.", backup_file_path) + "\n\n" + repr(e), "ok")
                 return
@@ -2396,6 +2445,7 @@ class PaintApp(App[None]):
                 try:
                     file_to_be_opened_stat = os.stat(file_path)
                     if os.path.samestat(current_file_stat, file_to_be_opened_stat):
+                        # TODO: this callback shouldn't be in the try block
                         opened_callback()
                         return
                 except FileNotFoundError:
@@ -2414,15 +2464,14 @@ class PaintApp(App[None]):
             if os.path.getsize(file_path) > MAX_FILE_SIZE:
                 self.message_box(_("Open"), _("The file is too large to open."), "ok")
                 return
-            with open(file_path, "r") as f:
+            with open(file_path, "rb") as f:
                 content = f.read()  # f is out of scope in go_ahead()
                 def go_ahead():
                     try:
-                        new_image = AnsiArtDocument.from_text(content)
+                        new_image = AnsiArtDocument.decode_based_on_file_extension(content, file_path)
+                    except UnidentifiedImageError as e:
+                        self.message_box(_("Open"), _("This is not a valid bitmap file, or its format is not currently supported.") + "\n\n" + repr(e), "ok")
                     except Exception as e:
-                        # "This is not a valid bitmap file, or its format is not currently supported."
-                        # string from MS Paint doesn't apply well here,
-                        # at least not until we support bitmap files.
                         self.message_box(_("Open"), _("Paint cannot open this file.") + "\n\n" + repr(e), "ok")
                         return
                     # action_new handles discarding the backup, and recovering from Untitled.ans~, by default
@@ -2654,6 +2703,7 @@ class PaintApp(App[None]):
     def action_paste(self) -> None:
         """Paste the clipboard (ANSI art allowed), either as a selection, or into a textbox."""
         try:
+            # TODO: paste other formats. No Python libraries support this well yet.
             import pyperclip
             text: str = pyperclip.paste()
         except Exception as e:
@@ -3952,8 +4002,8 @@ if args.recode_samples:
     async def recode_sample(file_path: str) -> None:
         """Re-encodes a single sample file."""
         print(f"Re-encoding {file_path}")
-        with open(file_path, "r") as f:
-            image = AnsiArtDocument.from_text(f.read())
+        with open(file_path, "rb") as f:
+            image = AnsiArtDocument.decode_based_on_file_extension(f.read(), file_path)
         with open(file_path, "wb") as f:
             f.write(image.encode_based_on_file_extension(file_path))
         print(f"Saved {file_path}")
