@@ -373,7 +373,8 @@ class Tool(Enum):
     def get_name(self) -> str:
         """Get the localized name for this tool.
         
-        Not to be confused with tool.name, which is an identifier."""
+        Not to be confused with tool.name, which is an identifier.
+        """
         return {
             Tool.free_form_select: _("Free-Form Select"),
             Tool.select: _("Select"),
@@ -1112,7 +1113,8 @@ class Action:
         self.is_resize = False
         """Indicates that this action resizes the document, and thus should not be undone with a region update.
         
-        That is, unless in the future region updates support a mask and work in tandem with resizes."""
+        That is, unless in the future region updates support a mask and work in tandem with resizes.
+        """
         self.sub_image_before: AnsiArtDocument|None = None
         """The image data from the region of the document before modification."""
 
@@ -1444,7 +1446,9 @@ class Canvas(Widget):
 
     def on_mouse_down(self, event: events.MouseDown) -> None:
         """Called when a mouse button is pressed.
-        Start drawing, or if both mouse buttons are pressed, cancel the current action."""
+
+        This either starts drawing, or if both mouse buttons are pressed, cancels the current action.
+        """
         self.fix_mouse_event(event)  # not needed, pointer isn't captured yet.
         event.x //= self.magnification
         event.y //= self.magnification
@@ -1745,13 +1749,14 @@ class PaintApp(App[None]):
     """For Undo/Redo, to interrupt the current action"""
     mouse_at_start: Offset = Offset(0, 0)
     """Mouse position at mouse down.
+
     Used for shape tools that draw between the mouse down and up points (Line, Rectangle, Ellipse, Rounded Rectangle),
-    the Select tool (similarly to Rectangle), and used to detect double-click, for the Polygon tool."""
+    the Select tool (defining a box similarly to Rectangle), and also used to detect double-click, for the Polygon tool.
+    """
     mouse_previous: Offset = Offset(0, 0)
     """Previous mouse position, for brush tools (Pencil, Brush, Eraser, Airbrush)"""
     selection_drag_offset: Offset|None = None
-    """For Select tool, indicates that the selection is being moved
-    and defines the offset of the selection from the mouse"""
+    """For Select tool, indicates that the selection is being moved, and defines the offset of the selection from the mouse"""
     selecting_text: bool = False
     """Used for Text tool"""
     tool_points: List[Offset] = []
