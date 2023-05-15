@@ -760,6 +760,18 @@ body {{
 """
 
 
+class FormatWriteNotSupported(Exception):
+    """The format doesn't support writing."""
+    def __init__(self, localized_message: str):
+        self.localized_message = localized_message
+        super().__init__(localized_message)
+
+class FormatReadNotSupported(Exception):
+    """The format doesn't support reading."""
+    def __init__(self, localized_message: str):
+        self.localized_message = localized_message
+        super().__init__(localized_message)
+
 class AnsiArtDocument:
     """A document that can be rendered as ANSI."""
 
@@ -842,9 +854,10 @@ class AnsiArtDocument:
         elif file_ext_with_dot == "._rich_console_markup":
             return self.get_rich_console_markup().encode("utf-8")
         elif file_ext_with_dot in ext_to_id:
-            if ext_to_id[file_ext_with_dot] in Image.SAVE:
-                return self.encode_image_format(ext_to_id[file_ext_with_dot])
-            raise Exception("Image format not supported for writing: " + ext_to_id[file_ext_with_dot])
+            format_id = ext_to_id[file_ext_with_dot]
+            if format_id in Image.SAVE:
+                return self.encode_image_format(format_id)
+            raise FormatWriteNotSupported(localized_message=_("Cannot write files in %1 format.", format_id) + "\n\n" + _("To save your changes, use a different filename."))
         else:
             if file_ext_with_dot not in [".ans", ".nfo"]:
                 print("Falling back to ANSI")
@@ -1137,9 +1150,10 @@ class AnsiArtDocument:
         # TODO: try loading as image first, then as text if that fails with UnidentifiedImageError
         # That way it can handle images without file extensions.
         if file_ext_with_dot in ext_to_id:
-            if ext_to_id[file_ext_with_dot] in Image.OPEN:
+            format_id = ext_to_id[file_ext_with_dot]
+            if format_id in Image.OPEN:
                 return AnsiArtDocument.from_image_format(content)
-            raise Exception("Image format not supported for reading: " + ext_to_id[file_ext_with_dot])
+            raise FormatReadNotSupported(localized_message=_("Cannot read files saved as %1 format.", format_id))
         else:
             return AnsiArtDocument.from_text(content.decode('utf-8'), default_bg, default_fg)
 
@@ -2220,13 +2234,13 @@ class PaintApp(App[None]):
         if self.file_path:
             try:
                 content = self.image.encode_based_on_file_extension(self.file_path)
-                if self.write_file_path(self.file_path, content, dialog_title):
-                    self.saved_undo_count = len(self.undos)
-                    return True
-                else:
-                    return False
-            except Exception as e:
-                self.message_box(dialog_title, _("An unexpected error occurred while writing %1.", self.file_path) + "\n\n" + repr(e), "ok")
+            except FormatWriteNotSupported as e:
+                self.message_box(_("Save"), e.localized_message, "ok")
+                return False
+            if self.write_file_path(self.file_path, content, dialog_title):
+                self.saved_undo_count = len(self.undos)
+                return True
+            else:
                 return False
         else:
             await self.save_as()
@@ -2257,10 +2271,11 @@ class PaintApp(App[None]):
                     self.stop_action_in_progress()
                     try:
                         content = self.image.encode_based_on_file_extension(file_path)
-                        success = self.write_file_path(file_path, content, _("Save As"))
-                    except Exception as e:
-                        self.message_box(_("Save As"), _("An unexpected error occurred while writing %1.", file_path) + "\n\n" + repr(e), "ok")
-                        success = False
+                    except FormatWriteNotSupported as e:
+                        self.message_box(_("Save As"), e.localized_message, "ok")
+                        return
+
+                    success = self.write_file_path(file_path, content, _("Save As"))
                     if success:
                         self.discard_backup() # for OLD file_path (must be done before changing self.file_path)
                         self.file_path = file_path
@@ -2305,7 +2320,11 @@ class PaintApp(App[None]):
 
             def on_save_confirmed():
                 async def async_on_save_confirmed():
-                    content = self.get_selected_content(file_path)
+                    try:
+                        content = self.get_selected_content(file_path)
+                    except FormatWriteNotSupported as e:
+                        self.message_box(_("Copy To"), e.localized_message, "ok")
+                        return
                     if content is None:
                         # confirm_overwrite dialog isn't modal, so we need to check again
                         self.message_box(_("Copy To"), _("No selection."), "ok")
@@ -2481,6 +2500,8 @@ class PaintApp(App[None]):
                         new_image = AnsiArtDocument.decode_based_on_file_extension(content, file_path)
                     except UnidentifiedImageError as e:
                         self.message_box(_("Open"), _("This is not a valid bitmap file, or its format is not currently supported.") + "\n\n" + repr(e), "ok")
+                    except FormatReadNotSupported as e:
+                        self.message_box(_("Open"), e.localized_message, "ok")
                     except Exception as e:
                         self.message_box(_("Open"), _("Paint cannot open this file.") + "\n\n" + repr(e), "ok")
                         return
@@ -2544,6 +2565,7 @@ class PaintApp(App[None]):
                     self.message_box(_("Paste"), _("The file is too large to open."), "ok")
                     return
                 with open(file_path, "r") as f:
+                    # TODO: handle pasting image files
                     self.paste(f.read())
                 window.close()
             except FileNotFoundError:
@@ -2673,6 +2695,8 @@ class PaintApp(App[None]):
         """Returns the content of the selection, or underlying the selection if it hasn't been cut out yet.
         
         For a textbox, returns the selected text within the textbox. May include ANSI escape sequences, either way.
+
+        Raises FormatWriteNotSupported if the file_path implies a format that can't be encoded.
         """
         sel = self.image.selection
         if sel is None:
