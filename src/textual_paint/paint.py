@@ -832,6 +832,8 @@ class AnsiArtDocument:
         print("File extension (normalized to uppercase):", file_type)
         exts = Image.registered_extensions()
         supported_extensions = [ext[1:].upper() for ext, f in exts.items() if f in Image.SAVE]
+        print("Supported image formats by extension:", Image.EXTENSION)
+        print("Supported image formats:", Image.SAVE)
         print("Supported image format file extensions:", supported_extensions)
         if file_type == "SVG":
             return self.get_svg().encode("utf-8")
@@ -846,6 +848,8 @@ class AnsiArtDocument:
         else:
             if file_type not in ["ANS", "NFO"]:
                 print("Falling back to ANSI")
+                # TODO: show message to user instead of silently using a different format
+                # This is especially important now that we have read-only formats like .CUR
             # This maybe shouldn't use UTF-8...
             return self.get_ansi().encode("utf-8")
 
@@ -863,7 +867,7 @@ class AnsiArtDocument:
         if file_type == "jpg":
             file_type = "jpeg"
         buffer = io.BytesIO()
-        image.save(buffer, file_type)
+        image.save(buffer, file_type, lossless=True)
         return buffer.getvalue()
 
     def get_ansi(self) -> str:
