@@ -2252,11 +2252,15 @@ class PaintApp(App[None]):
         saved_future: asyncio.Future[None] = asyncio.Future()
 
         def handle_selected_file_path(file_path: str) -> None:
-            def on_save_confirmed():
-                async def async_on_save_confirmed():
+            def on_save_confirmed() -> None:
+                async def async_on_save_confirmed() -> None:
                     self.stop_action_in_progress()
-                    content = self.image.encode_based_on_file_extension(file_path)
-                    success = self.write_file_path(file_path, content, _("Save As"))
+                    try:
+                        content = self.image.encode_based_on_file_extension(file_path)
+                        success = self.write_file_path(file_path, content, _("Save As"))
+                    except Exception as e:
+                        self.message_box(_("Save As"), _("An unexpected error occurred while writing %1.", file_path) + "\n\n" + repr(e), "ok")
+                        success = False
                     if success:
                         self.discard_backup() # for OLD file_path (must be done before changing self.file_path)
                         self.file_path = file_path
