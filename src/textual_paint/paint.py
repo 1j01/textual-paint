@@ -2310,8 +2310,8 @@ class PaintApp(App[None]):
                         # confirm_overwrite dialog isn't modal, so we need to check again
                         self.message_box(_("Copy To"), _("No selection."), "ok")
                         return
-                    self.write_file_path(file_path, content, _("Copy To"))
-                    window.close()
+                    if self.write_file_path(file_path, content, _("Copy To")):
+                        window.close()
                 # https://textual.textualize.io/blog/2023/02/11/the-heisenbug-lurking-in-your-async-code/
                 task = asyncio.create_task(async_on_save_confirmed())
                 self.background_tasks.add(task)
