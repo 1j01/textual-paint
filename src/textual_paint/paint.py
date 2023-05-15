@@ -1127,7 +1127,10 @@ class AnsiArtDocument:
 
     @staticmethod
     def from_image_format(content: bytes) -> 'AnsiArtDocument':
-        """Creates a document from the given bytes, detecting the file format."""
+        """Creates a document from the given bytes, detecting the file format.
+        
+        Raises UnidentifiedImageError if the format is not detected.
+        """
         image = Image.open(io.BytesIO(content))
         rgb_image = image.convert('RGB')
         width, height = rgb_image.size
@@ -1140,7 +1143,12 @@ class AnsiArtDocument:
 
     @staticmethod
     def decode_based_on_file_extension(content: bytes, file_path: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
-        """Creates a document from the given bytes, detecting the file format."""
+        """Creates a document from the given bytes, detecting the file format.
+        
+        Raises FormatReadNotSupported if the file format is not supported for reading. Some are write-only.
+        Raises UnicodeDecodeError, which can be a very long message, so make sure to handle it!
+        Raises UnidentifiedImageError if the format is not detected.
+        """
 
         file_ext_with_dot = os.path.splitext(file_path)[1].lower()
         print("File extension:", file_ext_with_dot)
@@ -2496,15 +2504,9 @@ class PaintApp(App[None]):
             with open(file_path, "rb") as f:
                 content = f.read()  # f is out of scope in go_ahead()
                 def go_ahead():
-                    try:
-                        new_image = AnsiArtDocument.decode_based_on_file_extension(content, file_path)
-                    except UnidentifiedImageError as e:
-                        self.message_box(_("Open"), _("This is not a valid bitmap file, or its format is not currently supported.") + "\n\n" + repr(e), "ok")
-                    except FormatReadNotSupported as e:
-                        self.message_box(_("Open"), e.localized_message, "ok")
-                    except Exception as e:
-                        self.message_box(_("Open"), _("Paint cannot open this file.") + "\n\n" + repr(e), "ok")
-                        return
+                    # Note: exceptions handled outside of this function (UnicodeDecodeError, UnidentifiedImageError, FormatReadNotSupported)
+                    new_image = AnsiArtDocument.decode_based_on_file_extension(content, file_path)
+                    
                     # action_new handles discarding the backup, and recovering from Untitled.ans~, by default
                     # but we need to 1. handle the case where the backup is the file to be opened,
                     # and 2. recover from <file to be opened>.ans~ instead of Untitled.ans~
@@ -2539,6 +2541,10 @@ class PaintApp(App[None]):
             self.message_box(_("Open"), file_path + "\n" + _("Access denied."), "ok")
         except UnicodeDecodeError:
             self.message_box(_("Open"), file_path + "\n" + _("Paint cannot read this file.") + "\n" + _("Unexpected file format."), "ok")
+        except UnidentifiedImageError as e:
+            self.message_box(_("Open"), _("This is not a valid bitmap file, or its format is not currently supported.") + "\n\n" + repr(e), "ok")
+        except FormatReadNotSupported as e:
+            self.message_box(_("Open"), e.localized_message, "ok")
         except Exception as e:
             self.message_box(_("Open"), _("An unexpected error occurred while reading %1.", file_path) + "\n\n" + repr(e), "ok")
 
