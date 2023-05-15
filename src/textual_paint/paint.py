@@ -824,22 +824,23 @@ class AnsiArtDocument:
         self.bg = new_bg
         self.fg = new_fg
 
-    def encode_based_on_file_extension(self, file_path: str) -> str:
+    def encode_based_on_file_extension(self, file_path: str) -> bytes:
         """Encode the image according to the file extension."""
         file_type = os.path.splitext(file_path)[1][1:].upper()
         print("File extension (normalized to uppercase):", file_type)
         if file_type == "SVG":
-            return self.get_svg()
+            return self.get_svg().encode("utf-8")
         elif file_type == "HTML" or file_type == "HTM":
-            return self.get_html()
+            return self.get_html().encode("utf-8")
         elif file_type == "TXT":
-            return self.get_plain()
+            return self.get_plain().encode("utf-8")
         elif file_type == "_RICH_CONSOLE_MARKUP":
-            return self.get_rich_console_markup()
+            return self.get_rich_console_markup().encode("utf-8")
         else:
             if file_type not in ["ANS", "NFO"]:
                 print("Falling back to ANSI")
-            return self.get_ansi()
+            # This maybe shouldn't use UTF-8...
+            return self.get_ansi().encode("utf-8")
 
     def get_ansi(self) -> str:
         """Get the ANSI representation of the document."""
@@ -2088,7 +2089,9 @@ class PaintApp(App[None]):
                 self.save_backup_after_cancel_preview = True
                 return
             ansi = self.image.get_ansi()
-            self.write_file_path(self.get_backup_file_path(), ansi, _("Backup Save Failed"))
+            # This maybe shouldn't use UTF-8...
+            ansi_bytes = ansi.encode("utf-8")
+            self.write_file_path(self.get_backup_file_path(), ansi_bytes, _("Backup Save Failed"))
             self.backup_saved_undo_count = len(self.undos)
 
     def recover_from_backup(self) -> None:
@@ -2131,10 +2134,10 @@ class PaintApp(App[None]):
         self.background_tasks.add(task)
         task.add_done_callback(self.background_tasks.discard)
 
-    def write_file_path(self, file_path: str, content: str, dialog_title: str) -> bool:
+    def write_file_path(self, file_path: str, content: bytes, dialog_title: str) -> bool:
         """Write a file, showing an error message and returning False if it fails."""
         try:
-            with open(file_path, "w") as f:
+            with open(file_path, "wb") as f:
                 f.write(content)
             return True
         except PermissionError:
@@ -2238,12 +2241,12 @@ class PaintApp(App[None]):
 
             def on_save_confirmed():
                 async def async_on_save_confirmed():
-                    text = self.get_selected_content(file_path)
-                    if text is None:
+                    content = self.get_selected_content(file_path)
+                    if content is None:
                         # confirm_overwrite dialog isn't modal, so we need to check again
                         self.message_box(_("Copy To"), _("No selection."), "ok")
                         return
-                    self.write_file_path(file_path, text, _("Copy To"))
+                    self.write_file_path(file_path, content, _("Copy To"))
                     window.close()
                 # https://textual.textualize.io/blog/2023/02/11/the-heisenbug-lurking-in-your-async-code/
                 task = asyncio.create_task(async_on_save_confirmed())
@@ -2602,7 +2605,7 @@ class PaintApp(App[None]):
         if self.action_copy():
             self.action_clear_selection()
 
-    def get_selected_content(self, file_path: str|None = None) -> str | None:
+    def get_selected_content(self, file_path: str|None = None) -> bytes | None:
         """Returns the content of the selection, or underlying the selection if it hasn't been cut out yet.
         
         For a textbox, returns the selected text within the textbox. May include ANSI escape sequences, either way.
@@ -2618,7 +2621,7 @@ class PaintApp(App[None]):
                 sel.copy_from_document(self.image)
                 assert sel.contained_image is not None
             if sel.textbox_mode:
-                text = selected_text(sel)
+                text = selected_text(sel).encode("utf-8")
             else:
                 string_for_ext_detection = file_path or "this_text_before_the_dot_is_needed.ans"
                 text = sel.contained_image.encode_based_on_file_extension(string_for_ext_detection)
@@ -2630,9 +2633,12 @@ class PaintApp(App[None]):
     def action_copy(self) -> bool:
         """Copy the selection to the clipboard."""
         try:
-            text = self.get_selected_content()
-            if text is None:
+            content = self.get_selected_content()
+            if content is None:
                 return False
+            # TODO: avoid redundant encoding/decoding, if it's not too much trouble to make things bytes|str.
+            text = content.decode("utf-8")
+            # TODO: Copy as other formats. No Python libraries support this well yet.
             import pyperclip
             pyperclip.copy(text)
         except Exception as e:
@@ -3943,7 +3949,7 @@ if args.recode_samples:
         print(f"Re-encoding {file_path}")
         with open(file_path, "r") as f:
             image = AnsiArtDocument.from_text(f.read())
-        with open(file_path, "w") as f:
+        with open(file_path, "wb") as f:
             f.write(image.encode_based_on_file_extension(file_path))
         print(f"Saved {file_path}")
 
