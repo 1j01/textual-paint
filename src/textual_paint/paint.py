@@ -846,7 +846,9 @@ class AnsiArtDocument:
         Most format IDs are similar to the extension, e.g. 'PNG' for '.png',
         but some are different, e.g. 'JPEG2000' for '.jp2'.
         """
-        file_ext_with_dot = os.path.splitext(file_path)[1].lower()
+        # Ignore case and trailing '~' (indicating a backup file)
+        # Alternative: pathlib.Path.suffix
+        file_ext_with_dot = os.path.splitext(file_path)[1].lower().rstrip("~")
         print("File extension:", file_ext_with_dot)
         ext_to_id = Image.registered_extensions() # maps extension to format ID, e.g. '.jp2': 'JPEG2000'
         print("Supported image formats by extension:", Image.EXTENSION)
