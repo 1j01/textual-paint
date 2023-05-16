@@ -778,8 +778,15 @@ class AnsiArtDocument:
 
     def __init__(self, width: int, height: int, default_bg: str = "#ffffff", default_fg: str = "#000000") -> None:
         """Initialize the document."""
+        # Pyright is really confused by height for some reason, doesn't have a problem with width.
+        # I narrowed it down to the resize method, lines with new_bg/new_fg, but
+        # I have no idea why that would be a problem.
+        # Ideally I would try to pare this down to a minimal reproducible example,
+        # and file a bug report (or learn something about my code),
+        # but for now, I just want to silence 100+ errors.
+        # I'm leaving width unannotated to highlight the fragility of programming.
         self.width = width
-        self.height = height
+        self.height: int = height
         self.ch = [[" " for _ in range(width)] for _ in range(height)]
         self.bg = [[default_bg for _ in range(width)] for _ in range(height)]
         self.fg = [[default_fg for _ in range(width)] for _ in range(height)]
