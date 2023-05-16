@@ -838,33 +838,55 @@ class AnsiArtDocument:
         self.bg = new_bg
         self.fg = new_fg
 
-    def encode_based_on_file_extension(self, file_path: str) -> bytes:
-        """Encode the image according to the file extension."""
+    @staticmethod
+    def format_from_extension(file_path: str) -> str | None:
+        """Get the format ID from the file extension of the given path.
+        
+        Most format IDs are similar to the extension, e.g. 'PNG' for '.png',
+        but some are different, e.g. 'JPEG2000' for '.jp2'.
+        """
         file_ext_with_dot = os.path.splitext(file_path)[1].lower()
         print("File extension:", file_ext_with_dot)
-        ext_to_id = Image.registered_extensions() # maps extension to format ID, e.g. '.jp2': 'JPEG2000' (most format IDs are similar to the extension)
+        ext_to_id = Image.registered_extensions() # maps extension to format ID, e.g. '.jp2': 'JPEG2000'
         print("Supported image formats by extension:", Image.EXTENSION)
-        print("Supported image formats for writing:", Image.SAVE)
-        if file_ext_with_dot == ".svg":
-            return self.get_svg().encode("utf-8")
-        elif file_ext_with_dot == ".html" or file_ext_with_dot == ".htm":
-            return self.get_html().encode("utf-8")
-        elif file_ext_with_dot == ".txt":
-            return self.get_plain().encode("utf-8")
-        elif file_ext_with_dot == "._rich_console_markup":
-            return self.get_rich_console_markup().encode("utf-8")
-        elif file_ext_with_dot in ext_to_id:
-            format_id = ext_to_id[file_ext_with_dot]
-            if format_id in Image.SAVE:
-                return self.encode_image_format(format_id)
-            raise FormatWriteNotSupported(localized_message=_("Cannot write files in %1 format.", format_id) + "\n\n" + _("To save your changes, use a different filename."))
-        else:
-            if file_ext_with_dot not in [".ans", ".nfo"]:
-                print("Falling back to ANSI")
-                # TODO: show message to user instead of silently using a different format
-            # This maybe shouldn't use UTF-8...
-            return self.get_ansi().encode("utf-8")
+        if file_ext_with_dot in ext_to_id:
+            return ext_to_id[file_ext_with_dot]
+        ext_to_id = {
+            ".svg": "SVG",
+            ".html": "HTML",
+            ".htm": "HTML",
+            ".txt": "PLAINTEXT",
+            ".asc": "PLAINTEXT",
+            ".diz": "PLAINTEXT",
+            ".ans": "ANSI",
+            "._rich_console_markup": "RICH_CONSOLE_MARKUP",
+        }
+        if file_ext_with_dot in ext_to_id:
+            return ext_to_id[file_ext_with_dot]
+        return None
 
+    def encode_based_on_file_extension(self, file_path: str) -> bytes:
+        """Encode the image according to the file extension."""
+        format_id = self.format_from_extension(file_path)
+        print("Supported image formats for writing:", Image.SAVE)
+        if format_id == "ANSI":
+            # This maybe shouldn't use UTF-8... but there's not a singular encoding for "ANSI art".
+            return self.get_ansi().encode("utf-8")
+        elif format_id == "SVG":
+            return self.get_svg().encode("utf-8")
+        elif format_id == "HTML":
+            return self.get_html().encode("utf-8")
+        elif format_id == "PLAINTEXT":
+            return self.get_plain().encode("utf-8")
+        elif format_id == "RICH_CONSOLE_MARKUP":
+            return self.get_rich_console_markup().encode("utf-8")
+        elif format_id in Image.SAVE:
+            return self.encode_image_format(format_id)
+        elif format_id is None:
+            raise FormatWriteNotSupported(localized_message=_("Unknown file extension.") + "\n\n" + _("To save your changes, use a different filename."))
+        else:
+            raise FormatWriteNotSupported(localized_message=_("Cannot write files in %1 format.", format_id) + "\n\n" + _("To save your changes, use a different filename."))
+ 
     def encode_image_format(self, pil_format_id: str) -> bytes:
         """Encode the document as an image file."""
         size = (self.width, self.height)
