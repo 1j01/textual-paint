@@ -148,6 +148,29 @@ You can display a saved ANSI file in the terminal with `cat`:
 cat samples/ship.ans
 ```
 
+To view all the sample files, run:
+
+```bash
+find samples -type f -exec file --mime-type {} \; | grep -v "image/png" | cut -d: -f1 | sort | xargs -I{} sh -c 'echo "File: {}"; cat "{}"; echo "\n-----------------------\n"'
+```
+<details>
+<summary>Command Explanation</summary>
+Let's break down the command:
+
+1. `find samples -type f -exec file --mime-type {} \;`: This part uses the `find` command to locate all files (`-type f`) within the "samples" folder and its subdirectories. For each file, it executes the `file --mime-type` command to determine the file's MIME type. This outputs a line like "samples/ship.ans: text/plain".
+
+2. `grep -v "image/png"`: This filters out any lines containing the MIME type "image/png", effectively excluding PNG files from the output.
+
+3. `cut -d: -f1`: This extracts only the file paths from the output of the `file` command, removing the MIME type information.
+
+4. `sort`: This sorts the file paths alphabetically.
+
+5. `xargs -I{} sh -c 'echo "File: {}"; cat "{}"; echo "\n-----------------------\n"'`: Finally, this executes the `sh -c` command for each file, echoing the filename, catting its content, and adding a separator line.
+
+This command will sort and display the content of all non-PNG files within the "samples" folder and its subdirectories. Remember to run this command in the directory where the "samples" folder is located.
+</details>
+
+
 ## Known Issues
 
 - When saving as a TXT file, color information is discarded without warning. It is considered saved, so the backup will be discarded, even though the saved file doesn't match the visible document.
