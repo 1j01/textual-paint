@@ -2,6 +2,7 @@
 
 import io
 import os
+from pathlib import Path
 import re
 import shlex
 import sys
@@ -4059,9 +4060,8 @@ else:
 
 if args.recode_samples:
     # Re-encode the sample files to test for changes/inconsistency in encoding.
-    # All files are assumed to be directly under samples/.
 
-    async def recode_sample(file_path: str) -> None:
+    async def recode_sample(file_path: str|Path) -> None:
         """Re-encodes a single sample file."""
         print(f"Re-encoding {file_path}")
         with open(file_path, "rb") as f:
@@ -4074,10 +4074,15 @@ if args.recode_samples:
         """Re-encodes all sample files in parallel."""
         samples_folder = os.path.join(os.path.dirname(__file__), "../../samples")
         tasks = []
-        for filename in os.listdir(samples_folder):
-            if filename.endswith(".ans"):
-                file_path = os.path.join(samples_folder, filename)
-                tasks.append(recode_sample(file_path))
+        for file_path in Path(samples_folder).glob("**/*"):
+            # Skip backup files in case some sample file is being edited.
+            if file_path.name.endswith("~"):
+                continue
+            # Skip folders.
+            if file_path.is_dir():
+                continue
+            tasks.append(recode_sample(file_path))
+
         await asyncio.gather(*tasks)
 
     # have to wait for the app to be initialized
