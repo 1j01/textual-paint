@@ -19,6 +19,7 @@ class FileDialogWindow(DialogWindow):
         file_name: str = "",
         selected_file_path: str | None,
         handle_selected_file_path: Callable[[str], None],
+        auto_add_default_extension: str = "",
         submit_label: str,
         **kwargs: Any,
     ) -> None:
@@ -33,6 +34,7 @@ class FileDialogWindow(DialogWindow):
         """Last highlighted item in the directory tree"""
         self._expanding_directory_tree: bool = False
         """Flag to prevent setting the filename input when initially expanding the directory tree"""
+        self._auto_add_default_extension: str = auto_add_default_extension
 
     def handle_button(self, button: Button) -> None:
         """Called when a button is clicked or activated with the keyboard."""
@@ -47,6 +49,8 @@ class FileDialogWindow(DialogWindow):
                 file_path = os.path.join(self._directory_tree_selected_path, filename)
             else:
                 file_path = filename
+            if os.path.splitext(file_path)[1] == "":
+                file_path += self._auto_add_default_extension
             self.handle_selected_file_path(file_path)
 
     def on_mount(self) -> None:
@@ -120,7 +124,14 @@ class OpenDialogWindow(FileDialogWindow):
         **kwargs: Any,
     ) -> None:
         """Initialize the dialog window."""
-        super().__init__(*children, submit_label=_("Open"), file_name="", selected_file_path=selected_file_path, handle_selected_file_path=handle_selected_file_path, **kwargs)
+        super().__init__(
+            *children,
+            submit_label=_("Open"),
+            file_name="",
+            selected_file_path=selected_file_path,
+            handle_selected_file_path=handle_selected_file_path,
+            **kwargs
+        )
 
 class SaveAsDialogWindow(FileDialogWindow):
     """A dialog window that lets the user select a file to save to.
@@ -135,7 +146,16 @@ class SaveAsDialogWindow(FileDialogWindow):
         file_name: str = "",
         selected_file_path: str | None,
         handle_selected_file_path: Callable[[str], None],
+        auto_add_default_extension: str = "",
         **kwargs: Any,
     ) -> None:
         """Initialize the dialog window."""
-        super().__init__(*children, submit_label=_("Save"), file_name=file_name, selected_file_path=selected_file_path, handle_selected_file_path=handle_selected_file_path, **kwargs)
+        super().__init__(
+            *children,
+            submit_label=_("Save"),
+            file_name=file_name,
+            selected_file_path=selected_file_path,
+            handle_selected_file_path=handle_selected_file_path,
+            auto_add_default_extension=auto_add_default_extension,
+            **kwargs
+        )
