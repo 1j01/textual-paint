@@ -305,8 +305,8 @@ class Tool(Enum):
     def get_icon(self) -> str:
         """Get the icon for this tool."""
         # Alternatives considered:
-        # - Free-Form Select:  ✂️📐🆓🕸✨⚝🫥🇫/🇸◌⁛⁘ ⢼⠮
-        # - Select: ⬚▧🔲 ⣏⣹
+        # - Free-Form Select:  ✂️📐🆓🕸✨⚝⛤⛥⛦⛧🫥🇫/🇸◌⁛⁘ ⢼⠮
+        # - Select: ⬚▧🔲 ⣏⣹ ⛶
         # - Eraser/Color Eraser: 🧼🧽🧹🚫👋🗑️▰▱
         # - Fill With Color: 🌊💦💧🌈🎉🎊🪣🫗
         # - Pick Color: 🎨💉💅💧📌📍⤤𝀃🝯🍶
