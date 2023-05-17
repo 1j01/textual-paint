@@ -1174,20 +1174,22 @@ class AnsiArtDocument:
         Raises UnicodeDecodeError, which can be a very long message, so make sure to handle it!
         Raises UnidentifiedImageError if the format is not detected.
         """
-
-        file_ext_with_dot = os.path.splitext(file_path)[1].lower()
-        print("File extension:", file_ext_with_dot)
-        ext_to_id = Image.registered_extensions() # maps extension to format ID, e.g. '.jp2': 'JPEG2000' (most format IDs are similar to the extension)
-        print("Supported image formats by extension:", Image.EXTENSION)
+        format_id = AnsiArtDocument.format_from_extension(file_path)
         print("Supported image formats for reading:", Image.OPEN)
         # TODO: try loading as image first, then as text if that fails with UnidentifiedImageError
         # That way it can handle images without file extensions.
-        if file_ext_with_dot in ext_to_id:
-            format_id = ext_to_id[file_ext_with_dot]
-            if format_id in Image.OPEN:
-                return AnsiArtDocument.from_image_format(content)
+        if format_id in Image.OPEN:
+            return AnsiArtDocument.from_image_format(content)
+        elif format_id == "ANSI":
+            return AnsiArtDocument.from_ansi(content.decode('utf-8'), default_bg, default_fg)
+        elif format_id == "PLAINTEXT":
+            return AnsiArtDocument.from_plain(content.decode('utf-8'), default_bg, default_fg)
+        elif format_id in Image.SAVE or format_id in ["HTML", "SVG", "RICH_CONSOLE_MARKUP"]:
+            # This is a write-only format.
             raise FormatReadNotSupported(localized_message=_("Cannot read files saved as %1 format.", format_id))
         else:
+            # This is an unknown format.
+            # For now at least, I'm preserving the behavior of loading as ANSI/PLAINTEXT.
             return AnsiArtDocument.from_text(content.decode('utf-8'), default_bg, default_fg)
 
 class Action:
