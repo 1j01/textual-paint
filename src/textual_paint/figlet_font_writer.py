@@ -221,7 +221,7 @@ Additional characters must use code tagged characters, which are not yet support
 
         return val
 
-    def generateFigFontHeader(self) -> str:
+    def _generateFigFontHeader(self) -> str:
         header: list[str] = []
         baseline = self.baseline
 
@@ -286,7 +286,7 @@ Additional characters must use code tagged characters, which are not yet support
         output = ''
         self._fixFigChars()
 
-        output = self.generateFigFontHeader() + '\n'
+        output = self._generateFigFontHeader() + '\n'
         output += "\n".join(self.commentLines) + '\n'
 
         for char in self.charOrder:
