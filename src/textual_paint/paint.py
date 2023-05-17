@@ -1167,6 +1167,121 @@ class AnsiArtDocument:
         return document
 
     @staticmethod
+    def from_svg(svg: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
+        """Creates a document from an SVG containing a character grid with rects for cell backgrounds.
+        
+        - rect elements can be in any order.
+        - rect elements can even be in different groups, however transforms are not considered.
+        - rect elements can vary in size slightly.
+        - rect elements can be missing, in which case the default background is used.
+        - rects that are outlying in size are ignored.
+        - rects that are outlying in position, however, increase the document size.
+        - fill or style attributes are used to determine the background/foreground colors.
+        - text elements are assumed to be belonging to the cell their x/y is within,
+          without regard to their size/alignment.
+        - parsing stylesheets is not supported.
+        - not all CSS/SVG color formats are supported.
+
+        To test the flexibility of this loader, I created combative_character_grid.svg
+        It contains out-of-order unevenly sized rects, missing rects, a background rect, and an emoji.
+        It doesn't currently contain varying color formats, font sizes, alignments, or transforms,
+        and it only uses style rather than fill, and text with tspan rather than text without.
+        """
+        import xml.etree.ElementTree as ET
+        root = ET.fromstring(svg)
+        # Search for rect elements to define the background, and the cell locations.
+        rects = root.findall(".//{http://www.w3.org/2000/svg}rect")
+        if len(rects) == 0:
+            raise ValueError("No rect elements found in SVG.")
+        # Find the cell size, removing outliers until all cells are within
+        # a certain relative difference from the average size.
+        max_relative_difference = 0.1
+        for attribute in ["width", "height"]:
+            settled = False
+            while not settled:
+                settled = True
+                avg = sum(float(rect.attrib[attribute]) for rect in rects) / len(rects)
+                for rect in rects:
+                    if abs(float(rect.attrib[attribute]) - avg) / avg > max_relative_difference:
+                        rects.remove(rect)
+                        settled = False
+                        print("Ignoring outlier rect: " + ET.tostring(rect, encoding="unicode"))
+                        break
+                else:
+                    break
+        # Find the cell size.
+        # TODO: use spacing, not average size.
+        cell_width = sum(float(rect.attrib["width"]) for rect in rects) / len(rects)
+        cell_height = sum(float(rect.attrib["height"]) for rect in rects) / len(rects)
+        # Find the document bounds.
+        min_x = min(float(rect.attrib["x"]) for rect in rects)
+        min_y = min(float(rect.attrib["y"]) for rect in rects)
+        max_x = max(float(rect.attrib["x"]) + float(rect.attrib["width"]) for rect in rects)
+        max_y = max(float(rect.attrib["y"]) + float(rect.attrib["height"]) for rect in rects)
+        width = int((max_x - min_x) / cell_width)
+        height = int((max_y - min_y) / cell_height)
+        # Create the document.
+        document = AnsiArtDocument(width, height, default_bg, default_fg)
+        # Fill the document with the background colors.
+        def get_fill(el: ET.Element) -> Optional[str]:
+            fill = None
+            try:
+                fill = el.attrib["fill"]
+            except KeyError:
+                try:
+                    style = el.attrib["style"]
+                except KeyError:
+                    print("Warning: element has no fill or style attribute: " + ET.tostring(el, encoding="unicode"))
+                else:
+                    for style_part in style.split(";"):
+                        if style_part.startswith("fill:"):
+                            fill = style_part[len("fill:"):]
+                            break
+            if fill is None:
+                print("Warning: element has no fill defined: " + ET.tostring(el, encoding="unicode"))
+                return None
+            r, g, b = Color.parse(fill).rgb
+            return "#" + hex(r)[2:].zfill(2) + hex(g)[2:].zfill(2) + hex(b)[2:].zfill(2)
+
+        for rect in rects:
+            x = int((float(rect.attrib["x"]) - min_x) / cell_width)
+            y = int((float(rect.attrib["y"]) - min_y) / cell_height)
+
+            fill = get_fill(rect)
+            if fill is not None:
+                document.bg[y][x] = fill
+
+        # Find text elements to define the foreground.
+        texts = root.findall(".//{http://www.w3.org/2000/svg}text")
+        if len(texts) == 0:
+            raise ValueError("No text elements found in SVG.")
+        for text in texts:
+            x = int((float(text.attrib["x"]) - min_x) / cell_width)
+            y = int((float(text.attrib["y"]) - min_y) / cell_height)
+            ch = text.text
+            if ch is None:
+                # look for tspan element(s)
+                tspans = text.findall(".//{http://www.w3.org/2000/svg}tspan")
+                if len(tspans) == 0:
+                    print("Warning: text element has no text or tspan: " + ET.tostring(text, encoding="unicode"))
+                    continue
+                ch = ""
+                for tspan in tspans:
+                    if tspan.text is not None:
+                        ch += tspan.text
+                    else:
+                        print("Warning: tspan element has no text: " + ET.tostring(tspan, encoding="unicode"))
+            fill = get_fill(text)
+            try:
+                document.ch[y][x] = ch
+                if fill is not None:
+                    document.fg[y][x] = fill
+            except IndexError:
+                print("Warning: text element is out of bounds: " + ET.tostring(text, encoding="unicode"))
+                continue
+        return document
+
+    @staticmethod
     def decode_based_on_file_extension(content: bytes, file_path: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
         """Creates a document from the given bytes, detecting the file format.
         
@@ -1184,7 +1299,9 @@ class AnsiArtDocument:
             return AnsiArtDocument.from_ansi(content.decode('utf-8'), default_bg, default_fg)
         elif format_id == "PLAINTEXT":
             return AnsiArtDocument.from_plain(content.decode('utf-8'), default_bg, default_fg)
-        elif format_id in Image.SAVE or format_id in ["HTML", "SVG", "RICH_CONSOLE_MARKUP"]:
+        elif format_id == "SVG":
+            return AnsiArtDocument.from_svg(content.decode('utf-8'), default_bg, default_fg)
+        elif format_id in Image.SAVE or format_id in ["HTML", "RICH_CONSOLE_MARKUP"]:
             # This is a write-only format.
             raise FormatReadNotSupported(localized_message=_("Cannot read files saved as %1 format.", format_id))
         else:
