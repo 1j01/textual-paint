@@ -238,6 +238,8 @@ Additional characters must use code tagged characters, which are not yet support
         return ' '.join(header)
 
     def _fixFigChars(self):
+        # Height must be constant for all FIGcharacters.
+        # Width can vary, but must be consistent for all rows within a FIGcharacter.
         height = 0
         charWidth: dict[int, int] = {}
         maxWidth = 0
@@ -247,7 +249,7 @@ Additional characters must use code tagged characters, which are not yet support
             for ii in range(97, 123):
                 self.figChars[ii] = self.figChars[ii - 32]
 
-        # Calculate max height and ensure consistent width for each character
+        # Calculate max height and ensure consistent width for each FIGcharacter
         for idx in self.figChars:
             figChar = self.figChars[idx].replace('\r\n', '\n').split('\n')
             height = max(height, len(figChar))
@@ -272,7 +274,7 @@ Additional characters must use code tagged characters, which are not yet support
                 self.figChars[idx] = '\n'.join(figChar) + '\n' + '\n'.join(blankLines)
 
         self.height = height
-        self.maxLength = maxWidth + 2
+        self.maxLength = maxWidth + 2 # Two end marks signify end of FIGcharacter
 
     def createFigFileData(self) -> str:
         """Generates the FIGlet file data for the current font."""
