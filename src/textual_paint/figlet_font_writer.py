@@ -334,8 +334,6 @@ Additional characters must use code tagged characters, which are not yet support
     def createFigFileData(self) -> str:
         """Generates the FIGlet file data for the current font."""
         self._validateOptions()
-
-        output = ''
         self._fixFigChars()
 
         output = self._generateFigFontHeader() + '\n'
