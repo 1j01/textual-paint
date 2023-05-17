@@ -28,11 +28,8 @@ SOFTWARE.
 from enum import Enum
 
 
-def spacePad(num: int) -> str:
-    return ' ' * num
-
 def blankLines(num: int, width: int) -> str:
-    lines = [spacePad(width) for _ in range(num)]
+    lines = [' ' * width for _ in range(num)]
     return '\n'.join(lines)
 
 class FIGletFontWriter:
@@ -266,7 +263,7 @@ Additional characters must use code tagged characters, which are not yet support
 
             for i in range(len(figChar)):
                 if len(figChar[i]) < charWidth[idx]:
-                    figChar[i] += spacePad(charWidth[idx] - len(figChar[i]))
+                    figChar[i] += ' ' * (charWidth[idx] - len(figChar[i]))
 
                 maxWidth = max(maxWidth, charWidth[idx])
 
