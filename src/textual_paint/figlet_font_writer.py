@@ -119,14 +119,37 @@ Additional characters must use code tagged characters, which are not yet support
         endMark: str = "@",
         caseInsensitive: bool = False,
     ):
+        """Creates a new FIGletFontWriter.
+
+        All parameters are optional, and can be set later.
+        Validation is performed at construction and when createFigFileData() is called.
+
+        Args:
+            figChars (dict[int, str], optional): Dictionary that maps character codes to FIGcharacter strings. Defaults to {}.
+            height (int, optional): Height of a FIGcharacter, in sub-characters. Defaults to None, auto-calculated.
+            baseline (int, optional): Distance from the top of the FIGcharacter to the baseline. If not specified, defaults to height. Defaults to None.
+            maxLength (int, optional): Maximum length of a line INCLUDING two endMark characters. Defaults to None, auto-calculated.
+            commentLines (list[str], optional): List of lines of informational text to be included in the header. It's recommended to include at least the name of the font and the name of the author. Defaults to [].
+            rightToLeft (bool, optional): Indicates RTL writing direction. Defaults to False.
+            horizontalLayout (FIGletFontWriter.Layout, optional): controls FIGcharacter spacing. Defaults to Layout.UNIVERSAL_SMUSHING.
+            verticalLayout (FIGletFontWriter.Layout, optional): controls FIGcharacter spacing. Defaults to Layout.UNIVERSAL_SMUSHING.
+            codeTagCount (int, optional): Number of extra FIGcharacters included in the font (in addition to the required 102 untagged characters). Outputting tagged characters is not yet supported. Defaults to 0.
+            hardBlank (str, optional): Character rendered as a space which can prevent smushing. Defaults to "$".
+            endMark (str, optional): Character used to mark the end of a line. Defaults to "@".
+            caseInsensitive (bool, optional): Overwrites lowercase with copies of uppercase. Defaults to False.
+
+        Raises:
+            ValueError: If any of the parameters are invalid.
+        """
+
         self.figChars: dict[int, str] = figChars
         """Dictionary that maps character codes to FIGcharacter strings."""
         
         self.height = height
-        """Height of a FIGcharacter, in characters."""
+        """Height of a FIGcharacter, in sub-characters."""
         
         self.baseline = baseline
-        """Distance from the top of the character to the baseline. If not specified, defaults to height."""
+        """Distance from the top of the FIGcharacter to the baseline. If not specified, defaults to height."""
         
         self.maxLength = maxLength
         """Maximum length of a line INCLUDING two endMark characters."""
@@ -138,10 +161,10 @@ Additional characters must use code tagged characters, which are not yet support
         """Indicates RTL writing direction (or LTR if False)."""
         
         self.codeTagCount = codeTagCount
-        """Number of extra characters included in the font (in addition to the required 102 untagged characters). Outputting tagged characters is not yet supported."""
+        """Number of extra FIGcharacters included in the font (in addition to the required 102 untagged characters). Outputting tagged characters is not yet supported."""
         
         self.hardBlank = hardBlank
-        """Invisible character used to prevent smushing."""
+        """Character rendered as a space which can prevent smushing."""
         
         self.endMark = endMark
         """Denotes the end of a line. Two of these characters in a row denotes the end of a FIGcharacter."""
