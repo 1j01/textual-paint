@@ -40,10 +40,15 @@ class FIGletFontWriter:
 
     class Layout(Enum):
         """Layout options for FIGcharacter spacing."""
+
         FULL = 0
+        """Represents each FIGcharacter occupying the full width or height of its arrangement of sub-characters as designed."""
         FITTED = 1
+        """Moves FIGcharacters closer together until sub-characters touch."""
         UNIVERSAL_SMUSHING = 2
+        """Overlaps FIGcharacters by one sub-character, with the latter character taking precedence."""
         CONTROLLED_SMUSHING = 3
+        """Overlaps FIGcharacters by one sub-character, using a configurable set of rules for overlap handling."""
 
     charOrder: list[int] = [ii for ii in range(32, 127)] + [196, 214, 220, 228, 246, 252, 223]
     R"""Character codes that are required to be in any FIGlet font.
