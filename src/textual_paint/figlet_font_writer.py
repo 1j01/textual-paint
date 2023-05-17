@@ -27,11 +27,6 @@ SOFTWARE.
 
 from enum import Enum
 
-
-def blankLines(num: int, width: int) -> str:
-    lines = [' ' * width for _ in range(num)]
-    return '\n'.join(lines)
-
 class FIGletFontWriter:
     """Used to write FIGlet fonts.
     
@@ -273,7 +268,8 @@ Additional characters must use code tagged characters, which are not yet support
         for idx in self.figChars:
             figChar = self.figChars[idx].replace('\r\n', '\n').split('\n')
             if len(figChar) < height:
-                self.figChars[idx] = '\n'.join(figChar) + '\n' + blankLines(height - len(figChar), charWidth[idx])
+                blankLines = [' ' * charWidth[idx] for _ in range(height - len(figChar))]
+                self.figChars[idx] = '\n'.join(figChar) + '\n' + '\n'.join(blankLines)
 
         self.height = height
         self.maxLength = maxWidth + 2
