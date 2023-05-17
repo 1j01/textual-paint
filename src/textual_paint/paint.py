@@ -1210,7 +1210,7 @@ class AnsiArtDocument:
                 else:
                     break
         # Find the cell size.
-        # TODO: use spacing, not average size.
+        # TODO: use spacing, not average size. Partially done below.
         cell_width = sum(float(rect.attrib["width"]) for rect in rects) / len(rects)
         cell_height = sum(float(rect.attrib["height"]) for rect in rects) / len(rects)
         # Find the document bounds.
@@ -1220,6 +1220,9 @@ class AnsiArtDocument:
         max_y = max(float(rect.attrib["y"]) + float(rect.attrib["height"]) for rect in rects)
         width = int((max_x - min_x) / cell_width)
         height = int((max_y - min_y) / cell_height)
+        # Adjust cell width/height based on document bounds.
+        cell_width = (max_x - min_x) / width
+        cell_height = (max_y - min_y) / height
         # Create the document.
         document = AnsiArtDocument(width, height, default_bg, default_fg)
         # Fill the document with the background colors.
@@ -1244,8 +1247,8 @@ class AnsiArtDocument:
             return "#" + hex(r)[2:].zfill(2) + hex(g)[2:].zfill(2) + hex(b)[2:].zfill(2)
 
         for rect in rects:
-            x = int((float(rect.attrib["x"]) - min_x) / cell_width)
-            y = int((float(rect.attrib["y"]) - min_y) / cell_height)
+            x = int((float(rect.attrib["x"]) + float(rect.attrib["width"])/2 - min_x) / cell_width)
+            y = int((float(rect.attrib["y"]) + float(rect.attrib["height"])/2 - min_y) / cell_height)
 
             fill = get_fill(rect)
             if fill is not None:
@@ -1256,8 +1259,8 @@ class AnsiArtDocument:
         if len(texts) == 0:
             raise ValueError("No text elements found in SVG.")
         for text in texts:
-            x = int((float(text.attrib["x"]) - min_x) / cell_width)
-            y = int((float(text.attrib["y"]) - min_y) / cell_height)
+            x = int((float(text.attrib["x"]) - min_x + 1/2) / cell_width)
+            y = int((float(text.attrib["y"]) - min_y - 1/2) / cell_height)
             ch = text.text
             if ch is None:
                 tspans = text.findall(".//{http://www.w3.org/2000/svg}tspan")
