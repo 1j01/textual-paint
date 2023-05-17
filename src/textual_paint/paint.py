@@ -1195,7 +1195,7 @@ class AnsiArtDocument:
             raise ValueError("No rect elements found in SVG.")
         # Find the cell size, removing outliers until all cells are within
         # a certain relative difference from the average size.
-        max_relative_difference = 0.1
+        max_relative_difference = 0.3
         for attribute in ["width", "height"]:
             settled = False
             while not settled:
@@ -1260,7 +1260,6 @@ class AnsiArtDocument:
             y = int((float(text.attrib["y"]) - min_y) / cell_height)
             ch = text.text
             if ch is None:
-                # look for tspan element(s)
                 tspans = text.findall(".//{http://www.w3.org/2000/svg}tspan")
                 if len(tspans) == 0:
                     print("Warning: text element has no text or tspan: " + ET.tostring(text, encoding="unicode"))
