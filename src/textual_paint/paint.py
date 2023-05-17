@@ -1277,8 +1277,10 @@ class AnsiArtDocument:
         if len(texts) == 0:
             raise ValueError("No text elements found in SVG.")
         for text in texts:
-            x = (float(text.attrib["x"]) - min_x + 1/2)
-            y = (float(text.attrib["y"]) - min_y - 1/2)
+            # approximate center of text
+            # y position really depends on font size, as well as the baseline y position.
+            x = (float(text.attrib["x"]) - min_x + cell_width/2)
+            y = (float(text.attrib["y"]) - min_y - cell_height/4)
             add_debug_marker(x, y, "yellow")
             x = int(x / cell_width)
             y = int(y / cell_height)
