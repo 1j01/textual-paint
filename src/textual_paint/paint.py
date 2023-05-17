@@ -2216,7 +2216,7 @@ class PaintApp(App[None]):
                     backup_image = AnsiArtDocument.from_text(backup_content)
                     # TODO: make backup use image format when appropriate
             except Exception as e:
-                self.message_box(_("Paint"), _("A backup file was found, but was not recovered.") + "\n" + _("An unexpected error occurred while reading %1.", backup_file_path) + "\n\n" + repr(e), "ok")
+                self.message_box(_("Paint"), _("A backup file was found, but was not recovered.") + "\n" + _("An unexpected error occurred while reading %1.", backup_file_path), "ok", error=e)
                 return
             # This creates an undo
             self.resize_document(backup_image.width, backup_image.height)
@@ -2254,9 +2254,9 @@ class PaintApp(App[None]):
         except FileNotFoundError: 
             self.message_box(dialog_title, _("%1 contains an invalid path.", file_path), "ok")
         except OSError as e:
-            self.message_box(dialog_title, _("Failed to save document.") + "\n\n" + repr(e), "ok")
+            self.message_box(dialog_title, _("Failed to save document."), "ok", error=e)
         except Exception as e:
-            self.message_box(dialog_title, _("An unexpected error occurred while writing %1.", file_path) + "\n\n" + repr(e), "ok")
+            self.message_box(dialog_title, _("An unexpected error occurred while writing %1.", file_path), "ok", error=e)
         return False
 
     async def save(self) -> bool:
@@ -2461,6 +2461,7 @@ class PaintApp(App[None]):
         button_types: str = "ok",
         callback: Callable[[Button], None]|None = None,
         icon_widget: Widget|None = None,
+        error: Exception|None = None,
     ) -> None:
         """Show a warning message box with the given title, message, and buttons."""
 
@@ -2479,12 +2480,14 @@ class PaintApp(App[None]):
             # It's a difference in name, and an automatic close
             if callback:
                 callback(button)
-            window.close()
+            if not button.has_class("details_button"):
+                window.close()
         window = MessageBox(
             id="message_box",
             title=title,
             icon_widget=icon_widget,
             message=message,
+            error=error,
             button_types=button_types,
             handle_button=handle_button,
         )
@@ -2518,12 +2521,12 @@ class PaintApp(App[None]):
                     self.message_box(_("Open"), file_path + "\n" + _("File not found.") + "\n" + _("Please verify that the correct path and file name are given."), "ok")
                     return
                 except Exception as e:
-                    self.message_box(_("Open"), _("An unknown error occurred while accessing %1.", file_path) + "\n" + repr(e), "ok")
+                    self.message_box(_("Open"), _("An unknown error occurred while accessing %1.", file_path), "ok", error=e)
                     return
             except FileNotFoundError:
                 pass
             except Exception as e:
-                self.message_box(_("Open"), _("An unknown error occurred while accessing %1.", self.file_path) + "\n" + repr(e), "ok")
+                self.message_box(_("Open"), _("An unknown error occurred while accessing %1.", self.file_path), "ok", error=e)
                 return
 
         try:
@@ -2571,11 +2574,11 @@ class PaintApp(App[None]):
         except UnicodeDecodeError:
             self.message_box(_("Open"), file_path + "\n" + _("Paint cannot read this file.") + "\n" + _("Unexpected file format."), "ok")
         except UnidentifiedImageError as e:
-            self.message_box(_("Open"), _("This is not a valid bitmap file, or its format is not currently supported.") + "\n\n" + repr(e), "ok")
+            self.message_box(_("Open"), _("This is not a valid bitmap file, or its format is not currently supported."), "ok", error=e)
         except FormatReadNotSupported as e:
             self.message_box(_("Open"), e.localized_message, "ok")
         except Exception as e:
-            self.message_box(_("Open"), _("An unexpected error occurred while reading %1.", file_path) + "\n\n" + repr(e), "ok")
+            self.message_box(_("Open"), _("An unexpected error occurred while reading %1.", file_path), "ok", error=e)
 
     def action_open(self) -> None:
         """Show dialog to open an image from a file."""
@@ -2610,7 +2613,7 @@ class PaintApp(App[None]):
             except PermissionError:
                 self.message_box(_("Paint"), file_path + "\n" + _("Access denied."), "ok")
             except Exception as e:
-                self.message_box(_("Paint"), _("An unexpected error occurred while reading %1.", file_path) + "\n\n" + repr(e), "ok")
+                self.message_box(_("Paint"), _("An unexpected error occurred while reading %1.", file_path), "ok", error=e)
 
         self.close_windows("SaveAsDialogWindow, OpenDialogWindow")
         window = OpenDialogWindow(
@@ -2716,7 +2719,7 @@ class PaintApp(App[None]):
                 f.write(svg)
             set_wallpaper(image_path)
         except Exception as e:
-            self.message_box(_("Paint"), _("Failed to set the wallpaper.") + "\n\n" + repr(e), "ok")
+            self.message_box(_("Paint"), _("Failed to set the wallpaper."), "ok", error=e)
     
     def action_recent_file(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
@@ -2765,7 +2768,7 @@ class PaintApp(App[None]):
             import pyperclip
             pyperclip.copy(text)
         except Exception as e:
-            self.message_box(_("Paint"), _("Failed to copy to the clipboard.") + "\n\n" + repr(e), "ok")
+            self.message_box(_("Paint"), _("Failed to copy to the clipboard."), "ok", error=e)
             return False
         return True
 
@@ -2776,7 +2779,7 @@ class PaintApp(App[None]):
             import pyperclip
             text: str = pyperclip.paste()
         except Exception as e:
-            self.message_box(_("Paint"), _("Error getting the Clipboard Data!") + "\n\n" + repr(e), "ok")
+            self.message_box(_("Paint"), _("Error getting the Clipboard Data!"), "ok", error=e)
             return
         if not text:
             return

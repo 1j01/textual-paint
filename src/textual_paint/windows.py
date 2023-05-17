@@ -1,6 +1,6 @@
 from typing import Any, Optional, Callable
 from typing_extensions import Self
-from textual import events
+from textual import events, on
 from textual.message import Message
 from textual.app import ComposeResult
 from textual.containers import Container
@@ -584,6 +584,7 @@ class MessageBox(DialogWindow):
         button_types: str = "ok",
         icon_widget: Optional[Widget],
         handle_button: Callable[[Button], None],
+        error: Exception | None = None,
         **kwargs: Any,
     ) -> None:
         """Initialize the message box."""
@@ -592,10 +593,35 @@ class MessageBox(DialogWindow):
             self.message_widget = Static(message, markup=False)
         else:
             self.message_widget = message
+        if error:
+            # expandable error details
+            import traceback
+            details = "\n".join(traceback.format_exception(error))
+            self.details_widget = Container(Static(details, markup=False, classes="details"))
+            self.details_widget.display = False
+            self.details_widget.styles.overflow_x = "auto"
+            self.details_widget.styles.overflow_y = "auto"
+            self.details_button = Button(_("Show Details"), classes="details_button")
+            self.message_widget = Vertical(
+                self.message_widget,
+                self.details_button,
+                self.details_widget,
+            )
+            self.message_widget.styles.height = "auto"
+            self.message_widget.styles.max_height = "35"
+            self.details_widget.styles.height = "20"
+
         if not icon_widget:
             icon_widget = Static("")
         self.icon_widget = icon_widget
         self.button_types = button_types
+
+    @on(Button.Pressed, ".details_button")
+    def toggle_details(self, event: Button.Pressed) -> None:
+        """Toggle the visibility of the error details."""
+        self.details_widget.display = not self.details_widget.display
+        button_text = _("Hide Details") if self.details_widget.display else _("Show Details")
+        self.details_button.update(button_text)
 
     def on_mount(self):
         """Called when the window is mounted."""
