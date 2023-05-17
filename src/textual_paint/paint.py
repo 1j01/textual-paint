@@ -1189,6 +1189,19 @@ class AnsiArtDocument:
         """
         import xml.etree.ElementTree as ET
         root = ET.fromstring(svg)
+
+        def add_debug_marker(x: float, y: float, color: str) -> None:
+            """Adds a circle to the SVG at the given position, for debugging."""
+            # without the namespace, it won't show up!
+            marker = ET.Element("{http://www.w3.org/2000/svg}circle")
+            marker.attrib["cx"] = str(x)
+            marker.attrib["cy"] = str(y)
+            marker.attrib["r"] = "1"
+            marker.attrib["fill"] = color
+            marker.attrib["stroke"] = "black"
+            marker.attrib["stroke-width"] = "0.1"
+            root.append(marker)
+
         # Search for rect elements to define the background, and the cell locations.
         rects = root.findall(".//{http://www.w3.org/2000/svg}rect")
         if len(rects) == 0:
@@ -1206,6 +1219,8 @@ class AnsiArtDocument:
                         rects.remove(rect)
                         settled = False
                         print("Ignoring outlier rect: " + ET.tostring(rect, encoding="unicode"))
+                        # For debugging, outline the ignored rect.
+                        rect.attrib["style"] = "stroke:#ff0000;stroke-width:1;stroke-dasharray:1,1;fill:none"
                         break
                 else:
                     break
@@ -1247,8 +1262,11 @@ class AnsiArtDocument:
             return "#" + hex(r)[2:].zfill(2) + hex(g)[2:].zfill(2) + hex(b)[2:].zfill(2)
 
         for rect in rects:
-            x = int((float(rect.attrib["x"]) + float(rect.attrib["width"])/2 - min_x) / cell_width)
-            y = int((float(rect.attrib["y"]) + float(rect.attrib["height"])/2 - min_y) / cell_height)
+            x = (float(rect.attrib["x"]) + float(rect.attrib["width"])/2 - min_x)
+            y = (float(rect.attrib["y"]) + float(rect.attrib["height"])/2 - min_y)
+            add_debug_marker(x, y, "red")
+            x = int(x / cell_width)
+            y = int(y / cell_height)
 
             fill = get_fill(rect)
             if fill is not None:
@@ -1259,8 +1277,12 @@ class AnsiArtDocument:
         if len(texts) == 0:
             raise ValueError("No text elements found in SVG.")
         for text in texts:
-            x = int((float(text.attrib["x"]) - min_x + 1/2) / cell_width)
-            y = int((float(text.attrib["y"]) - min_y - 1/2) / cell_height)
+            x = (float(text.attrib["x"]) - min_x + 1/2)
+            y = (float(text.attrib["y"]) - min_y - 1/2)
+            add_debug_marker(x, y, "yellow")
+            x = int(x / cell_width)
+            y = int(y / cell_height)
+
             ch = text.text
             if ch is None:
                 tspans = text.findall(".//{http://www.w3.org/2000/svg}tspan")
@@ -1281,6 +1303,10 @@ class AnsiArtDocument:
             except IndexError:
                 print("Warning: text element is out of bounds: " + ET.tostring(text, encoding="unicode"))
                 continue
+        
+        # For debugging, write the SVG with the ignored rects outlined, and coordinate markers added.
+        ET.ElementTree(root).write("debug.svg", encoding="unicode")
+
         return document
 
     @staticmethod
