@@ -85,11 +85,11 @@ class FileDialogWindow(DialogWindow):
         DirectoryTree gives FileSelected, but only for files, not folders.
         """
         assert event.node.data
-        if event.node.data.is_dir:
-            self._directory_tree_selected_path = event.node.data.path
+        if event.node.data.path.is_dir():
+            self._directory_tree_selected_path = str(event.node.data.path)
         elif event.node.parent:
             assert event.node.parent.data
-            self._directory_tree_selected_path = event.node.parent.data.path
+            self._directory_tree_selected_path = str(event.node.parent.data.path)
             name = os.path.basename(event.node.data.path)
             if not self._expanding_directory_tree:
                 self.query_one("FileDialogWindow .filename_input", Input).value = name
