@@ -160,6 +160,33 @@ Additional characters must use code tagged characters, which are not yet support
         self.caseInsensitive = caseInsensitive
         """Makes lowercase same as uppercase. Note that this is one-way overwrite. It doesn't check if a character already exists, and it won't fill in uppercase using lowercase."""
 
+        self._validateOptions()
+    
+    def _validateOptions(self):
+        """Called on init and before generating a font file.
+        
+        See also _fixFigChars() which actively fixes things.
+        """
+        # Check enums
+        if self.horizontalLayout not in [val for val in self.Layout]:
+            raise ValueError(f"Invalid horizontalLayout: {repr(self.horizontalLayout)} ({type(self.horizontalLayout)})")
+        if self.verticalLayout not in [val for val in self.Layout]:
+            raise ValueError(f"Invalid verticalLayout: {repr(self.verticalLayout)} ({type(self.verticalLayout)})")
+        # Check sentinel values
+        if self.hardBlank == self.endMark:
+            raise ValueError(f"hardBlank and endMark cannot be the same character: {repr(self.hardBlank)}")
+        if len(self.endMark) != 1:
+            raise ValueError(f"endMark must be a single character: {repr(self.endMark)}")
+        if len(self.hardBlank) != 1:
+            raise ValueError(f"hardBlank must be a single character: {repr(self.hardBlank)}")
+        # Check there's no newlines in the comment lines
+        for line in self.commentLines:
+            if "\n" in line:
+                raise ValueError(f"Strings in commentLines cannot contain newlines: {repr(line)}")
+        # Check codeTagCount
+        if self.codeTagCount != 0:
+            raise NotImplementedError("codeTagCount is not yet supported")
+
     def _getOldLayoutValue(self) -> int:
         val = 0
         if self.horizontalLayout == self.Layout.FULL:
@@ -278,6 +305,8 @@ Additional characters must use code tagged characters, which are not yet support
 
     def createFigFileData(self) -> str:
         """Generates the FIGlet file data for the current font."""
+        self._validateOptions()
+
         output = ''
         self._fixFigChars()
 
