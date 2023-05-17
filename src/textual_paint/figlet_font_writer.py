@@ -25,6 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from enum import Enum
+
+
 def spacePad(num: int) -> str:
     return ' ' * num
 
@@ -42,6 +45,13 @@ class FIGletFontWriter:
 
     This Python code is based on JS from http://patorjk.com/figlet-editor/
     """
+
+    class Layout(Enum):
+        """Layout options for FIGcharacter spacing."""
+        FULL = 0
+        FITTED = 1
+        UNIVERSAL_SMUSHING = 2
+        CONTROLLED_SMUSHING = 3
 
     charOrder: list[int] = [ii for ii in range(32, 127)] + [196, 214, 220, 228, 246, 252, 223]
     R"""Character codes that are required to be in any FIGlet font.
@@ -105,8 +115,8 @@ Additional characters must use code tagged characters, which are not yet support
         maxLength: int | None = None,
         commentLines: list[str] = [],
         rightToLeft: bool = False,
-        horizontalLayout: str = 'Universal Smushing',
-        verticalLayout: str = 'Universal Smushing',
+        horizontalLayout: Layout = Layout.UNIVERSAL_SMUSHING,
+        verticalLayout: Layout = Layout.UNIVERSAL_SMUSHING,
         codeTagCount: int = 0,
         hardBlank: str = "$",
         endMark: str = "@",
@@ -114,40 +124,57 @@ Additional characters must use code tagged characters, which are not yet support
     ):
         self.figChars: dict[int, str] = figChars
         """Dictionary that maps character codes to FIGcharacter strings."""
+        
         self.height = height
         """Height of a FIGcharacter, in characters."""
+        
         self.baseline = baseline
         """Distance from the top of the character to the baseline. If not specified, defaults to height."""
+        
         self.maxLength = maxLength
         """Maximum length of a line INCLUDING two endMark characters."""
+        
         self.commentLines: list[str] = commentLines
         """List of comment lines to be included in the header. It's recommended to include at least the name of the font and the name of the author."""
+        
         self.rightToLeft = rightToLeft
         """Indicates RTL writing direction (or LTR if False)."""
+        
         self.codeTagCount = codeTagCount
         """Number of extra characters included in the font (in addition to the required 102 untagged characters). Outputting tagged characters is not yet supported."""
+        
         self.hardBlank = hardBlank
         """Invisible character used to prevent smushing."""
+        
         self.endMark = endMark
         """Denotes the end of a line. Two of these characters in a row denotes the end of a FIGcharacter."""
+        
         self.horizontalLayout = horizontalLayout
-        """One of 'Full', 'Fitted', 'Universal Smushing', or 'Controlled Smushing'"""
+        """Defines how FIGcharacters are spaced horizontally."""
+        
         self.verticalLayout = verticalLayout
-        """One of 'Full', 'Fitted', 'Universal Smushing', or 'Controlled Smushing'"""
+        """Defines how FIGcharacters are spaced vertically."""
+        
         self.hRule = [False] * 7
-        """Horizontal Smushing Rules, 1-6 (0 is not used, so that indices correspond with the names of the parameters). horizontalLayout must be 'Controlled Smushing' for these to take effect."""
+        """Horizontal Smushing Rules, 1-6 (0 is not used, so that indices correspond with the names of the parameters).
+        
+        horizontalLayout must be Layout.CONTROLLED_SMUSHING for these to take effect."""
+        
         self.vRule = [False] * 6
-        """Vertical Smushing Rules, 1-5 (0 is not used, so that indices correspond with the names of the parameters). verticalLayout must be 'Controlled Smushing' for these to take effect."""
+        """Vertical Smushing Rules, 1-5 (0 is not used, so that indices correspond with the names of the parameters).
+        
+        verticalLayout must be Layout.CONTROLLED_SMUSHING for these to take effect."""
+        
         self.caseInsensitive = caseInsensitive
         """Makes lowercase same as uppercase. Note that this is one-way overwrite. It doesn't check if a character already exists, and it won't fill in uppercase using lowercase."""
 
     def _getOldLayoutValue(self) -> int:
         val = 0
-        if self.horizontalLayout == 'Full':
+        if self.horizontalLayout == self.Layout.FULL:
             return -1
-        elif self.horizontalLayout == 'Fitted':
+        elif self.horizontalLayout == self.Layout.FITTED:
             return 0
-        elif self.horizontalLayout == 'Universal Smushing':
+        elif self.horizontalLayout == self.Layout.UNIVERSAL_SMUSHING:
             return 0
         else:
             val += 1 if self.hRule[1] else 0
@@ -162,11 +189,11 @@ Additional characters must use code tagged characters, which are not yet support
         val = 0
 
         # horizontal rules
-        if self.horizontalLayout == 'Full':
+        if self.horizontalLayout == self.Layout.FULL:
             val += 0
-        elif self.horizontalLayout == 'Fitted':
+        elif self.horizontalLayout == self.Layout.FITTED:
             val += 64
-        elif self.horizontalLayout == 'Universal Smushing':
+        elif self.horizontalLayout == self.Layout.UNIVERSAL_SMUSHING:
             val += 128
         else:
             val += 128
@@ -178,11 +205,11 @@ Additional characters must use code tagged characters, which are not yet support
             val += 32 if self.hRule[6] else 0
 
         # vertical rules
-        if self.verticalLayout == 'Full':
+        if self.verticalLayout == self.Layout.FULL:
             val += 0
-        elif self.verticalLayout == 'Fitted':
+        elif self.verticalLayout == self.Layout.FITTED:
             val += 8192
-        elif self.verticalLayout == 'Universal Smushing':
+        elif self.verticalLayout == self.Layout.UNIVERSAL_SMUSHING:
             val += 16384
         else:
             val += 16384

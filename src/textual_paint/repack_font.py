@@ -117,8 +117,9 @@ def extract_textures(image_path: str):
         # Or just half of the max width of the FIGcharacters
         figChars[32] = '\n'.join(['$' * (len(row) // 2) for row in figChars[32].split('\n')])
         # Add hard blanks to the end of non-whitespace of each row of each FIGcharacter
-        # With the "Full" layout, this will ensure a space between rendered FIGcharacters.
-        # The fixup code (_fixFigChars) will handle the ragged right edge.
+        # With FIGletFontWriter.Layout.FULL, this will ensure a space between rendered FIGcharacters.
+        # The fixup code (_fixFigChars) will handle the ragged right edge,
+        # although it won't look pretty having the dollar signs scattered in the font file.
         for ordinal in figChars:
             figChars[ordinal] = '\n'.join([row.rstrip() + '$' for row in figChars[ordinal].split('\n')])
     
@@ -139,8 +140,8 @@ def extract_textures(image_path: str):
             "NanoTiny 2x2 (version 14)",
             *shared_comment_lines,
         ],
-        horizontalLayout="Full",
-        verticalLayout="Full",
+        horizontalLayout=FIGletFontWriter.Layout.FULL,
+        verticalLayout=FIGletFontWriter.Layout.FULL,
     )
     full_size_font = FIGletFontWriter(
         figChars=full_size_meta_glyphs,
@@ -149,8 +150,8 @@ def extract_textures(image_path: str):
             "NanoTiny 4x4 (version 14)",
             *shared_comment_lines,
         ],
-        horizontalLayout="Full",
-        verticalLayout="Full",
+        horizontalLayout=FIGletFontWriter.Layout.FULL,
+        verticalLayout=FIGletFontWriter.Layout.FULL,
     )
 
     return extracted_image, half_size_font.createFigFileData(), full_size_font.createFigFileData()
