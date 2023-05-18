@@ -1212,27 +1212,6 @@ class AnsiArtDocument:
         rects = root.findall(".//{http://www.w3.org/2000/svg}rect")
         if len(rects) == 0:
             raise ValueError("No rect elements found in SVG.")
-        # Find the cell size, removing outliers until all cells are within
-        # a certain relative difference from the average size.
-        # Actually, don't, because it turns out rects can span multiple cells.
-        """
-        max_relative_difference = 0.3
-        for attribute in ["width", "height"]:
-            settled = False
-            while not settled:
-                settled = True
-                avg = sum(float(rect.attrib[attribute]) for rect in rects) / len(rects)
-                for rect in rects:
-                    if abs(float(rect.attrib[attribute]) - avg) / avg > max_relative_difference:
-                        rects.remove(rect)
-                        settled = False
-                        print("Ignoring outlier rect: " + ET.tostring(rect, encoding="unicode"))
-                        # For debugging, outline the ignored rect.
-                        rect.attrib["style"] = "stroke:#ff0000;stroke-width:1;stroke-dasharray:1,1;fill:none"
-                        break
-                else:
-                    break
-        """
         # Remove any rects that contain other rects.
         # This targets just any background/border rects framing the grid.
         def rect_contains(outer_rect: ET.Element, inner_rect: ET.Element) -> bool:
