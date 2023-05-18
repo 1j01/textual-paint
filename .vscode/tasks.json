@@ -21,7 +21,22 @@
 			"label": "Textual Development Console",
 			"type": "shell",
 			"command": "textual console -x EVENT",
-			"problemMatcher": []
+			"isBackground": true,
+			"problemMatcher": [{
+				"pattern":[
+					{
+						"regexp": "^([^\\\\s].*)\\\\((\\\\d+,\\\\d+)\\\\):\\\\s*(.*)$",
+						"file": 1,
+						"location": 2,
+						"message": 3
+					}
+				],
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": "never match anything dfgjkshldkfjhglskfj",
+					"endsPattern": "Textual Development Console"
+				},
+			}]
 		}
 	]
 }
