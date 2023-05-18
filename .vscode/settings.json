@@ -8,5 +8,7 @@
         // https://github.com/Textualize/textual/issues/2104
         {"name": "textual", "depth": 5}
     ],
-    "css.validate": false
+    "css.customData": [
+        "./textual.css-data.json"
+    ],
 }

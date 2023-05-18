@@ -1,0 +1,27 @@
+{
+	"version": 1.1,
+	"properties": [
+		{
+			"name": "layers",
+			"description": "Defines the names and order of layers that can be used with the layer property"
+		}
+	],
+	"atDirectives": [
+		{
+			"name": "@foo",
+			"description": "Foo at directive"
+		}
+	],
+	"pseudoClasses": [
+		{
+			"name": ":foo",
+			"description": "Foo pseudo class"
+		}
+	],
+	"pseudoElements": [
+		{
+			"name": "::foo",
+			"description": "Foo pseudo elements"
+		}
+	]
+}
