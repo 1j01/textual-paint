@@ -151,7 +151,7 @@ cat samples/ship.ans
 To view all the sample files, run:
 
 ```bash
-find samples -type f -exec file --mime-type {} \; | grep -v "image/png" | cut -d: -f1 | sort | xargs -I{} sh -c 'echo "File: {}"; cat "{}"; echo "\n-----------------------\n"'
+find samples -type f -exec file --mime-type {} \; | grep -v -e "image/png" -e "image/svg" | cut -d: -f1 | sort | xargs -I{} sh -c 'echo "File: {}"; cat "{}"; echo "\n-----------------------\n"'
 ```
 <details>
 <summary>Command Explanation</summary>
@@ -159,7 +159,7 @@ Let's break down the command:
 
 1. `find samples -type f -exec file --mime-type {} \;`: This part uses the `find` command to locate all files (`-type f`) within the "samples" folder and its subdirectories. For each file, it executes the `file --mime-type` command to determine the file's MIME type. This outputs a line like "samples/ship.ans: text/plain".
 
-2. `grep -v "image/png"`: This filters out any lines containing the MIME type "image/png", effectively excluding PNG files from the output.
+2. `grep -v -e "image/png" -e "image/svg"`: This filters out any lines containing the MIME types "image/png" or "image/svg", effectively excluding PNG and SVG files. `-v` means "invert the match", so it will only output lines that don't match the given patterns.
 
 3. `cut -d: -f1`: This extracts only the file paths from the output of the `file` command, removing the MIME type information.
 
