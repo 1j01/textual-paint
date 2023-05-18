@@ -1208,6 +1208,8 @@ class AnsiArtDocument:
             raise ValueError("No rect elements found in SVG.")
         # Find the cell size, removing outliers until all cells are within
         # a certain relative difference from the average size.
+        # Actually, don't, because it turns out rects can span multiple cells.
+        """
         max_relative_difference = 0.3
         for attribute in ["width", "height"]:
             settled = False
@@ -1224,6 +1226,30 @@ class AnsiArtDocument:
                         break
                 else:
                     break
+        """
+        # Remove any rects that contain other rects.
+        # This targets just any background/border rects framing the grid.
+        def rect_contains(outer_rect: ET.Element, inner_rect: ET.Element) -> bool:
+            return (
+                float(outer_rect.attrib["x"]) <= float(inner_rect.attrib["x"]) and
+                float(outer_rect.attrib["y"]) <= float(inner_rect.attrib["y"]) and
+                float(outer_rect.attrib["x"]) + float(outer_rect.attrib["width"]) >= float(inner_rect.attrib["x"]) + float(inner_rect.attrib["width"]) and
+                float(outer_rect.attrib["y"]) + float(outer_rect.attrib["height"]) >= float(inner_rect.attrib["y"]) + float(inner_rect.attrib["height"])
+            )
+        rects_to_ignore: List[ET.Element] = []
+        for outer_rect in rects:
+            for inner_rect in rects:
+                if outer_rect != inner_rect and rect_contains(outer_rect, inner_rect):
+                    rects_to_ignore.append(outer_rect)
+                    print("Ignoring outer_rect: " + ET.tostring(outer_rect, encoding="unicode"))
+                    # For debugging, outline the ignored rect.
+                    outer_rect.attrib["style"] = "stroke:#ff0000;stroke-width:1;stroke-dasharray:1,1;fill:none"
+
+        rects = [rect for rect in rects if rect not in rects_to_ignore]
+
+        # This could technically happen if there are two rects of the same size and position.
+        assert len(rects) > 0, "No rect elements after removing rects containing other rects."
+
         # Find the cell size.
         # TODO: use spacing, not average size. Partially done below.
         cell_width = sum(float(rect.attrib["width"]) for rect in rects) / len(rects)
