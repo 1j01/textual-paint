@@ -1,3 +1,12 @@
 {
+    "python.analysis.packageIndexDepths": [
+        // The default depth is 1 (top-level only),
+        // which doesn't let auto-imports work for Textual,
+        // i.e. the Quick Fix for missing names, and
+        // maybe an auto-complete feature that I don't use.
+        // (2 might be sufficient.)
+        // https://github.com/Textualize/textual/issues/2104
+        {"name": "textual", "depth": 5}
+    ],
     "css.validate": false
 }
