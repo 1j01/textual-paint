@@ -1186,6 +1186,12 @@ class AnsiArtDocument:
         It contains out-of-order unevenly sized rects, missing rects, a background rect, and an emoji.
         It doesn't currently contain varying color formats, font sizes, alignments, or transforms,
         and it only uses style rather than fill, and text with tspan rather than text without.
+
+        To test it, run the following command:
+        textual run --dev "src/textual_paint/paint.py --language en --clear-screen --inspect-layout --restart-on-changes 'samples/combative_character_grid.svg'" --press ctrl+shift+s,.,s,a,v,e,d,.,s,v,g,enter,enter
+        and check samples/combative_character_grid.svg.saved.svg
+        There's also useful debug visuals saved in debug.svg (if enabled).
+        Then add ".saved.svg" to that command and run it to check the saved file.
         """
         import xml.etree.ElementTree as ET
         root = ET.fromstring(svg)
