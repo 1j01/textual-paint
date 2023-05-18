@@ -13,7 +13,7 @@ this_script_abs_path=${BASH_SOURCE[0]}
 # Note to self: DRY isn't worth it for outputting English instructions
 source_line="source $this_script_abs_path"
 uninstall_instruction="uninstall terminal wallpaper support by removing \"$source_line\" from $init_script"
-add_var_instruction="Add it to $init_script before the line that includes terminal-wallpaper.sh (\"$source_line\"), or $uninstall_instruction"
+add_var_instruction="Add it to $init_script before the line that includes terminal_wallpaper.sh (\"$source_line\"), or $uninstall_instruction"
 if [[ -z $TERMINAL_WALLPAPER ]]; then
 	echo "TERMINAL_WALLPAPER not set. $add_var_instruction"
 	return
