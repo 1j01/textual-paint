@@ -2647,7 +2647,7 @@ class PaintApp(App[None]):
         if icon_widget is None:
             icon_widget = get_warning_icon()
 
-        self.close_windows("#message_box")
+        # self.close_windows("#message_box")
         
         self.bell()
 
@@ -2660,7 +2660,7 @@ class PaintApp(App[None]):
             if not button.has_class("details_button"):
                 window.close()
         window = MessageBox(
-            id="message_box",
+            # id="message_box",
             title=title,
             icon_widget=icon_widget,
             message=message,
