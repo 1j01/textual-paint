@@ -1188,10 +1188,10 @@ class AnsiArtDocument:
         and it only uses style rather than fill, and text with tspan rather than text without.
 
         To test it, run the following command:
-        textual run --dev "src/textual_paint/paint.py --language en --clear-screen --inspect-layout --restart-on-changes 'samples/pathological_character_grid.svg'" --press ctrl+shift+s,.,s,a,v,e,d,.,s,v,g,enter,enter
-        and check samples/pathological_character_grid.svg.saved.svg
+        textual run --dev "src/textual_paint/paint.py --language en --clear-screen --inspect-layout --restart-on-changes 'samples/pathological_character_grid.svg'" --press ctrl+shift+s,left,left,left,left,.,s,a,v,e,d,enter,enter
+        and check samples/pathological_character_grid.saved.svg
         There's also useful debug visuals saved in debug.svg (if enabled).
-        Then add ".saved.svg" to that command and run it to check the saved file.
+        Then add ".saved" to that command and run it to check the saved file.
         """
         import xml.etree.ElementTree as ET
         root = ET.fromstring(svg)
