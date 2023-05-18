@@ -1265,6 +1265,8 @@ class AnsiArtDocument:
         min_y = min(float(rect.attrib["y"]) for rect in rects)
         max_x = max(float(rect.attrib["x"]) + float(rect.attrib["width"]) for rect in rects)
         max_y = max(float(rect.attrib["y"]) + float(rect.attrib["height"]) for rect in rects)
+        add_debug_marker(min_x, min_y, "blue")
+        add_debug_marker(max_x, max_y, "blue")
         width = int((max_x - min_x) / cell_width)
         height = int((max_y - min_y) / cell_height)
         # Adjust cell width/height based on document bounds.
