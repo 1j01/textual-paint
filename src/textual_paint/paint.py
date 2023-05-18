@@ -871,7 +871,7 @@ class AnsiArtDocument:
     def encode_based_on_file_extension(self, file_path: str) -> bytes:
         """Encode the image according to the file extension."""
         format_id = self.format_from_extension(file_path)
-        print("Supported image formats for writing:", Image.SAVE)
+        print("Supported image formats for writing:", Image.SAVE.keys())
         if format_id == "ANSI":
             # This maybe shouldn't use UTF-8... but there's not a singular encoding for "ANSI art".
             return self.get_ansi().encode("utf-8")
@@ -1230,7 +1230,8 @@ class AnsiArtDocument:
             for inner_rect in rects:
                 if outer_rect != inner_rect and rect_contains(outer_rect, inner_rect):
                     rects_to_ignore.append(outer_rect)
-                    print("Ignoring outer_rect: " + ET.tostring(outer_rect, encoding="unicode"))
+                    # Combinatorial explosion is much worse with logging enabled.
+                    # print("Ignoring outer_rect: " + ET.tostring(outer_rect, encoding="unicode"))
                     # For debugging, outline the ignored rect.
                     outer_rect.attrib["style"] = "stroke:#ff0000;stroke-width:1;stroke-dasharray:1,1;fill:none"
 
@@ -1239,12 +1240,14 @@ class AnsiArtDocument:
         # This could technically happen if there are two rects of the same size and position.
         assert len(rects) > 0, "No rect elements after removing rects containing other rects."
 
-        # Find the cell size. Rects can span multiple cells, so we need to find the smallest rect.
+        # Find the cell size. Rects can span multiple cells, so find the smallest rect,
+        # rather than averaging. That way it's at least a decent chance of it being a single cell.
+        # This starts with a guess, and then is refined after guessing the document bounds.
         # TODO: handle case that there's no 1x1 cell rect.
         # TODO: use spacing rather than size. Partially done below.
-        # This starts with a guess, and then is refined after guessing the document bounds.
         cell_width = min(float(rect.attrib["width"]) for rect in rects)
         cell_height = min(float(rect.attrib["height"]) for rect in rects)
+        print("Initial cell size guess: " + str(cell_width) + " x " + str(cell_height))
         # Find the document bounds.
         min_x = min(float(rect.attrib["x"]) for rect in rects)
         min_y = min(float(rect.attrib["y"]) for rect in rects)
@@ -1257,6 +1260,7 @@ class AnsiArtDocument:
         # Adjust cell width/height based on document bounds.
         cell_width = (max_x - min_x) / width
         cell_height = (max_y - min_y) / height
+        print("Refined cell size estimate: " + str(cell_width) + " x " + str(cell_height))
         # Create the document.
         document = AnsiArtDocument(width, height, default_bg, default_fg)
         # Fill the document with the background colors.
@@ -1321,6 +1325,11 @@ class AnsiArtDocument:
                         ch += tspan.text
                     else:
                         print("Warning: tspan element has no text: " + ET.tostring(tspan, encoding="unicode"))
+            # This is likely to cause problems with multi-character emojis, like flags,
+            # although such characters are unlikely to work in the terminal anyway.
+            # if len(ch) > 1:
+            #     print("Warning: text element has more than one character: " + ET.tostring(text, encoding="unicode"))
+            #     ch = ch[0]
             fill = get_fill(text)
             try:
                 document.ch[y][x] = ch
@@ -1344,7 +1353,7 @@ class AnsiArtDocument:
         Raises UnidentifiedImageError if the format is not detected.
         """
         format_id = AnsiArtDocument.format_from_extension(file_path)
-        print("Supported image formats for reading:", Image.OPEN)
+        print("Supported image formats for reading:", Image.OPEN.keys())
         # TODO: try loading as image first, then as text if that fails with UnidentifiedImageError
         # That way it can handle images without file extensions.
         if format_id in Image.OPEN:
