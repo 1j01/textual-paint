@@ -32,7 +32,7 @@ from textual.dom import DOMNode
 from textual.widget import Widget
 from textual.widgets import Button, Static, Input, Header, RadioSet, RadioButton
 from textual.binding import Binding
-from textual.color import Color
+from textual.color import Color, ColorParseError
 from PIL import Image, UnidentifiedImageError
 from pyfiglet import Figlet, FigletFont
 
@@ -1255,11 +1255,15 @@ class AnsiArtDocument:
                         if style_part.startswith("fill:"):
                             fill = style_part[len("fill:"):]
                             break
-            if fill is None:
+            if fill is None or fill is "none" or fill is "":
                 print("Warning: element has no fill defined: " + ET.tostring(el, encoding="unicode"))
                 return None
-            r, g, b = Color.parse(fill).rgb
-            return "#" + hex(r)[2:].zfill(2) + hex(g)[2:].zfill(2) + hex(b)[2:].zfill(2)
+            try:
+                r, g, b = Color.parse(fill).rgb
+                return "#" + hex(r)[2:].zfill(2) + hex(g)[2:].zfill(2) + hex(b)[2:].zfill(2)
+            except ColorParseError:
+                print("Warning: element has invalid fill: " + ET.tostring(el, encoding="unicode"))
+                return None
 
         for rect in rects:
             x = (float(rect.attrib["x"]) + float(rect.attrib["width"])/2 - min_x)
