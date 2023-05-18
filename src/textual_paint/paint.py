@@ -1268,7 +1268,7 @@ class AnsiArtDocument:
                         if style_part.startswith("fill:"):
                             fill = style_part[len("fill:"):]
                             break
-            if fill is None or fill is "none" or fill is "":
+            if fill is None or fill == "none" or fill == "":
                 print("Warning: element has no fill defined: " + ET.tostring(el, encoding="unicode"))
                 return None
             try:
