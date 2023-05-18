@@ -1289,16 +1289,16 @@ class AnsiArtDocument:
                 return None
 
         for rect in rects:
-            # TODO: fill in multiple cells for spanned rects
-            x = (float(rect.attrib["x"]) + float(rect.attrib["width"])/2)
-            y = (float(rect.attrib["y"]) + float(rect.attrib["height"])/2)
-            add_debug_marker(x, y, "red")
-            x = int((x - min_x) / cell_width)
-            y = int((y - min_y) / cell_height)
-
             fill = get_fill(rect)
-            if fill is not None:
-                document.bg[y][x] = fill
+            for x_offset in range(int(float(rect.attrib["width"]) / cell_width + 1/2)):
+                for y_offset in range(int(float(rect.attrib["height"]) / cell_height + 1/2)):
+                    x = float(rect.attrib["x"]) + cell_width * (x_offset + 1/2)
+                    y = float(rect.attrib["y"]) + cell_height * (y_offset + 1/2)
+                    add_debug_marker(x, y, "red")
+                    x = int((x - min_x) / cell_width)
+                    y = int((y - min_y) / cell_height)
+                    if fill is not None:
+                        document.bg[y][x] = fill
 
         # Find text elements to define the foreground.
         texts = root.findall(".//{http://www.w3.org/2000/svg}text")
