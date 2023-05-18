@@ -1298,11 +1298,11 @@ class AnsiArtDocument:
                 return None
 
         for rect in rects:
-            x = (float(rect.attrib["x"]) + float(rect.attrib["width"])/2 - min_x)
-            y = (float(rect.attrib["y"]) + float(rect.attrib["height"])/2 - min_y)
+            x = (float(rect.attrib["x"]) + float(rect.attrib["width"])/2)
+            y = (float(rect.attrib["y"]) + float(rect.attrib["height"])/2)
             add_debug_marker(x, y, "red")
-            x = int(x / cell_width)
-            y = int(y / cell_height)
+            x = int((x - min_x) / cell_width)
+            y = int((y - min_y) / cell_height)
 
             fill = get_fill(rect)
             if fill is not None:
@@ -1315,11 +1315,11 @@ class AnsiArtDocument:
         for text in texts:
             # approximate center of text
             # y position really depends on font size, as well as the baseline y position.
-            x = (float(text.attrib["x"]) - min_x + cell_width/2)
-            y = (float(text.attrib["y"]) - min_y - cell_height/4)
+            x = (float(text.attrib["x"]) + cell_width/2)
+            y = (float(text.attrib["y"]) - cell_height/4)
             add_debug_marker(x, y, "yellow")
-            x = int(x / cell_width)
-            y = int(y / cell_height)
+            x = int((x - min_x) / cell_width)
+            y = int((y - min_y) / cell_height)
 
             ch = text.text
             if ch is None:
