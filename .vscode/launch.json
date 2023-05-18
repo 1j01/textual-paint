@@ -15,7 +15,9 @@
 			"program": "${userHome}/.local/bin/textual",
 			"args": ["run", "--dev", "src/textual_paint/paint.py --clear-screen --inspect-layout"],
 			"console": "integratedTerminal",
-			"justMyCode": false
+			"justMyCode": false,
+			"postDebugTask": "Reset Terminal",
+			"preLaunchTask": "Textual Development Console",
 		},
 		{
 			"name": "Open A File in App",
@@ -26,7 +28,9 @@
 			"program": "${userHome}/.local/bin/textual",
 			"args": ["run", "--dev", "src/textual_paint/paint.py --clear-screen --inspect-layout LICENSE.txt"],
 			"console": "integratedTerminal",
-			"justMyCode": false
+			"justMyCode": false,
+			"postDebugTask": "Reset Terminal",
+			"preLaunchTask": "Textual Development Console",
 		},
 		{
 			"name": "Debug --restart-on-changes file matching",
@@ -35,7 +39,9 @@
 			"program": "${userHome}/.local/bin/textual",
 			"args": ["run", "--dev", "src/textual_paint/paint.py --clear-screen --restart-on-changes"],
 			"console": "integratedTerminal",
-			"justMyCode": false
+			"justMyCode": false,
+			"postDebugTask": "Reset Terminal",
+			"preLaunchTask": "Textual Development Console",
 		}
 	]
 }
