@@ -1213,7 +1213,11 @@ class AnsiArtDocument:
         if len(rects) == 0:
             raise ValueError("No rect elements found in SVG.")
         # Remove any rects that contain other rects.
-        # This targets just any background/border rects framing the grid.
+        # This targets any background/border rects framing the grid.
+        # TODO: fix combinatorial explosion (maybe sort by size and do something fancier with that?)
+        # Collision bucketization could apply here, but seems like overkill.
+        # And what would be the bucket size? 1/10th of the smallest rect?
+        # We haven't determined the cell size yet.
         def rect_contains(outer_rect: ET.Element, inner_rect: ET.Element) -> bool:
             return (
                 float(outer_rect.attrib["x"]) <= float(inner_rect.attrib["x"]) and
@@ -1235,10 +1239,12 @@ class AnsiArtDocument:
         # This could technically happen if there are two rects of the same size and position.
         assert len(rects) > 0, "No rect elements after removing rects containing other rects."
 
-        # Find the cell size.
-        # TODO: use spacing, not average size. Partially done below.
-        cell_width = sum(float(rect.attrib["width"]) for rect in rects) / len(rects)
-        cell_height = sum(float(rect.attrib["height"]) for rect in rects) / len(rects)
+        # Find the cell size. Rects can span multiple cells, so we need to find the smallest rect.
+        # TODO: handle case that there's no 1x1 cell rect.
+        # TODO: use spacing rather than size. Partially done below.
+        # This starts with a guess, and then is refined after guessing the document bounds.
+        cell_width = min(float(rect.attrib["width"]) for rect in rects)
+        cell_height = min(float(rect.attrib["height"]) for rect in rects)
         # Find the document bounds.
         min_x = min(float(rect.attrib["x"]) for rect in rects)
         min_y = min(float(rect.attrib["y"]) for rect in rects)
@@ -1279,6 +1285,7 @@ class AnsiArtDocument:
                 return None
 
         for rect in rects:
+            # TODO: fill in multiple cells for spanned rects
             x = (float(rect.attrib["x"]) + float(rect.attrib["width"])/2)
             y = (float(rect.attrib["y"]) + float(rect.attrib["height"])/2)
             add_debug_marker(x, y, "red")
