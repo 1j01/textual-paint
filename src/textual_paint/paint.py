@@ -1179,7 +1179,7 @@ class AnsiArtDocument:
         - fill or style attributes are used to determine the background/foreground colors.
         - text elements are assumed to be belonging to the cell their x/y is within,
           without regard to their size/alignment.
-        - parsing stylesheets is not supported.
+        - stylesheets are partially supported.
         - not all CSS/SVG color formats are supported.
 
         To test the flexibility of this loader, I created pathological_character_grid.svg
@@ -1207,6 +1207,67 @@ class AnsiArtDocument:
             marker.attrib["stroke"] = "black"
             marker.attrib["stroke-width"] = "0.1"
             root.append(marker)
+
+        # Parse stylesheets.
+        # Textual's CSS parser can't handle at-rules like the @font-face in the SVG,
+        # as of textual 0.24.1, so we either need to parse it manually or remove it.
+        from textual.css.parse import parse
+        from textual.css.model import RuleSet
+        rule_sets: list[RuleSet] = []
+        # OK this is seriously hacky. It doesn't support browser CSS really at all,
+        # so I'm rewriting properties as different properties that it does support.
+        property_map = {
+            "fill": "color",
+        }
+        reverse_property_map = {v: k for k, v in property_map.items()}
+        def rewrite_property(match: re.Match[str]) -> str:
+            property_name = match.group(1)
+            property_value = match.group(2)
+            
+            if property_name in property_map:
+                rewritten_name = property_map[property_name]
+                return f"{rewritten_name}: {property_value}"
+            
+            return match.group(0)  # Return the original match if no rewrite is needed
+
+        for style_element in root.findall(".//{http://www.w3.org/2000/svg}style"):
+            assert style_element.text is not None, "style element has no text"
+            css = style_element.text
+            at_rule_pattern = r"\s*@[\w-]+\s*{[^}]+}"  # doesn't handle nested braces
+            css = re.sub(at_rule_pattern, "", css)
+            property_pattern = r"([\w-]+)\s*:\s*([^;}]+)"
+
+            css = re.sub(property_pattern, rewrite_property, css)
+
+            for rule_set in parse(css, "inline <style> (modified)"):
+                rule_sets.append(rule_set)
+        # Apply stylesheets as inline styles.
+        for rule_set in rule_sets:
+            # list[tuple[str, Specificity6, Any]]
+            rules = rule_set.styles.extract_rules((0, 0, 0))
+            for css_selector in rule_set.selector_names:
+                # Just need to handle class and id selectors.
+                if css_selector.startswith("."):
+                    class_name = css_selector[1:]
+                    # xpath = f".//*[contains(@class, '{class_name}')]" # not supported
+                    xpath = f".//*[@class='{class_name}']"
+                elif css_selector.startswith("#"):
+                    id = css_selector[1:]
+                    xpath = f".//*[@id='{id}']"
+                else:
+                    # xpath = "./.." # root's parent never matches
+                    # (absolute xpath is not allowed here, but we're querying from root)
+                    # Alternatively, we could do this:
+                    xpath = ".//*[id='never-match-me-please']"
+                for element in root.findall(xpath):
+                    for rule in rules:
+                        prop, _, value = rule
+                        prop = reverse_property_map.get(prop, prop)
+                        # it adds auto_color: False when setting a color; hacks on top of hacks
+                        if isinstance(value, str):
+                            element.attrib[prop] = value
+                        elif isinstance(value, Color):
+                            element.attrib[prop] = value.hex
 
         # Search for rect elements to define the background, and the cell locations.
         rects = root.findall(".//{http://www.w3.org/2000/svg}rect")
