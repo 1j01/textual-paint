@@ -1292,7 +1292,7 @@ class AnsiArtDocument:
 
                         ranges_overlap = (i_min <= j_min <= i_max) or (j_min <= i_min <= j_max)
 
-                        if ranges_overlap or (i_max - j_min) <= max_offset or (j_max - i_min) <= max_offset:
+                        if ranges_overlap or abs(i_max - j_min) <= max_offset or abs(j_max - i_min) <= max_offset:
                             tracks[i] = join_tracks(tracks[i], tracks[j])
                             del tracks[j]
                             joined = True
