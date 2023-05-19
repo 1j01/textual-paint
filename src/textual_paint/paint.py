@@ -1301,6 +1301,17 @@ class AnsiArtDocument:
                         break
             # Sort tracks
             tracks.sort(key=lambda track: track.min_center)
+            # Visualize the tracks for debug
+            for track in tracks:
+                ET.SubElement(root, "{http://www.w3.org/2000/svg}rect", {
+                    "x": str(track.min_center - min_rect_size / 2) if coord_attrib == "x" else "0",
+                    "y": str(track.min_center - min_rect_size / 2) if coord_attrib == "y" else "0",
+                    "width": str(min_rect_size) if coord_attrib == "x" else "100%",
+                    "height": str(min_rect_size) if coord_attrib == "y" else "100%",
+                    # "style": "stroke:#0000ff;stroke-width:0.1;stroke-dasharray:1,1;fill:none"
+                    "style": "fill:#0000ff;fill-opacity:0.1"
+                })
+
             # Find the average spacing between tracks, ignoring gaps that are likely to be more than one cell.
             # I'm calling this gap because I'm lazy.
             max_gap = min_rect_size * 2
