@@ -1403,7 +1403,10 @@ class AnsiArtDocument:
                     x = int((x - min_x) / cell_width)
                     y = int((y - min_y) / cell_height)
                     if fill is not None:
-                        document.bg[y][x] = fill
+                        try:
+                            document.bg[y][x] = fill
+                        except IndexError:
+                            print("Warning: rect out of bounds: " + ET.tostring(rect, encoding="unicode"))
 
         # Find text elements to define the foreground.
         texts = root.findall(".//{http://www.w3.org/2000/svg}text")
