@@ -1315,8 +1315,22 @@ class AnsiArtDocument:
             # Find the average spacing between tracks, ignoring gaps that are likely to be more than one cell.
             # I'm calling this gap because I'm lazy.
             max_gap = min_rect_size * 2
-            all_gaps = [tracks[i + 1].max_center - tracks[i].min_center for i in range(len(tracks) - 1)]
-            gaps = [gap for gap in all_gaps if gap <= max_gap]
+            all_gaps: list[float] = []
+            gaps: list[float] = []
+            for i in range(len(tracks) - 1):
+                i_center = (tracks[i].max_center + tracks[i].min_center) / 2
+                j_center = (tracks[i + 1].max_center + tracks[i + 1].min_center) / 2
+                gap = abs(j_center - i_center) # abs shouldn't be necessary, but just in case I guess
+                ET.SubElement(root, "{http://www.w3.org/2000/svg}line", {
+                    "x1": str(i_center) if coord_attrib == "x" else ("5%" if i % 2 == 0 else "2%"),
+                    "y1": str(i_center) if coord_attrib == "y" else ("5%" if i % 2 == 0 else "2%"),
+                    "x2": str(j_center) if coord_attrib == "x" else ("5%" if i % 2 == 0 else "2%"),
+                    "y2": str(j_center) if coord_attrib == "y" else ("5%" if i % 2 == 0 else "2%"),
+                    "stroke": "#ff0000" if gap > max_gap else "#00ff00",
+                })
+                all_gaps.append(gap)
+                if gap <= max_gap:
+                    gaps.append(gap)
             if len(gaps) == 0:
                 measures[coord_attrib] = min_rect_size
             else:
