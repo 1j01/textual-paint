@@ -2028,7 +2028,7 @@ class PaintApp(App[None]):
         Binding("ctrl+n", "new", _("New")),
         Binding("ctrl+shift+n", "clear_image", _("Clear Image")),
         Binding("ctrl+t", "toggle_tools_box", _("Toggle Tools Box")),
-        Binding("ctrl+w", "toggle_colors_box", _("Toggle Colors Box")),
+        Binding("ctrl+l", "toggle_colors_box", _("Toggle Colors Box")),
         Binding("ctrl+z", "undo", _("Undo")),
         # Ctrl+Shift+<key> doesn't seem to work on Ubuntu or VS Code terminal,
         # it ignores the Shift.
