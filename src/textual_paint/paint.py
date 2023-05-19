@@ -1225,11 +1225,11 @@ class AnsiArtDocument:
                 float(outer_rect.attrib["x"]) + float(outer_rect.attrib["width"]) >= float(inner_rect.attrib["x"]) + float(inner_rect.attrib["width"]) and
                 float(outer_rect.attrib["y"]) + float(outer_rect.attrib["height"]) >= float(inner_rect.attrib["y"]) + float(inner_rect.attrib["height"])
             )
-        rects_to_ignore: List[ET.Element] = []
+        rects_to_ignore: set[ET.Element] = set()
         for i, outer_rect in enumerate(rects):
             for inner_rect in rects[i + 1:]:
                 if outer_rect != inner_rect and rect_contains(outer_rect, inner_rect):
-                    rects_to_ignore.append(outer_rect)
+                    rects_to_ignore.add(outer_rect)
                     # Combinatorial explosion is much worse with logging enabled.
                     # print("Ignoring outer_rect: " + ET.tostring(outer_rect, encoding="unicode"))
                     # For debugging, outline the ignored rect.
