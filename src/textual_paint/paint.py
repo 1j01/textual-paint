@@ -1280,10 +1280,10 @@ class AnsiArtDocument:
                         # (always join)
                         # or
                         # i_min----------------i_max j_min----------------j_max
-                        # (join if i_max - j_min <= max_offset)
+                        # (join if abs(i_max - j_min) <= max_offset)
                         # or
                         # j_min----------------j_max i_min----------------i_max
-                        # (join if j_max - i_min <= max_offset)
+                        # (join if abs(j_max - i_min) <= max_offset)
 
                         i_min = tracks[i].min_center
                         i_max = tracks[i].max_center
@@ -1291,8 +1291,8 @@ class AnsiArtDocument:
                         j_max = tracks[j].max_center
 
                         ranges_overlap = (i_min <= j_min <= i_max) or (j_min <= i_min <= j_max)
-
-                        if ranges_overlap or abs(i_max - j_min) <= max_offset or abs(j_max - i_min) <= max_offset:
+                        ends_near = min(abs(i_max - j_min), abs(j_max - i_min)) <= max_offset
+                        if ranges_overlap or ends_near:
                             tracks[i] = join_tracks(tracks[i], tracks[j])
                             del tracks[j]
                             joined = True
@@ -1309,7 +1309,7 @@ class AnsiArtDocument:
                     "width": str(track.max_center - track.min_center) if coord_attrib == "x" else "100%",
                     "height": str(track.max_center - track.min_center) if coord_attrib == "y" else "100%",
                     # "style": "stroke:#0000ff;stroke-width:0.1;stroke-dasharray:1,1;fill:none"
-                    "style": "fill:#0000ff;fill-opacity:0.1"
+                    "style": "fill:#0000ff;fill-opacity:0.1;stroke:#0000ff;stroke-width:0.1"
                 })
 
             # Find the average spacing between tracks, ignoring gaps that are likely to be more than one cell.
