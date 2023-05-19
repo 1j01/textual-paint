@@ -1259,7 +1259,7 @@ class AnsiArtDocument:
         min_width = min(float(rect.attrib["width"]) for rect in rects)
         min_height = min(float(rect.attrib["height"]) for rect in rects)
         # Start with each rect in its own track, then join tracks that are close enough.
-        measures = {}
+        measures: dict[str, float] = {}
         Track = NamedTuple("Track", [("rects", list[ET.Element]), ("min_center", float), ("max_center", float)])
         def join_tracks(track1: Track, track2: Track) -> Track:
             return Track(track1.rects + track2.rects, min(track1.min_center, track2.min_center), max(track1.max_center, track2.max_center))
@@ -1268,11 +1268,31 @@ class AnsiArtDocument:
         for (coord_attrib, min_rect_size) in [("x", min_width), ("y", min_height)]:
             tracks = [Track([rect], rect_center(rect, coord_attrib), rect_center(rect, coord_attrib)) for rect in rects]
             joined = True
-            while joined:
+            while joined and len(tracks) > 1:
                 joined = False
                 for i in range(len(tracks)):
                     for j in range(i + 1, len(tracks)):
-                        if tracks[i].max_center + min_rect_size >= tracks[j].min_center and tracks[i].min_center - min_rect_size <= tracks[j].max_center:
+                        max_offset = min_rect_size * 0.2
+                        # i_min--j_min--i_max--j_max
+                        # (always join)
+                        # or
+                        # j_min--i_min--j_max--i_max
+                        # (always join)
+                        # or
+                        # i_min----------------i_max j_min----------------j_max
+                        # (join if i_max - j_min <= max_offset)
+                        # or
+                        # j_min----------------j_max i_min----------------i_max
+                        # (join if j_max - i_min <= max_offset)
+
+                        i_min = tracks[i].min_center
+                        i_max = tracks[i].max_center
+                        j_min = tracks[j].min_center
+                        j_max = tracks[j].max_center
+
+                        ranges_overlap = (i_min <= j_min and i_max <= j_max) or (j_min <= i_min and j_max <= i_max)
+
+                        if ranges_overlap or (i_max - j_min) <= max_offset or (j_max - i_min) <= max_offset:
                             tracks[i] = join_tracks(tracks[i], tracks[j])
                             del tracks[j]
                             joined = True
@@ -1281,16 +1301,15 @@ class AnsiArtDocument:
                         break
             # Sort tracks
             tracks.sort(key=lambda track: track.min_center)
-            # Find the average spacing between tracks, for spacings smaller than twice the smallest rect.
+            # Find the average spacing between tracks, ignoring gaps that are likely to be more than one cell.
             # I'm calling this gap because I'm lazy.
             max_gap = min_rect_size * 2
-            gaps = [tracks[i + 1].min_center - tracks[i].max_center for i in range(len(tracks) - 1)]
-            gaps = [gap for gap in gaps if gap <= max_gap]
+            all_gaps = [tracks[i + 1].min_center - tracks[i].max_center for i in range(len(tracks) - 1)]
+            gaps = [gap for gap in all_gaps if gap <= max_gap]
             if len(gaps) == 0:
-                # No gaps smaller than twice the smallest rect.
-                # Use the smallest gap.
-                gaps = [min(gaps)]
-            measures[coord_attrib] = sum(gaps) / len(gaps)
+                measures[coord_attrib] = min_rect_size
+            else:
+                measures[coord_attrib] = sum(gaps) / len(gaps)
 
         cell_width = measures["x"]
         cell_height = measures["y"]
