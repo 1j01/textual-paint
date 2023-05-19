@@ -1306,8 +1306,8 @@ class AnsiArtDocument:
                 ET.SubElement(root, "{http://www.w3.org/2000/svg}rect", {
                     "x": str(track.min_center) if coord_attrib == "x" else "0",
                     "y": str(track.min_center) if coord_attrib == "y" else "0",
-                    "width": str(track.max_center - track.min_center) if coord_attrib == "x" else "100%",
-                    "height": str(track.max_center - track.min_center) if coord_attrib == "y" else "100%",
+                    "width": str(track.max_center - track.min_center + 0.001) if coord_attrib == "x" else "100%",
+                    "height": str(track.max_center - track.min_center + 0.001) if coord_attrib == "y" else "100%",
                     # "style": "stroke:#0000ff;stroke-width:0.1;stroke-dasharray:1,1;fill:none"
                     "style": "fill:#0000ff;fill-opacity:0.1;stroke:#0000ff;stroke-width:0.1"
                 })
@@ -1326,7 +1326,7 @@ class AnsiArtDocument:
                     "y1": str(i_center) if coord_attrib == "y" else ("5%" if i % 2 == 0 else "2%"),
                     "x2": str(j_center) if coord_attrib == "x" else ("5%" if i % 2 == 0 else "2%"),
                     "y2": str(j_center) if coord_attrib == "y" else ("5%" if i % 2 == 0 else "2%"),
-                    "stroke": "#ff0000" if gap > max_gap else "#00ff00",
+                    "stroke": "#ff0000" if gap > max_gap else "#0051ff",
                 })
                 all_gaps.append(gap)
                 if gap <= max_gap:
@@ -1347,8 +1347,8 @@ class AnsiArtDocument:
         max_y = max(float(rect.attrib["y"]) + float(rect.attrib["height"]) for rect in rects)
         add_debug_marker(min_x, min_y, "blue")
         add_debug_marker(max_x, max_y, "blue")
-        width = int((max_x - min_x) / cell_width)
-        height = int((max_y - min_y) / cell_height)
+        width = int((max_x - min_x) / cell_width + 1/9)
+        height = int((max_y - min_y) / cell_height + 1/9)
         # Adjust cell width/height based on document bounds.
         cell_width = (max_x - min_x) / width
         cell_height = (max_y - min_y) / height
