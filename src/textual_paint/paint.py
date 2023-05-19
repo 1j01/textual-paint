@@ -1266,13 +1266,22 @@ class AnsiArtDocument:
         def rect_center(rect: ET.Element, coord_attrib: str) -> float:
             return float(rect.attrib[coord_attrib]) + float(rect.attrib["width" if coord_attrib == "x" else "height"]) / 2
         for (coord_attrib, min_rect_size) in [("x", min_width), ("y", min_height)]:
-            tracks = [Track([rect], rect_center(rect, coord_attrib), rect_center(rect, coord_attrib)) for rect in rects]
+            # size_attrib = "width" if coord_attrib == "x" else "height"
+            # Have to ignore rects that span multiple cells, since their centers can be half-off the grid
+            # of cell-sized rect centers (which is normally half-off from the grid of cell corners).
+            max_rect_size = min_rect_size * 1.5
+            tracks = [Track([rect], rect_center(rect, coord_attrib), rect_center(rect, coord_attrib)) for rect in rects if float(rect.attrib["width" if coord_attrib == "x" else "height"]) <= max_rect_size]
             joined = True
             while joined and len(tracks) > 1:
                 joined = False
                 for i in range(len(tracks)):
                     for j in range(i + 1, len(tracks)):
-                        max_offset = min_rect_size * 0.4
+                        # The cell spacing will be at least min_rect_size, probably.
+                        # However, if we join columns that are one cell apart, we'll
+                        # fail to measure the cell spacing, it'll be too big.
+                        # We only want to join rects within a single column.
+                        max_offset = min_rect_size * 0.9
+                        """
                         # i_min--j_min--i_max--j_max
                         # (always join)
                         # or
@@ -1293,6 +1302,10 @@ class AnsiArtDocument:
                         ranges_overlap = (i_min <= j_min <= i_max) or (j_min <= i_min <= j_max)
                         ends_near = min(abs(i_max - j_min), abs(j_max - i_min)) <= max_offset
                         if ranges_overlap or ends_near:
+                        """
+                        i_center = (tracks[i].min_center + tracks[i].max_center) / 2
+                        j_center = (tracks[j].min_center + tracks[j].max_center) / 2
+                        if abs(i_center - j_center) <= max_offset:
                             tracks[i] = join_tracks(tracks[i], tracks[j])
                             del tracks[j]
                             joined = True
