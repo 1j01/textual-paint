@@ -1272,7 +1272,7 @@ class AnsiArtDocument:
                 joined = False
                 for i in range(len(tracks)):
                     for j in range(i + 1, len(tracks)):
-                        max_offset = min_rect_size * 0.1
+                        max_offset = min_rect_size * 0.4
                         # i_min--j_min--i_max--j_max
                         # (always join)
                         # or
@@ -1300,7 +1300,7 @@ class AnsiArtDocument:
                     if joined:
                         break
             # Sort tracks
-            tracks.sort(key=lambda track: track.min_center)
+            tracks.sort(key=lambda track: (track.min_center + track.max_center) / 2)
             # Visualize the tracks for debug
             for track in tracks:
                 ET.SubElement(root, "{http://www.w3.org/2000/svg}rect", {
