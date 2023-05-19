@@ -1304,7 +1304,7 @@ class AnsiArtDocument:
             # Find the average spacing between tracks, ignoring gaps that are likely to be more than one cell.
             # I'm calling this gap because I'm lazy.
             max_gap = min_rect_size * 2
-            all_gaps = [tracks[i + 1].min_center - tracks[i].max_center for i in range(len(tracks) - 1)]
+            all_gaps = [tracks[i + 1].max_center - tracks[i].min_center for i in range(len(tracks) - 1)]
             gaps = [gap for gap in all_gaps if gap <= max_gap]
             if len(gaps) == 0:
                 measures[coord_attrib] = min_rect_size
