@@ -1272,7 +1272,7 @@ class AnsiArtDocument:
                 joined = False
                 for i in range(len(tracks)):
                     for j in range(i + 1, len(tracks)):
-                        max_offset = min_rect_size * 0.2
+                        max_offset = min_rect_size * 0.1
                         # i_min--j_min--i_max--j_max
                         # (always join)
                         # or
@@ -1290,7 +1290,7 @@ class AnsiArtDocument:
                         j_min = tracks[j].min_center
                         j_max = tracks[j].max_center
 
-                        ranges_overlap = (i_min <= j_min and i_max <= j_max) or (j_min <= i_min and j_max <= i_max)
+                        ranges_overlap = (i_min <= j_min <= i_max) or (j_min <= i_min <= j_max)
 
                         if ranges_overlap or (i_max - j_min) <= max_offset or (j_max - i_min) <= max_offset:
                             tracks[i] = join_tracks(tracks[i], tracks[j])
@@ -1304,10 +1304,10 @@ class AnsiArtDocument:
             # Visualize the tracks for debug
             for track in tracks:
                 ET.SubElement(root, "{http://www.w3.org/2000/svg}rect", {
-                    "x": str(track.min_center - min_rect_size / 2) if coord_attrib == "x" else "0",
-                    "y": str(track.min_center - min_rect_size / 2) if coord_attrib == "y" else "0",
-                    "width": str(min_rect_size) if coord_attrib == "x" else "100%",
-                    "height": str(min_rect_size) if coord_attrib == "y" else "100%",
+                    "x": str(track.min_center) if coord_attrib == "x" else "0",
+                    "y": str(track.min_center) if coord_attrib == "y" else "0",
+                    "width": str(track.max_center - track.min_center) if coord_attrib == "x" else "100%",
+                    "height": str(track.max_center - track.min_center) if coord_attrib == "y" else "100%",
                     # "style": "stroke:#0000ff;stroke-width:0.1;stroke-dasharray:1,1;fill:none"
                     "style": "fill:#0000ff;fill-opacity:0.1"
                 })
