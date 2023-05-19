@@ -11,7 +11,7 @@ import argparse
 import asyncio
 from enum import Enum
 from random import randint, random
-from typing import Any, Generator, List, Optional, Callable, Iterator, Tuple
+from typing import Any, Generator, List, NamedTuple, Optional, Callable, Iterator, Tuple
 
 from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
 from watchdog.observers import Observer
@@ -1240,13 +1240,61 @@ class AnsiArtDocument:
         # This could technically happen if there are two rects of the same size and position.
         assert len(rects) > 0, "No rect elements after removing rects containing other rects."
 
-        # Find the cell size. Rects can span multiple cells, so find the smallest rect,
-        # rather than averaging. That way it's at least a decent chance of it being a single cell.
-        # This starts with a guess, and then is refined after guessing the document bounds.
+        # Find the cell size.
+        # (This starts with a guess, and then is refined after guessing the document bounds.)
+        # Strategy 1: average the rect sizes.
+        # cell_width = sum(float(rect.attrib["width"]) for rect in rects) / len(rects)
+        # cell_height = sum(float(rect.attrib["height"]) for rect in rects) / len(rects)
+        # Rects can span multiple cells, so this doesn't turn out well.
+        # Strategy 2: find the smallest rect.
+        # cell_width = min(float(rect.attrib["width"]) for rect in rects)
+        # cell_height = min(float(rect.attrib["height"]) for rect in rects)
+        # That way there's at least a decent chance of it being a single cell.
+        # But this doesn't contend with varying cell sizes of the pathological test case.
+        # Strategy 3: find the smallest rect, then sort rects into rows and columns,
+        # using the smallest rect as a baseline to decide what constitutes a row/column gap,
+        # then use the average spacing between rects in adjacent rows/columns,
+        # also using the smallest rect to avoid averaging in gaps that are more than one cell.
         # TODO: handle case that there's no 1x1 cell rect.
-        # TODO: use spacing rather than size. Partially done below.
-        cell_width = min(float(rect.attrib["width"]) for rect in rects)
-        cell_height = min(float(rect.attrib["height"]) for rect in rects)
+        min_width = min(float(rect.attrib["width"]) for rect in rects)
+        min_height = min(float(rect.attrib["height"]) for rect in rects)
+        # Start with each rect in its own track, then join tracks that are close enough.
+        measures = {}
+        Track = NamedTuple("Track", [("rects", list[ET.Element]), ("min_center", float), ("max_center", float)])
+        def join_tracks(track1: Track, track2: Track) -> Track:
+            return Track(track1.rects + track2.rects, min(track1.min_center, track2.min_center), max(track1.max_center, track2.max_center))
+        def rect_center(rect: ET.Element, coord_attrib: str) -> float:
+            return float(rect.attrib[coord_attrib]) + float(rect.attrib["width" if coord_attrib == "x" else "height"]) / 2
+        for (coord_attrib, min_rect_size) in [("x", min_width), ("y", min_height)]:
+            tracks = [Track([rect], rect_center(rect, coord_attrib), rect_center(rect, coord_attrib)) for rect in rects]
+            joined = True
+            while joined:
+                joined = False
+                for i in range(len(tracks)):
+                    for j in range(i + 1, len(tracks)):
+                        if tracks[i].max_center + min_rect_size >= tracks[j].min_center and tracks[i].min_center - min_rect_size <= tracks[j].max_center:
+                            tracks[i] = join_tracks(tracks[i], tracks[j])
+                            del tracks[j]
+                            joined = True
+                            break
+                    if joined:
+                        break
+            # Sort tracks
+            tracks.sort(key=lambda track: track.min_center)
+            # Find the average spacing between tracks, for spacings smaller than twice the smallest rect.
+            # I'm calling this gap because I'm lazy.
+            max_gap = min_rect_size * 2
+            gaps = [tracks[i + 1].min_center - tracks[i].max_center for i in range(len(tracks) - 1)]
+            gaps = [gap for gap in gaps if gap <= max_gap]
+            if len(gaps) == 0:
+                # No gaps smaller than twice the smallest rect.
+                # Use the smallest gap.
+                gaps = [min(gaps)]
+            measures[coord_attrib] = sum(gaps) / len(gaps)
+
+        cell_width = measures["x"]
+        cell_height = measures["y"]
+
         print("Initial cell size guess: " + str(cell_width) + " x " + str(cell_height))
         # Find the document bounds.
         min_x = min(float(rect.attrib["x"]) for rect in rects)
