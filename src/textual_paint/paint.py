@@ -1324,15 +1324,21 @@ class AnsiArtDocument:
         Track = NamedTuple("Track", [("rects", list[ET.Element]), ("min_center", float), ("max_center", float)])
         def join_tracks(track1: Track, track2: Track) -> Track:
             return Track(track1.rects + track2.rects, min(track1.min_center, track2.min_center), max(track1.max_center, track2.max_center))
-        def rect_center(rect: ET.Element, coord_attrib: str) -> float:
-            return float(rect.attrib[coord_attrib]) + float(rect.attrib["width" if coord_attrib == "x" else "height"]) / 2
-        axes: list[tuple[str, float]] = [("x", min_width), ("y", min_height)]
-        for (coord_attrib, min_rect_size) in axes:
-            # size_attrib = "width" if coord_attrib == "x" else "height"
+        def rect_center(rect: ET.Element, coord_attrib: str, size_attrib: str) -> float:
+            return float(rect.attrib[coord_attrib]) + float(rect.attrib[size_attrib]) / 2
+        axes: list[tuple[str, str, float]] = [("x", "width", min_width), ("y", "height", min_height)]
+        for (coord_attrib, size_attrib, min_rect_size) in axes:
             # Have to ignore rects that span multiple cells, since their centers can be half-off the grid
             # of cell-sized rect centers (which is normally half-off from the grid of cell corners).
             max_rect_size = min_rect_size * 1.5
-            tracks = [Track([rect], rect_center(rect, coord_attrib), rect_center(rect, coord_attrib)) for rect in rects if float(rect.attrib["width" if coord_attrib == "x" else "height"]) <= max_rect_size]
+            tracks = [
+                Track(
+                    [rect],
+                    rect_center(rect, coord_attrib, size_attrib),
+                    rect_center(rect, coord_attrib, size_attrib),
+                )
+                for rect in rects if float(rect.attrib[size_attrib]) <= max_rect_size
+            ]
             joined = True
             while joined and len(tracks) > 1:
                 joined = False
