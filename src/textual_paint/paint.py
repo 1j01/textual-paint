@@ -1172,13 +1172,13 @@ class AnsiArtDocument:
         
         - rect elements can be in any order.
         - rect elements can even be in different groups, however transforms are not considered.
-        - rect elements can vary in size slightly.
+        - rect elements can vary in size, spanning different numbers of cells, and the grid can be wonky.
         - rect elements can be missing, in which case the default background is used.
-        - rects that are outlying in size are ignored.
-        - rects that are outlying in position, however, increase the document size.
-        - fill or style attributes are used to determine the background/foreground colors.
-        - text elements are assumed to be belonging to the cell their x/y is within,
-          without regard to their size/alignment.
+        - rect elements that frame the entire grid are ignored. (maybe should be used for background color?)
+        - if there are any rect elements outside the grid, they will extend the grid; they're not distinguished.
+        - fill OR style attributes (of rect/text elements) are used to determine the background/foreground colors.
+        - text elements are assumed to be belonging to the cell according to their x/y,
+          without regard to their size (textLength) or alignment (text-anchor).
         - stylesheets are partially supported.
         - not all CSS/SVG color formats are supported.
 
@@ -1186,6 +1186,8 @@ class AnsiArtDocument:
         It contains out-of-order unevenly sized rects, missing rects, a background rect, and an emoji.
         It doesn't currently contain varying color formats, font sizes, alignments, or transforms,
         and it only uses style rather than fill, and text with tspan rather than text without.
+        It also doesn't have spanned rects, because I didn't realize that was a thing until afterward.
+        (Fun fact: I got the pathological SVG working before the rigid grid SVG as saved by the app.)
 
         To test it, run the following command:
         textual run --dev "src/textual_paint/paint.py --language en --clear-screen --inspect-layout --restart-on-changes 'samples/pathological_character_grid.svg'" --press ctrl+shift+s,left,left,left,left,.,s,a,v,e,d,enter,enter
