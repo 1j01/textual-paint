@@ -1330,6 +1330,17 @@ class AnsiArtDocument:
             return float(rect.attrib[coord_attrib]) + float(rect.attrib[size_attrib]) / 2
         axes: list[tuple[str, str, float]] = [("x", "width", min_width), ("y", "height", min_height)]
         for (coord_attrib, size_attrib, min_rect_size) in axes:
+            # Can't have too many rects or this will be slow.
+            # Note: this optimization invalidates most of the grid estimation strategy here,
+            # without the second sort in the opposite axis.
+            # (But it still worked without it, for the few cases I tested,
+            # but probably more through luck of the first rect being the right size or something like that.
+            # Um, not that, because it's using the spacing between rects, right? but something like that.)
+            # (At any rate, just look at the debug.svg output to see what I mean.)
+            # TODO: is the first sort even necessary?
+            rects.sort(key=lambda rect: float(rect.attrib[coord_attrib]))
+            rects.sort(key=lambda rect: float(rect.attrib["x" if coord_attrib == "y" else "y"]))
+            max_rects = 30
             # Have to ignore rects that span multiple cells, since their centers can be half-off the grid
             # of cell-sized rect centers (which is normally half-off from the grid of cell corners).
             max_rect_size = min_rect_size * 1.5
@@ -1339,7 +1350,7 @@ class AnsiArtDocument:
                     rect_center(rect, coord_attrib, size_attrib),
                     rect_center(rect, coord_attrib, size_attrib),
                 )
-                for rect in rects if float(rect.attrib[size_attrib]) <= max_rect_size
+                for rect in rects[:max_rects] if float(rect.attrib[size_attrib]) <= max_rect_size
             ]
             joined = True
             while joined and len(tracks) > 1:
