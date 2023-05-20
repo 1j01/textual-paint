@@ -1326,7 +1326,8 @@ class AnsiArtDocument:
             return Track(track1.rects + track2.rects, min(track1.min_center, track2.min_center), max(track1.max_center, track2.max_center))
         def rect_center(rect: ET.Element, coord_attrib: str) -> float:
             return float(rect.attrib[coord_attrib]) + float(rect.attrib["width" if coord_attrib == "x" else "height"]) / 2
-        for (coord_attrib, min_rect_size) in [("x", min_width), ("y", min_height)]:
+        axes: list[tuple[str, float]] = [("x", min_width), ("y", min_height)]
+        for (coord_attrib, min_rect_size) in axes:
             # size_attrib = "width" if coord_attrib == "x" else "height"
             # Have to ignore rects that span multiple cells, since their centers can be half-off the grid
             # of cell-sized rect centers (which is normally half-off from the grid of cell corners).
