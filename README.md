@@ -170,6 +170,8 @@ Let's break down the command:
 This command will sort and display the content of all non-PNG files within the "samples" folder and its subdirectories. Remember to run this command in the directory where the "samples" folder is located.
 </details>
 
+To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja, you can install the [ansi-art-thumbnailer](https://github.com/1j01/ansi-art-thumbnailer) program I made to go along with this project.
+
 
 ## Known Issues
 
