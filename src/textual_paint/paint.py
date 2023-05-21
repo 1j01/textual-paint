@@ -11,7 +11,7 @@ import argparse
 import asyncio
 from enum import Enum
 from random import randint, random
-from typing import Any, Generator, List, NamedTuple, Optional, Callable, Iterator, Tuple
+from typing import Any, Generator, NamedTuple, Optional, Callable, Iterator, Tuple
 
 from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
 from watchdog.observers import Observer
@@ -945,7 +945,7 @@ class AnsiArtDocument:
     def get_renderable(self) -> Text:
         """Get a Rich renderable for the document."""
         joiner = Text("\n")
-        lines: List[Text] = []
+        lines: list[Text] = []
         for y in range(self.height):
             line = Text()
             for x in range(self.width):
@@ -1095,7 +1095,7 @@ class AnsiArtDocument:
                     document.fg.append([])
             elif isinstance(instruction, stransi.SetClear):
                 def clear_line(row_to_clear: int, before: bool, after: bool):
-                    cols_to_clear: List[int] = []
+                    cols_to_clear: list[int] = []
                     if before:
                         cols_to_clear += range(0, len(document.ch[row_to_clear]))
                     if after:
@@ -1639,7 +1639,7 @@ def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> Iterator[Tuple[int, in
             y0 = y0 + sy
 
 
-def polygon_walk(points: List[Offset]) -> Iterator[Tuple[int, int]]:
+def polygon_walk(points: list[Offset]) -> Iterator[Tuple[int, int]]:
     """Yields points along the perimeter of a polygon."""
     for i in range(len(points)):
         yield from bresenham_walk(
@@ -1649,7 +1649,7 @@ def polygon_walk(points: List[Offset]) -> Iterator[Tuple[int, int]]:
             points[(i + 1) % len(points)][1]
         )
 
-def polyline_walk(points: List[Offset]) -> Iterator[Tuple[int, int]]:
+def polyline_walk(points: list[Offset]) -> Iterator[Tuple[int, int]]:
     """Yields points along a polyline (unclosed polygon)."""
     for i in range(len(points) - 1):
         yield from bresenham_walk(
@@ -1659,7 +1659,7 @@ def polyline_walk(points: List[Offset]) -> Iterator[Tuple[int, int]]:
             points[i + 1][1]
         )
 
-def is_inside_polygon(x: int, y: int, points: List[Offset]) -> bool:
+def is_inside_polygon(x: int, y: int, points: list[Offset]) -> bool:
     """Returns True if the point is inside the polygon."""
     # https://stackoverflow.com/a/217578
     # Actually I just got this from Copilot, and don't know the source
@@ -1681,7 +1681,7 @@ def is_inside_polygon(x: int, y: int, points: List[Offset]) -> bool:
         p1x, p1y = p2x, p2y
     return inside
 
-# def polygon_fill(points: List[Offset]) -> Iterator[Tuple[int, int]]:
+# def polygon_fill(points: list[Offset]) -> Iterator[Tuple[int, int]]:
 #     """Yields points inside a polygon."""
 
 #     # Find the bounding box
@@ -2009,7 +2009,7 @@ class Canvas(Widget):
         # self.size.width/height already is multiplied by self.magnification.
         if y >= self.size.height:
             return Strip.blank(self.size.width)
-        segments: List[Segment] = []
+        segments: list[Segment] = []
         sel = self.image.selection
 
         # Avoiding "possibly unbound" errors.
@@ -2210,9 +2210,9 @@ class PaintApp(App[None]):
     return_to_magnification = var(4)
     """Saved zoomed-in magnification level."""
 
-    undos: List[Action] = []
+    undos: list[Action] = []
     """Past actions that can be undone"""
-    redos: List[Action] = []
+    redos: list[Action] = []
     """Future actions that can be redone"""
     preview_action: Optional[Action] = None
     """A temporary undo state for tool previews"""
@@ -2239,7 +2239,7 @@ class PaintApp(App[None]):
     """For Select tool, indicates that the selection is being moved, and defines the offset of the selection from the mouse"""
     selecting_text: bool = False
     """Used for Text tool"""
-    tool_points: List[Offset] = []
+    tool_points: list[Offset] = []
     """Used for Curve, Polygon, or Free-Form Select tools"""
     polygon_last_click_time: float = 0
     """Used for Polygon tool to detect double-click"""
@@ -4263,7 +4263,7 @@ class PaintApp(App[None]):
     def on_paste(self, event: events.Paste) -> None:
         """Called when a file is dropped into the terminal, or when text is pasted with middle click."""
         # Detect file drop
-        def _extract_filepaths(text: str) -> List[str]:
+        def _extract_filepaths(text: str) -> list[str]:
             """Extracts escaped filepaths from text.
             
             Taken from https://github.com/agmmnn/textual-filedrop/blob/55a288df65d1397b959d55ef429e5282a0bb21ff/textual_filedrop/_filedrop.py#L17-L36
@@ -4277,7 +4277,7 @@ class PaintApp(App[None]):
 
             split_filepaths = shlex.split(text)
             print(split_filepaths)
-            filepaths: List[str] = []
+            filepaths: list[str] = []
             for i in split_filepaths:
                 item = i.replace("\x00", "").replace('"', "")
                 if os.path.isfile(item):
@@ -4382,7 +4382,7 @@ class PaintApp(App[None]):
                 element.styles.background = original_color
                 element.styles.border = original_border
                 element.border_title = original_border_title
-        self.debug_highlight: List[Tuple[Widget, Color, BorderDefinition, Optional[str]]] = []
+        self.debug_highlight: list[Tuple[Widget, Color, BorderDefinition, Optional[str]]] = []
         # leaf_widget, _ = self.get_widget_at(*event.screen_offset)
         if leaf_widget and leaf_widget is not self.screen:
             for i, widget in enumerate(leaf_widget.ancestors_with_self):

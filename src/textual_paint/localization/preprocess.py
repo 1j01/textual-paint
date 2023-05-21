@@ -2,14 +2,14 @@ import os
 import re
 import glob
 import json
-from typing import Generator, List, Dict, Any
+from typing import Generator, Dict, Any
 
 from parse_rc_file import parse_rc_file
 
 
 base_lang: str = "en"
-available_langs: List[str] = [dir for dir in os.listdir(os.path.dirname(__file__)) if re.match(r"^\w+(-\w+)?$", dir)]
-target_langs: List[str] = [lang for lang in available_langs if lang != base_lang]
+available_langs: list[str] = [dir for dir in os.listdir(os.path.dirname(__file__)) if re.match(r"^\w+(-\w+)?$", dir)]
+target_langs: list[str] = [lang for lang in available_langs if lang != base_lang]
 
 print("Target languages:", target_langs)
 
@@ -33,21 +33,21 @@ def remove_ellipsis(string: str) -> str:
     return string.replace("...", "")
 
 def get_strings(lang: str) -> Generator[str, None, None]:
-    rc_files: List[str] = glob.glob(f"{os.path.dirname(__file__)}/{lang}/**/*.rc", recursive=True)
+    rc_files: list[str] = glob.glob(f"{os.path.dirname(__file__)}/{lang}/**/*.rc", recursive=True)
     for rc_file in rc_files:
         with open(rc_file, "r", encoding="utf16") as f:
             yield from parse_rc_file(f.read().replace("\ufeff", ""))
 
-base_strings: List[str] = list(get_strings(base_lang))
+base_strings: list[str] = list(get_strings(base_lang))
 for target_lang in target_langs:
-    target_strings: List[str] = list(get_strings(target_lang))
+    target_strings: list[str] = list(get_strings(target_lang))
     localizations: Dict[str, Any] = {}
 
     def add_localization(base_string: str, target_string: str, fudgedness: int) -> None:
         localizations[base_string] = localizations.get(base_string, [])
         localizations[base_string].append({"target_string": target_string, "fudgedness": fudgedness})
 
-    def add_localizations(base_strings: List[str], target_strings: List[str]) -> None:
+    def add_localizations(base_strings: list[str], target_strings: list[str]) -> None:
         for i, target_string in enumerate(target_strings):
             if len(base_strings) <= i:
                 break
