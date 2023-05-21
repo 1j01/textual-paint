@@ -2,7 +2,7 @@ import os
 import re
 import glob
 import json
-from typing import Generator, Dict, Any
+from typing import Generator, Any
 
 from parse_rc_file import parse_rc_file
 
@@ -41,7 +41,7 @@ def get_strings(lang: str) -> Generator[str, None, None]:
 base_strings: list[str] = list(get_strings(base_lang))
 for target_lang in target_langs:
     target_strings: list[str] = list(get_strings(target_lang))
-    localizations: Dict[str, Any] = {}
+    localizations: dict[str, Any] = {}
 
     def add_localization(base_string: str, target_string: str, fudgedness: int) -> None:
         localizations[base_string] = localizations.get(base_string, [])
@@ -66,7 +66,7 @@ for target_lang in target_langs:
     add_localizations(base_strings, target_strings)
 
     for base_string, options in localizations.items():
-        def get_fudgedness(translation_option: Dict[str, Any]) -> int:
+        def get_fudgedness(translation_option: dict[str, Any]) -> int:
             return translation_option["fudgedness"]
         # options.sort(key=lambda x: x["fudgedness"])
         unique_strings = list(set(option["target_string"] for option in options))
