@@ -1,6 +1,7 @@
 from typing import Any, Callable
 from textual import events, on
 from textual.containers import Container
+from textual.css.query import NoMatches
 from textual.widget import Widget
 from textual.widgets import Button
 from textual.containers import Container
@@ -76,7 +77,10 @@ class ColorGrid(Container):
     
     def _navigate_relative(self, delta: int) -> None:
         """Navigate to a color relative to the currently focused color."""
-        focused = self.query_one(".selected", Button)
+        try:
+            focused = self.query_one(".selected", Button)
+        except NoMatches:
+            return
         index = self._colors.index(self._color_by_button[focused])
         print(delta, (index % num_colors_per_row), num_colors_per_row)
         if delta == -1 and (index % num_colors_per_row) == 0:
