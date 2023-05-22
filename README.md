@@ -198,6 +198,7 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 - The Open dialog's file tree view doesn't scroll down to the initially selected file/folder.
 - ANSI files (.ans) are treated as UTF-8 when saving and loading, rather than CP437 or Windows-1252 or any other encodings. Unicode is nice and modern terminals support it, but it's not the standard for ANSI files. There isn't really a standard for ANSI files.
 - ANSI files are loaded with a white background. This may make sense as a default for text files, but ANSI files either draw a background or assume a black background, being designed for terminals.
+- Can click Cancel button of Edit Colors dialog while opening it, if the mouse lines up with it.
 
 The program has only been tested on Linux. Issues on other platforms are as-yet _unknown_ :)
 
