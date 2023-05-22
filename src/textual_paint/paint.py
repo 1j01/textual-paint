@@ -11,7 +11,7 @@ import argparse
 import asyncio
 from enum import Enum
 from random import randint, random
-from typing import Any, Generator, NamedTuple, Optional, Callable, Iterator
+from typing import Any, NamedTuple, Optional, Callable, Iterator
 
 from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
 from watchdog.observers import Observer
@@ -621,7 +621,7 @@ def text_index_to_offset(textbox: Selection, index: int) -> Offset:
     assert textbox.textbox_mode, "text_index_to_offset called on non-textbox selection"
     return Offset(index % textbox.region.width, index // textbox.region.width)
 
-def selected_text_range(textbox: Selection) -> Generator[Offset, None, None]:
+def selected_text_range(textbox: Selection) -> Iterator[Offset]:
     """Yields all offsets within the text selection."""
     assert textbox.textbox_mode, "selected_text_range called on non-textbox selection"
     start = offset_to_text_index(textbox, textbox.text_selection_start)
