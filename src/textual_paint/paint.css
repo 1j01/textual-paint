@@ -339,16 +339,11 @@ EditColorsDialogWindow .window_content {
     /* align-horizontal: center; */
     height: auto;
 }
-EditColorsDialogWindow .color_grid {
-    layout: grid;
-    grid-size: 8;
-    grid-gutter: 1 2;
-    grid-columns: 5;
-    grid-rows: 2;
-    height: auto;
-    /* width: auto; */
-    overflow: hidden;
-    margin-bottom: 2;
+EditColorsDialogWindow .datatable--cursor {
+    background:;
+}
+EditColorsDialogWindow .datatable--hover {
+    background:;
 }
 
 MessageBox .window_content {

@@ -1,7 +1,8 @@
 from typing import Any, Callable
+from rich.text import Text
 from textual.containers import Container
 from textual.widget import Widget
-from textual.widgets import Button
+from textual.widgets import Button, DataTable
 from textual.containers import Container
 from localization.i18n import get as _
 from windows import DialogWindow
@@ -31,6 +32,26 @@ custom_colors = [
 	"#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF",
 ]
 
+# DataTable.DEFAULT_CSS = "" # HACK: there's no way to unset styles...
+class ColorGrid(DataTable[Text]):
+    """A grid of colors."""
+    # DEFAULT_CSS = """
+
+    # """
+    def __init__(self, colors: list[str], **kwargs: Any) -> None:
+        """Initialize the color grid."""
+        super().__init__(**kwargs)
+        column_count = 8
+        self.add_columns(*([""] * column_count))
+        self.show_header = False
+        def cell_renderable(color: str) -> Text:
+            """Return a static widget with the given color."""
+            return Text("   ", style=f"on {color}")
+        for i in range(0, len(colors), column_count):
+            # self.add_row(*colors[i : i + column_count])
+            self.add_row(*[cell_renderable(color) for color in colors[i : i + column_count]])
+        self._selected_color = var(None)
+
 class EditColorsDialogWindow(DialogWindow):
     """A dialog window that lets the user select a color."""
 
@@ -50,14 +71,6 @@ class EditColorsDialogWindow(DialogWindow):
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
-        container = Container(classes="color_grid")
-        for color in basic_colors:
-            button = Button("", classes="color_button color_well")
-            button.styles.background = color
-            button.can_focus = False
-            self._color_by_button[button] = color
-            if color is self._color_to_highlight:
-                button.focus()
-            container.mount(button)
-        self.content.mount(container)
+        self.color_grid = ColorGrid(basic_colors + custom_colors, classes="color-grid")
+        self.content.mount(self.color_grid)
         self.content.mount(Button(_("Cancel"), classes="cancel"))
