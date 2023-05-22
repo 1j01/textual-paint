@@ -11,7 +11,7 @@ import argparse
 import asyncio
 from enum import Enum
 from random import randint, random
-from typing import Any, Generator, NamedTuple, Optional, Callable, Iterator, Tuple
+from typing import Any, Generator, NamedTuple, Optional, Callable, Iterator
 
 from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
 from watchdog.observers import Observer
@@ -1619,7 +1619,7 @@ class Action:
         else:
             target_document.copy_region(self.sub_image_before, target_region=self.region)
 
-def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> Iterator[Tuple[int, int]]:
+def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> Iterator[tuple[int, int]]:
     """Bresenham's line algorithm"""
     dx = abs(x1 - x0)
     dy = abs(y1 - y0)
@@ -1639,7 +1639,7 @@ def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> Iterator[Tuple[int, in
             y0 = y0 + sy
 
 
-def polygon_walk(points: list[Offset]) -> Iterator[Tuple[int, int]]:
+def polygon_walk(points: list[Offset]) -> Iterator[tuple[int, int]]:
     """Yields points along the perimeter of a polygon."""
     for i in range(len(points)):
         yield from bresenham_walk(
@@ -1649,7 +1649,7 @@ def polygon_walk(points: list[Offset]) -> Iterator[Tuple[int, int]]:
             points[(i + 1) % len(points)][1]
         )
 
-def polyline_walk(points: list[Offset]) -> Iterator[Tuple[int, int]]:
+def polyline_walk(points: list[Offset]) -> Iterator[tuple[int, int]]:
     """Yields points along a polyline (unclosed polygon)."""
     for i in range(len(points) - 1):
         yield from bresenham_walk(
@@ -1681,7 +1681,7 @@ def is_inside_polygon(x: int, y: int, points: list[Offset]) -> bool:
         p1x, p1y = p2x, p2y
     return inside
 
-# def polygon_fill(points: list[Offset]) -> Iterator[Tuple[int, int]]:
+# def polygon_fill(points: list[Offset]) -> Iterator[tuple[int, int]]:
 #     """Yields points inside a polygon."""
 
 #     # Find the bounding box
@@ -1697,7 +1697,7 @@ def is_inside_polygon(x: int, y: int, points: list[Offset]) -> bool:
 #                 yield x, y
 
 # adapted from https://github.com/Pomax/bezierjs
-def compute_bezier(t: float, start_x: float, start_y: float, control_1_x: float, control_1_y: float, control_2_x: float, control_2_y: float, end_x: float, end_y: float) -> Tuple[float, float]:
+def compute_bezier(t: float, start_x: float, start_y: float, control_1_x: float, control_1_y: float, control_2_x: float, control_2_y: float, end_x: float, end_y: float) -> tuple[float, float]:
     """Returns a point along a bezier curve."""
     mt = 1 - t
     mt2 = mt * mt
@@ -1715,7 +1715,7 @@ def compute_bezier(t: float, start_x: float, start_y: float, control_1_x: float,
 
 # It's possible to walk a bezier curve more correctly,
 # but is it possible to tell the difference?
-def bezier_curve_walk(start_x: float, start_y: float, control_1_x: float, control_1_y: float, control_2_x: float, control_2_y: float, end_x: float, end_y: float) -> Iterator[Tuple[int, int]]:
+def bezier_curve_walk(start_x: float, start_y: float, control_1_x: float, control_1_y: float, control_2_x: float, control_2_y: float, end_x: float, end_y: float) -> Iterator[tuple[int, int]]:
     """Yields points along a bezier curve."""
     steps = 100
     point_a = (start_x, start_y)
@@ -1727,11 +1727,11 @@ def bezier_curve_walk(start_x: float, start_y: float, control_1_x: float, contro
         yield from bresenham_walk(int(point_a[0]), int(point_a[1]), int(point_b[0]), int(point_b[1]))
         point_a = point_b
 
-def quadratic_curve_walk(start_x: float, start_y: float, control_x: float, control_y: float, end_x: float, end_y: float) -> Iterator[Tuple[int, int]]:
+def quadratic_curve_walk(start_x: float, start_y: float, control_x: float, control_y: float, end_x: float, end_y: float) -> Iterator[tuple[int, int]]:
     """Yields points along a quadratic curve."""
     return bezier_curve_walk(start_x, start_y, control_x, control_y, control_x, control_y, end_x, end_y)
 
-def midpoint_ellipse(xc: int, yc: int, rx: int, ry: int) -> Iterator[Tuple[int, int]]:
+def midpoint_ellipse(xc: int, yc: int, rx: int, ry: int) -> Iterator[tuple[int, int]]:
     """Midpoint ellipse drawing algorithm. Yields points out of order, and thus can't legally be called a "walk", except in Britain."""
     # Source: https://www.geeksforgeeks.org/midpoint-ellipse-drawing-algorithm/
 
@@ -4382,7 +4382,7 @@ class PaintApp(App[None]):
                 element.styles.background = original_color
                 element.styles.border = original_border
                 element.border_title = original_border_title
-        self.debug_highlight: list[Tuple[Widget, Color, BorderDefinition, Optional[str]]] = []
+        self.debug_highlight: list[tuple[Widget, Color, BorderDefinition, Optional[str]]] = []
         # leaf_widget, _ = self.get_widget_at(*event.screen_offset)
         if leaf_widget and leaf_widget is not self.screen:
             for i, widget in enumerate(leaf_widget.ancestors_with_self):
