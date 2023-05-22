@@ -4451,9 +4451,9 @@ if args.recode_samples:
         """Re-encodes a single sample file."""
         print(f"Re-encoding {file_path}")
         with open(file_path, "rb") as f:
-            image = AnsiArtDocument.decode_based_on_file_extension(f.read(), file_path)
+            image = AnsiArtDocument.decode_based_on_file_extension(f.read(), str(file_path))
         with open(file_path, "wb") as f:
-            f.write(image.encode_based_on_file_extension(file_path))
+            f.write(image.encode_based_on_file_extension(str(file_path)))
         print(f"Saved {file_path}")
 
     async def recode_samples() -> None:
