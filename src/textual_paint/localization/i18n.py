@@ -1,4 +1,3 @@
-from typing import Optional
 import json
 import re
 
@@ -118,7 +117,7 @@ def markup_hotkey(text: str) -> str:
 	else:
 		return text[:index] + f"[u]{text[index + 1]}[/u]" + text[index + 2:]
 
-def get_hotkey(text: str) -> Optional[str]:
+def get_hotkey(text: str) -> str | None:
 	"""Returns the hotkey if present."""
 	index = index_of_hotkey(text)
 	if index == -1:

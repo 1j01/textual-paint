@@ -1,4 +1,4 @@
-from typing import Any, Optional, Callable
+from typing import Any, Callable
 from typing_extensions import Self
 from textual import events, on
 from textual.message import Message
@@ -582,7 +582,7 @@ class MessageBox(DialogWindow):
         *children: Widget,
         message: Widget | str,
         button_types: str = "ok",
-        icon_widget: Optional[Widget],
+        icon_widget: Widget | None, # not optional because I'm more likely to forget to pass it than to want no icon
         handle_button: Callable[[Button], None],
         error: Exception | None = None,
         **kwargs: Any,
