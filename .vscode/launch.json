@@ -29,6 +29,15 @@
 			"justMyCode": false
 		},
 		{
+			"name": "Recode Samples",
+			"type": "python",
+			"request": "launch",
+			"program": "src/textual_paint/paint.py",
+			"args": ["--recode-samples"],
+			"console": "integratedTerminal",
+			"justMyCode": false
+		},
+		{
 			"name": "Debug --restart-on-changes file matching",
 			"type": "python",
 			"request": "launch",
