@@ -1,4 +1,5 @@
 from typing import Any, Callable
+from textual import events, on
 from textual.containers import Container
 from textual.widget import Widget
 from textual.widgets import Button
@@ -31,6 +32,91 @@ custom_colors = [
 	"#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF",
 ]
 
+num_colors_per_row = 8
+
+class ColorGrid(Container):
+    """A grid of colors."""
+
+    def __init__(self, colors: list[str], **kwargs: Any) -> None:
+        """Initialize the ColorGrid."""
+        super().__init__(**kwargs)
+        self.selected_color: str = colors[0]
+        self._color_by_button: dict[Button, str] = {}
+        self._colors = colors
+        self.can_focus = True
+
+    def on_mount(self) -> None:
+        """Called when the window is mounted."""
+        for color in self._colors:
+            button = Button("", classes="color_button color_well")
+            button.styles.background = color
+            button.can_focus = False
+            self._color_by_button[button] = color
+            # if color is self._selected_color:
+            #     button.focus()
+            self.mount(button)
+
+    def on_key(self, event: events.Key) -> None:
+        """Called when a key is pressed."""
+        if event.key == "up":
+            self._navigate_relative(-num_colors_per_row)
+        elif event.key == "down":
+            self._navigate_relative(+num_colors_per_row)
+        elif event.key == "left":
+            self._navigate_relative(-1)
+        elif event.key == "right":
+            self._navigate_relative(+1)
+        elif event.key == "home":
+            self._navigate_absolute(0)
+        elif event.key == "end":
+            self._navigate_absolute(len(self._colors) - 1)
+        # elif event.key in ("space", "enter"):
+        #     select focused color
+        # TODO: separate focus/selection
+    
+    def _navigate_relative(self, delta: int) -> None:
+        """Navigate to a color relative to the currently focused color."""
+        focused = self.query_one(".selected", Button)
+        index = self._colors.index(self._color_by_button[focused])
+        print(delta, (index % num_colors_per_row), num_colors_per_row)
+        if delta == -1 and (index % num_colors_per_row) == 0:
+            return
+        if delta == +1 and (index % num_colors_per_row) == num_colors_per_row - 1:
+            return
+        self._navigate_absolute(index + delta)
+
+    def _navigate_absolute(self, index: int) -> None:
+        """Navigate to the color at the given index."""
+        if index < 0 or index >= len(self._colors):
+            return
+        target_button = list(self._color_by_button.keys())[index]
+        target_button.add_class("selected")
+        for button in self._color_by_button:
+            button.remove_class("selected")
+        target_button.add_class("selected")
+        # TODO: separate focus/selection
+        self.selected_color = self._color_by_button[target_button]
+        
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        """Called when a button is clicked or activated with the keyboard."""
+        self.selected_color = self._color_by_button[event.button]
+        for button in self._color_by_button:
+            button.remove_class("selected")
+        event.button.add_class("selected")
+        self.focus()
+
+    # I want MouseDown rather than Pressed in order to implement double-clicking.
+    # However, event.control is None for mouse events, so this doesn't work:
+    # def on_mouse_down(self, event: events.MouseDown) -> None:
+    #     """Called when the mouse is pressed down."""
+    #     if event.button == 1:
+    #         self.selected_color = self._color_by_button[event.control]
+    #         self.refresh()
+    # @on(events.MouseDown, ".color_button")
+    # def handle_color_button(self, event: events.MouseDown) -> None:
+    #     """Called when a color button is clicked."""
+    #     self.selected_color = self._color_by_button[event.control]
+
 class EditColorsDialogWindow(DialogWindow):
     """A dialog window that lets the user select a color."""
 
@@ -45,19 +131,17 @@ class EditColorsDialogWindow(DialogWindow):
         """Called when a button is clicked or activated with the keyboard."""
         if button.has_class("cancel"):
             self.request_close()
-        else:
-            self.handle_selected_color(self._color_by_button[button])
+        elif button.has_class("ok"):
+            self.handle_selected_color(self.color_grid.selected_color)
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
-        container = Container(classes="color_grid")
-        for color in basic_colors:
-            button = Button("", classes="color_button color_well")
-            button.styles.background = color
-            button.can_focus = False
-            self._color_by_button[button] = color
-            if color is self._color_to_highlight:
-                button.focus()
-            container.mount(button)
-        self.content.mount(container)
-        self.content.mount(Button(_("Cancel"), classes="cancel"))
+        self.color_grid = ColorGrid(basic_colors)
+        self.content.mount(self.color_grid)
+        self.content.mount(
+            Container(
+                Button(_("OK"), classes="ok submit", variant="primary"),
+                Button(_("Cancel"), classes="cancel"),
+                classes="buttons",
+            )
+        )
