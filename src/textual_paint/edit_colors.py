@@ -1,14 +1,8 @@
-from typing import Any, Union, Optional, Callable
-from textual import events
-from textual.message import Message
-from textual.app import ComposeResult
+from typing import Any, Callable
 from textual.containers import Container
-from textual.geometry import Offset
-from textual.reactive import var
 from textual.widget import Widget
-from textual.widgets import Button, Static
-from textual.containers import Container, Horizontal, Vertical
-from textual.css.query import NoMatches
+from textual.widgets import Button
+from textual.containers import Container
 from localization.i18n import get as _
 from windows import DialogWindow
 

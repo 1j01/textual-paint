@@ -6,7 +6,8 @@
         // maybe an auto-complete feature that I don't use.
         // (2 might be sufficient.)
         // https://github.com/Textualize/textual/issues/2104
-        {"name": "textual", "depth": 5}
+        {"name": "textual", "depth": 5},
+        {"name": "rich", "depth": 5},
     ],
     "css.validate": false
 }
