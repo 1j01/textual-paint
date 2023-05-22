@@ -1,6 +1,9 @@
 from typing import Any, Callable
 from rich.text import Text
 from textual.containers import Container
+from textual.css.styles import Styles
+from textual.reactive import var
+from textual.types import RenderStyles
 from textual.widget import Widget
 from textual.widgets import Button, DataTable
 from textual.containers import Container
@@ -32,12 +35,13 @@ custom_colors = [
 	"#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#FFFFFF",
 ]
 
-# DataTable.DEFAULT_CSS = "" # HACK: there's no way to unset styles...
-class ColorGrid(DataTable[Text]):
+class ColorGrid(DataTable[Text], inherit_css=False):
     """A grid of colors."""
-    # DEFAULT_CSS = """
-
-    # """
+    # DEFAULT_CSS = (
+    #     DataTable.DEFAULT_CSS
+    #         .replace("datatable--cursor", "datatable--cursor-HACK-TO-NOT-MATCH")
+    #         .replace("datatable--hover", "datatable--hover-HACK-TO-NOT-MATCH")
+    # )
     def __init__(self, colors: list[str], **kwargs: Any) -> None:
         """Initialize the color grid."""
         super().__init__(**kwargs)
@@ -51,6 +55,15 @@ class ColorGrid(DataTable[Text]):
             # self.add_row(*colors[i : i + column_count])
             self.add_row(*[cell_renderable(color) for color in colors[i : i + column_count]])
         self._selected_color = var(None)
+
+    # def get_component_styles(self, name: str) -> RenderStyles:
+    #     """HACK: there's no way to unset styles..."""
+    #     if name in [
+    #         "datatable--cursor",
+    #         "datatable--hover",
+    #     ]:
+    #         return RenderStyles()
+    #     return super().get_component_styles(name)
 
 class EditColorsDialogWindow(DialogWindow):
     """A dialog window that lets the user select a color."""

@@ -341,9 +341,11 @@ EditColorsDialogWindow .window_content {
 }
 EditColorsDialogWindow .datatable--cursor {
     background:;
+    border: thick blue;
 }
 EditColorsDialogWindow .datatable--hover {
     background:;
+    border: thick red;
 }
 
 MessageBox .window_content {
