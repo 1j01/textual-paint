@@ -71,14 +71,23 @@ class ColorGrid(Container):
             self._navigate_absolute(0)
         elif event.key == "end":
             self._navigate_absolute(len(self._colors) - 1)
-        # elif event.key in ("space", "enter"):
-        #     select focused color
-        # TODO: separate focus/selection
+        elif event.key in ("space", "enter"):
+            self._select_focused_color()
+    
+    def _select_focused_color(self) -> None:
+        try:
+            focused = self.query_one(".focused", Button)
+        except NoMatches:
+            return
+        for selected in self.query(".selected"):
+            selected.remove_class("selected")
+        focused.add_class("selected")
+        self.selected_color = self._color_by_button[focused]
     
     def _navigate_relative(self, delta: int) -> None:
         """Navigate to a color relative to the currently focused color."""
         try:
-            focused = self.query_one(".selected", Button)
+            focused = self.query_one(".focused", Button)
         except NoMatches:
             return
         # index = self._colors.index(self._color_by_button[focused]) # doesn't work because there can be duplicates
@@ -95,19 +104,18 @@ class ColorGrid(Container):
         if index < 0 or index >= len(self._colors):
             return
         target_button = list(self._color_by_button.keys())[index]
-        target_button.add_class("selected")
+        target_button.add_class("focused")
         for button in self._color_by_button:
-            button.remove_class("selected")
-        target_button.add_class("selected")
-        # TODO: separate focus/selection
-        self.selected_color = self._color_by_button[target_button]
+            button.remove_class("focused")
+        target_button.add_class("focused")
         
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked or activated with the keyboard."""
         self.selected_color = self._color_by_button[event.button]
         for button in self._color_by_button:
-            button.remove_class("selected")
-        event.button.add_class("selected")
+            button.remove_class("focused")
+        event.button.add_class("focused")
+        self._select_focused_color()
         self.focus()
 
     # I want MouseDown rather than Pressed in order to implement double-clicking.

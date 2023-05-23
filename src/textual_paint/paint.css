@@ -350,8 +350,12 @@ EditColorsDialogWindow ColorGrid {
     overflow: hidden;
     margin-bottom: 2;
 }
-EditColorsDialogWindow ColorGrid Button.selected {
+EditColorsDialogWindow ColorGrid Button.focused {
     border: dashed black;
+}
+EditColorsDialogWindow ColorGrid Button.selected,
+EditColorsDialogWindow ColorGrid Button.selected.focused {
+    border: thick black;
 }
 
 MessageBox .window_content {
