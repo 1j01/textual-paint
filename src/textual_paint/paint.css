@@ -349,6 +349,13 @@ EditColorsDialogWindow ColorGrid {
     /* width: auto; */
     overflow: hidden;
     margin-bottom: 2;
+    layers: ring;
+}
+EditColorsDialogWindow ColorGrid .ring {
+    dock: top;
+    layer: ring;
+    width: 0;
+    height: 0;
 }
 EditColorsDialogWindow ColorGrid .focus-ring {
     border: dashed black;
