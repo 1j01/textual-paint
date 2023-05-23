@@ -360,10 +360,12 @@ EditColorsDialogWindow ColorGrid .focus_ring {
     border: dashed black;
     /* background: blue; */
     opacity: 0.2;
+    background: #00000000;
 }
 EditColorsDialogWindow ColorGrid .selection_ring {
     border: inner black;
     /* background: red; */
+    background: #00000000;
 }
 
 MessageBox .window_content {
