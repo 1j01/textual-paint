@@ -335,7 +335,8 @@ DialogWindow .buttons Button {
 
 EditColorsDialogWindow .window_content {
     padding: 2 4;
-    width: 65;
+    /* width: 65; */
+    width: auto;
     /* align-horizontal: center; */
     height: auto;
 }
@@ -346,7 +347,7 @@ EditColorsDialogWindow ColorGrid {
     grid-columns: 5;
     grid-rows: 2;
     height: auto;
-    /* width: auto; */
+    width: auto;
     overflow: hidden;
     margin-bottom: 2;
 }
@@ -356,6 +357,27 @@ EditColorsDialogWindow ColorGrid Button.focused {
 EditColorsDialogWindow ColorGrid Button.selected,
 EditColorsDialogWindow ColorGrid Button.selected.focused {
     border: outer black;
+}
+EditColorsDialogWindow Horizontal,
+EditColorsDialogWindow Vertical {
+    height: auto;
+    width: auto;
+}
+EditColorsDialogWindow LabeledInput {
+    width: 16;
+    height: auto;
+    margin-bottom: 1;
+    layout: horizontal;
+}
+EditColorsDialogWindow LabeledInput Input {
+    width: 8;
+}
+EditColorsDialogWindow LabeledInput Label {
+    width: 1fr;
+    height: auto;
+    text-align: right;
+    margin-top: 1; /* content-align-vertical: middle; not working */
+    margin-left: 1;
 }
 
 MessageBox .window_content {

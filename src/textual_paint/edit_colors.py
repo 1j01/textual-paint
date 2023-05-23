@@ -1,9 +1,9 @@
 from typing import Any, Callable
 from textual import events, on
-from textual.containers import Container
+from textual.containers import Container, Horizontal, Vertical
 from textual.css.query import NoMatches
 from textual.widget import Widget
-from textual.widgets import Button
+from textual.widgets import Button, Input, Label, Placeholder
 from textual.containers import Container
 from localization.i18n import get as _
 from windows import DialogWindow
@@ -130,6 +130,22 @@ class ColorGrid(Container):
     #     """Called when a color button is clicked."""
     #     self.selected_color = self._color_by_button[event.control]
 
+class LabeledInput(Container):
+    """A label and an input field."""
+
+    def __init__(self, label_text: str, value: str | None = None, **kwargs: Any) -> None:
+        """Initialize the LabeledInput."""
+        super().__init__(**kwargs)
+        self.label_text = label_text
+        self.value = value
+
+    def compose(self) -> list[Widget]:
+        """Compose the widget."""
+        return [
+            Label(self.label_text, classes="label"),
+            Input(self.value, classes="input"),
+        ]
+
 class EditColorsDialogWindow(DialogWindow):
     """A dialog window that lets the user select a color."""
 
@@ -150,8 +166,28 @@ class EditColorsDialogWindow(DialogWindow):
     def on_mount(self) -> None:
         """Called when the window is mounted."""
         self.color_grid = ColorGrid(basic_colors)
-        self.content.mount(self.color_grid)
         self.content.mount(
+            Horizontal(
+                self.color_grid,
+                Vertical(
+                    Horizontal(
+                        Placeholder(),
+                        Placeholder(),
+                    ),
+                    Horizontal(
+                        Vertical(
+                            LabeledInput(_("Hue:"), classes="h"),
+                            LabeledInput(_("Sat:"), classes="s"),
+                            LabeledInput(_("Lum:"), classes="l"),
+                        ),
+                        Vertical(
+                            LabeledInput(_("Red:"), classes="r"),
+                            LabeledInput(_("Green:"), classes="g"),
+                            LabeledInput(_("Blue:"), classes="b"),
+                        ),
+                    ),
+                ),
+            ),
             Container(
                 Button(_("OK"), classes="ok submit", variant="primary"),
                 Button(_("Cancel"), classes="cancel"),
