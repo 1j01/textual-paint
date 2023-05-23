@@ -55,7 +55,11 @@ class ColorGrid(Container):
             self._color_by_button[button] = color
             # if color is self._selected_color:
             #     button.focus()
-            self.mount(button)
+
+            # self.mount(button)
+            container = Container(classes="color_button_container")
+            container.mount(button)
+            self.mount(container)
 
     def on_key(self, event: events.Key) -> None:
         """Called when a key is pressed."""
@@ -81,7 +85,7 @@ class ColorGrid(Container):
             return
         for selected in self.query(".selected"):
             selected.remove_class("selected")
-        focused.add_class("selected")
+        focused.parent.add_class("selected")
         self.selected_color = self._color_by_button[focused]
     
     def _navigate_relative(self, delta: int) -> None:

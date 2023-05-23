@@ -343,18 +343,24 @@ EditColorsDialogWindow ColorGrid {
     layout: grid;
     grid-size: 8;
     grid-gutter: 1 2;
-    grid-columns: 5;
-    grid-rows: 2;
+    grid-columns: 7;
+    grid-rows: 4;
     height: auto;
     /* width: auto; */
     overflow: hidden;
     margin-bottom: 2;
 }
-EditColorsDialogWindow ColorGrid Button.focused {
+/* EditColorsDialogWindow ColorGrid * {
+    box-sizing: content-box !important;
+} */
+EditColorsDialogWindow ColorGrid .color_button_container {
+    padding: 1;
+}
+EditColorsDialogWindow ColorGrid .focused {
     border: dashed black;
 }
-EditColorsDialogWindow ColorGrid Button.selected,
-EditColorsDialogWindow ColorGrid Button.selected.focused {
+EditColorsDialogWindow ColorGrid .selected,
+EditColorsDialogWindow ColorGrid .selected.focused {
     border: outer black;
 }
 
