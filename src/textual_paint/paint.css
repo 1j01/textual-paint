@@ -359,6 +359,7 @@ EditColorsDialogWindow ColorGrid .ring {
 EditColorsDialogWindow ColorGrid .focus_ring {
     border: dashed black;
     /* background: blue; */
+    opacity: 0.2;
 }
 EditColorsDialogWindow ColorGrid .selection_ring {
     border: inner black;
