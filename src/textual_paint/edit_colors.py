@@ -48,7 +48,7 @@ class ColorGrid(Container):
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
-        for color in self._colors:
+        for i, color in enumerate(self._colors):
             button = Button("", classes="color_button color_well")
             button.styles.background = color
             button.can_focus = False
@@ -60,6 +60,7 @@ class ColorGrid(Container):
             container = Container(classes="color_button_container")
             container.mount(button)
             self.mount(container)
+            container.styles.offset = (0, -i // num_colors_per_row)
 
     def on_key(self, event: events.Key) -> None:
         """Called when a key is pressed."""

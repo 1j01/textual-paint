@@ -344,7 +344,7 @@ EditColorsDialogWindow ColorGrid {
     grid-size: 8;
     /* grid-gutter: 1 2; */
     grid-columns: 7;
-    grid-rows: 3;
+    grid-rows: 4; /* hacked to show as 3, with overlapping borders */
     height: auto;
     /* width: auto; */
     overflow: hidden;
@@ -356,16 +356,17 @@ EditColorsDialogWindow ColorGrid {
 EditColorsDialogWindow ColorGrid .color_button_container {
     /* padding: 1; */
     border: blank black;
-    border-bottom: none;
+    /* border-bottom: none; */
+    /* margin-top: -1; */
 }
 EditColorsDialogWindow ColorGrid .focused {
     border: dashed black;
-    border-bottom: none;
+    /* border-bottom: none; */
 }
 EditColorsDialogWindow ColorGrid .selected,
 EditColorsDialogWindow ColorGrid .selected.focused {
     border: inner black;
-    border-bottom: none;
+    /* border-bottom: none; */
 }
 
 MessageBox .window_content {
