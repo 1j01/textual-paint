@@ -81,7 +81,8 @@ class ColorGrid(Container):
             focused = self.query_one(".selected", Button)
         except NoMatches:
             return
-        index = self._colors.index(self._color_by_button[focused])
+        # index = self._colors.index(self._color_by_button[focused]) # doesn't work because there can be duplicates
+        index = list(self._color_by_button.keys()).index(focused)
         print(delta, (index % num_colors_per_row), num_colors_per_row)
         if delta == -1 and (index % num_colors_per_row) == 0:
             return
