@@ -357,6 +357,15 @@ EditColorsDialogWindow ColorGrid Button.selected,
 EditColorsDialogWindow ColorGrid Button.selected.focused {
     border: outer black;
 }
+EditColorsDialogWindow ColorGrid Button > .ring {
+    border: dashed red;
+    overlay: screen;
+    offset: 0 1;
+    width: 7;
+    height: 5;
+    background: lime;
+    display: block;
+}
 
 MessageBox .window_content {
     width: 50;

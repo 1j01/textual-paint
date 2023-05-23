@@ -57,6 +57,9 @@ class ColorGrid(Container):
             #     button.focus()
             self.mount(button)
 
+            ring = Container(classes="ring")
+            button.mount(ring)
+
     def on_key(self, event: events.Key) -> None:
         """Called when a key is pressed."""
         if event.key == "up":
