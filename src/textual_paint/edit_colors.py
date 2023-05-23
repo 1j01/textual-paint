@@ -56,6 +56,10 @@ class ColorGrid(Container):
             # if color is self._selected_color:
             #     button.focus()
             self.mount(button)
+        self.focus_ring = Container(classes="focus_ring ring")
+        self.selection_ring = Container(classes="selection_ring ring")
+        self.mount(self.focus_ring)
+        self.mount(self.selection_ring)
 
     def on_key(self, event: events.Key) -> None:
         """Called when a key is pressed."""
@@ -79,9 +83,14 @@ class ColorGrid(Container):
             focused = self.query_one(".focused", Button)
         except NoMatches:
             return
-        for selected in self.query(".selected"):
-            selected.remove_class("selected")
-        focused.add_class("selected")
+        # for selected in self.query(".selected"):
+        #     selected.remove_class("selected")
+        # focused.add_class("selected")
+
+        self.selection_ring.styles.offset = (focused.offset.x - 1, focused.offset.y - 1)
+        self.selection_ring.styles.width = focused.region.width + 2
+        self.selection_ring.styles.height = focused.region.height + 2
+
         self.selected_color = self._color_by_button[focused]
     
     def _navigate_relative(self, delta: int) -> None:
@@ -104,16 +113,21 @@ class ColorGrid(Container):
         if index < 0 or index >= len(self._colors):
             return
         target_button = list(self._color_by_button.keys())[index]
-        for button in self._color_by_button:
-            button.remove_class("focused")
-        target_button.add_class("focused")
+        # for button in self._color_by_button:
+        #     button.remove_class("focused")
+        # target_button.add_class("focused")
         
+        self.focus_ring.styles.offset = (target_button.offset.x - 1, target_button.offset.y - 1)
+        self.focus_ring.styles.width = target_button.region.width + 2
+        self.focus_ring.styles.height = target_button.region.height + 2
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked or activated with the keyboard."""
         self.selected_color = self._color_by_button[event.button]
-        for button in self._color_by_button:
-            button.remove_class("focused")
-        event.button.add_class("focused")
+        # for button in self._color_by_button:
+        #     button.remove_class("focused")
+        # event.button.add_class("focused")
+        self._navigate_absolute(list(self._color_by_button.keys()).index(event.button))
         self._select_focused_color()
         self.focus()
 
