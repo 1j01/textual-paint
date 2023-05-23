@@ -354,7 +354,8 @@ EditColorsDialogWindow ColorGrid {
     box-sizing: content-box !important;
 } */
 EditColorsDialogWindow ColorGrid .color_button_container {
-    padding: 1;
+    /* padding: 1; */
+    border: blank black;
 }
 EditColorsDialogWindow ColorGrid .focused {
     border: dashed black;
