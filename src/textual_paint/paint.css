@@ -354,16 +354,15 @@ EditColorsDialogWindow ColorGrid {
 EditColorsDialogWindow ColorGrid .ring {
     dock: top;
     layer: ring;
-    width: 0;
-    height: 0;
+    display: none;
 }
-EditColorsDialogWindow ColorGrid .focus-ring {
+EditColorsDialogWindow ColorGrid .focus_ring {
     border: dashed black;
-    background: blue;
+    /* background: blue; */
 }
-EditColorsDialogWindow ColorGrid .selection-ring {
+EditColorsDialogWindow ColorGrid .selection_ring {
     border: inner black;
-    background: red;
+    /* background: red; */
 }
 
 MessageBox .window_content {
