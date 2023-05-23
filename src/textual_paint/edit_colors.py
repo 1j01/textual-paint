@@ -87,7 +87,7 @@ class ColorGrid(Container):
         #     selected.remove_class("selected")
         # focused.add_class("selected")
 
-        self.selection_ring.styles.offset = (focused.offset.x - 1, focused.offset.y - 1)
+        self.selection_ring.styles.offset = (focused.virtual_region.x - 1, focused.virtual_region.y - 1)
         self.selection_ring.styles.width = focused.region.width + 2
         self.selection_ring.styles.height = focused.region.height + 2
 
@@ -117,7 +117,7 @@ class ColorGrid(Container):
         #     button.remove_class("focused")
         # target_button.add_class("focused")
         
-        self.focus_ring.styles.offset = (target_button.offset.x - 1, target_button.offset.y - 1)
+        self.focus_ring.styles.offset = (target_button.virtual_region.x - 1, target_button.virtual_region.y - 1)
         self.focus_ring.styles.width = target_button.region.width + 2
         self.focus_ring.styles.height = target_button.region.height + 2
 
