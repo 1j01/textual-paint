@@ -104,7 +104,6 @@ class ColorGrid(Container):
         if index < 0 or index >= len(self._colors):
             return
         target_button = list(self._color_by_button.keys())[index]
-        target_button.add_class("focused")
         for button in self._color_by_button:
             button.remove_class("focused")
         target_button.add_class("focused")
