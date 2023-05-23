@@ -344,7 +344,7 @@ EditColorsDialogWindow ColorGrid {
     grid-size: 8;
     grid-gutter: 1 2;
     grid-columns: 5;
-    grid-rows: 2;
+    grid-rows: 3;
     height: auto;
     /* width: auto; */
     overflow: hidden;
@@ -363,7 +363,7 @@ EditColorsDialogWindow ColorGrid Button > .ring {
     offset: 0 1;
     width: 7;
     height: 5;
-    background: lime;
+    background: #00000000;
     display: block;
 }
 
