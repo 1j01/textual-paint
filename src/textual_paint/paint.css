@@ -355,7 +355,7 @@ EditColorsDialogWindow ColorGrid Button.focused {
 }
 EditColorsDialogWindow ColorGrid Button.selected,
 EditColorsDialogWindow ColorGrid Button.selected.focused {
-    border: thick black;
+    border: outer black;
 }
 
 MessageBox .window_content {
