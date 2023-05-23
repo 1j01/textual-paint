@@ -1,7 +1,12 @@
 from typing import Any, Callable
+from rich.color import Color as RichColor
+from rich.segment import Segment
+from rich.style import Style
 from textual import events, on
 from textual.containers import Container, Horizontal, Vertical
 from textual.css.query import NoMatches
+from textual.strip import Strip
+from textual.color import Color as TextualColor
 from textual.widget import Widget
 from textual.widgets import Button, Input, Label, Placeholder
 from textual.containers import Container
@@ -146,6 +151,32 @@ class LabeledInput(Container):
             Input(self.value, classes="input"),
         ]
 
+class LuminosityRamp(Widget):
+    """A vertical slider to select a luminosity, previewing the color at each luminosity with a gradient."""
+
+    # def __init__(self, color: Color, **kwargs: Any) -> None:
+    #     """Initialize the LuminosityRamp."""
+    #     super().__init__(**kwargs)
+    #     self.color = color
+
+    def render_line(self, y: int) -> Strip:
+        """Render a line of the widget."""
+        # TODO: base on the current hue and saturation
+        color = TextualColor.from_hsl(0, 0, y / self.size.height)
+        style = Style(bgcolor=color.rich_color)
+        return Strip([Segment(" " * self.size.width, style, None)])
+
+class ColorField(Widget):
+    """A field of hue and saturation, where you can pick a color by clicking."""
+
+    def render_line(self, y: int) -> Strip:
+        """Render a line of the widget."""
+        segments: list[Segment] = []
+        for x in range(self.size.width):
+            color = TextualColor.from_hsl(x / self.size.width, 1 - y / self.size.height, 0.5)
+            segments.append(Segment(" ", Style(bgcolor=color.rich_color), None))
+        return Strip(segments)
+
 class EditColorsDialogWindow(DialogWindow):
     """A dialog window that lets the user select a color."""
 
@@ -171,8 +202,8 @@ class EditColorsDialogWindow(DialogWindow):
                 self.color_grid,
                 Vertical(
                     Horizontal(
-                        Placeholder(),
-                        Placeholder(),
+                        ColorField(),
+                        LuminosityRamp(),
                     ),
                     Horizontal(
                         Vertical(
