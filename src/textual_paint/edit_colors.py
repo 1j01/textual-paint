@@ -5,6 +5,8 @@ from rich.style import Style
 from textual import events, on
 from textual.containers import Container, Horizontal, Vertical
 from textual.css.query import NoMatches
+from textual.geometry import Offset
+from textual.message import Message
 from textual.strip import Strip
 from textual.color import Color as TextualColor
 from textual.widget import Widget
@@ -154,28 +156,115 @@ class LabeledInput(Container):
 class LuminosityRamp(Widget):
     """A vertical slider to select a luminosity, previewing the color at each luminosity with a gradient."""
 
+    class Changed(Message):
+        """A message that is sent when the luminosity changes."""
+
+        def __init__(self, luminosity: float) -> None:
+            """Initialize the Changed message."""
+            super().__init__()
+            self.luminosity = luminosity
+
+
     # def __init__(self, color: Color, **kwargs: Any) -> None:
     #     """Initialize the LuminosityRamp."""
     #     super().__init__(**kwargs)
     #     self.color = color
 
+    def __init__(self, luminosity: float, **kwargs: Any) -> None:
+        """Initialize the LuminosityRamp."""
+        super().__init__(**kwargs)
+        self.luminosity = luminosity
+        self._mouse_down = False
+
     def render_line(self, y: int) -> Strip:
         """Render a line of the widget."""
         # TODO: base on the current hue and saturation
+        marker = "◀" # ◀ (bigger/clearer) or 🢐 (closer shape but smaller)
         color = TextualColor.from_hsl(0, 0, y / self.size.height)
         style = Style(bgcolor=color.rich_color)
-        return Strip([Segment(" " * self.size.width, style, None)])
+        segments = [Segment(" " * (self.size.width - 1), style, None)]
+        if y == round(self.size.height * self.luminosity):
+            segments.append(Segment(marker, Style(color="black"), None))
+        return Strip(segments)
+
+    def on_mouse_down(self, event: events.MouseDown) -> None:
+        """Called when the mouse is pressed down."""
+        self._update_color(event.y)
+        self._mouse_down = True
+        self.capture_mouse()
+    
+    def on_mouse_up(self, event: events.MouseUp) -> None:
+        """Called when the mouse is released."""
+        self.release_mouse()
+        self._mouse_down = False
+
+    def on_mouse_move(self, event: events.MouseMove) -> None:
+        """Called when the mouse is moved."""
+        if self._mouse_down:
+            self._update_color(event.y)
+    
+    def _update_color(self, y: int) -> None:
+        """Update the color based on the given y coordinate."""
+        self.luminosity = y / self.size.height
+        self.post_message(self.Changed(luminosity=self.luminosity))
+        self.refresh()
 
 class ColorField(Widget):
     """A field of hue and saturation, where you can pick a color by clicking."""
 
+    class Changed(Message):
+        """A message that is sent when the color changes."""
+
+        def __init__(self, hue: float, saturation: float) -> None:
+            """Initialize the Changed message."""
+            super().__init__()
+            self.hue = hue
+            self.saturation = saturation
+
+    def __init__(self, hue: float, saturation: float, **kwargs: Any) -> None:
+        """Initialize the ColorField."""
+        super().__init__(**kwargs)
+        self.hue = hue
+        self.saturation = saturation
+        self._mouse_down = False
+
     def render_line(self, y: int) -> Strip:
         """Render a line of the widget."""
         segments: list[Segment] = []
+        crosshair = "✜" # Options: ┼+✜✛✚╋╬⁘⁛⌖⯐ or
+        #  ╻
+        # ╺ ╸
+        #  ╹
         for x in range(self.size.width):
+            crosshair_here = x == int(self.hue * self.size.width) and y == int((1 - self.saturation) * self.size.height + 0.5)
             color = TextualColor.from_hsl(x / self.size.width, 1 - y / self.size.height, 0.5)
-            segments.append(Segment(" ", Style(bgcolor=color.rich_color), None))
+            char = crosshair if crosshair_here else " "
+            segments.append(Segment(char, Style(color="black", bgcolor=color.rich_color), None))
         return Strip(segments)
+
+    def on_mouse_down(self, event: events.MouseDown) -> None:
+        """Called when the mouse is pressed down."""
+        self._update_color(event.offset)
+        self._mouse_down = True
+        self.capture_mouse()
+    
+    def on_mouse_up(self, event: events.MouseUp) -> None:
+        """Called when the mouse is released."""
+        self.release_mouse()
+        self._mouse_down = False
+
+    def on_mouse_move(self, event: events.MouseMove) -> None:
+        """Called when the mouse is moved."""
+        if self._mouse_down:
+            self._update_color(event.offset)
+    
+    def _update_color(self, offset: Offset) -> None:
+        """Update the color based on the given offset."""
+        x, y = offset
+        self.hue = x / self.size.width
+        self.saturation = 1 - y / self.size.height
+        self.post_message(self.Changed(hue=self.hue, saturation=self.saturation))
+        self.refresh()
 
 class EditColorsDialogWindow(DialogWindow):
     """A dialog window that lets the user select a color."""
@@ -202,8 +291,8 @@ class EditColorsDialogWindow(DialogWindow):
                 self.color_grid,
                 Vertical(
                     Horizontal(
-                        ColorField(),
-                        LuminosityRamp(),
+                        ColorField(0, 0),
+                        LuminosityRamp(0),
                     ),
                     Horizontal(
                         Vertical(

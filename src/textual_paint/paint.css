@@ -380,7 +380,7 @@ EditColorsDialogWindow LabeledInput Label {
     margin-left: 1;
 }
 EditColorsDialogWindow LuminosityRamp {
-    width: 2;
+    width: 3;
     /* height: 1fr; */
     height: 10;
     margin: 1;
