@@ -291,6 +291,7 @@ class EditColorsDialogWindow(DialogWindow):
         super().__init__(handle_button=self.handle_button, *children, title=title, **kwargs)
         self._color_to_highlight = selected_color
         self._color_by_button: dict[Button, str] = {}
+        # self._inputs_by_letter: dict[str, Input] = {}
         self.handle_selected_color = handle_selected_color
     
     def handle_button(self, button: Button) -> None:
@@ -303,6 +304,23 @@ class EditColorsDialogWindow(DialogWindow):
     def on_mount(self) -> None:
         """Called when the window is mounted."""
         self.color_grid = ColorGrid(basic_colors)
+        verticals_for_inputs: list[Vertical] = []
+        for color_model in ["hsl", "rgb"]:
+            labeled_inputs: list[LabeledInput] = []
+            for component_letter in color_model:
+                text_with_hotkey: str = {
+                    "h": "Hu&e:",
+                    "s": "&Sat:",
+                    "l": "&Lum:",
+                    "r": "&Red:",
+                    "g": "&Green:",
+                    "b": "Bl&ue:",
+                }[component_letter]
+                text_without_hotkey = text_with_hotkey.replace("&", "")
+                labeled_inputs.append(LabeledInput(text_without_hotkey, classes=component_letter))
+                # self._inputs_by_letter[component_letter] = labeled_inputs[-1].query_one(Input)
+            verticals_for_inputs.append(Vertical(*labeled_inputs))
+
         self.content.mount(
             Horizontal(
                 self.color_grid,
@@ -317,16 +335,7 @@ class EditColorsDialogWindow(DialogWindow):
                             Label(_("Color")),
                             classes="color_preview_area",
                         ),
-                        Vertical(
-                            LabeledInput(_("Hue:"), classes="h"),
-                            LabeledInput(_("Sat:"), classes="s"),
-                            LabeledInput(_("Lum:"), classes="l"),
-                        ),
-                        Vertical(
-                            LabeledInput(_("Red:"), classes="r"),
-                            LabeledInput(_("Green:"), classes="g"),
-                            LabeledInput(_("Blue:"), classes="b"),
-                        ),
+                        *verticals_for_inputs,
                     ),
                 ),
             ),
