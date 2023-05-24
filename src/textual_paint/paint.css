@@ -364,13 +364,13 @@ EditColorsDialogWindow Vertical {
     width: auto;
 }
 EditColorsDialogWindow .input_container {
-    width: 16;
+    width: 17;
     height: auto;
     margin-bottom: 1;
     layout: horizontal;
 }
 EditColorsDialogWindow .input_container Input {
-    width: 8;
+    width: 10; /* minimum! 3 digits + 1 for the cursor + 2 for padding + 2 for border */
 }
 EditColorsDialogWindow .input_container Label {
     width: 1fr;
