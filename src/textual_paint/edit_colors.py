@@ -180,10 +180,12 @@ class LuminosityRamp(Widget):
         """Render a line of the widget."""
         # TODO: base on the current hue and saturation
         marker = "◀" # ◀ (bigger/clearer) or 🢐 (closer shape but smaller)
-        color = TextualColor.from_hsl(0, 0, y / self.size.height)
+        # lum = y / self.size.height # bottom isn't quite white
+        lum = y / (self.size.height - 1)
+        color = TextualColor.from_hsl(0, 0, lum)
         style = Style(bgcolor=color.rich_color)
         segments = [Segment(" " * (self.size.width - 1), style, None)]
-        if y == round(self.size.height * self.luminosity):
+        if y == round((self.size.height - 1) * self.luminosity):
             segments.append(Segment(marker, Style(color="black"), None))
         return Strip(segments)
 
@@ -205,7 +207,7 @@ class LuminosityRamp(Widget):
     
     def _update_color(self, y: int) -> None:
         """Update the color based on the given y coordinate."""
-        self.luminosity = max(0, min(1, y / self.size.height))
+        self.luminosity = max(0, min(1, y / (self.size.height - 1)))
         self.post_message(self.Changed(luminosity=self.luminosity))
         self.refresh()
 
@@ -236,8 +238,11 @@ class ColorField(Widget):
         # ╺ ╸
         #  ╹
         for x in range(self.size.width):
-            crosshair_here = x == int(self.hue * self.size.width) and y == int((1 - self.saturation) * self.size.height + 0.5)
-            color = TextualColor.from_hsl(x / self.size.width, 1 - y / self.size.height, 0.5)
+            crosshair_here = (
+                x == round(self.hue * (self.size.width - 1)) and
+                y == round((self.size.height - 1) * (1 - self.saturation))
+            )
+            color = TextualColor.from_hsl(x / (self.size.width - 1), 1 - y / (self.size.height - 1), 0.5)
             char = crosshair if crosshair_here else " "
             segments.append(Segment(char, Style(color="black", bgcolor=color.rich_color), None))
         return Strip(segments)
@@ -261,8 +266,8 @@ class ColorField(Widget):
     def _update_color(self, offset: Offset) -> None:
         """Update the color based on the given offset."""
         x, y = offset
-        self.hue = max(0, min(1, x / self.size.width))
-        self.saturation = max(0, min(1, 1 - y / self.size.height))
+        self.hue = max(0, min(1, x / (self.size.width - 1)))
+        self.saturation = max(0, min(1, 1 - y / (self.size.height - 1)))
         self.post_message(self.Changed(hue=self.hue, saturation=self.saturation))
         self.refresh()
 
