@@ -273,6 +273,9 @@ class EditColorsDialogWindow(DialogWindow):
     def __init__(self, *children: Widget, title: str = _("Edit Colors"), selected_color: str|None, handle_selected_color: Callable[[str], None], **kwargs: Any) -> None:
         """Initialize the Edit Colors dialog."""
         super().__init__(handle_button=self.handle_button, *children, title=title, **kwargs)
+        self.hue_degrees = 0
+        self.sat_percent = 0
+        self.lum_percent = 0
         self._color_to_highlight = selected_color
         self._color_by_button: dict[Button, str] = {}
         self._inputs_by_letter: dict[str, Input] = {}
@@ -301,7 +304,7 @@ class EditColorsDialogWindow(DialogWindow):
                     "b": "Bl&ue:",
                 }[component_letter]
                 text_without_hotkey = text_with_hotkey.replace("&", "")
-                input = Input()
+                input = Input(name=component_letter)
                 label = Label(text_without_hotkey)
                 container = Container(label, input, classes="input_container")
                 input_containers.append(container)
@@ -332,3 +335,86 @@ class EditColorsDialogWindow(DialogWindow):
                 classes="buttons",
             )
         )
+
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Called when an input changes."""
+        component_letter = event.input.name
+        if component_letter is None:
+            return
+        try:
+            value = int(event.input.value)
+        except ValueError:
+            # reject invalid input (but not empty input)
+            if len(event.input.value):
+                self._update_inputs(component_letter)
+            return
+        max_value: int = {
+            "h": 360,
+            "s": 100,
+            "l": 100,
+            "r": 255,
+            "g": 255,
+            "b": 255,
+        }[component_letter]
+        # Textual bug: cursor isn't visible after the input value is set.
+        # I tried a few things to workaround this, like:
+        # self.app.set_focus(None)
+        # self.set_timer(1, event.input.focus)
+        # Weirdly, this seems to make it work if you type a non-digit, but not if you type a digit?
+        # Eh, it's a bad workaround anyways to unfocus the input, even if it were briefly.
+        if value < 0:
+            value = 0
+            event.input.value = "0"
+        elif value > max_value:
+            value = max_value
+            event.input.value = str(max_value)
+        if component_letter in "hsl":
+            if component_letter == "h":
+                self.hue_degrees = value
+            elif component_letter == "s":
+                self.sat_percent = value
+            else:
+                self.lum_percent = value
+            self._update_inputs("rgb")
+        else:
+            rgb = list(self._get_current_color().rgb)
+            rgb["rgb".index(component_letter)] = value
+            self._set_color_from_rgb(tuple(rgb))
+            self._update_inputs("hsl")
+
+    # `textual._on.OnDecoratorError: The message class must have a 'control' to match with the on decorator`
+    # Also, neither does `DescendantBlur` have a `control` attribute.
+    # I'll probably have to subclass `Input` as `NumericInput`.
+    # @on(events.Blur, "Input")
+    # def _on_input_blur(self, event: events.Blur) -> None:
+    #     """Called when an input loses focus. Restores empty inputs to their previous value."""
+    #     input = event.control
+    #     if input is None or input.name is None or not isinstance(input, Input):
+    #         return
+    #     if len(input.value) == 0:
+    #         self._update_inputs(input.name)
+
+    def _get_current_color(self) -> TextualColor:
+        """Get the current color."""
+        return TextualColor.from_hsl(self.hue_degrees / 360, self.sat_percent / 100, self.lum_percent / 100)
+
+    def _set_color_from_rgb(self, rgb: tuple[int, int, int]) -> None:
+        """Set the color from the given RGB value."""
+        h, s, l = TextualColor(*rgb).hsl
+        self.hue_degrees = h * 360
+        self.sat_percent = s * 100
+        self.lum_percent = l * 100
+
+    def _update_inputs(self, component_letters: str) -> None:
+        """Update the inputs for the given component letters."""
+        with self.prevent(Input.Changed):
+            for component_letter in component_letters:
+                input = self._inputs_by_letter[component_letter]
+                input.value = str(int({
+                    "h": self.hue_degrees,
+                    "s": self.sat_percent,
+                    "l": self.lum_percent,
+                    "r": self._get_current_color().rgb[0],
+                    "g": self._get_current_color().rgb[1],
+                    "b": self._get_current_color().rgb[2],
+                }[component_letter]))
