@@ -7,6 +7,7 @@ from textual.containers import Container, Horizontal, Vertical
 from textual.css.query import NoMatches
 from textual.geometry import Offset
 from textual.message import Message
+from textual.reactive import reactive
 from textual.strip import Strip
 from textual.color import Color as TextualColor
 from textual.widget import Widget
@@ -261,11 +262,11 @@ class ColorPreview(Widget):
     def __init__(self, color: str, **kwargs: Any) -> None:
         """Initialize the ColorPreview."""
         super().__init__(**kwargs)
-        self.color = color
+        self.color: reactive[str] = reactive(color)
 
     def render_line(self, y: int) -> Strip:
         """Render a line of the widget."""
-        return Strip([Segment(" " * self.size.width, Style(bgcolor=self.color), None)])
+        return Strip([Segment(" " * self.size.width, Style(bgcolor=str(self.color)), None)])
 
 class EditColorsDialogWindow(DialogWindow):
     """A dialog window that lets the user select a color."""
@@ -381,6 +382,7 @@ class EditColorsDialogWindow(DialogWindow):
             rgb["rgb".index(component_letter)] = value
             self._set_color_from_rgb(tuple(rgb))
             self._update_inputs("hsl")
+        self._update_color_preview()
 
     # `textual._on.OnDecoratorError: The message class must have a 'control' to match with the on decorator`
     # Also, neither does `DescendantBlur` have a `control` attribute.
@@ -418,3 +420,7 @@ class EditColorsDialogWindow(DialogWindow):
                     "g": self._get_current_color().rgb[1],
                     "b": self._get_current_color().rgb[2],
                 }[component_letter]))
+
+    def _update_color_preview(self) -> None:
+        """Update the color preview."""
+        self.query_one(ColorPreview).color = self._get_current_color().hex
