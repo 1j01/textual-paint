@@ -271,6 +271,18 @@ class ColorField(Widget):
         self.post_message(self.Changed(hue=self.hue, saturation=self.saturation))
         self.refresh()
 
+class ColorPreview(Widget):
+    """A preview of the selected color. This doesn't really need to be a special widget..."""
+
+    def __init__(self, color: str, **kwargs: Any) -> None:
+        """Initialize the ColorPreview."""
+        super().__init__(**kwargs)
+        self.color = color
+
+    def render_line(self, y: int) -> Strip:
+        """Render a line of the widget."""
+        return Strip([Segment(" " * self.size.width, Style(bgcolor=self.color), None)])
+
 class EditColorsDialogWindow(DialogWindow):
     """A dialog window that lets the user select a color."""
 
@@ -300,6 +312,11 @@ class EditColorsDialogWindow(DialogWindow):
                         LuminosityRamp(0),
                     ),
                     Horizontal(
+                        Vertical(
+                            ColorPreview("black"),
+                            Label(_("Color")),
+                            classes="color_preview_area",
+                        ),
                         Vertical(
                             LabeledInput(_("Hue:"), classes="h"),
                             LabeledInput(_("Sat:"), classes="s"),

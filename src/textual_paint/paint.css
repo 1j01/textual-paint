@@ -392,6 +392,19 @@ EditColorsDialogWindow ColorField {
     margin: 1;
     margin-top: 0;
 }
+EditColorsDialogWindow .color_preview_area {
+    margin: 1;
+    margin-top: 0;
+    width: 10;
+}
+EditColorsDialogWindow .color_preview_area Label {
+    width: 1fr;
+    text-align: center;
+}
+EditColorsDialogWindow ColorPreview {
+    width: 1fr;
+    height: 3;
+}
 
 MessageBox .window_content {
     width: 50;
