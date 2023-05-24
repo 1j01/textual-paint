@@ -205,7 +205,7 @@ class LuminosityRamp(Widget):
     
     def _update_color(self, y: int) -> None:
         """Update the color based on the given y coordinate."""
-        self.luminosity = y / self.size.height
+        self.luminosity = max(0, min(1, y / self.size.height))
         self.post_message(self.Changed(luminosity=self.luminosity))
         self.refresh()
 
@@ -261,8 +261,8 @@ class ColorField(Widget):
     def _update_color(self, offset: Offset) -> None:
         """Update the color based on the given offset."""
         x, y = offset
-        self.hue = x / self.size.width
-        self.saturation = 1 - y / self.size.height
+        self.hue = max(0, min(1, x / self.size.width))
+        self.saturation = max(0, min(1, 1 - y / self.size.height))
         self.post_message(self.Changed(hue=self.hue, saturation=self.saturation))
         self.refresh()
 
