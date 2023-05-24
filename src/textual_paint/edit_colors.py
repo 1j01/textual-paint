@@ -7,6 +7,7 @@ from textual.containers import Container, Horizontal, Vertical
 from textual.css.query import NoMatches
 from textual.geometry import Offset
 from textual.message import Message
+from textual.reactive import reactive
 from textual.strip import Strip
 from textual.color import Color as TextualColor
 from textual.widget import Widget
@@ -149,10 +150,9 @@ class LuminosityRamp(Widget):
             self.luminosity = luminosity
 
 
-    # def __init__(self, color: Color, **kwargs: Any) -> None:
-    #     """Initialize the LuminosityRamp."""
-    #     super().__init__(**kwargs)
-    #     self.color = color
+    # hue = reactive(0.0)
+    # saturation = reactive(0.0)
+    luminosity = reactive(0.0)
 
     def __init__(self, luminosity: float, **kwargs: Any) -> None:
         """Initialize the LuminosityRamp."""
@@ -193,7 +193,7 @@ class LuminosityRamp(Widget):
         """Update the color based on the given y coordinate."""
         self.luminosity = max(0, min(1, y / (self.size.height - 1)))
         self.post_message(self.Changed(luminosity=self.luminosity))
-        self.refresh()
+        # self.refresh()
 
 class ColorField(Widget):
     """A field of hue and saturation, where you can pick a color by clicking."""
@@ -206,6 +206,9 @@ class ColorField(Widget):
             super().__init__()
             self.hue = hue
             self.saturation = saturation
+
+    hue = reactive(0.0)
+    saturation = reactive(0.0)
 
     def __init__(self, hue: float, saturation: float, **kwargs: Any) -> None:
         """Initialize the ColorField."""
@@ -253,10 +256,12 @@ class ColorField(Widget):
         self.hue = max(0, min(1, x / (self.size.width - 1)))
         self.saturation = max(0, min(1, 1 - y / (self.size.height - 1)))
         self.post_message(self.Changed(hue=self.hue, saturation=self.saturation))
-        self.refresh()
+        # self.refresh()
 
 class ColorPreview(Widget):
     """A preview of the selected color. This doesn't really need to be a special widget..."""
+
+    color: reactive[str] = reactive("black")
 
     def __init__(self, color: str, **kwargs: Any) -> None:
         """Initialize the ColorPreview."""
@@ -336,6 +341,19 @@ class EditColorsDialogWindow(DialogWindow):
             )
         )
 
+    def on_luminosity_ramp_changed(self, event: LuminosityRamp.Changed) -> None:
+        """Called when dragging the luminosity slider."""
+        self.lum_percent = event.luminosity * 100
+        self._update_inputs("lrgb")
+        self._update_color_preview()
+
+    def on_color_field_changed(self, event: ColorField.Changed) -> None:
+        """Called when dragging the color field."""
+        self.hue_degrees = event.hue * 360
+        self.sat_percent = event.saturation * 100
+        self._update_inputs("hsrgb")
+        self._update_color_preview()
+
     def on_input_changed(self, event: Input.Changed) -> None:
         """Called when an input changes."""
         component_letter = event.input.name
@@ -381,6 +399,7 @@ class EditColorsDialogWindow(DialogWindow):
             rgb["rgb".index(component_letter)] = value
             self._set_color_from_rgb(tuple(rgb))
             self._update_inputs("hsl")
+        self._update_color_preview()
 
     # `textual._on.OnDecoratorError: The message class must have a 'control' to match with the on decorator`
     # Also, neither does `DescendantBlur` have a `control` attribute.
@@ -418,3 +437,10 @@ class EditColorsDialogWindow(DialogWindow):
                     "g": self._get_current_color().rgb[1],
                     "b": self._get_current_color().rgb[2],
                 }[component_letter]))
+
+    def _update_color_preview(self) -> None:
+        """Update the color preview."""
+        self.query_one(ColorPreview).color = self._get_current_color().hex
+        self.query_one(LuminosityRamp).luminosity = self.lum_percent / 100
+        self.query_one(ColorField).hue = self.hue_degrees / 360
+        self.query_one(ColorField).saturation = self.sat_percent / 100
