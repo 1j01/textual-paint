@@ -363,16 +363,16 @@ EditColorsDialogWindow Vertical {
     height: auto;
     width: auto;
 }
-EditColorsDialogWindow LabeledInput {
+EditColorsDialogWindow .input_container {
     width: 16;
     height: auto;
     margin-bottom: 1;
     layout: horizontal;
 }
-EditColorsDialogWindow LabeledInput Input {
+EditColorsDialogWindow .input_container Input {
     width: 8;
 }
-EditColorsDialogWindow LabeledInput Label {
+EditColorsDialogWindow .input_container Label {
     width: 1fr;
     height: auto;
     text-align: right;

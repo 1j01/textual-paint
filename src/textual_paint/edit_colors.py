@@ -137,22 +137,6 @@ class ColorGrid(Container):
     #     """Called when a color button is clicked."""
     #     self.selected_color = self._color_by_button[event.control]
 
-class LabeledInput(Container):
-    """A label and an input field."""
-
-    def __init__(self, label_text: str, value: str | None = None, **kwargs: Any) -> None:
-        """Initialize the LabeledInput."""
-        super().__init__(**kwargs)
-        self.label_text = label_text
-        self.value = value
-
-    def compose(self) -> list[Widget]:
-        """Compose the widget."""
-        return [
-            Label(self.label_text, classes="label"),
-            Input(self.value, classes="input"),
-        ]
-
 class LuminosityRamp(Widget):
     """A vertical slider to select a luminosity, previewing the color at each luminosity with a gradient."""
 
@@ -291,7 +275,7 @@ class EditColorsDialogWindow(DialogWindow):
         super().__init__(handle_button=self.handle_button, *children, title=title, **kwargs)
         self._color_to_highlight = selected_color
         self._color_by_button: dict[Button, str] = {}
-        # self._inputs_by_letter: dict[str, Input] = {}
+        self._inputs_by_letter: dict[str, Input] = {}
         self.handle_selected_color = handle_selected_color
     
     def handle_button(self, button: Button) -> None:
@@ -306,7 +290,7 @@ class EditColorsDialogWindow(DialogWindow):
         self.color_grid = ColorGrid(basic_colors)
         verticals_for_inputs: list[Vertical] = []
         for color_model in ["hsl", "rgb"]:
-            labeled_inputs: list[LabeledInput] = []
+            input_containers: list[Container] = []
             for component_letter in color_model:
                 text_with_hotkey: str = {
                     "h": "Hu&e:",
@@ -317,9 +301,12 @@ class EditColorsDialogWindow(DialogWindow):
                     "b": "Bl&ue:",
                 }[component_letter]
                 text_without_hotkey = text_with_hotkey.replace("&", "")
-                labeled_inputs.append(LabeledInput(text_without_hotkey, classes=component_letter))
-                # self._inputs_by_letter[component_letter] = labeled_inputs[-1].query_one(Input)
-            verticals_for_inputs.append(Vertical(*labeled_inputs))
+                input = Input()
+                label = Label(text_without_hotkey)
+                container = Container(label, input, classes="input_container")
+                input_containers.append(container)
+                self._inputs_by_letter[component_letter] = input
+            verticals_for_inputs.append(Vertical(*input_containers))
 
         self.content.mount(
             Horizontal(
