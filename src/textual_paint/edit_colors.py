@@ -282,7 +282,9 @@ class EditColorsDialogWindow(DialogWindow):
         self.hue_degrees = 0
         self.sat_percent = 0
         self.lum_percent = 0
-        self._color_to_highlight = selected_color
+        # self._initial_color = selected_color
+        if selected_color:
+            self._set_current_color(selected_color)
         self._color_by_button: dict[Button, str] = {}
         self._inputs_by_letter: dict[str, Input] = {}
         self.handle_selected_color = handle_selected_color
@@ -322,8 +324,8 @@ class EditColorsDialogWindow(DialogWindow):
                 self.color_grid,
                 Vertical(
                     Horizontal(
-                        ColorField(0, 0),
-                        LuminosityRamp(0, 0, 0),
+                        ColorField(self.hue_degrees / 360, self.sat_percent / 100),
+                        LuminosityRamp(self.hue_degrees / 360, self.sat_percent / 100, self.lum_percent / 100),
                     ),
                     Horizontal(
                         Vertical(
