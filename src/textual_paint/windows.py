@@ -144,6 +144,21 @@ class Window(Container):
             # Fix for incorrect layout that would only resolve on mouse over
             # (I peaked into mouse over handling and it calls update_styles.)
             self.app.update_styles(self)
+        self.call_after_refresh(self.constrain_to_screen)
+
+    def constrain_to_screen(self) -> None:
+        """Constrain window to screen, so that the title bar is always visible.
+        
+        This method must take into account the fact that the window is centered with `align: center middle;`
+        TODO: Call this on screen resize.
+        """
+        # print(self.region, self.virtual_region)
+        x, y = map(lambda scalar: int(scalar.value), self.styles.offset)
+        if self.region.x < 0:
+            x -= self.region.x
+        if self.region.y < 0:
+            y -= self.region.y
+        self.styles.offset = (x, y)
 
     def on_focus(self, event: events.Focus) -> None:
         """Called when the window is focused."""
@@ -331,6 +346,7 @@ class Window(Container):
         self.mouse_at_drag_start = None
         self.offset_at_drag_start = None
         self.release_mouse()
+        self.constrain_to_screen()
         # Part of the workaround for the bug mentioned in on_mouse_down
         self.can_focus = True
 
