@@ -357,6 +357,8 @@ class EditColorsDialogWindow(DialogWindow):
             )
         )
 
+        self._update_inputs("hslrgb")
+
     def on_color_grid_changed(self, event: ColorGrid.Changed) -> None:
         """Called when the user selects a color from the grid."""
         self._set_current_color(event.color)
