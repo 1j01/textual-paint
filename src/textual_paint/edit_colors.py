@@ -46,24 +46,36 @@ num_colors_per_row = 8
 class ColorGrid(Container):
     """A grid of colors."""
 
-    def __init__(self, colors: list[str], **kwargs: Any) -> None:
+    class Changed(Message):
+        """A message that is sent when the selected color changes."""
+        
+        def __init__(self, color: str) -> None:
+            """Initialize the message."""
+            super().__init__()
+            self.color = color
+
+    def __init__(self, colors: list[str], selected_color: str, **kwargs: Any) -> None:
         """Initialize the ColorGrid."""
         super().__init__(**kwargs)
-        self.selected_color: str = colors[0]
+        self.selected_color: str = selected_color
         self._color_by_button: dict[Button, str] = {}
         self._colors = colors
         self.can_focus = True
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
+        found_match = False
         for color in self._colors:
             button = Button("", classes="color_button color_well")
             button.styles.background = color
-            button.can_focus = False
+            button.can_focus = False  # using fake focus for now
+            matches = TextualColor.parse(color) == TextualColor.parse(self.selected_color)
+            if matches and not found_match:
+                button.add_class("focused")
+                found_match = True
             self._color_by_button[button] = color
-            # if color is self._selected_color:
-            #     button.focus()
             self.mount(button)
+        self._select_focused_color()
 
     def on_key(self, event: events.Key) -> None:
         """Called when a key is pressed."""
@@ -91,6 +103,7 @@ class ColorGrid(Container):
             selected.remove_class("selected")
         focused.add_class("selected")
         self.selected_color = self._color_by_button[focused]
+        self.post_message(self.Changed(self.selected_color))
     
     def _navigate_relative(self, delta: int) -> None:
         """Navigate to a color relative to the currently focused color."""
@@ -298,7 +311,7 @@ class EditColorsDialogWindow(DialogWindow):
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
-        self.color_grid = ColorGrid(basic_colors)
+        self.color_grid = ColorGrid(basic_colors, self._get_current_color().hex)
         verticals_for_inputs: list[Vertical] = []
         for color_model in ["hsl", "rgb"]:
             input_containers: list[Container] = []
@@ -343,6 +356,12 @@ class EditColorsDialogWindow(DialogWindow):
                 classes="buttons",
             )
         )
+
+    def on_color_grid_changed(self, event: ColorGrid.Changed) -> None:
+        """Called when the user selects a color from the grid."""
+        self._set_current_color(event.color)
+        self._update_inputs("hslrgb")
+        self._update_color_preview()
 
     def on_luminosity_ramp_changed(self, event: LuminosityRamp.Changed) -> None:
         """Called when dragging the luminosity slider."""
