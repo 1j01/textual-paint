@@ -150,23 +150,24 @@ class LuminosityRamp(Widget):
             self.luminosity = luminosity
 
 
-    # hue = reactive(0.0)
-    # saturation = reactive(0.0)
+    hue = reactive(0.0)
+    saturation = reactive(0.0)
     luminosity = reactive(0.0)
 
-    def __init__(self, luminosity: float, **kwargs: Any) -> None:
+    def __init__(self, hue: float, saturation: float, luminosity: float, **kwargs: Any) -> None:
         """Initialize the LuminosityRamp."""
         super().__init__(**kwargs)
         self.luminosity = luminosity
+        self.hue = hue
+        self.saturation = saturation
         self._mouse_down = False
 
     def render_line(self, y: int) -> Strip:
         """Render a line of the widget."""
-        # TODO: base on the current hue and saturation
         marker = "◀" # ◀ (bigger/clearer) or 🢐 (closer shape but smaller)
         # lum = y / self.size.height # bottom isn't quite white
         lum = y / (self.size.height - 1)
-        color = TextualColor.from_hsl(0, 0, lum)
+        color = TextualColor.from_hsl(self.hue, self.saturation, lum)
         style = Style(bgcolor=color.rich_color)
         segments = [Segment(" " * (self.size.width - 1), style, None)]
         if y == round((self.size.height - 1) * self.luminosity):
@@ -322,7 +323,7 @@ class EditColorsDialogWindow(DialogWindow):
                 Vertical(
                     Horizontal(
                         ColorField(0, 0),
-                        LuminosityRamp(0),
+                        LuminosityRamp(0, 0, 0),
                     ),
                     Horizontal(
                         Vertical(
@@ -441,6 +442,10 @@ class EditColorsDialogWindow(DialogWindow):
     def _update_color_preview(self) -> None:
         """Update the color preview."""
         self.query_one(ColorPreview).color = self._get_current_color().hex
-        self.query_one(LuminosityRamp).luminosity = self.lum_percent / 100
-        self.query_one(ColorField).hue = self.hue_degrees / 360
-        self.query_one(ColorField).saturation = self.sat_percent / 100
+        luminosity_ramp = self.query_one(LuminosityRamp)
+        color_field = self.query_one(ColorField)
+        luminosity_ramp.luminosity = self.lum_percent / 100
+        luminosity_ramp.hue = self.hue_degrees / 360
+        luminosity_ramp.saturation = self.sat_percent / 100
+        color_field.hue = self.hue_degrees / 360
+        color_field.saturation = self.sat_percent / 100
