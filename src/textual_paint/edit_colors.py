@@ -1,17 +1,16 @@
 from typing import Any, Callable
-from rich.color import Color as RichColor
 from rich.segment import Segment
 from rich.style import Style
-from textual import events, on
+from textual import events
 from textual.containers import Container, Horizontal, Vertical
 from textual.css.query import NoMatches
 from textual.geometry import Offset
 from textual.message import Message
 from textual.reactive import reactive, var
 from textual.strip import Strip
-from textual.color import Color as TextualColor
+from textual.color import Color as Color
 from textual.widget import Widget
-from textual.widgets import Button, Input, Label, Placeholder
+from textual.widgets import Button, Input, Label
 from textual.containers import Container
 from localization.i18n import get as _
 from windows import DialogWindow
@@ -69,7 +68,7 @@ class ColorGrid(Container):
         """Called when the window is mounted."""
         found_match = False
         for button, color in self._color_by_button.items():
-            matches = TextualColor.parse(color) == TextualColor.parse(self.selected_color)
+            matches = Color.parse(color) == Color.parse(self.selected_color)
             if matches and not found_match:
                 button.add_class("focused")
                 found_match = True
@@ -189,7 +188,7 @@ class LuminosityRamp(Widget):
         marker = "◀" # ◀ (bigger/clearer) or 🢐 (closer shape but smaller)
         # lum = y / self.size.height # bottom isn't quite white
         lum = 1 - y / (self.size.height - 1)
-        color = TextualColor.from_hsl(self.hue, self.saturation, lum)
+        color = Color.from_hsl(self.hue, self.saturation, lum)
         style = Style(bgcolor=color.rich_color)
         segments = [Segment(" " * (self.size.width - 1), style, None)]
         if y == round((self.size.height - 1) * (1 - self.luminosity)):
@@ -252,7 +251,7 @@ class ColorField(Widget):
                 x == round(self.hue * (self.size.width - 1)) and
                 y == round((self.size.height - 1) * (1 - self.saturation))
             )
-            color = TextualColor.from_hsl(x / (self.size.width - 1), 1 - y / (self.size.height - 1), 0.5)
+            color = Color.from_hsl(x / (self.size.width - 1), 1 - y / (self.size.height - 1), 0.5)
             char = crosshair if crosshair_here else " "
             segments.append(Segment(char, Style(color="black", bgcolor=color.rich_color), None))
         return Strip(segments)
@@ -445,7 +444,7 @@ class EditColorsDialogWindow(DialogWindow):
         else:
             rgb = list(self._current_color.rgb)
             rgb["rgb".index(component_letter)] = value
-            self._current_color = TextualColor(*rgb)
+            self._current_color = Color(*rgb)
             self._update_inputs("hsl")
         self._update_color_preview()
 
@@ -462,15 +461,15 @@ class EditColorsDialogWindow(DialogWindow):
     #         self._update_inputs(input.name)
 
     @property
-    def _current_color(self) -> TextualColor:
+    def _current_color(self) -> Color:
         """Get the current color."""
-        return TextualColor.from_hsl(self.hue_degrees / 360, self.sat_percent / 100, self.lum_percent / 100)
+        return Color.from_hsl(self.hue_degrees / 360, self.sat_percent / 100, self.lum_percent / 100)
 
     @_current_color.setter
-    def _current_color(self, color: TextualColor | str) -> None:
+    def _current_color(self, color: Color | str) -> None:
         """Set the color values from the given textual.color.Color object or string."""
         if isinstance(color, str):
-            color = TextualColor.parse(color)
+            color = Color.parse(color)
         hue, sat, lum = color.hsl
         self.hue_degrees = hue * 360
         self.sat_percent = sat * 100
