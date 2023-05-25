@@ -433,6 +433,12 @@ class EditColorsDialogWindow(DialogWindow):
         self._update_color_preview()
         if event.color_grid is self.custom_colors_grid:
             self._custom_colors_index = event.index
+        # This is a little awkward, removing .selected for other grids here, but
+        # for the clicked grid in the ColorGrid widget itself.
+        for color_grid in self.query(ColorGrid):
+            if event.color_grid is not color_grid:
+                for button in color_grid.query(Button):
+                    button.remove_class("selected")
 
     def on_luminosity_ramp_changed(self, event: LuminosityRamp.Changed) -> None:
         """Called when dragging the luminosity slider."""
