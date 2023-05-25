@@ -7,7 +7,7 @@ from textual.containers import Container, Horizontal, Vertical
 from textual.css.query import NoMatches
 from textual.geometry import Offset
 from textual.message import Message
-from textual.reactive import reactive
+from textual.reactive import reactive, var
 from textual.strip import Strip
 from textual.color import Color as TextualColor
 from textual.widget import Widget
@@ -54,18 +54,27 @@ class ColorGrid(Container):
             super().__init__()
             self.color = color
 
-    def __init__(self, colors: list[str], selected_color: str, **kwargs: Any) -> None:
+    color_list = var(list[str], init=False)
+    """The list of colors to display. NOT TO BE CONFUSED WITH `colors` defined by `Widget`."""
+
+    def __init__(self, color_list: list[str], selected_color: str, **kwargs: Any) -> None:
         """Initialize the ColorGrid."""
         super().__init__(**kwargs)
         self.selected_color: str = selected_color
         self._color_by_button: dict[Button, str] = {}
-        self._colors = colors
+        self.color_list = color_list  # This immediately calls `watch_color_list`.
         self.can_focus = True
-
+    
     def on_mount(self) -> None:
         """Called when the window is mounted."""
+        self._select_focused_color()
+
+    def watch_color_list(self, color_list: list[str]) -> None:
+        """Called when the color list changes."""
+        for button in self.query(Button):
+            button.remove()
         found_match = False
-        for color in self._colors:
+        for color in self.color_list:
             button = Button("", classes="color_button color_well")
             button.styles.background = color
             button.can_focus = False  # using fake focus for now
@@ -75,7 +84,6 @@ class ColorGrid(Container):
                 found_match = True
             self._color_by_button[button] = color
             self.mount(button)
-        self._select_focused_color()
 
     def on_key(self, event: events.Key) -> None:
         """Called when a key is pressed."""
@@ -90,7 +98,7 @@ class ColorGrid(Container):
         elif event.key == "home":
             self._navigate_absolute(0)
         elif event.key == "end":
-            self._navigate_absolute(len(self._colors) - 1)
+            self._navigate_absolute(len(self.color_list) - 1)
         elif event.key in ("space", "enter"):
             self._select_focused_color()
     
@@ -122,7 +130,7 @@ class ColorGrid(Container):
 
     def _navigate_absolute(self, index: int) -> None:
         """Navigate to the color at the given index."""
-        if index < 0 or index >= len(self._colors):
+        if index < 0 or index >= len(self.color_list):
             return
         target_button = list(self._color_by_button.keys())[index]
         target_button.add_class("focused")
@@ -300,6 +308,7 @@ class EditColorsDialogWindow(DialogWindow):
             self._set_current_color(selected_color)
         self._color_by_button: dict[Button, str] = {}
         self._inputs_by_letter: dict[str, Input] = {}
+        self._custom_colors_index = 0
         self.handle_selected_color = handle_selected_color
     
     def handle_button(self, button: Button) -> None:
@@ -308,10 +317,18 @@ class EditColorsDialogWindow(DialogWindow):
             self.request_close()
         elif button.has_class("ok"):
             self.handle_selected_color(self._get_current_color().hex)
+        elif button.has_class("add_to_custom_colors"):
+            global custom_colors
+            custom_colors = custom_colors[:]  # copy so that watch_color_list gets called
+            # (it uses reference equality; an alternative would be to set always_update=True)
+            custom_colors[self._custom_colors_index] = self._get_current_color().hex
+            self.custom_colors_grid.color_list = custom_colors
+            self._custom_colors_index = (self._custom_colors_index + 1) % len(custom_colors)
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
-        self.color_grid = ColorGrid(basic_colors, self._get_current_color().hex)
+        self.basic_colors_grid = ColorGrid(basic_colors, self._get_current_color().hex)
+        self.custom_colors_grid = ColorGrid(custom_colors, self._get_current_color().hex)
         verticals_for_inputs: list[Vertical] = []
         for color_model in ["hsl", "rgb"]:
             input_containers: list[Container] = []
@@ -334,7 +351,12 @@ class EditColorsDialogWindow(DialogWindow):
 
         self.content.mount(
             Horizontal(
-                self.color_grid,
+                Vertical(
+                    Label(_("Basic Colors")),
+                    self.basic_colors_grid,
+                    Label(_("Custom Colors")),
+                    self.custom_colors_grid,
+                ),
                 Vertical(
                     Horizontal(
                         ColorField(self.hue_degrees / 360, self.sat_percent / 100),
@@ -348,6 +370,7 @@ class EditColorsDialogWindow(DialogWindow):
                         ),
                         *verticals_for_inputs,
                     ),
+                    Button(_("Add to Custom Colors"), classes="add_to_custom_colors"),
                 ),
             ),
             Container(
