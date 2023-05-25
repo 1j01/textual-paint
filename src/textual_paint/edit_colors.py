@@ -166,11 +166,11 @@ class LuminosityRamp(Widget):
         """Render a line of the widget."""
         marker = "◀" # ◀ (bigger/clearer) or 🢐 (closer shape but smaller)
         # lum = y / self.size.height # bottom isn't quite white
-        lum = y / (self.size.height - 1)
+        lum = 1 - y / (self.size.height - 1)
         color = TextualColor.from_hsl(self.hue, self.saturation, lum)
         style = Style(bgcolor=color.rich_color)
         segments = [Segment(" " * (self.size.width - 1), style, None)]
-        if y == round((self.size.height - 1) * self.luminosity):
+        if y == round((self.size.height - 1) * (1 - self.luminosity)):
             segments.append(Segment(marker, Style(color="black"), None))
         return Strip(segments)
 
@@ -192,7 +192,7 @@ class LuminosityRamp(Widget):
     
     def _update_color(self, y: int) -> None:
         """Update the color based on the given y coordinate."""
-        self.luminosity = max(0, min(1, y / (self.size.height - 1)))
+        self.luminosity = max(0, min(1, 1 - y / (self.size.height - 1)))
         self.post_message(self.Changed(luminosity=self.luminosity))
         # self.refresh()
 
