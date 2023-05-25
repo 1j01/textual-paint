@@ -309,10 +309,7 @@ class IntegerInput(Input):
             value_as_int = int(value)
         except ValueError:
             return self.last_valid_int
-        if value_as_int < self.min:
-            return self.min
-        if value_as_int > self.max:
-            return self.max
+        value_as_int = max(self.min, min(self.max, value_as_int))
         self.last_valid_int = value_as_int
         return value_as_int
 
