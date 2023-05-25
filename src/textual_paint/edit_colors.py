@@ -67,21 +67,22 @@ class ColorGrid(Container):
     
     def on_mount(self) -> None:
         """Called when the window is mounted."""
+        found_match = False
+        for button, color in self._color_by_button.items():
+            matches = TextualColor.parse(color) == TextualColor.parse(self.selected_color)
+            if matches and not found_match:
+                button.add_class("focused")
+                found_match = True
         self._select_focused_color()
 
     def watch_color_list(self, color_list: list[str]) -> None:
         """Called when the color list changes."""
         for button in self.query(Button):
             button.remove()
-        found_match = False
         for color in self.color_list:
             button = Button("", classes="color_button color_well")
             button.styles.background = color
             button.can_focus = False  # using fake focus for now
-            matches = TextualColor.parse(color) == TextualColor.parse(self.selected_color)
-            if matches and not found_match:
-                button.add_class("focused")
-                found_match = True
             self._color_by_button[button] = color
             self.mount(button)
 
