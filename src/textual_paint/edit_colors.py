@@ -48,10 +48,12 @@ class ColorGrid(Container):
     class Changed(Message):
         """A message that is sent when the selected color changes."""
         
-        def __init__(self, color: str) -> None:
+        def __init__(self, color: str, color_grid: "ColorGrid", index: int) -> None:
             """Initialize the message."""
             super().__init__()
             self.color = color
+            self.color_grid = color_grid
+            self.index = index
 
     color_list = var(list[str], init=False)
     """The list of colors to display. NOT TO BE CONFUSED WITH `colors` defined by `Widget`."""
@@ -76,6 +78,7 @@ class ColorGrid(Container):
 
     def watch_color_list(self, color_list: list[str]) -> None:
         """Called when the color list changes."""
+        self._color_by_button = {}
         for button in self.query(Button):
             button.remove()
         for color in self.color_list:
@@ -111,7 +114,8 @@ class ColorGrid(Container):
             selected.remove_class("selected")
         focused.add_class("selected")
         self.selected_color = self._color_by_button[focused]
-        self.post_message(self.Changed(self.selected_color))
+        index = list(self._color_by_button.keys()).index(focused)
+        self.post_message(self.Changed(self.selected_color, self, index))
     
     def _navigate_relative(self, delta: int) -> None:
         """Navigate to a color relative to the currently focused color."""
@@ -427,6 +431,8 @@ class EditColorsDialogWindow(DialogWindow):
         self._current_color = event.color
         self._update_inputs("hslrgb")
         self._update_color_preview()
+        if event.color_grid is self.custom_colors_grid:
+            self._custom_colors_index = event.index
 
     def on_luminosity_ramp_changed(self, event: LuminosityRamp.Changed) -> None:
         """Called when dragging the luminosity slider."""
