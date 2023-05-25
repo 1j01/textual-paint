@@ -306,7 +306,7 @@ class EditColorsDialogWindow(DialogWindow):
         self.lum_percent = 0
         # self._initial_color = selected_color
         if selected_color:
-            self._set_current_color(selected_color)
+            self._current_color = selected_color
         self._color_by_button: dict[Button, str] = {}
         self._inputs_by_letter: dict[str, Input] = {}
         self._custom_colors_index = 0
@@ -317,19 +317,19 @@ class EditColorsDialogWindow(DialogWindow):
         if button.has_class("cancel"):
             self.request_close()
         elif button.has_class("ok"):
-            self.handle_selected_color(self._get_current_color().hex)
+            self.handle_selected_color(self._current_color.hex)
         elif button.has_class("add_to_custom_colors"):
             global custom_colors
             custom_colors = custom_colors[:]  # copy so that watch_color_list gets called
             # (it uses reference equality; an alternative would be to set always_update=True)
-            custom_colors[self._custom_colors_index] = self._get_current_color().hex
+            custom_colors[self._custom_colors_index] = self._current_color.hex
             self.custom_colors_grid.color_list = custom_colors
             self._custom_colors_index = (self._custom_colors_index + 1) % len(custom_colors)
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
-        self.basic_colors_grid = ColorGrid(basic_colors, self._get_current_color().hex)
-        self.custom_colors_grid = ColorGrid(custom_colors, self._get_current_color().hex)
+        self.basic_colors_grid = ColorGrid(basic_colors, self._current_color.hex)
+        self.custom_colors_grid = ColorGrid(custom_colors, self._current_color.hex)
         verticals_for_inputs: list[Vertical] = []
         for color_model in ["hsl", "rgb"]:
             input_containers: list[Container] = []
@@ -385,7 +385,7 @@ class EditColorsDialogWindow(DialogWindow):
 
     def on_color_grid_changed(self, event: ColorGrid.Changed) -> None:
         """Called when the user selects a color from the grid."""
-        self._set_current_color(event.color)
+        self._current_color = event.color
         self._update_inputs("hslrgb")
         self._update_color_preview()
 
@@ -443,9 +443,9 @@ class EditColorsDialogWindow(DialogWindow):
                 self.lum_percent = value
             self._update_inputs("rgb")
         else:
-            rgb = list(self._get_current_color().rgb)
+            rgb = list(self._current_color.rgb)
             rgb["rgb".index(component_letter)] = value
-            self._set_current_color(TextualColor(*rgb))
+            self._current_color = TextualColor(*rgb)
             self._update_inputs("hsl")
         self._update_color_preview()
 
@@ -461,11 +461,13 @@ class EditColorsDialogWindow(DialogWindow):
     #     if len(input.value) == 0:
     #         self._update_inputs(input.name)
 
-    def _get_current_color(self) -> TextualColor:
+    @property
+    def _current_color(self) -> TextualColor:
         """Get the current color."""
         return TextualColor.from_hsl(self.hue_degrees / 360, self.sat_percent / 100, self.lum_percent / 100)
 
-    def _set_current_color(self, color: TextualColor | str) -> None:
+    @_current_color.setter
+    def _current_color(self, color: TextualColor | str) -> None:
         """Set the color values from the given textual.color.Color object or string."""
         if isinstance(color, str):
             color = TextualColor.parse(color)
@@ -483,14 +485,14 @@ class EditColorsDialogWindow(DialogWindow):
                     "h": self.hue_degrees,
                     "s": self.sat_percent,
                     "l": self.lum_percent,
-                    "r": self._get_current_color().rgb[0],
-                    "g": self._get_current_color().rgb[1],
-                    "b": self._get_current_color().rgb[2],
+                    "r": self._current_color.rgb[0],
+                    "g": self._current_color.rgb[1],
+                    "b": self._current_color.rgb[2],
                 }[component_letter]))
 
     def _update_color_preview(self) -> None:
         """Update the color preview."""
-        self.query_one(ColorPreview).color = self._get_current_color().hex
+        self.query_one(ColorPreview).color = self._current_color.hex
         luminosity_ramp = self.query_one(LuminosityRamp)
         color_field = self.query_one(ColorField)
         luminosity_ramp.luminosity = self.lum_percent / 100
