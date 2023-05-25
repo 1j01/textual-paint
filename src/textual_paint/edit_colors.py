@@ -294,6 +294,25 @@ class ColorPreview(Widget):
         """Render a line of the widget."""
         return Strip([Segment(" " * self.size.width, Style(bgcolor=self.color), None)])
 
+class IntegerInput(Input):
+    """An input that only accepts integers."""
+
+    def validate_value(self, value: str) -> str:
+        """Validate the given value."""
+        if not value:
+            # Allow empty string
+            return value
+        try:
+            int(value)
+        except ValueError:
+            return self.value
+        return value
+
+    def on_blur(self, event: events.Blur) -> None:
+        """Called when the input loses focus. Resets the input if empty."""
+        if not self.value:
+            self.value = "0"
+
 class EditColorsDialogWindow(DialogWindow):
     """A dialog window that lets the user select a color."""
 
@@ -307,7 +326,7 @@ class EditColorsDialogWindow(DialogWindow):
         if selected_color:
             self._current_color = selected_color
         self._color_by_button: dict[Button, str] = {}
-        self._inputs_by_letter: dict[str, Input] = {}
+        self._inputs_by_letter: dict[str, IntegerInput] = {}
         self._custom_colors_index = 0
         self.handle_selected_color = handle_selected_color
     
@@ -342,7 +361,7 @@ class EditColorsDialogWindow(DialogWindow):
                     "b": "Bl&ue:",
                 }[component_letter]
                 text_without_hotkey = text_with_hotkey.replace("&", "")
-                input = Input(name=component_letter)
+                input = IntegerInput(name=component_letter)
                 label = Label(text_without_hotkey)
                 container = Container(label, input, classes="input_container")
                 input_containers.append(container)
@@ -447,18 +466,6 @@ class EditColorsDialogWindow(DialogWindow):
             self._current_color = Color(*rgb)
             self._update_inputs("hsl")
         self._update_color_preview()
-
-    # `textual._on.OnDecoratorError: The message class must have a 'control' to match with the on decorator`
-    # Also, neither does `DescendantBlur` have a `control` attribute.
-    # I'll probably have to subclass `Input` as `NumericInput`.
-    # @on(events.Blur, "Input")
-    # def _on_input_blur(self, event: events.Blur) -> None:
-    #     """Called when an input loses focus. Restores empty inputs to their previous value."""
-    #     input = event.control
-    #     if input is None or input.name is None or not isinstance(input, Input):
-    #         return
-    #     if len(input.value) == 0:
-    #         self._update_inputs(input.name)
 
     @property
     def _current_color(self) -> Color:
