@@ -302,34 +302,31 @@ class IntegerInput(Input):
         super().__init__(**kwargs)
         self.min = min
         self.max = max
+        self.last_valid_int = 0
     
-    @property
-    def value_as_int(self) -> int:
-        """Return the value as an integer, or 0 if invalid."""
+    def _track_valid_int(self, value: str) -> int:
         try:
-            return int(self.value)
+            value_as_int = int(value)
         except ValueError:
-            return 0
+            return self.last_valid_int
+        if value_as_int < self.min:
+            return self.min
+        if value_as_int > self.max:
+            return self.max
+        self.last_valid_int = value_as_int
+        return value_as_int
 
     def validate_value(self, value: str) -> str:
         """Validate the given value."""
         if not value:
             # Allow empty string
             return value
-        try:
-            value_as_int = int(value)
-        except ValueError:
-            return self.value
-        if value_as_int < self.min:
-            return str(self.min)
-        if value_as_int > self.max:
-            return str(self.max)
-        return value
+        return str(self._track_valid_int(value))
 
     def on_blur(self, event: events.Blur) -> None:
         """Called when the input loses focus. Resets the input if empty."""
         if not self.value:
-            self.value = "0"
+            self.value = str(self.last_valid_int)
 
 class EditColorsDialogWindow(DialogWindow):
     """A dialog window that lets the user select a color."""
@@ -453,7 +450,7 @@ class EditColorsDialogWindow(DialogWindow):
         if component_letter is None:
             return
         assert isinstance(event.input, IntegerInput)
-        value = event.input.value_as_int
+        value = event.input.last_valid_int
         if component_letter in "hsl":
             if component_letter == "h":
                 self.hue_degrees = value
