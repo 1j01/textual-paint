@@ -297,15 +297,33 @@ class ColorPreview(Widget):
 class IntegerInput(Input):
     """An input that only accepts integers."""
 
+    def __init__(self, min: int, max: int, **kwargs: Any) -> None:
+        """Initialize the IntegerInput."""
+        super().__init__(**kwargs)
+        self.min = min
+        self.max = max
+    
+    @property
+    def value_as_int(self) -> int:
+        """Return the value as an integer, or 0 if invalid."""
+        try:
+            return int(self.value)
+        except ValueError:
+            return 0
+
     def validate_value(self, value: str) -> str:
         """Validate the given value."""
         if not value:
             # Allow empty string
             return value
         try:
-            int(value)
+            value_as_int = int(value)
         except ValueError:
             return self.value
+        if value_as_int < self.min:
+            return str(self.min)
+        if value_as_int > self.max:
+            return str(self.max)
         return value
 
     def on_blur(self, event: events.Blur) -> None:
@@ -361,7 +379,16 @@ class EditColorsDialogWindow(DialogWindow):
                     "b": "Bl&ue:",
                 }[component_letter]
                 text_without_hotkey = text_with_hotkey.replace("&", "")
-                input = IntegerInput(name=component_letter)
+                max_value: int = {
+                    "h": 360,
+                    "s": 100,
+                    "l": 100,
+                    "r": 255,
+                    "g": 255,
+                    "b": 255,
+                }[component_letter]
+                min_value: int = 0
+                input = IntegerInput(min_value, max_value, name=component_letter)
                 label = Label(text_without_hotkey)
                 container = Container(label, input, classes="input_container")
                 input_containers.append(container)
@@ -425,33 +452,8 @@ class EditColorsDialogWindow(DialogWindow):
         component_letter = event.input.name
         if component_letter is None:
             return
-        try:
-            value = int(event.input.value)
-        except ValueError:
-            # reject invalid input (but not empty input)
-            if len(event.input.value):
-                self._update_inputs(component_letter)
-            return
-        max_value: int = {
-            "h": 360,
-            "s": 100,
-            "l": 100,
-            "r": 255,
-            "g": 255,
-            "b": 255,
-        }[component_letter]
-        # Textual bug: cursor isn't visible after the input value is set.
-        # I tried a few things to workaround this, like:
-        # self.app.set_focus(None)
-        # self.set_timer(1, event.input.focus)
-        # Weirdly, this seems to make it work if you type a non-digit, but not if you type a digit?
-        # Eh, it's a bad workaround anyways to unfocus the input, even if it were briefly.
-        if value < 0:
-            value = 0
-            event.input.value = "0"
-        elif value > max_value:
-            value = max_value
-            event.input.value = str(max_value)
+        assert isinstance(event.input, IntegerInput)
+        value = event.input.value_as_int
         if component_letter in "hsl":
             if component_letter == "h":
                 self.hue_degrees = value
