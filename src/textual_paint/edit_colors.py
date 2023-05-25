@@ -294,7 +294,7 @@ class EditColorsDialogWindow(DialogWindow):
         if button.has_class("cancel"):
             self.request_close()
         elif button.has_class("ok"):
-            self.handle_selected_color(self.color_grid.selected_color)
+            self.handle_selected_color(self._get_current_color().hex)
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
