@@ -398,7 +398,7 @@ class EditColorsDialogWindow(DialogWindow):
         else:
             rgb = list(self._get_current_color().rgb)
             rgb["rgb".index(component_letter)] = value
-            self._set_color_from_rgb(tuple(rgb))
+            self._set_current_color(TextualColor(*rgb))
             self._update_inputs("hsl")
         self._update_color_preview()
 
@@ -418,12 +418,14 @@ class EditColorsDialogWindow(DialogWindow):
         """Get the current color."""
         return TextualColor.from_hsl(self.hue_degrees / 360, self.sat_percent / 100, self.lum_percent / 100)
 
-    def _set_color_from_rgb(self, rgb: tuple[int, int, int]) -> None:
-        """Set the color from the given RGB value."""
-        h, s, l = TextualColor(*rgb).hsl
-        self.hue_degrees = h * 360
-        self.sat_percent = s * 100
-        self.lum_percent = l * 100
+    def _set_current_color(self, color: TextualColor | str) -> None:
+        """Set the color values from the given textual.color.Color object or string."""
+        if isinstance(color, str):
+            color = TextualColor.parse(color)
+        hue, sat, lum = color.hsl
+        self.hue_degrees = hue * 360
+        self.sat_percent = sat * 100
+        self.lum_percent = lum * 100
 
     def _update_inputs(self, component_letters: str) -> None:
         """Update the inputs for the given component letters."""
