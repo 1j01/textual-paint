@@ -1,8 +1,10 @@
 """Layout inspector development tool for Textual."""
 
 import asyncio
-from typing import Any, Iterable, NamedTuple, TypeGuard
+from typing import Any, Iterable, NamedTuple, Optional, TypeGuard
 from rich.text import Text
+from rich.highlighter import ReprHighlighter
+# from rich.syntax import Syntax
 from textual import events
 from textual.app import ComposeResult
 from textual.color import Color
@@ -11,8 +13,9 @@ from textual.dom import DOMNode
 from textual.errors import NoWidget
 from textual.geometry import Offset
 from textual.message import Message
+from textual.reactive import var
 from textual.widget import Widget
-from textual.widgets import Button, Tree
+from textual.widgets import Button, Label, Static, Tree
 from textual.widgets.tree import TreeNode
 from textual.css._style_properties import BorderDefinition
 
@@ -51,6 +54,30 @@ class DOMTree(Tree[DOMNode]):
         #     which is used by the [`on`][textual.on] decorator.
         #     """
         #     return self.tree
+
+    class Selected(Message, bubble=True):
+        """Posted when a node in the tree is selected.
+
+        Handled by defining a `on_domtree_selected` method on a parent widget.
+        """
+
+        def __init__(
+            self, tree: "DOMTree", tree_node: TreeNode[DOMNode], dom_node: DOMNode
+        ) -> None:
+            """Initialise the Selected message.
+
+            Args:
+                tree: The `DOMTree` that had a node selected.
+                tree_node: The tree node for the file that was selected.
+                dom_node: The DOM node that was selected.
+            """
+            super().__init__()
+            self.tree: DOMTree = tree
+            """The `DOMTree` that had a node selected."""
+            self.tree_node: TreeNode[DOMNode] = tree_node
+            """The tree node that was selected. Only _represents_ the DOM node."""
+            self.dom_node: DOMNode = dom_node
+            """The DOM node that was selected."""
 
     def __init__(
         self,
@@ -99,6 +126,14 @@ class DOMTree(Tree[DOMNode]):
             return
         self.post_message(self.Hovered(self, event.node, dom_node))
 
+    def _on_tree_node_selected(self, event: Tree.NodeSelected[DOMNode]) -> None:
+        """Called when a node is selected with the mouse or keyboard."""
+        event.stop()
+        dom_node = event.node.data
+        if dom_node is None:
+            return
+        self.post_message(self.Selected(self, event.node, dom_node))
+
     def watch_hover_line(self, previous_hover_line: int, hover_line: int) -> None:
         """Extend the hover line watcher to post a message when a node is hovered."""
         super().watch_hover_line(previous_hover_line, hover_line)
@@ -107,6 +142,150 @@ class DOMTree(Tree[DOMNode]):
             assert isinstance(node.data, DOMNode), "All nodes in DOMTree should have DOMNode data, got: " + repr(node.data)
             self.post_message(self.Hovered(self, node, node.data))
         # TODO: post when None? it seems to be reset anyways? but not if you move the mouse off the whole tree without moving it off a node
+
+
+class NodeInfo(Container):
+
+    dom_node: var[DOMNode | None] = var[Optional[DOMNode]](None)
+    """The DOM node being inspected."""
+
+    def compose(self) -> ComposeResult:
+        """Add sub-widgets."""
+        yield Label("[b]Properties[/b]")
+        yield Tree("", classes="properties")
+        yield Label("[b]Styles[/b]")
+        yield Static(classes="styles")
+        yield Label("[b]Key Bindings[/b]")
+        yield Static(classes="key_bindings")
+        yield Label("[b]Events[/b]")
+        yield Static(classes="events")
+
+    def watch_dom_node(self, dom_node: DOMNode | None) -> None:
+        """Update the info displayed when the DOM node changes."""
+        print("watch_dom_node", dom_node)
+        properties_tree = self.query_one(".properties", Tree)
+        styles_static = self.query_one(".styles", Static)
+        key_bindings_static = self.query_one(".key_bindings", Static)
+        events_static = self.query_one(".events", Static)
+
+        if dom_node is None:
+            properties_tree.reset("Nothing selected", None)
+            styles_static.update("Nothing selected")
+            key_bindings_static.update("Nothing selected")
+            events_static.update("Nothing selected")
+            return
+
+        properties_tree.reset("", dom_node)
+        self.add_data(properties_tree.root, dom_node)
+
+        # styles_static.update(dom_node.css_tree)
+        # styles_static.update(dom_node._css_styles.css)
+        styles_static.update(dom_node.styles.css)
+        # styles_static.update(Syntax(f"all styles {{\n{dom_node.styles.css}\n}}", "css"))
+
+        # key_bindings_static.update("\n".join(map(repr, dom_node.BINDINGS)) or "(None defined with BINDINGS)")
+        highlighter = ReprHighlighter()
+        key_bindings_static.update(Text("\n").join(map(lambda binding: highlighter(repr(binding)), dom_node.BINDINGS)) or "(None defined with BINDINGS)")
+
+        # For events, look for class properties that are subclasses of Message
+        # to determine what events are available.
+        available_events = []
+        for cls in type(dom_node).__mro__:
+            for name, value in cls.__dict__.items():
+                if isinstance(value, type) and issubclass(value, Message):
+                    available_events.append(value)
+        if available_events:
+            events_static.update("\n".join(map(lambda message_class: message_class.__qualname__, available_events)))
+            # events_static.update("\n".join(map(repr, available_events)))
+        else:
+            events_static.update(f"(No message types exported by {type(dom_node).__name__!r} or its superclasses)")
+
+    @classmethod
+    def add_data(cls, node: TreeNode, data: object) -> None:
+        """Adds data to a node.
+
+        Based on https://github.com/Textualize/textual/blob/65b0c34f2ed6a69795946a0735a51a463602545c/examples/json_tree.py
+
+        Args:
+            node (TreeNode): A Tree node.
+            data (object): Any object ideally should work.
+        """
+
+        highlighter = ReprHighlighter()
+
+        # uses equality, not (just) identity; is that a problem?
+        # visited: set[object] = set()
+        # well lists aren't hashable so we can't use a set
+        # visited: list[object] = []
+        # but the in operator still uses equality, right? so the question stands
+        # P.S. might want both a set and a list, for performance (for hashable and non-hashable types)
+
+        max_depth = 3
+        max_keys_per_level = 100
+        def key_filter(key: str) -> bool:
+            # TODO: allow toggling filtering of private properties
+            # (or show in a collapsed node)
+            return not key.startswith("_")
+        
+        def add_node(name: str, node: TreeNode, data: object, depth: int = 0, visited: tuple = ()) -> None:
+            """Adds a node to the tree.
+
+            Args:
+                name (str): Name of the node.
+                node (TreeNode): Parent node.
+                data (object): Data associated with the node.
+                depth (int, optional): Depth of recursion. Defaults to 0.
+                visited (tuple, optional): Objects visited in this branch. Defaults to ().
+            """
+
+            def with_name(text: Text) -> Text:
+                return Text.assemble(
+                    Text.from_markup(f"[b]{name}[/b]="), text
+                )
+
+            if depth > max_depth:
+                node.allow_expand = False
+                node.set_label(with_name(Text.from_markup("[i]<max depth>[/i]")))
+                return
+            if data in visited:
+                node.allow_expand = False
+                node.set_label(with_name(Text.from_markup("[i]<cyclic reference>[/i]")))
+                return
+            # visited.append(data)
+            if isinstance(data, list):
+                node.set_label(Text(f"[] {name}"))
+                for index, value in enumerate(data):
+                    new_node = node.add("")
+                    add_node(str(index), new_node, value, depth + 1, visited + (data,))
+                    if index >= max_keys_per_level:
+                        # TODO: load more on click
+                        node.add("...").allow_expand = False
+                        break
+            elif isinstance(data, str) or isinstance(data, int) or isinstance(data, float) or isinstance(data, bool):
+                node.allow_expand = False
+                if name:
+                    label = with_name(highlighter(repr(data)))
+                else:
+                    label = Text(repr(data))
+                node.set_label(label)
+            elif hasattr(data, "__dict__"):
+                node.set_label(Text(f"{{}} {name}"))
+                index = 0
+                for key, value in data.__dict__.items():
+                    if not key_filter(key):
+                        continue
+                    new_node = node.add("")
+                    add_node(str(key), new_node, value, depth + 1, visited + (data,))
+                    index += 1
+                    if index >= max_keys_per_level:
+                        # TODO: load more on click
+                        node.add("...").allow_expand = False
+                        break
+            else:
+                node.allow_expand = False
+                node.set_label(with_name(Text(repr(data))))
+
+        add_node("Properties", node, data)
 
 
 class OriginalStyles(NamedTuple):
@@ -133,6 +312,7 @@ class Inspector(Container):
         width: 40;
         border-left: wide $panel-darken-2;
         background: $panel;
+        overflow-y: auto;
     }
     Inspector Button {
         margin: 1;
@@ -140,6 +320,15 @@ class Inspector(Container):
     }
     Inspector Tree {
         margin: 1;
+        max-height: 20;
+        height: auto;
+        scrollbar-gutter: stable;
+    }
+    Inspector NodeInfo {
+        height: auto;
+    }
+    Inspector Static {
+        margin-bottom: 1;
     }
     """
 
@@ -162,6 +351,7 @@ class Inspector(Container):
         yield Button(f"{inspect_icon} Inspect Element", classes="inspect_button")
         yield Button(f"{expand_icon} Expand All Visible", classes="expand_all_button")
         yield DOMTree(self.app)
+        yield NodeInfo()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle a button being clicked."""
@@ -222,12 +412,19 @@ class Inspector(Container):
         # Select the widget in the tree.
         tree.select_node(tree_node)
         tree.scroll_to_node(tree_node)
+        tree.action_select_cursor()
+
+    def on_domtree_selected(self, event: DOMTree.Selected) -> None:
+        """Handle a node being selected in the DOM tree."""
+        print("Inspecting DOM node:", event.dom_node)
+        self.query_one(NodeInfo).dom_node = event.dom_node
 
     def on_domtree_hovered(self, event: DOMTree.Hovered) -> None:
         """Handle a DOM node being hovered/highlighted."""
         self.highlight(event.dom_node)
 
     def reset_highlight(self, except_widgets: Iterable[Widget] = ()) -> None:
+        """Reset the highlight."""
         if self._highlight is not None:
             self._highlight.remove()
         for widget, old in list(self._highlight_styles.items()):
@@ -240,6 +437,7 @@ class Inspector(Container):
             del self._highlight_styles[widget]
 
     def is_list_of_widgets(self, value: Any) -> TypeGuard[list[Widget]]:
+        """Test whether a value is a list of widgets. The TypeGuard tells the type checker that this function ensures the type."""
         if not isinstance(value, list):
             return False
         for item in value:  # type: ignore
