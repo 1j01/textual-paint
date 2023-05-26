@@ -11,8 +11,9 @@ from textual.dom import DOMNode
 from textual.errors import NoWidget
 from textual.geometry import Offset
 from textual.message import Message
+from textual.reactive import var
 from textual.widget import Widget
-from textual.widgets import Button, Tree
+from textual.widgets import Button, Label, Static, Tree
 from textual.widgets.tree import TreeNode
 from textual.css._style_properties import BorderDefinition
 
@@ -109,6 +110,93 @@ class DOMTree(Tree[DOMNode]):
         # TODO: post when None? it seems to be reset anyways? but not if you move the mouse off the whole tree without moving it off a node
 
 
+class NodeInfo(Container):
+
+    dom_node: var[DOMNode | None]
+    """The DOM node being inspected."""
+
+    def compose(self) -> ComposeResult:
+        """Add sub-widgets."""
+        yield Label("[b]Properties[/b]")
+        yield Tree("", classes="properties")
+        yield Label("[b]Styles[/b]")
+        yield Static(classes="styles")
+        yield Label("[b]Key Bindings[/b]")
+        yield Static(classes="key_bindings")
+        yield Label("[b]Events[/b]")
+        yield Static(classes="events")
+
+    def watch_dom_node(self, dom_node: DOMNode | None) -> None:
+        """Update the info displayed when the DOM node changes."""
+        print("watch_dom_node", dom_node)
+        properties_tree = self.query_one(".properties", Tree[object])
+        styles_static = self.query_one(".styles", Static)
+        key_bindings_static = self.query_one(".key_bindings", Static)
+        events_static = self.query_one(".events", Static)
+
+        if dom_node is None:
+            properties_tree.reset("", None)
+            styles_static.update("Nothing selected")
+            key_bindings_static.update("Nothing selected")
+            events_static.update("Nothing selected")
+            return
+
+        properties_tree.reset("", dom_node)
+        json_node = properties_tree.root.add("JSON")
+        self.add_json(json_node, dom_node)
+
+        styles_static.update(dom_node.css_tree)
+
+        key_bindings_static.update(dom_node.BINDINGS)
+
+        events_static.update(dom_node.EVENTS)
+
+    @classmethod
+    def add_json(cls, node: TreeNode, json_data: object) -> None:
+        """Adds JSON data to a node.
+
+        Stolen from https://github.com/Textualize/textual/blob/65b0c34f2ed6a69795946a0735a51a463602545c/examples/json_tree.py
+
+        Args:
+            node (TreeNode): A Tree node.
+            json_data (object): An object decoded from JSON.
+        """
+
+        from rich.highlighter import ReprHighlighter
+
+        highlighter = ReprHighlighter()
+
+        def add_node(name: str, node: TreeNode, data: object) -> None:
+            """Adds a node to the tree.
+
+            Args:
+                name (str): Name of the node.
+                node (TreeNode): Parent node.
+                data (object): Data associated with the node.
+            """
+            if isinstance(data, dict):
+                node.set_label(Text(f"{{}} {name}"))
+                for key, value in data.items():
+                    new_node = node.add("")
+                    add_node(key, new_node, value)
+            elif isinstance(data, list):
+                node.set_label(Text(f"[] {name}"))
+                for index, value in enumerate(data):
+                    new_node = node.add("")
+                    add_node(str(index), new_node, value)
+            else:
+                node.allow_expand = False
+                if name:
+                    label = Text.assemble(
+                        Text.from_markup(f"[b]{name}[/b]="), highlighter(repr(data))
+                    )
+                else:
+                    label = Text(repr(data))
+                node.set_label(label)
+
+        add_node("JSON", node, json_data)
+
+
 class OriginalStyles(NamedTuple):
     """The original styles of a widget before highlighting."""
 
@@ -162,6 +250,7 @@ class Inspector(Container):
         yield Button(f"{inspect_icon} Inspect Element", classes="inspect_button")
         yield Button(f"{expand_icon} Expand All Visible", classes="expand_all_button")
         yield DOMTree(self.app)
+        yield NodeInfo()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle a button being clicked."""
@@ -223,11 +312,17 @@ class Inspector(Container):
         tree.select_node(tree_node)
         tree.scroll_to_node(tree_node)
 
+    def tree_node_selected(self, event: Tree.NodeSelected[DOMNode]) -> None:
+        """Handle a node being selected in the DOM tree."""
+        print("Inspecting DOM node:", event.node.data)
+        self.query_one(NodeInfo).dom_node = event.node.data
+
     def on_domtree_hovered(self, event: DOMTree.Hovered) -> None:
         """Handle a DOM node being hovered/highlighted."""
         self.highlight(event.dom_node)
 
     def reset_highlight(self, except_widgets: Iterable[Widget] = ()) -> None:
+        """Reset the highlight."""
         if self._highlight is not None:
             self._highlight.remove()
         for widget, old in list(self._highlight_styles.items()):
@@ -240,6 +335,7 @@ class Inspector(Container):
             del self._highlight_styles[widget]
 
     def is_list_of_widgets(self, value: Any) -> TypeGuard[list[Widget]]:
+        """Test whether a value is a list of widgets. The TypeGuard tells the type checker that this function ensures the type."""
         if not isinstance(value, list):
             return False
         for item in value:  # type: ignore
