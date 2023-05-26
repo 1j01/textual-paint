@@ -53,6 +53,30 @@ class DOMTree(Tree[DOMNode]):
         #     """
         #     return self.tree
 
+    class Selected(Message, bubble=True):
+        """Posted when a node in the tree is selected.
+
+        Handled by defining a `on_domtree_selected` method on a parent widget.
+        """
+
+        def __init__(
+            self, tree: "DOMTree", tree_node: TreeNode[DOMNode], dom_node: DOMNode
+        ) -> None:
+            """Initialise the Selected message.
+
+            Args:
+                tree: The `DOMTree` that had a node selected.
+                tree_node: The tree node for the file that was selected.
+                dom_node: The DOM node that was selected.
+            """
+            super().__init__()
+            self.tree: DOMTree = tree
+            """The `DOMTree` that had a node selected."""
+            self.tree_node: TreeNode[DOMNode] = tree_node
+            """The tree node that was selected. Only _represents_ the DOM node."""
+            self.dom_node: DOMNode = dom_node
+            """The DOM node that was selected."""
+
     def __init__(
         self,
         root: DOMNode,
@@ -100,6 +124,14 @@ class DOMTree(Tree[DOMNode]):
             return
         self.post_message(self.Hovered(self, event.node, dom_node))
 
+    def _on_tree_node_selected(self, event: Tree.NodeSelected[DOMNode]) -> None:
+        """Called when a node is selected with the mouse or keyboard."""
+        event.stop()
+        dom_node = event.node.data
+        if dom_node is None:
+            return
+        self.post_message(self.Selected(self, event.node, dom_node))
+
     def watch_hover_line(self, previous_hover_line: int, hover_line: int) -> None:
         """Extend the hover line watcher to post a message when a node is hovered."""
         super().watch_hover_line(previous_hover_line, hover_line)
@@ -135,7 +167,7 @@ class NodeInfo(Container):
         events_static = self.query_one(".events", Static)
 
         if dom_node is None:
-            properties_tree.reset("", None)
+            properties_tree.reset("Nothing selected", None)
             styles_static.update("Nothing selected")
             key_bindings_static.update("Nothing selected")
             events_static.update("Nothing selected")
@@ -312,10 +344,10 @@ class Inspector(Container):
         tree.select_node(tree_node)
         tree.scroll_to_node(tree_node)
 
-    def tree_node_selected(self, event: Tree.NodeSelected[DOMNode]) -> None:
+    def on_domtree_selected(self, event: DOMTree.Selected) -> None:
         """Handle a node being selected in the DOM tree."""
-        print("Inspecting DOM node:", event.node.data)
-        self.query_one(NodeInfo).dom_node = event.node.data
+        print("Inspecting DOM node:", event.dom_node)
+        self.query_one(NodeInfo).dom_node = event.dom_node
 
     def on_domtree_hovered(self, event: DOMTree.Hovered) -> None:
         """Handle a DOM node being hovered/highlighted."""
