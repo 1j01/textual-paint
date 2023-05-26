@@ -3516,7 +3516,9 @@ class PaintApp(App[None]):
                 Static(id="status_dimensions"),
                 id="status_bar",
             )
-        yield Inspector()
+        inspector = Inspector()
+        inspector.display = False
+        yield inspector
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""
