@@ -174,29 +174,30 @@ class NodeInfo(Container):
             return
 
         properties_tree.reset("", dom_node)
-        json_node = properties_tree.root.add("JSON")
-        self.add_json(json_node, dom_node)
+        self.add_data(properties_tree.root, dom_node)
 
-        styles_static.update(dom_node.css_tree)
+        styles_static.update(dom_node.styles.css)
 
-        key_bindings_static.update(dom_node.BINDINGS)
+        key_bindings_static.update("\n".join(map(repr, dom_node.BINDINGS)))
 
-        events_static.update(dom_node.EVENTS)
+        events_static.update("TODO")
 
     @classmethod
-    def add_json(cls, node: TreeNode, json_data: object) -> None:
-        """Adds JSON data to a node.
+    def add_data(cls, node: TreeNode, data: object) -> None:
+        """Adds data to a node.
 
         Stolen from https://github.com/Textualize/textual/blob/65b0c34f2ed6a69795946a0735a51a463602545c/examples/json_tree.py
 
         Args:
             node (TreeNode): A Tree node.
-            json_data (object): An object decoded from JSON.
+            data (object): Any object ideally should work.
         """
 
         from rich.highlighter import ReprHighlighter
 
         highlighter = ReprHighlighter()
+
+        visited: set[object] = set()
 
         def add_node(name: str, node: TreeNode, data: object) -> None:
             """Adds a node to the tree.
@@ -206,17 +207,20 @@ class NodeInfo(Container):
                 node (TreeNode): Parent node.
                 data (object): Data associated with the node.
             """
-            if isinstance(data, dict):
+            if data in visited:
+                node.allow_expand = False
+                node.set_label(Text("[i]cyclic reference[/i]"))
+            elif isinstance(data, dict):
                 node.set_label(Text(f"{{}} {name}"))
                 for key, value in data.items():
                     new_node = node.add("")
-                    add_node(key, new_node, value)
+                    add_node(str(key), new_node, value)
             elif isinstance(data, list):
                 node.set_label(Text(f"[] {name}"))
                 for index, value in enumerate(data):
                     new_node = node.add("")
                     add_node(str(index), new_node, value)
-            else:
+            elif isinstance(data, str) or isinstance(data, int):
                 node.allow_expand = False
                 if name:
                     label = Text.assemble(
@@ -225,8 +229,11 @@ class NodeInfo(Container):
                 else:
                     label = Text(repr(data))
                 node.set_label(label)
+            else:
+                node.allow_expand = False
+                node.set_label(Text(repr(data)))
 
-        add_node("JSON", node, json_data)
+        add_node("JSON", node, data)
 
 
 class OriginalStyles(NamedTuple):
