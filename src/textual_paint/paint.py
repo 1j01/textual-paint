@@ -37,6 +37,7 @@ from PIL import Image, UnidentifiedImageError
 from pyfiglet import Figlet, FigletFont
 
 from menus import MenuBar, Menu, MenuItem, Separator
+from inspector import Inspector
 from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon, get_question_icon
 from file_dialogs import SaveAsDialogWindow, OpenDialogWindow
 from edit_colors import EditColorsDialogWindow
@@ -2177,7 +2178,9 @@ class PaintApp(App[None]):
         # Temporary quick access to work on a specific dialog.
         # Can be used together with `--press f3` when using `textual run` to open the dialog at startup.
         # Would be better if all dialogs were accessible from the keyboard.
-        Binding("f3", "custom_zoom", _("Custom Zoom"))
+        Binding("f3", "custom_zoom", _("Custom Zoom")),
+        # Dev tool to inspect the widget tree.
+        Binding("f12", "toggle_inspector", _("Toggle Inspector")),
     ]
 
     show_tools_box = var(True)
@@ -3422,6 +3425,10 @@ class PaintApp(App[None]):
         window.content.mount(Button(_("OK"), classes="ok submit"))
         self.mount(window)
 
+    def action_toggle_inspector(self) -> None:
+        inspector = self.query_one(Inspector)
+        inspector.display = not inspector.display
+
     def compose(self) -> ComposeResult:
         """Add our widgets."""
         yield Header()
@@ -3509,6 +3516,7 @@ class PaintApp(App[None]):
                 Static(id="status_dimensions"),
                 id="status_bar",
             )
+        yield Inspector()
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""
