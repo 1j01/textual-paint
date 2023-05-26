@@ -112,8 +112,6 @@ class DOMTree(Tree[DOMNode]):
 class OriginalStyles(NamedTuple):
     """The original styles of a widget before highlighting."""
 
-    widget: Widget
-    """The widget whose styles are stored."""
     border: BorderDefinition
     """The original border of the widget."""
     border_title: str | Text | None
@@ -154,7 +152,7 @@ class Inspector(Container):
         """Whether the user is picking a widget to inspect."""
         self._highlight: Container | None = None
         """A simple widget that highlights the widget being inspected."""
-        self._highlight_styles: list[OriginalStyles] = []
+        self._highlight_styles: dict[Widget, OriginalStyles] = {}
         """Stores the original styles of any Hovered widgets."""
 
     def compose(self) -> ComposeResult:
@@ -232,11 +230,11 @@ class Inspector(Container):
     def reset_highlight(self) -> None:
         if self._highlight is not None:
             self._highlight.remove()
-        for old in self._highlight_styles:
-            old.widget.styles.border = old.border
-            old.widget.border_title = old.border_title
-            old.widget.styles.background = old.background
-            old.widget.styles.tint = old.tint
+        for widget, old in self._highlight_styles.items():
+            widget.styles.border = old.border
+            widget.border_title = old.border_title
+            widget.styles.background = old.background
+            widget.styles.tint = old.tint
 
     def highlight(self, dom_node: DOMNode | None) -> None:
         """Highlight a DOM node."""
@@ -253,8 +251,7 @@ class Inspector(Container):
             for i, widget in enumerate(dom_node.ancestors_with_self):
                 if not isinstance(widget, Widget):
                     continue
-                self._highlight_styles.append(OriginalStyles(
-                    widget=widget,
+                self._highlight_styles[widget] = OriginalStyles(
                     background=widget.styles.background,
                     border=widget.styles.border,
                     border_title=widget.border_title,
@@ -271,13 +268,12 @@ class Inspector(Container):
         widgets = dom_node.walk_children(with_self=True)
         for widget in widgets:
             assert isinstance(widget, Widget), "all descendants of a widget should be widgets, but got: " + repr(widget)
-            self._highlight_styles.append(OriginalStyles(
-                widget=widget,
+            self._highlight_styles[widget] = OriginalStyles(
                 background=widget.styles.background,
                 border=widget.styles.border,
                 border_title=widget.border_title,
                 tint=widget.styles.tint,
-            ))
+            )
             widget.styles.tint = Color.parse("aquamarine").with_alpha(0.5)
 
         """
