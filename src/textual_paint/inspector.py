@@ -1,7 +1,7 @@
 """Layout inspector development tool for Textual."""
 
 import asyncio
-from typing import NamedTuple
+from typing import Any, Iterable, NamedTuple, TypeGuard
 from rich.text import Text
 from textual import events
 from textual.app import ComposeResult
@@ -227,22 +227,32 @@ class Inspector(Container):
         """Handle a DOM node being hovered/highlighted."""
         self.highlight(event.dom_node)
 
-    def reset_highlight(self) -> None:
+    def reset_highlight(self, except_widgets: Iterable[Widget] = ()) -> None:
         if self._highlight is not None:
             self._highlight.remove()
-        for widget, old in self._highlight_styles.items():
+        for widget, old in list(self._highlight_styles.items()):
+            if widget in except_widgets:
+                continue
             widget.styles.border = old.border
             widget.border_title = old.border_title
             widget.styles.background = old.background
             widget.styles.tint = old.tint
+            del self._highlight_styles[widget]
+
+    def is_list_of_widgets(self, value: Any) -> TypeGuard[list[Widget]]:
+        if not isinstance(value, list):
+            return False
+        for item in value:  # type: ignore
+            if not isinstance(item, Widget):
+                return False
+        return True
 
     def highlight(self, dom_node: DOMNode | None) -> None:
         """Highlight a DOM node."""
-        self.reset_highlight()
-        if dom_node is None:
-            return
+
         if not isinstance(dom_node, Widget):
             # Only widgets have a region, App (the root) doesn't.
+            self.reset_highlight()
             return
         
         # Rainbow highlight of ancestors.
@@ -266,8 +276,11 @@ class Inspector(Container):
 
         # Tint highlight of hovered widget, and descendants, since the tint of a parent isn't inherited.
         widgets = dom_node.walk_children(with_self=True)
+        assert self.is_list_of_widgets(widgets), "walk_children should return a list of widgets, but got: " + repr(widgets)
+        self.reset_highlight(except_widgets=widgets)
         for widget in widgets:
-            assert isinstance(widget, Widget), "all descendants of a widget should be widgets, but got: " + repr(widget)
+            if widget in self._highlight_styles:
+                continue
             self._highlight_styles[widget] = OriginalStyles(
                 background=widget.styles.background,
                 border=widget.styles.border,
