@@ -1,4 +1,6 @@
 {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
     "python.analysis.packageIndexDepths": [
         // The default depth is 1 (top-level only),
         // which doesn't let auto-imports work for Textual,
