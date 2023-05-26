@@ -8,6 +8,7 @@ from textual.app import ComposeResult
 from textual.color import Color
 from textual.containers import Container
 from textual.dom import DOMNode
+from textual.errors import NoWidget
 from textual.geometry import Offset
 from textual.message import Message
 from textual.widget import Widget
@@ -183,8 +184,10 @@ class Inspector(Container):
         self.highlight(self.get_widget_under_mouse(event.screen_offset))
 
     def get_widget_under_mouse(self, screen_offset: Offset) -> Widget | None:
-        # This can raise NoWidget. Will it in practice?
-        leaf_widget, _ = self.app.get_widget_at(*screen_offset)
+        try:
+            leaf_widget, _ = self.app.get_widget_at(*screen_offset)
+        except NoWidget:
+            return None
         if self in leaf_widget.ancestors_with_self and not ALLOW_INSPECTING_INSPECTOR:
             return None
         return leaf_widget
