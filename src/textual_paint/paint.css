@@ -334,7 +334,9 @@ DialogWindow .buttons Button {
 }
 
 EditColorsDialogWindow .window_content {
-    padding: 2 4;
+    padding: 1;
+    padding-top: 0;
+    padding-bottom: 0;
     /* width: 65; */
     width: auto;
     /* align-horizontal: center; */
@@ -384,13 +386,12 @@ EditColorsDialogWindow LuminosityRamp {
     /* height: 1fr; */
     height: 10;
     margin: 1;
-    margin-top: 0;
 }
 EditColorsDialogWindow ColorField {
-    width: 30;
+    /* width: 30; */
+    width: 1fr;
     height: 10;
     margin: 1;
-    margin-top: 0;
 }
 EditColorsDialogWindow .color_preview_area {
     margin: 1;
@@ -405,6 +406,14 @@ EditColorsDialogWindow ColorPreview {
     width: 1fr;
     height: 3;
 }
+EditColorsDialogWindow .buttons Button {
+    /* margin: 0; */
+}
+EditColorsDialogWindow .add_to_custom_colors {
+    margin-left: 1;
+    width: 100%;
+}
+
 
 MessageBox .window_content {
     width: 50;
