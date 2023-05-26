@@ -1,7 +1,7 @@
 """Layout inspector development tool for Textual."""
 
 import asyncio
-from typing import Any, Iterable, NamedTuple, TypeGuard
+from typing import Any, Iterable, NamedTuple, Optional, TypeGuard
 from rich.text import Text
 from textual import events
 from textual.app import ComposeResult
@@ -144,7 +144,7 @@ class DOMTree(Tree[DOMNode]):
 
 class NodeInfo(Container):
 
-    dom_node: var[DOMNode | None]
+    dom_node: var[DOMNode | None] = var[Optional[DOMNode]](None)
     """The DOM node being inspected."""
 
     def compose(self) -> ComposeResult:
@@ -161,7 +161,7 @@ class NodeInfo(Container):
     def watch_dom_node(self, dom_node: DOMNode | None) -> None:
         """Update the info displayed when the DOM node changes."""
         print("watch_dom_node", dom_node)
-        properties_tree = self.query_one(".properties", Tree[object])
+        properties_tree = self.query_one(".properties", Tree)
         styles_static = self.query_one(".styles", Static)
         key_bindings_static = self.query_one(".key_bindings", Static)
         events_static = self.query_one(".events", Static)
