@@ -244,6 +244,7 @@ class Inspector(Container):
             # Only widgets have a region, App (the root) doesn't.
             return
         
+        # Rainbow highlight of ancestors.
         """
         if dom_node and dom_node is not self.screen:
             for i, widget in enumerate(dom_node.ancestors_with_self):
@@ -263,15 +264,18 @@ class Inspector(Container):
                 widget.styles.tint = Color.from_hsl(i / 10, 1, 0.5).with_alpha(0.5)
         """
 
-        widget = dom_node
-        self._highlight_styles.append(OriginalStyles(
-            widget=widget,
-            background=widget.styles.background,
-            border=widget.styles.border,
-            border_title=widget.border_title,
-            tint=widget.styles.tint,
-        ))
-        widget.styles.tint = Color.parse("aquamarine").with_alpha(0.5)
+        # Tint highlight of hovered widget, and descendants, since the tint of a parent isn't inherited.
+        widgets = dom_node.walk_children(with_self=True)
+        for widget in widgets:
+            assert isinstance(widget, Widget), "all descendants of a widget should be widgets, but got: " + repr(widget)
+            self._highlight_styles.append(OriginalStyles(
+                widget=widget,
+                background=widget.styles.background,
+                border=widget.styles.border,
+                border_title=widget.border_title,
+                tint=widget.styles.tint,
+            ))
+            widget.styles.tint = Color.parse("aquamarine").with_alpha(0.5)
 
         """
         self._highlight = Container()
