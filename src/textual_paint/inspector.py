@@ -176,10 +176,10 @@ class NodeInfo(Container):
         properties_tree.reset("", dom_node)
         self.add_data(properties_tree.root, dom_node)
 
-        # styles_static.update(dom_node.styles.css)
-        styles_static.update(dom_node.css_tree)
+        styles_static.update(dom_node.styles.css)
+        # styles_static.update(dom_node.css_tree)
 
-        key_bindings_static.update("\n".join(map(repr, dom_node.BINDINGS)))
+        key_bindings_static.update("\n".join(map(repr, dom_node.BINDINGS)) or "(None defined with BINDINGS)")
 
         events_static.update("TODO")
 
@@ -285,6 +285,7 @@ class Inspector(Container):
     }
     Inspector Tree {
         margin: 1;
+        min-height: 10;
     }
     """
 
