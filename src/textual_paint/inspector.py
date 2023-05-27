@@ -216,6 +216,8 @@ class NodeInfo(Container):
         max_depth = 3
         max_keys_per_level = 100
         def key_filter(key: str) -> bool:
+            # TODO: allow toggling filtering of private properties
+            # (or show in a collapsed node)
             return not key.startswith("_")
         
         def add_node(name: str, node: TreeNode, data: object, depth: int = 0, visited: tuple = ()) -> None:
@@ -236,11 +238,11 @@ class NodeInfo(Container):
 
             if depth > max_depth:
                 node.allow_expand = False
-                node.set_label(with_name(Text.from_markup("[i]max depth[/i]")))
+                node.set_label(with_name(Text.from_markup("[i]<max depth>[/i]")))
                 return
             if data in visited:
                 node.allow_expand = False
-                node.set_label(with_name(Text.from_markup("[i]cyclic reference[/i]")))
+                node.set_label(with_name(Text.from_markup("[i]<cyclic reference>[/i]")))
                 return
             # visited.append(data)
             if isinstance(data, list):
