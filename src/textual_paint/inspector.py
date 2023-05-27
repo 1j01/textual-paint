@@ -216,26 +216,29 @@ class NodeInfo(Container):
                 data (object): Data associated with the node.
             """
 
+            def with_name(text: Text) -> Text:
+                return Text.assemble(
+                    Text.from_markup(f"[b]{name}[/b]="), text
+                )
+
             if depth > max_depth:
                 node.allow_expand = False
-                node.set_label(with_name(Text("[i]max depth[/i]")))
+                node.set_label(with_name(Text.from_markup("[i]max depth[/i]")))
                 return
             if data in visited:
                 node.allow_expand = False
-                node.set_label(Text("[i]cyclic reference[/i]"))
+                node.set_label(with_name(Text.from_markup("[i]cyclic reference[/i]")))
                 return
             visited.append(data)
             if isinstance(data, list):
                 node.set_label(Text(f"[] {name}"))
                 for index, value in enumerate(data):
                     new_node = node.add("")
-                    add_node(str(index), new_node, value)
+                    add_node(str(index), new_node, value, depth + 1)
             elif isinstance(data, str) or isinstance(data, int) or isinstance(data, float) or isinstance(data, bool):
                 node.allow_expand = False
                 if name:
-                    label = Text.assemble(
-                        Text.from_markup(f"[b]{name}[/b]="), highlighter(repr(data))
-                    )
+                    label = with_name(highlighter(repr(data)))
                 else:
                     label = Text(repr(data))
                 node.set_label(label)
@@ -243,10 +246,10 @@ class NodeInfo(Container):
                 node.set_label(Text(f"{{}} {name}"))
                 for key, value in data.__dict__.items():
                     new_node = node.add("")
-                    add_node(str(key), new_node, value)
+                    add_node(str(key), new_node, value, depth + 1)
             else:
                 node.allow_expand = False
-                node.set_label(Text("(?) " + repr(data)))
+                node.set_label(with_name(Text(repr(data))))
 
         add_node("Properties", node, data)
 
