@@ -201,10 +201,13 @@ class NodeInfo(Container):
         # uses equality, not (just) identity; is that a problem?
         # visited: set[object] = set()
         # well lists aren't hashable so we can't use a set
-        # but the in operator still uses equality, right? so the question stands
         visited: list[object] = []
+        # but the in operator still uses equality, right? so the question stands
+        # P.S. might want both a set and a list, for performance (for hashable and non-hashable types)
 
-        def add_node(name: str, node: TreeNode, data: object) -> None:
+        max_depth = 3
+
+        def add_node(name: str, node: TreeNode, data: object, depth: int = 0) -> None:
             """Adds a node to the tree.
 
             Args:
@@ -212,6 +215,11 @@ class NodeInfo(Container):
                 node (TreeNode): Parent node.
                 data (object): Data associated with the node.
             """
+
+            if depth > max_depth:
+                node.allow_expand = False
+                node.set_label(with_name(Text("[i]max depth[/i]")))
+                return
             if data in visited:
                 node.allow_expand = False
                 node.set_label(Text("[i]cyclic reference[/i]"))
