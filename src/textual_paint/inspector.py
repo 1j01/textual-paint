@@ -305,6 +305,7 @@ class Inspector(Container):
         width: 40;
         border-left: wide $panel-darken-2;
         background: $panel;
+        overflow-y: auto;
     }
     Inspector Button {
         margin: 1;
@@ -313,6 +314,9 @@ class Inspector(Container):
     Inspector Tree {
         margin: 1;
         min-height: 10;
+    }
+    Inspector NodeInfo {
+        height: auto;
     }
     """
 
