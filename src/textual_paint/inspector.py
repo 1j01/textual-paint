@@ -313,7 +313,9 @@ class Inspector(Container):
     }
     Inspector Tree {
         margin: 1;
-        min-height: 10;
+        /*min-height: 10;*/
+        height: 1fr;
+        max-height: 20;
     }
     Inspector NodeInfo {
         height: auto;
