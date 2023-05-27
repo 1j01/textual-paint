@@ -176,12 +176,20 @@ class NodeInfo(Container):
         properties_tree.reset("", dom_node)
         self.add_data(properties_tree.root, dom_node)
 
-        styles_static.update(dom_node.styles.css)
-        # styles_static.update(dom_node.css_tree)
+        # styles_static.update(dom_node.styles.css)
+        # styles_static.update(dom_node._css_styles.css)
+        styles_static.update(dom_node.css_tree)
 
         key_bindings_static.update("\n".join(map(repr, dom_node.BINDINGS)) or "(None defined with BINDINGS)")
 
-        events_static.update("TODO")
+        # For events, look for class properties that are subclasses of Message
+        # to determine what events are available.
+        available_events = []
+        for cls in type(dom_node).__mro__:
+            for name, value in cls.__dict__.items():
+                if isinstance(value, type) and issubclass(value, Message):
+                    available_events.append(value)
+        events_static.update("\n".join(map(str, available_events)) or f"(No message types exported by {type(dom_node).__name__!r} or its superclasses)")
 
     @classmethod
     def add_data(cls, node: TreeNode, data: object) -> None:
@@ -225,6 +233,8 @@ class NodeInfo(Container):
                 node.allow_expand = False
                 node.set_label(with_name(Text.from_markup("[i]max depth[/i]")))
                 return
+            # TODO: max_keys as well
+            # TODO: distinguish between cycles and repeated references
             if data in visited:
                 node.allow_expand = False
                 node.set_label(with_name(Text.from_markup("[i]cyclic reference[/i]")))
