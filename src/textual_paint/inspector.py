@@ -215,7 +215,9 @@ class NodeInfo(Container):
 
         max_depth = 3
         max_keys_per_level = 100
-
+        def key_filter(key: str) -> bool:
+            return not key.startswith("_")
+        
         def add_node(name: str, node: TreeNode, data: object, depth: int = 0, visited: tuple = ()) -> None:
             """Adds a node to the tree.
 
@@ -247,7 +249,8 @@ class NodeInfo(Container):
                     new_node = node.add("")
                     add_node(str(index), new_node, value, depth + 1, visited + (data,))
                     if index >= max_keys_per_level:
-                        new_node.add("...").allow_expand = False
+                        # TODO: load more on click
+                        node.add("...").allow_expand = False
                         break
             elif isinstance(data, str) or isinstance(data, int) or isinstance(data, float) or isinstance(data, bool):
                 node.allow_expand = False
@@ -260,11 +263,14 @@ class NodeInfo(Container):
                 node.set_label(Text(f"{{}} {name}"))
                 index = 0
                 for key, value in data.__dict__.items():
+                    if not key_filter(key):
+                        continue
                     new_node = node.add("")
                     add_node(str(key), new_node, value, depth + 1, visited + (data,))
                     index += 1
                     if index >= max_keys_per_level:
-                        new_node.add("...").allow_expand = False
+                        # TODO: load more on click
+                        node.add("...").allow_expand = False
                         break
             else:
                 node.allow_expand = False
