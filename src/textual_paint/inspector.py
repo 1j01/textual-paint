@@ -186,7 +186,7 @@ class NodeInfo(Container):
     def add_data(cls, node: TreeNode, data: object) -> None:
         """Adds data to a node.
 
-        Stolen from https://github.com/Textualize/textual/blob/65b0c34f2ed6a69795946a0735a51a463602545c/examples/json_tree.py
+        Based on https://github.com/Textualize/textual/blob/65b0c34f2ed6a69795946a0735a51a463602545c/examples/json_tree.py
 
         Args:
             node (TreeNode): A Tree node.
@@ -197,6 +197,7 @@ class NodeInfo(Container):
 
         highlighter = ReprHighlighter()
 
+        # uses equality, not (just) identity; is that a problem?
         visited: set[object] = set()
 
         def add_node(name: str, node: TreeNode, data: object) -> None:
@@ -210,7 +211,9 @@ class NodeInfo(Container):
             if data in visited:
                 node.allow_expand = False
                 node.set_label(Text("[i]cyclic reference[/i]"))
-            elif isinstance(data, dict):
+                return
+            visited.add(data)
+            if isinstance(data, dict):
                 node.set_label(Text(f"{{}} {name}"))
                 for key, value in data.items():
                     new_node = node.add("")
@@ -233,7 +236,7 @@ class NodeInfo(Container):
                 node.allow_expand = False
                 node.set_label(Text(repr(data)))
 
-        add_node("JSON", node, data)
+        add_node("Properties", node, data)
 
 
 class OriginalStyles(NamedTuple):
