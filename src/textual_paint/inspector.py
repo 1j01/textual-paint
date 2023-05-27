@@ -209,19 +209,22 @@ class NodeInfo(Container):
         # uses equality, not (just) identity; is that a problem?
         # visited: set[object] = set()
         # well lists aren't hashable so we can't use a set
-        visited: list[object] = []
+        # visited: list[object] = []
         # but the in operator still uses equality, right? so the question stands
         # P.S. might want both a set and a list, for performance (for hashable and non-hashable types)
 
         max_depth = 3
+        max_keys_per_level = 100
 
-        def add_node(name: str, node: TreeNode, data: object, depth: int = 0) -> None:
+        def add_node(name: str, node: TreeNode, data: object, depth: int = 0, visited: tuple = ()) -> None:
             """Adds a node to the tree.
 
             Args:
                 name (str): Name of the node.
                 node (TreeNode): Parent node.
                 data (object): Data associated with the node.
+                depth (int, optional): Depth of recursion. Defaults to 0.
+                visited (tuple, optional): Objects visited in this branch. Defaults to ().
             """
 
             def with_name(text: Text) -> Text:
@@ -233,18 +236,19 @@ class NodeInfo(Container):
                 node.allow_expand = False
                 node.set_label(with_name(Text.from_markup("[i]max depth[/i]")))
                 return
-            # TODO: max_keys as well
-            # TODO: distinguish between cycles and repeated references
             if data in visited:
                 node.allow_expand = False
                 node.set_label(with_name(Text.from_markup("[i]cyclic reference[/i]")))
                 return
-            visited.append(data)
+            # visited.append(data)
             if isinstance(data, list):
                 node.set_label(Text(f"[] {name}"))
                 for index, value in enumerate(data):
                     new_node = node.add("")
-                    add_node(str(index), new_node, value, depth + 1)
+                    add_node(str(index), new_node, value, depth + 1, visited + (data,))
+                    if index >= max_keys_per_level:
+                        new_node.add("...").allow_expand = False
+                        break
             elif isinstance(data, str) or isinstance(data, int) or isinstance(data, float) or isinstance(data, bool):
                 node.allow_expand = False
                 if name:
@@ -254,9 +258,14 @@ class NodeInfo(Container):
                 node.set_label(label)
             elif hasattr(data, "__dict__"):
                 node.set_label(Text(f"{{}} {name}"))
+                index = 0
                 for key, value in data.__dict__.items():
                     new_node = node.add("")
-                    add_node(str(key), new_node, value, depth + 1)
+                    add_node(str(key), new_node, value, depth + 1, visited + (data,))
+                    index += 1
+                    if index >= max_keys_per_level:
+                        new_node.add("...").allow_expand = False
+                        break
             else:
                 node.allow_expand = False
                 node.set_label(with_name(Text(repr(data))))
