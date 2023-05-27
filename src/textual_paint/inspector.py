@@ -176,7 +176,8 @@ class NodeInfo(Container):
         properties_tree.reset("", dom_node)
         self.add_data(properties_tree.root, dom_node)
 
-        styles_static.update(dom_node.styles.css)
+        # styles_static.update(dom_node.styles.css)
+        styles_static.update(dom_node.css_tree)
 
         key_bindings_static.update("\n".join(map(repr, dom_node.BINDINGS)))
 
@@ -198,7 +199,10 @@ class NodeInfo(Container):
         highlighter = ReprHighlighter()
 
         # uses equality, not (just) identity; is that a problem?
-        visited: set[object] = set()
+        # visited: set[object] = set()
+        # well lists aren't hashable so we can't use a set
+        # but the in operator still uses equality, right? so the question stands
+        visited: list[object] = []
 
         def add_node(name: str, node: TreeNode, data: object) -> None:
             """Adds a node to the tree.
@@ -212,18 +216,13 @@ class NodeInfo(Container):
                 node.allow_expand = False
                 node.set_label(Text("[i]cyclic reference[/i]"))
                 return
-            visited.add(data)
-            if isinstance(data, dict):
-                node.set_label(Text(f"{{}} {name}"))
-                for key, value in data.items():
-                    new_node = node.add("")
-                    add_node(str(key), new_node, value)
-            elif isinstance(data, list):
+            visited.append(data)
+            if isinstance(data, list):
                 node.set_label(Text(f"[] {name}"))
                 for index, value in enumerate(data):
                     new_node = node.add("")
                     add_node(str(index), new_node, value)
-            elif isinstance(data, str) or isinstance(data, int):
+            elif isinstance(data, str) or isinstance(data, int) or isinstance(data, float) or isinstance(data, bool):
                 node.allow_expand = False
                 if name:
                     label = Text.assemble(
@@ -232,9 +231,14 @@ class NodeInfo(Container):
                 else:
                     label = Text(repr(data))
                 node.set_label(label)
+            elif hasattr(data, "__dict__"):
+                node.set_label(Text(f"{{}} {name}"))
+                for key, value in data.__dict__.items():
+                    new_node = node.add("")
+                    add_node(str(key), new_node, value)
             else:
                 node.allow_expand = False
-                node.set_label(Text(repr(data)))
+                node.set_label(Text("(?) " + repr(data)))
 
         add_node("Properties", node, data)
 
@@ -353,6 +357,7 @@ class Inspector(Container):
         # Select the widget in the tree.
         tree.select_node(tree_node)
         tree.scroll_to_node(tree_node)
+        tree.action_select_cursor()
 
     def on_domtree_selected(self, event: DOMTree.Selected) -> None:
         """Handle a node being selected in the DOM tree."""
