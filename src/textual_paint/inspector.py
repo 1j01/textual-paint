@@ -424,7 +424,6 @@ class Inspector(Container):
         width: 40;
         border-left: wide $panel-darken-2;
         background: $panel;
-        overflow-y: auto;
     }
     Inspector Button.inspect_button {
         margin: 1;
@@ -436,10 +435,13 @@ class Inspector(Container):
     }
     Inspector NodeInfo,
     Inspector TabbedContent,
+    Inspector ContentSwitcher,
     Inspector TabPane,
     Inspector TabPane > VerticalScroll {
-        height: 1fr;
-        padding: 0;
+        width: 1fr !important;
+        height: 1fr !important;
+        padding: 0 !important;
+        margin: 0 !important;
     }
     Inspector Static {
         margin-bottom: 1;
