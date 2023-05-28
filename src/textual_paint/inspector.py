@@ -194,6 +194,24 @@ class PropertiesTree(Tree[object]):
             self._already_loaded[node] = set()
 
         index = 0
+        # Prefer dir() for NamedTuple, but enumerate() for lists
+        if isinstance(data, Iterable) and not hasattr(data, "_fields"):
+            # keys = range(len(data)) # can't simply DRY  with the below because of getattr vs []/enumerate
+            # (also not all iterables provide __getitem__/__len__)
+            # TODO: DRY what can be DRIED (Deduplicated, Reused, Inherited, Extended... Deduplicated)
+            for key, value in enumerate(data):
+                if not key_filter(str(key)):
+                    continue
+                if str(key) in self._already_loaded[node]:
+                    continue
+                PropertiesTree._add_property_node(node, str(key), value)
+                self._already_loaded[node].add(str(key))
+                index += 1
+                if index >= max_keys_per_level:
+                    # TODO: load more on click
+                    node.add("...").allow_expand = False
+                    break
+            return
         # for key, value in data.__dict__.items():
         # inspect.getmembers is better than __dict__ because it includes getters
         # except it can raise errors from any of the getters, and I need more granularity
@@ -236,7 +254,7 @@ class PropertiesTree(Tree[object]):
             )
 
         if isinstance(data, list):
-            node.set_label(Text(f"[] {name}"))
+            node.set_label(Text(f"[] {name} ({len(data)})"))
         elif isinstance(data, str) or isinstance(data, int) or isinstance(data, float) or isinstance(data, bool):
             node.allow_expand = False
             if name:
@@ -248,7 +266,7 @@ class PropertiesTree(Tree[object]):
             # node.set_label(Text(f"{type(data).__name__} {name}"))
             node.remove()
         elif hasattr(data, "__dict__") or hasattr(data, "__slots__"):
-            node.set_label(Text(f"{{}} {name}"))
+            node.set_label(Text(f"{{}} {name} ({data!r})"))
         else:
             node.allow_expand = False
             node.set_label(with_name(Text(repr(data))))
