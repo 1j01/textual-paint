@@ -407,14 +407,11 @@ class Inspector(Container):
         background: $panel;
         overflow-y: auto;
     }
-    Inspector Button {
+    Inspector Button.inspect_button {
         margin: 1;
-        width: 100%;
+        width: 1fr;
     }
     Inspector DOMTree {
-        margin: 1;
-        /*max-height: 20;
-        height: auto;*/
         height: 1fr;
         scrollbar-gutter: stable;
     }
