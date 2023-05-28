@@ -146,6 +146,114 @@ class DOMTree(Tree[DOMNode]):
             self.post_message(self.Hovered(self, node, node.data))
         # TODO: post when None? it seems to be reset anyways? but not if you move the mouse off the whole tree without moving it off a node
 
+class PropertiesTree(Tree[object]):
+    """A widget for exploring the attributes/properties of a DOM node."""
+
+    highlighter = ReprHighlighter()
+
+    def __init__(
+        self,
+        label: str,
+        root: DOMNode | None = None,
+        *,
+        name: str | None = None,
+        id: str | None = None,
+        classes: str | None = None,
+        disabled: bool = False,
+    ):
+        super().__init__(
+            label,
+            root,
+            name=name,
+            id=id,
+            classes=classes,
+            disabled=disabled,
+        )
+        self._root_dom_node = root
+        self._already_loaded: dict[TreeNode[object], set[str]] = {}
+        """A mapping of tree nodes to the keys that have already been loaded.
+        
+        This allows the tree to be collapsed and expanded without duplicating nodes.
+        It will also be useful for lazy-loading nodes when there are too many to load at once.
+        """
+
+    def _on_tree_node_expanded(self, event: Tree.NodeExpanded[object]) -> None:
+        event.stop()
+        node = event.node
+        data = node.data
+        if data is None:
+            return
+
+        max_keys_per_level = 100
+        def key_filter(key: str) -> bool:
+            # TODO: allow toggling filtering of private properties
+            # (or show in a collapsed node)
+            return not key.startswith("_")
+
+        if node not in self._already_loaded:
+            self._already_loaded[node] = set()
+
+        index = 0
+        # for key, value in data.__dict__.items():
+        # inspect.getmembers is better than __dict__ because it includes getters
+        # except it can raise errors from any of the getters, and I need more granularity
+        # for key, value in inspect.getmembers(data):
+        # TODO: handle DynamicClassAttributes like inspect.getmembers does
+        for key in dir(data):
+            if not key_filter(key):
+                continue
+            if key in self._already_loaded[node]:
+                continue
+            try:
+                value = getattr(data, key)
+            except Exception as e:
+                value = f"(error getting value: {e!r})"
+            PropertiesTree._add_property_node(node, key, value)
+            self._already_loaded[node].add(key)
+            index += 1
+            if index >= max_keys_per_level:
+                # TODO: load more on click
+                node.add("...").allow_expand = False
+                break
+
+    @classmethod
+    def _add_property_node(cls, parent_node: TreeNode[object], name: str, data: object) -> None:
+        """Adds data to a node.
+
+        Based on https://github.com/Textualize/textual/blob/65b0c34f2ed6a69795946a0735a51a463602545c/examples/json_tree.py
+
+        Args:
+            parent_node (TreeNode): A Tree node to add a child to.
+            name (str): The key that the data is associated with.
+            data (object): Any object ideally should work.
+        """
+
+        node = parent_node.add(name, data)
+
+        def with_name(text: Text) -> Text:
+            return Text.assemble(
+                Text.from_markup(f"[b]{name}[/b]="), text
+            )
+
+        if isinstance(data, list):
+            node.set_label(Text(f"[] {name}"))
+        elif isinstance(data, str) or isinstance(data, int) or isinstance(data, float) or isinstance(data, bool):
+            node.allow_expand = False
+            if name:
+                label = with_name(PropertiesTree.highlighter(repr(data)))
+            else:
+                label = Text(repr(data))
+            node.set_label(label)
+        elif callable(data):
+            # node.set_label(Text(f"{type(data).__name__} {name}"))
+            node.remove()
+        elif hasattr(data, "__dict__") or hasattr(data, "__slots__"):
+            node.set_label(Text(f"{{}} {name}"))
+        else:
+            node.allow_expand = False
+            node.set_label(with_name(Text(repr(data))))
+
+
 
 class NodeInfo(Container):
 
@@ -156,7 +264,7 @@ class NodeInfo(Container):
         """Add sub-widgets."""
         with TabbedContent(initial="properties"):
             with TabPane("Props", id="properties"):
-                yield Tree("", classes="properties")
+                yield PropertiesTree("", classes="properties")
             with TabPane("CSS", id="styles"):
                 yield VerticalScroll(Static(classes="styles"))
             with TabPane("Keys", id="key_bindings"):
@@ -167,7 +275,7 @@ class NodeInfo(Container):
     def watch_dom_node(self, dom_node: DOMNode | None) -> None:
         """Update the info displayed when the DOM node changes."""
         print("watch_dom_node", dom_node)
-        properties_tree = self.query_one(".properties", Tree)
+        properties_tree = self.query_one(PropertiesTree)
         styles_static = self.query_one(".styles", Static)
         key_bindings_static = self.query_one(".key_bindings", Static)
         events_static = self.query_one(".events", Static)
@@ -179,8 +287,10 @@ class NodeInfo(Container):
             events_static.update("Nothing selected")
             return
 
-        properties_tree.reset("", dom_node)
-        self.add_data(properties_tree.root, dom_node)
+        properties_tree.reset(dom_node.css_identifier_styled, dom_node)
+        # trigger _on_tree_node_expanded to load the first level of properties
+        properties_tree.root.collapse()
+        properties_tree.root.expand()
 
         # styles_static.update(dom_node.css_tree)
         # styles_static.update(dom_node._css_styles.css)
@@ -269,105 +379,6 @@ class NodeInfo(Container):
             # events_static.update("\n".join(map(repr, available_events)))
         else:
             events_static.update(f"(No message types exported by {type(dom_node).__name__!r} or its superclasses)")
-
-    @classmethod
-    def add_data(cls, node: TreeNode, data: object) -> None:
-        """Adds data to a node.
-
-        Based on https://github.com/Textualize/textual/blob/65b0c34f2ed6a69795946a0735a51a463602545c/examples/json_tree.py
-
-        Args:
-            node (TreeNode): A Tree node.
-            data (object): Any object ideally should work.
-        """
-
-        highlighter = ReprHighlighter()
-
-        # uses equality, not (just) identity; is that a problem?
-        # visited: set[object] = set()
-        # well lists aren't hashable so we can't use a set
-        # visited: list[object] = []
-        # but the in operator still uses equality, right? so the question stands
-        # P.S. might want both a set and a list, for performance (for hashable and non-hashable types)
-
-        max_depth = 3
-        max_keys_per_level = 100
-        def key_filter(key: str) -> bool:
-            # TODO: allow toggling filtering of private properties
-            # (or show in a collapsed node)
-            return not key.startswith("_")
-        
-        def add_node(name: str, node: TreeNode, data: object, depth: int = 0, visited: tuple = ()) -> None:
-            """Adds a node to the tree.
-
-            Args:
-                name (str): Name of the node.
-                node (TreeNode): Parent node.
-                data (object): Data associated with the node.
-                depth (int, optional): Depth of recursion. Defaults to 0.
-                visited (tuple, optional): Objects visited in this branch. Defaults to ().
-            """
-
-            def with_name(text: Text) -> Text:
-                return Text.assemble(
-                    Text.from_markup(f"[b]{name}[/b]="), text
-                )
-
-            if depth > max_depth:
-                node.allow_expand = False
-                node.set_label(with_name(Text.from_markup("[i]<max depth>[/i]")))
-                return
-            if data in visited:
-                node.allow_expand = False
-                node.set_label(with_name(Text.from_markup("[i]<cyclic reference>[/i]")))
-                return
-            # visited.append(data)
-            if isinstance(data, list):
-                node.set_label(Text(f"[] {name}"))
-                for index, value in enumerate(data):
-                    new_node = node.add("")
-                    add_node(str(index), new_node, value, depth + 1, visited + (data,))
-                    if index >= max_keys_per_level:
-                        # TODO: load more on click
-                        node.add("...").allow_expand = False
-                        break
-            elif isinstance(data, str) or isinstance(data, int) or isinstance(data, float) or isinstance(data, bool):
-                node.allow_expand = False
-                if name:
-                    label = with_name(highlighter(repr(data)))
-                else:
-                    label = Text(repr(data))
-                node.set_label(label)
-            elif callable(data):
-                # node.set_label(Text(f"{type(data).__name__} {name}"))
-                node.remove()
-            elif hasattr(data, "__dict__") or hasattr(data, "__slots__"):
-                node.set_label(Text(f"{{}} {name}"))
-                index = 0
-                # for key, value in data.__dict__.items():
-                # inspect.getmembers is better than __dict__ because it includes getters
-                # except it can raise errors from any of the getters, and I need more granularity
-                # for key, value in inspect.getmembers(data):
-                # TODO: handle DynamicClassAttributes like inspect.getmembers does
-                for key in dir(data):
-                    if not key_filter(key):
-                        continue
-                    try:
-                        value = getattr(data, key)
-                    except Exception as e:
-                        value = f"(error getting value: {e!r})"
-                    new_node = node.add("")
-                    add_node(str(key), new_node, value, depth + 1, visited + (data,))
-                    index += 1
-                    if index >= max_keys_per_level:
-                        # TODO: load more on click
-                        node.add("...").allow_expand = False
-                        break
-            else:
-                node.allow_expand = False
-                node.set_label(with_name(Text(repr(data))))
-
-        add_node("Properties", node, data)
 
 
 class OriginalStyles(NamedTuple):
