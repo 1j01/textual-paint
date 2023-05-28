@@ -192,14 +192,19 @@ class NodeInfo(Container):
 
         # For events, look for class properties that are subclasses of Message
         # to determine what events are available.
+        # TODO: also include built-in events not defined on a widget class
+        # Also, there's plenty of UI work to do here.
+        # Should it separate posted vs handled events?
+        # Documentation strings could go in tooltips or otherwise be abbreviated.
+        # Source code links could go in tooltips, which might help to prevent line-
+        # breaks, which break automatic <file>:<line> linking (Ctrl+Click support) in VS Code.
         available_events = []
         for cls in type(dom_node).__mro__:
             for name, value in cls.__dict__.items():
                 if isinstance(value, type) and issubclass(value, Message):
                     available_events.append(value)
         def message_info(message_class: Type[Message]) -> str:
-            # return f"[b]{event.__qualname__}[/b]\n{event.__doc__ or '(No docstring)'}"
-
+            """Return a description of a message class, listing any handlers."""
             # A. Ideally Message would have a static method that returns the handler name.
             # B. I tried constructing a message instance and getting the handler name from that,
             #    with `message_class()._handler_name`, but:
@@ -213,6 +218,7 @@ class NodeInfo(Container):
             name = camel_to_snake(message_class.__name__)
             handler_name = f"on_{message_class.namespace}_{name}" if message_class.namespace else f"on_{name}"
             # Find any listeners for this event
+            # TODO: only look upwards if the event bubbles
             usages: list[str] = []
             for ancestor in dom_node.ancestors_with_self:
                 if hasattr(ancestor, handler_name):
@@ -235,18 +241,26 @@ class NodeInfo(Container):
                             # def_location = f"[link=file://{file}]{file}:{line_number}[/link]"
                             # def_location = f"{file}:{line_number} [link=file://{file}](open)[/link]"
                             # I'm including the line number here hoping that SOME editor will use it.
-                            # TODO: button to execute a command to open the file in an editor (configurable)
+                            # TODO: button to execute a command to open the file in an editor
+                            # (configurable? magical? or with a button for each known editor?)
                             file_uri = pathlib.Path(file).as_uri() + "#" + str(line_number)
                             def_location = f"{file}:{line_number} [link={file_uri}](open file)[/link]"
                     except OSError as e:
                         def_location = f"(error getting location: {e})"
                     # TODO: link to the DOM node in the tree that has the listener
-                    usages.append(f"{defining_class.__qualname__}.{handler_name} (in DOM: {ancestor.css_identifier})\n{def_location}")
+                    # Also, what should I name the variables here?
+                    # I've invented a term "grand ancestor" to distinguish from "ancestor",
+                    # which is kind of fun, but... maybe not the clearest.
+                    # (meta_ancestor? super_ancestor? ancestor_ancestor? ancestor_for_path?)
+                    dom_path = " > ".join([grand_ancestor.css_identifier for grand_ancestor in ancestor.ancestors_with_self])
+                    handler_qualname = f"{defining_class.__qualname__}.{handler_name}"
+                    usages.append(f"Listener on DOM node: {dom_path}\n\n{handler_qualname}\n{def_location}")
             if usages:
                 usage_info = "\n\n".join(usages)
             else:
                 usage_info = f"No listeners found for {handler_name}"
             
+            # TODO: link to source code for the message class
             return f"[b]{message_class.__qualname__}[/b]\n[#808080]{message_class.__doc__ or '(No docstring)'}[/#808080]\n{usage_info}\n"
 
         if available_events:
