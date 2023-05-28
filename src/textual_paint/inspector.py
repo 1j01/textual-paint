@@ -1,12 +1,15 @@
 """Layout inspector development tool for Textual."""
 
 import asyncio
-from typing import Any, Iterable, NamedTuple, Optional, TypeGuard
+import inspect
+import pathlib
+from typing import Any, Iterable, NamedTuple, Optional, Type, TypeGuard
 from rich.text import Text
 from rich.highlighter import ReprHighlighter
 # from rich.syntax import Syntax
 from textual import events
 from textual.app import ComposeResult
+from textual.case import camel_to_snake
 from textual.color import Color
 from textual.containers import Container
 from textual.dom import DOMNode
@@ -194,8 +197,60 @@ class NodeInfo(Container):
             for name, value in cls.__dict__.items():
                 if isinstance(value, type) and issubclass(value, Message):
                     available_events.append(value)
+        def message_info(message_class: Type[Message]) -> str:
+            # return f"[b]{event.__qualname__}[/b]\n{event.__doc__ or '(No docstring)'}"
+
+            # A. Ideally Message would have a static method that returns the handler name.
+            # B. I tried constructing a message instance and getting the handler name from that,
+            #    with `message_class()._handler_name`, but:
+            #    1. this could have side effects,
+            #    2. this uses a private property, and
+            #    3. __init__ needs parameters, different for different message types.
+            #       (Constructing the base class and finagling it to use the subclass's namespace/name
+            #        might be possible, but seems like a lot of work for a fragile hack.)
+            # C. Duplicate the code from `Message.__init__`. It's not much code, since we can import camel_to_snake,
+            #    although I'm not sure the module is meant to be public, it's sort of just a helper.)
+            name = camel_to_snake(message_class.__name__)
+            handler_name = f"on_{message_class.namespace}_{name}" if message_class.namespace else f"on_{name}"
+            # Find any listeners for this event
+            usages: list[str] = []
+            for ancestor in dom_node.ancestors_with_self:
+                if hasattr(ancestor, handler_name):
+                    # Record which class the handler is defined on
+                    # Not sure which order would be needed here
+                    # for cls in type(ancestor).__mro__:
+                    #     if hasattr(cls, handler_name):
+                    #         ...
+                    #         break
+                    # But there's a simpler way: method.__self__.__class__
+                    handler = getattr(ancestor, handler_name)
+                    defining_class = handler.__self__.__class__
+                    try:
+                        line_number = inspect.getsourcelines(handler)[1]
+                        file = inspect.getsourcefile(handler)
+                        if file is None:
+                            def_location = f"(unknown location)"
+                        else:
+                            # def_location = f"{file}:{line_number}"
+                            # def_location = f"[link=file://{file}]{file}:{line_number}[/link]"
+                            # def_location = f"{file}:{line_number} [link=file://{file}](open)[/link]"
+                            # I'm including the line number here hoping that SOME editor will use it.
+                            # TODO: button to execute a command to open the file in an editor (configurable)
+                            file_uri = pathlib.Path(file).as_uri() + "#" + str(line_number)
+                            def_location = f"{file}:{line_number} [link={file_uri}](open file)[/link]"
+                    except OSError as e:
+                        def_location = f"(error getting location: {e})"
+                    # TODO: link to the DOM node in the tree that has the listener
+                    usages.append(f"{defining_class.__qualname__}.{handler_name} (in DOM: {ancestor.css_identifier})\n{def_location}")
+            if usages:
+                usage_info = "\n\n".join(usages)
+            else:
+                usage_info = f"No listeners found for {handler_name}"
+            
+            return f"[b]{message_class.__qualname__}[/b]\n[#808080]{message_class.__doc__ or '(No docstring)'}[/#808080]\n{usage_info}\n"
+
         if available_events:
-            events_static.update("\n".join(map(lambda message_class: message_class.__qualname__, available_events)))
+            events_static.update("\n".join(map(message_info, available_events)))
             # events_static.update("\n".join(map(repr, available_events)))
         else:
             events_static.update(f"(No message types exported by {type(dom_node).__name__!r} or its superclasses)")
