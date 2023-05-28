@@ -416,9 +416,9 @@ class Inspector(Container):
     def compose(self) -> ComposeResult:
         """Add sub-widgets."""
         inspect_icon = "⇱" # Alternatives: 🔍 🎯 🮰 🮵 ⮹ ⇱ 🢄 🡴 🡤 🡔 🢰 (↖️ arrow emoji unreliable)
-        expand_icon = "+" # Alternatives: + ⨁ 🪜 🎊 🐡 🔬 (↕️ arrow emoji unreliable)
+        # expand_icon = "+" # Alternatives: + ⨁ 🪜 🎊 🐡 🔬 (↕️ arrow emoji unreliable)
         yield Button(f"{inspect_icon} Inspect Element", classes="inspect_button")
-        yield Button(f"{expand_icon} Expand All Visible", classes="expand_all_button")
+        # yield Button(f"{expand_icon} Expand All Visible", classes="expand_all_button")
         yield DOMTree(self.app)
         yield NodeInfo()
 
