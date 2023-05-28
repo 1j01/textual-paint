@@ -11,14 +11,14 @@ from textual import events
 from textual.app import ComposeResult
 from textual.case import camel_to_snake
 from textual.color import Color
-from textual.containers import Container
+from textual.containers import Container, VerticalScroll
 from textual.dom import DOMNode
 from textual.errors import NoWidget
 from textual.geometry import Offset
 from textual.message import Message
 from textual.reactive import var
 from textual.widget import Widget
-from textual.widgets import Button, Label, Static, Tree
+from textual.widgets import Button, Label, Static, TabPane, TabbedContent, Tree
 from textual.widgets.tree import TreeNode
 from textual.css._style_properties import BorderDefinition
 
@@ -154,14 +154,15 @@ class NodeInfo(Container):
 
     def compose(self) -> ComposeResult:
         """Add sub-widgets."""
-        yield Label("[b]Properties[/b]")
-        yield Tree("", classes="properties")
-        yield Label("[b]Styles[/b]")
-        yield Static(classes="styles")
-        yield Label("[b]Key Bindings[/b]")
-        yield Static(classes="key_bindings")
-        yield Label("[b]Events[/b]")
-        yield Static(classes="events")
+        with TabbedContent(initial="properties"):
+            with TabPane("Props", id="properties"):
+                yield Tree("", classes="properties")
+            with TabPane("CSS", id="styles"):
+                yield VerticalScroll(Static(classes="styles"))
+            with TabPane("Keys", id="key_bindings"):
+                yield VerticalScroll(Static(classes="key_bindings"))
+            with TabPane("Events", id="events"):
+                yield VerticalScroll(Static(classes="events"))
 
     def watch_dom_node(self, dom_node: DOMNode | None) -> None:
         """Update the info displayed when the DOM node changes."""
@@ -387,14 +388,19 @@ class Inspector(Container):
         margin: 1;
         width: 100%;
     }
-    Inspector Tree {
+    Inspector DOMTree {
         margin: 1;
-        max-height: 20;
-        height: auto;
+        /*max-height: 20;
+        height: auto;*/
+        height: 1fr;
         scrollbar-gutter: stable;
     }
-    Inspector NodeInfo {
-        height: auto;
+    Inspector NodeInfo,
+    Inspector TabbedContent,
+    Inspector TabPane,
+    Inspector TabPane > VerticalScroll {
+        height: 1fr;
+        padding: 0;
     }
     Inspector Static {
         margin-bottom: 1;
