@@ -338,12 +338,24 @@ class NodeInfo(Container):
                 else:
                     label = Text(repr(data))
                 node.set_label(label)
-            elif hasattr(data, "__dict__"):
+            elif callable(data):
+                # node.set_label(Text(f"{type(data).__name__} {name}"))
+                node.remove()
+            elif hasattr(data, "__dict__") or hasattr(data, "__slots__"):
                 node.set_label(Text(f"{{}} {name}"))
                 index = 0
-                for key, value in data.__dict__.items():
+                # for key, value in data.__dict__.items():
+                # inspect.getmembers is better than __dict__ because it includes getters
+                # except it can raise errors from any of the getters, and I need more granularity
+                # for key, value in inspect.getmembers(data):
+                # TODO: handle DynamicClassAttributes like inspect.getmembers does
+                for key in dir(data):
                     if not key_filter(key):
                         continue
+                    try:
+                        value = getattr(data, key)
+                    except Exception as e:
+                        value = f"(error getting value: {e!r})"
                     new_node = node.add("")
                     add_node(str(key), new_node, value, depth + 1, visited + (data,))
                     index += 1
