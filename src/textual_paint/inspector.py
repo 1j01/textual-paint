@@ -370,7 +370,7 @@ class OriginalStyles(NamedTuple):
     tint: Color | None
     """The original tint of the widget."""
 
-ALLOW_INSPECTING_INSPECTOR = False
+ALLOW_INSPECTING_INSPECTOR = True
 """Whether widgets in the inspector can be picked for inspection."""
 
 class Inspector(Container):
