@@ -282,7 +282,7 @@ class PropertiesTree(Tree[object]):
         elif isinstance(data, list):
             length = len(data)  # type: ignore
             node.set_label(Text(f"[] {name} ({length})"))
-        elif isinstance(data, str) or isinstance(data, int) or isinstance(data, float) or isinstance(data, bool):
+        elif isinstance(data, str) or isinstance(data, int) or isinstance(data, float) or isinstance(data, bool) or data is None:
             node.allow_expand = False
             if name:
                 label = with_name(PropertiesTree.highlighter(repr(data)))
