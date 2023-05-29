@@ -148,6 +148,11 @@ class DOMTree(Tree[DOMNode]):
             self.post_message(self.Hovered(self, node, node.data))
         # TODO: post when None? it seems to be reset anyways? but not if you move the mouse off the whole tree without moving it off a node
 
+class _ShowMoreSentinelType: pass
+_ShowMoreSentinel = _ShowMoreSentinelType()
+"""A sentinel that represents an ellipsis that can be clicked to load more properties."""
+del _ShowMoreSentinelType
+
 class PropertiesTree(Tree[object]):
     """A widget for exploring the attributes/properties of an object."""
 
@@ -185,11 +190,9 @@ class PropertiesTree(Tree[object]):
 
     def _on_tree_node_selected(self, event: Tree.NodeSelected[object]) -> None:
         event.stop()
-        # This is a little cheeky, using the ellipsis type as a sentinel value
-        # to represent the ellipsis shown in the tree that can be clicked to load more.
-        if isinstance(event.node.data, EllipsisType):
-            assert event.node.parent is not None, "The root node should never be an ellipsis"
+        if event.node.data is _ShowMoreSentinel:
             event.node.remove()
+            assert event.node.parent is not None, "Show more node should have a parent"
             self._populate_node(event.node.parent, load_more=True)
 
     @property
@@ -261,7 +264,7 @@ class PropertiesTree(Tree[object]):
             nonlocal index
             index += 1
             if index >= max_keys:
-                node.add("...", ...).allow_expand = False
+                node.add("...", _ShowMoreSentinel).allow_expand = False
                 return True
             return False
         
