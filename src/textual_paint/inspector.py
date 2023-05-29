@@ -472,11 +472,8 @@ class NodeInfo(Container):
                     except OSError as e:
                         def_location = f"(error getting location: {e})"
                     # TODO: link to the DOM node in the tree that has the listener
-                    # Also, what should I name the variables here?
-                    # I've invented a term "grand ancestor" to distinguish from "ancestor",
-                    # which is kind of fun, but... maybe not the clearest.
-                    # (meta_ancestor? super_ancestor? ancestor_ancestor? ancestor_for_path?)
-                    dom_path = " > ".join([grand_ancestor.css_identifier for grand_ancestor in ancestor.ancestors_with_self])
+                    # Note: css_path_nodes is just like ancestors_with_self, but reversed; it's still DOM nodes
+                    dom_path = " > ".join([css_path_node.css_identifier for css_path_node in ancestor.css_path_nodes])
                     handler_qualname = f"{defining_class.__qualname__}.{handler_name}"
                     usages.append(f"Listener on DOM node: {dom_path}\n\n{handler_qualname}\n{def_location}")
             if usages:
