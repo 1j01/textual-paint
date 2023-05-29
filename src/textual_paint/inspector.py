@@ -427,7 +427,7 @@ class NodeInfo(Container):
             for value in cls.__dict__.values():
                 if isinstance(value, type) and issubclass(value, Message):
                     available_events.append(value)
-        def message_info(message_class: Type[Message]) -> str:
+        def message_info(message_class: Type[Message]) -> Text:
             """Return a description of a message class, listing any handlers."""
             # A. Ideally Message would have a static method that returns the handler name.
             # B. I tried constructing a message instance and getting the handler name from that,
@@ -443,7 +443,7 @@ class NodeInfo(Container):
             handler_name = f"on_{message_class.namespace}_{name}" if message_class.namespace else f"on_{name}"
             # Find any listeners for this event
             # TODO: only look upwards if the event bubbles
-            usages: list[str] = []
+            usages: list[Text] = []
             for ancestor in dom_node.ancestors_with_self:
                 if hasattr(ancestor, handler_name):
                     # Record which class the handler is defined on
@@ -459,7 +459,7 @@ class NodeInfo(Container):
                         line_number = inspect.getsourcelines(handler)[1]
                         file = inspect.getsourcefile(handler)
                         if file is None:
-                            def_location = f"(unknown location)"
+                            def_location = Text.from_markup(f"[#808080](unknown location)[/#808080]")
                         else:
                             # def_location = f"{file}:{line_number}"
                             # def_location = f"[link=file://{file}]{file}:{line_number}[/link]"
@@ -468,27 +468,38 @@ class NodeInfo(Container):
                             # TODO: button to execute a command to open the file in an editor
                             # (configurable? magical? or with a button for each known editor?)
                             file_uri = pathlib.Path(file).as_uri() + "#" + str(line_number)
-                            def_location = f"{file}:{line_number} [link={file_uri}](open file)[/link]"
+                            def_location = Text.from_markup(f"{escape(file)}:{line_number} [link={escape(file_uri)}](open file)[/link]")
                     except OSError as e:
-                        def_location = f"(error getting location: {e})"
+                        def_location = Text.from_markup(f"[#808080](error getting location: [red]{escape(repr(e))}[/red])[/#808080]")
                     # TODO: link to the DOM node in the tree that has the listener
                     # Note: css_path_nodes is just like ancestors_with_self, but reversed; it's still DOM nodes
-                    dom_path = " > ".join([css_path_node.css_identifier for css_path_node in ancestor.css_path_nodes])
+                    descendant_arrow = Text.from_markup("[#808080] > [/#808080]")
+                    dom_path = descendant_arrow.join([css_path_node.css_identifier_styled for css_path_node in ancestor.css_path_nodes])
                     handler_qualname = f"{defining_class.__qualname__}.{handler_name}"
-                    usages.append(f"Listener on DOM node: {dom_path}\n\n{handler_qualname}\n{def_location}")
+                    usages.append(Text.assemble(
+                        "Listener on DOM node: ",
+                        dom_path,
+                        "\n\n",
+                        handler_qualname,
+                        "\n",
+                        def_location,
+                    ))
             if usages:
-                usage_info = "\n\n".join(usages)
+                usage_info = Text("\n\n").join(usages)
             else:
-                usage_info = f"No listeners found for {handler_name}"
+                usage_info = Text(f"No listeners found for {handler_name}")
             
             # TODO: link to source code for the message class
             qualname = message_class.__qualname__
             doc = inspect.getdoc(message_class) or '(No docstring)'
-            return f"[b]{escape(qualname)}[/b]\n[#808080]{escape(doc)}[/#808080]\n{escape(usage_info)}\n"
+            return Text.assemble(
+                Text.from_markup(f"[b]{escape(qualname)}[/b]\n[#808080]{escape(doc)}[/#808080]\n"),
+                usage_info,
+                "\n",
+            )
 
         if available_events:
-            events_static.update("\n".join(map(message_info, available_events)))
-            # events_static.update("\n".join(map(repr, available_events)))
+            events_static.update(Text("\n").join(map(message_info, available_events)))
         else:
             events_static.update(f"(No message types exported by {type(dom_node).__name__!r} or its superclasses)")
 
