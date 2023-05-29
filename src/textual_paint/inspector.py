@@ -261,13 +261,19 @@ class PropertiesTree(Tree[object]):
 
         count = 0
         """Key index + 1, including filtered-out keys."""
+
+        ellipsis_node: TreeNode[object] | None = None
+        """Node to show more properties when clicked."""
+
         def add_node_with_limit(key: str, value: object, exception: Exception | None = None) -> bool:
             """Add a node to the tree, or return True if the max number of nodes has been reached."""
+            nonlocal count, ellipsis_node
             if count > max_keys:
                 for child in node.children:
                     if child.data is _ShowMoreSentinel:
                         child.remove()
-                node.add("...", _ShowMoreSentinel).allow_expand = False
+                ellipsis_node = node.add("...", _ShowMoreSentinel)
+                ellipsis_node.allow_expand = False
                 return True
             PropertiesTree._add_property_node(node, str(key), value, exception)
             self._already_loaded[node].add(str(key))
@@ -301,15 +307,21 @@ class PropertiesTree(Tree[object]):
             iterator = safe_dir_items(data)  # type: ignore
         
         self._num_keys_accessed[node] = 0
+        only_counting = False
         for key, value, error in iterator:
             count += 1
+            if only_counting:
+                continue
             self._num_keys_accessed[node] += 1
             if not key_filter(str(key)):
                 continue
             if str(key) in self._already_loaded[node]:
                 continue
             if add_node_with_limit(key, value, error):
-                break
+                # break
+                only_counting = True
+        if ellipsis_node is not None:
+            ellipsis_node.label = f"... +{count - max_keys} more"
 
     @classmethod
     def _add_property_node(cls, parent_node: TreeNode[object], name: str, data: object, exception: Exception | None = None) -> None:
