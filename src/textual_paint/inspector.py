@@ -279,20 +279,38 @@ class PropertiesTree(Tree[object]):
         if exception is not None:
             node.allow_expand = False
             node.set_label(with_name(Text.from_markup(f"[i][#808080](getter error: [red]{escape(repr(exception))}[/red])[/#808080][/i]")))
-        elif isinstance(data, list):
+        elif isinstance(data, (list, set, tuple)):
             length = len(data)  # type: ignore
-            node.set_label(Text(f"[] {name} ({length})"))
-        elif isinstance(data, (str, int, float, bool, type(None))):
+            # node.set_label(Text(f"{name} ({length})"))
+            # node.set_label(with_name(PropertiesTree.highlighter(repr(data))))
+            # node.set_label(Text.assemble(
+            #     Text.from_markup(f"[#808080]({length})[/#808080] "),
+            #     with_name(PropertiesTree.highlighter(repr(data))),
+            # ))
+            # node.set_label(Text.assemble(
+            #     with_name(PropertiesTree.highlighter(repr(data))),
+            #     Text.from_markup(f" [#808080]({length})[/#808080]"),
+            # ))
+            # In the middle I think is best, although it's the most complicated:
+            node.set_label(Text.assemble(
+                Text.from_markup(f"[b]{escape(name)}[/b]"),
+                Text.from_markup(f"[#808080]({length})[/#808080]"),
+                Text("="),
+                PropertiesTree.highlighter(repr(data))
+            ))
+            # Can I perhaps DRY with with_name() with with_name taking a length parameter? In other words:
+            # Can I perhaps DRY with with_name() with with_name() with with_name(text, length) as the parameters?
+        elif isinstance(data, (str, bytes, int, float, bool, type(None))):
             node.allow_expand = False
             node.set_label(with_name(PropertiesTree.highlighter(repr(data))))
         elif callable(data):
             # node.set_label(Text(f"{type(data).__name__} {name}"))
             node.remove()
         elif hasattr(data, "__dict__") or hasattr(data, "__slots__"):
-            node.set_label(Text(f"{{}} {name} ({data!r})"))
+            node.set_label(with_name(PropertiesTree.highlighter(repr(data))))
         else:
             node.allow_expand = False
-            node.set_label(with_name(Text(repr(data))))
+            node.set_label(with_name(PropertiesTree.highlighter(repr(data))))
 
 
 
