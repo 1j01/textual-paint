@@ -20,7 +20,7 @@ from textual.geometry import Offset
 from textual.message import Message
 from textual.reactive import var
 from textual.widget import Widget
-from textual.widgets import Button, Label, Static, TabPane, TabbedContent, Tree
+from textual.widgets import Button, Static, TabPane, TabbedContent, Tree
 from textual.widgets.tree import TreeNode
 from textual.css._style_properties import BorderDefinition
 
@@ -156,7 +156,7 @@ class PropertiesTree(Tree[object]):
     def __init__(
         self,
         label: str,
-        root: object | None = None,
+        root: object = None,
         *,
         name: str | None = None,
         id: str | None = None,
@@ -197,7 +197,7 @@ class PropertiesTree(Tree[object]):
     #     raise Exception("EMIT: Error Message Itself Test; uncomment and navigate to this node to see the error message")
 
     def _populate_node(self, node: TreeNode[object], load_more: bool = False) -> None:
-        data = node.data
+        data: object = node.data
         if data is None:
             return
 
@@ -225,7 +225,7 @@ class PropertiesTree(Tree[object]):
                 return True
             return False
         
-        def safe_dir_items(obj: object) -> Iterable[tuple[str, object | None, Exception | None]]:
+        def safe_dir_items(obj: object) -> Iterable[tuple[str, object, Exception | None]]:
             """Yields tuples of (key, value, error) for each key in dir(obj)."""
             # for key, value in obj.__dict__.items():
             # inspect.getmembers is better than __dict__ because it includes getters
@@ -238,11 +238,16 @@ class PropertiesTree(Tree[object]):
                 except Exception as e:
                     yield (key, None, e)
 
+        def with_no_error(key_val: tuple[str, object]) -> tuple[str, object, None]:
+            return (key_val[0], key_val[1], None)
+
+        iterator: Iterable[tuple[str, object, Exception | None]]
+
         # Prefer dir() for NamedTuple, but enumerate() for lists (and tentatively all other iterables)
-        if isinstance(data, Iterable) and not hasattr(data, "_fields"):
-            iterator = map(lambda key_val: (key_val[0], key_val[1], None), enumerate(data))
+        if isinstance(data, Iterable) and not hasattr(data, "_fields"):  # type: ignore
+            iterator = map(with_no_error, enumerate(data))  # type: ignore
         else:
-            iterator = safe_dir_items(data)
+            iterator = safe_dir_items(data)  # type: ignore
         
         for key, value, error in iterator:
             if not key_filter(str(key)):
@@ -275,7 +280,8 @@ class PropertiesTree(Tree[object]):
             node.allow_expand = False
             node.set_label(with_name(Text.from_markup(f"[i][#808080](getter error: [red]{escape(repr(exception))}[/red])[/#808080][/i]")))
         elif isinstance(data, list):
-            node.set_label(Text(f"[] {name} ({len(data)})"))
+            length = len(data)  # type: ignore
+            node.set_label(Text(f"[] {name} ({length})"))
         elif isinstance(data, str) or isinstance(data, int) or isinstance(data, float) or isinstance(data, bool):
             node.allow_expand = False
             if name:
@@ -348,9 +354,9 @@ class NodeInfo(Container):
         # Documentation strings could go in tooltips or otherwise be abbreviated.
         # Source code links could go in tooltips, which might help to prevent line-
         # breaks, which break automatic <file>:<line> linking (Ctrl+Click support) in VS Code.
-        available_events = []
+        available_events: list[Type[Message]] = []
         for cls in type(dom_node).__mro__:
-            for name, value in cls.__dict__.items():
+            for value in cls.__dict__.values():
                 if isinstance(value, type) and issubclass(value, Message):
                     available_events.append(value)
         def message_info(message_class: Type[Message]) -> str:
@@ -490,7 +496,7 @@ class Inspector(Container):
         # expand_icon = "+" # Alternatives: + ⨁ 🪜 🎊 🐡 🔬 (↕️ arrow emoji unreliable)
         yield Button(f"{inspect_icon} Inspect Element", classes="inspect_button")
         # yield Button(f"{expand_icon} Expand All Visible", classes="expand_all_button")
-        yield DOMTree(self.app)
+        yield DOMTree(self.app)  # type: ignore
         yield NodeInfo()
 
     def watch_picking(self, picking: bool) -> None:
@@ -517,7 +523,7 @@ class Inspector(Container):
 
     def get_widget_under_mouse(self, screen_offset: Offset) -> Widget | None:
         try:
-            leaf_widget, _ = self.app.get_widget_at(*screen_offset)
+            leaf_widget, _ = self.app.get_widget_at(*screen_offset)  # type: ignore
         except NoWidget:
             return None
         if self in leaf_widget.ancestors_with_self and not ALLOW_INSPECTING_INSPECTOR:
