@@ -268,7 +268,7 @@ class PropertiesTree(Tree[object]):
 
         def with_name(text: Text) -> Text:
             return Text.assemble(
-                Text.from_markup(f"[b]{name}[/b]="), text
+                Text.from_markup(f"[b]{escape(name)}[/b]="), text
             )
 
         if exception is not None:
