@@ -324,6 +324,7 @@ class NodeInfo(Container):
         with TabbedContent(initial="properties"):
             with TabPane("Props", id="properties"):
                 yield PropertiesTree("", classes="properties")
+                yield Static("", classes="properties_nothing_selected")
             with TabPane("CSS", id="styles"):
                 yield VerticalScroll(Static(classes="styles"))
             with TabPane("Keys", id="key_bindings"):
@@ -335,17 +336,24 @@ class NodeInfo(Container):
         """Update the info displayed when the DOM node changes."""
         print("watch_dom_node", dom_node)
         properties_tree = self.query_one(PropertiesTree)
+        properties_static = self.query_one(".properties_nothing_selected", Static)
         styles_static = self.query_one(".styles", Static)
         key_bindings_static = self.query_one(".key_bindings", Static)
         events_static = self.query_one(".events", Static)
 
         if dom_node is None:
-            properties_tree.reset("Nothing selected", None)
-            styles_static.update("Nothing selected")
-            key_bindings_static.update("Nothing selected")
-            events_static.update("Nothing selected")
+            nothing_selected_message = "Nothing selected"
+            properties_tree.display = False
+            properties_static.display = True
+            properties_tree.reset("", None)
+            properties_static.update(nothing_selected_message)
+            styles_static.update(nothing_selected_message)
+            key_bindings_static.update(nothing_selected_message)
+            events_static.update(nothing_selected_message)
             return
 
+        properties_tree.display = True
+        properties_static.display = False
         properties_tree.reset(dom_node.css_identifier_styled, dom_node)
         # trigger _on_tree_node_expanded to load the first level of properties
         properties_tree.root.collapse()
