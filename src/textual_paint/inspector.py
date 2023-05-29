@@ -485,7 +485,9 @@ class NodeInfo(Container):
                 usage_info = f"No listeners found for {handler_name}"
             
             # TODO: link to source code for the message class
-            return f"[b]{message_class.__qualname__}[/b]\n[#808080]{message_class.__doc__ or '(No docstring)'}[/#808080]\n{usage_info}\n"
+            qualname = message_class.__qualname__
+            doc = inspect.getdoc(message_class) or '(No docstring)'
+            return f"[b]{escape(qualname)}[/b]\n[#808080]{escape(doc)}[/#808080]\n{escape(usage_info)}\n"
 
         if available_events:
             events_static.update("\n".join(map(message_info, available_events)))
