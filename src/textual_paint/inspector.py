@@ -194,22 +194,28 @@ class PropertiesTree(Tree[object]):
             self._already_loaded[node] = set()
 
         index = 0
+        def add_node_with_limit(key: str, value: object) -> bool:
+            """Add a node to the tree, or return True if the max number of nodes has been reached."""
+            PropertiesTree._add_property_node(node, str(key), value)
+            self._already_loaded[node].add(str(key))
+            nonlocal index
+            index += 1
+            if index >= max_keys_per_level:
+                # TODO: load more on click
+                node.add("...").allow_expand = False
+                return True
+            return False
+        
         # Prefer dir() for NamedTuple, but enumerate() for lists
         if isinstance(data, Iterable) and not hasattr(data, "_fields"):
             # keys = range(len(data)) # can't simply DRY  with the below because of getattr vs []/enumerate
             # (also not all iterables provide __getitem__/__len__)
-            # TODO: DRY what can be DRIED (Deduplicated, Reused, Inherited, Extended... Deduplicated)
             for key, value in enumerate(data):
                 if not key_filter(str(key)):
                     continue
                 if str(key) in self._already_loaded[node]:
                     continue
-                PropertiesTree._add_property_node(node, str(key), value)
-                self._already_loaded[node].add(str(key))
-                index += 1
-                if index >= max_keys_per_level:
-                    # TODO: load more on click
-                    node.add("...").allow_expand = False
+                if add_node_with_limit(key, value):
                     break
             return
         # for key, value in data.__dict__.items():
@@ -226,12 +232,7 @@ class PropertiesTree(Tree[object]):
                 value = getattr(data, key)
             except Exception as e:
                 value = f"(error getting value: {e!r})"
-            PropertiesTree._add_property_node(node, key, value)
-            self._already_loaded[node].add(key)
-            index += 1
-            if index >= max_keys_per_level:
-                # TODO: load more on click
-                node.add("...").allow_expand = False
+            if add_node_with_limit(key, value):
                 break
 
     @classmethod
