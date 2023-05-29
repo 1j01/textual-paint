@@ -149,14 +149,14 @@ class DOMTree(Tree[DOMNode]):
         # TODO: post when None? it seems to be reset anyways? but not if you move the mouse off the whole tree without moving it off a node
 
 class PropertiesTree(Tree[object]):
-    """A widget for exploring the attributes/properties of a DOM node."""
+    """A widget for exploring the attributes/properties of an object."""
 
     highlighter = ReprHighlighter()
 
     def __init__(
         self,
         label: str,
-        root: DOMNode | None = None,
+        root: object | None = None,
         *,
         name: str | None = None,
         id: str | None = None,
