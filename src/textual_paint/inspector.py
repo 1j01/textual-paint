@@ -3,6 +3,7 @@
 import asyncio
 import inspect
 import pathlib
+from types import EllipsisType
 from typing import Any, Iterable, NamedTuple, Optional, Type, TypeGuard
 from rich.text import Text
 from rich.highlighter import ReprHighlighter
@@ -174,24 +175,38 @@ class PropertiesTree(Tree[object]):
         """A mapping of tree nodes to the keys that have already been loaded.
         
         This allows the tree to be collapsed and expanded without duplicating nodes.
-        It will also be useful for lazy-loading nodes when there are too many to load at once.
+        It's also used for lazy-loading nodes when clicking the ellipsis in long lists.
         """
 
     def _on_tree_node_expanded(self, event: Tree.NodeExpanded[object]) -> None:
         event.stop()
-        node = event.node
+        self._populate_node(event.node)
+
+    def _on_tree_node_selected(self, event: Tree.NodeSelected[object]) -> None:
+        event.stop()
+        # This is a little cheeky, using the ellipsis type as a sentinel value
+        # to represent the ellipsis shown in the tree that can be clicked to load more.
+        if isinstance(event.node.data, EllipsisType):
+            assert event.node.parent is not None, "The root node should never be an ellipsis"
+            event.node.remove()
+            self._populate_node(event.node.parent, load_more=True)
+
+    def _populate_node(self, node: TreeNode[object], load_more: bool = False) -> None:
         data = node.data
         if data is None:
             return
 
-        max_keys_per_level = 100
+        if node not in self._already_loaded:
+            self._already_loaded[node] = set()
+
+        max_keys = 100
+        if load_more:
+            max_keys += len(self._already_loaded[node])
+
         def key_filter(key: str) -> bool:
             # TODO: allow toggling filtering of private properties
             # (or show in a collapsed node)
             return not key.startswith("_")
-
-        if node not in self._already_loaded:
-            self._already_loaded[node] = set()
 
         index = 0
         def add_node_with_limit(key: str, value: object) -> bool:
@@ -200,9 +215,8 @@ class PropertiesTree(Tree[object]):
             self._already_loaded[node].add(str(key))
             nonlocal index
             index += 1
-            if index >= max_keys_per_level:
-                # TODO: load more on click
-                node.add("...").allow_expand = False
+            if index >= max_keys:
+                node.add("...", ...).allow_expand = False
                 return True
             return False
         
