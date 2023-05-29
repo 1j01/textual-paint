@@ -5,6 +5,7 @@ import inspect
 import pathlib
 from types import EllipsisType
 from typing import Any, Iterable, NamedTuple, Optional, Type, TypeGuard
+from rich.markup import escape
 from rich.text import Text
 from rich.highlighter import ReprHighlighter
 # from rich.syntax import Syntax
@@ -191,6 +192,10 @@ class PropertiesTree(Tree[object]):
             event.node.remove()
             self._populate_node(event.node.parent, load_more=True)
 
+    # @property
+    # def AAA_test_property_that_raises_exception(self) -> str:
+    #     raise Exception("EMIT: Error Message Itself Test; uncomment and navigate to this node to see the error message")
+
     def _populate_node(self, node: TreeNode[object], load_more: bool = False) -> None:
         data = node.data
         if data is None:
@@ -209,9 +214,9 @@ class PropertiesTree(Tree[object]):
             return not key.startswith("_")
 
         index = 0
-        def add_node_with_limit(key: str, value: object) -> bool:
+        def add_node_with_limit(key: str, value: object, exception: Exception | None = None) -> bool:
             """Add a node to the tree, or return True if the max number of nodes has been reached."""
-            PropertiesTree._add_property_node(node, str(key), value)
+            PropertiesTree._add_property_node(node, str(key), value, exception)
             self._already_loaded[node].add(str(key))
             nonlocal index
             index += 1
@@ -220,37 +225,35 @@ class PropertiesTree(Tree[object]):
                 return True
             return False
         
-        # Prefer dir() for NamedTuple, but enumerate() for lists
+        def safe_dir_items(obj: object) -> Iterable[tuple[str, object | None, Exception | None]]:
+            """Yields tuples of (key, value, error) for each key in dir(obj)."""
+            # for key, value in obj.__dict__.items():
+            # inspect.getmembers is better than __dict__ because it includes getters
+            # except it can raise errors from any of the getters, and I need more granularity
+            # for key, value in inspect.getmembers(obj):
+            # TODO: handle DynamicClassAttributes like inspect.getmembers does
+            for key in dir(obj):
+                try:
+                    yield (key, getattr(obj, key), None)
+                except Exception as e:
+                    yield (key, None, e)
+
+        # Prefer dir() for NamedTuple, but enumerate() for lists (and tentatively all other iterables)
         if isinstance(data, Iterable) and not hasattr(data, "_fields"):
-            # keys = range(len(data)) # can't simply DRY  with the below because of getattr vs []/enumerate
-            # (also not all iterables provide __getitem__/__len__)
-            for key, value in enumerate(data):
-                if not key_filter(str(key)):
-                    continue
-                if str(key) in self._already_loaded[node]:
-                    continue
-                if add_node_with_limit(key, value):
-                    break
-            return
-        # for key, value in data.__dict__.items():
-        # inspect.getmembers is better than __dict__ because it includes getters
-        # except it can raise errors from any of the getters, and I need more granularity
-        # for key, value in inspect.getmembers(data):
-        # TODO: handle DynamicClassAttributes like inspect.getmembers does
-        for key in dir(data):
-            if not key_filter(key):
+            iterator = map(lambda key_val: (key_val[0], key_val[1], None), enumerate(data))
+        else:
+            iterator = safe_dir_items(data)
+        
+        for key, value, error in iterator:
+            if not key_filter(str(key)):
                 continue
-            if key in self._already_loaded[node]:
+            if str(key) in self._already_loaded[node]:
                 continue
-            try:
-                value = getattr(data, key)
-            except Exception as e:
-                value = f"(error getting value: {e!r})"
-            if add_node_with_limit(key, value):
+            if add_node_with_limit(key, value, error):
                 break
 
     @classmethod
-    def _add_property_node(cls, parent_node: TreeNode[object], name: str, data: object) -> None:
+    def _add_property_node(cls, parent_node: TreeNode[object], name: str, data: object, exception: Exception | None = None) -> None:
         """Adds data to a node.
 
         Based on https://github.com/Textualize/textual/blob/65b0c34f2ed6a69795946a0735a51a463602545c/examples/json_tree.py
@@ -268,7 +271,10 @@ class PropertiesTree(Tree[object]):
                 Text.from_markup(f"[b]{name}[/b]="), text
             )
 
-        if isinstance(data, list):
+        if exception is not None:
+            node.allow_expand = False
+            node.set_label(with_name(Text.from_markup(f"[i][#808080](getter error: [red]{escape(repr(exception))}[/red])[/#808080][/i]")))
+        elif isinstance(data, list):
             node.set_label(Text(f"[] {name} ({len(data)})"))
         elif isinstance(data, str) or isinstance(data, int) or isinstance(data, float) or isinstance(data, bool):
             node.allow_expand = False
