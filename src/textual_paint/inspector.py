@@ -242,6 +242,12 @@ class PropertiesTree(Tree[object]):
         raise Exception("EMIT: Error Message Itself Test; uncomment and navigate to this node to see the error message")
 
     def _populate_node(self, node: TreeNode[object], load_more: bool = False) -> None:
+        """Populate a node with its children, or some of them.
+        
+        If load_more is True (ellipsis node clicked), load more children.
+        Otherwise just load an initial batch.
+        If the node is collapsed and re-expanded, no new nodes should be added.
+        """
         data: object = node.data
         if data is None:
             return
@@ -264,6 +270,9 @@ class PropertiesTree(Tree[object]):
 
         ellipsis_node: TreeNode[object] | None = None
         """Node to show more properties when clicked."""
+        
+        only_counting = False
+        """Flag set when we've reached the limit and aren't adding any more nodes."""
 
         def add_node_with_limit(key: str, value: object, exception: Exception | None = None) -> bool:
             """Add a node to the tree, or return True if the max number of nodes has been reached."""
@@ -287,6 +296,10 @@ class PropertiesTree(Tree[object]):
             # for key, value in inspect.getmembers(obj):
             # TODO: handle DynamicClassAttributes like inspect.getmembers does
             for key in dir(obj):
+                if only_counting:
+                    # Optimization: don't call getattr(); otherwise it would partially defeat the purpose of eliding nodes
+                    yield (key, None, None)
+                    continue
                 try:
                     yield (key, getattr(obj, key), None)
                 except Exception as e:
@@ -307,7 +320,6 @@ class PropertiesTree(Tree[object]):
             iterator = safe_dir_items(data)  # type: ignore
         
         self._num_keys_accessed[node] = 0
-        only_counting = False
         for key, value, error in iterator:
             count += 1
             if only_counting:
