@@ -284,11 +284,7 @@ class PropertiesTree(Tree[object]):
             node.set_label(Text(f"[] {name} ({length})"))
         elif isinstance(data, (str, int, float, bool, type(None))):
             node.allow_expand = False
-            if name:
-                label = with_name(PropertiesTree.highlighter(repr(data)))
-            else:
-                label = Text(repr(data))
-            node.set_label(label)
+            node.set_label(with_name(PropertiesTree.highlighter(repr(data))))
         elif callable(data):
             # node.set_label(Text(f"{type(data).__name__} {name}"))
             node.remove()
