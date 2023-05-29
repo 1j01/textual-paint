@@ -283,8 +283,11 @@ class PropertiesTree(Tree[object]):
 
         iterator: Iterable[tuple[str, object, Exception | None]]
 
+        # Dictionaries are iterable, but we want key-value pairs, not index-key pairs
+        if isinstance(data, dict):
+            iterator = map(with_no_error, data.items())  # type: ignore
         # Prefer dir() for NamedTuple, but enumerate() for lists (and tentatively all other iterables)
-        if isinstance(data, Iterable) and not hasattr(data, "_fields"):  # type: ignore
+        elif isinstance(data, Iterable) and not hasattr(data, "_fields"):  # type: ignore
             iterator = map(with_no_error, enumerate(data))  # type: ignore
         else:
             iterator = safe_dir_items(data)  # type: ignore
@@ -346,7 +349,7 @@ class PropertiesTree(Tree[object]):
         elif callable(data):
             # node.set_label(Text(f"{type(data).__name__} {name}"))
             node.remove()
-        elif hasattr(data, "__dict__") or hasattr(data, "__slots__"):
+        elif hasattr(data, "__dict__") or hasattr(data, "__slots__") or isinstance(data, dict):
             node.set_label(with_name(PropertiesTree.highlighter(repr(data))))
         else:
             node.allow_expand = False
