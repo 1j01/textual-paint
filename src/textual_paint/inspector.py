@@ -322,7 +322,7 @@ class PropertiesTree(Tree[object]):
         if exception is not None:
             node.allow_expand = False
             node.set_label(with_name(Text.from_markup(f"[i][#808080](getter error: [red]{escape(repr(exception))}[/red])[/#808080][/i]")))
-        elif isinstance(data, (list, set, tuple)):
+        elif isinstance(data, (list, set, frozenset, tuple)):
             length = len(data)  # type: ignore
             # node.set_label(Text(f"{name} ({length})"))
             # node.set_label(with_name(PropertiesTree.highlighter(repr(data))))
