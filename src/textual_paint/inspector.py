@@ -192,9 +192,49 @@ class PropertiesTree(Tree[object]):
             event.node.remove()
             self._populate_node(event.node.parent, load_more=True)
 
-    # @property
-    # def AAA_test_property_that_raises_exception(self) -> str:
-    #     raise Exception("EMIT: Error Message Itself Test; uncomment and navigate to this node to see the error message")
+    @property
+    def AAA_deal_with_it(self) -> dict[str, Any]:
+        """This property gives a grab bag of different types to test the tree."""
+        from enum import Enum
+        from typing import NamedTuple
+        import traceback
+        return {
+            "a_string": "DEAL WITH IT 😎",
+            "an_int": 42,
+            "a_float": 3.14,
+            "a_bool": True,
+            "none": None,
+            "a_list": ["a", "b", "c"],
+            "a_tuple": ("a", "b", "c"),
+            "a_named_tuple": NamedTuple("a_named_tuple", [("a", int), ("b", str), ("c", float)])(1, "2", 3.0),
+            "a_set": {"a", "b", "c"},
+            "a_frozenset": frozenset({"a", "b", "c"}),
+            "a_dict": {"a": "A", "b": "B", "c": "C"},
+            "a_dict_with_mixed_keys": {1: "A", "b": "B", Enum("an_enum", "a b c"): "C", frozenset(): "D"},
+            "a_parameterized_generic": dict[str, int],
+            "a_module": inspect,
+            "a_function": lambda x: x,  # type: ignore
+            "a_generator": (x for x in "abc"),
+            "an_iterator": iter("abc"),
+            "a_range": range(10),
+            "a_slice": slice(1, 2, 3),
+            "a_complex": 1 + 2j,
+            "a_bytes": b"abc",
+            "a_bytearray": bytearray(b"abc"),
+            "an_enum": Enum("an_enum", "a b c"),
+            "an_ellipsis": ...,
+            "a_memoryview": memoryview(b"abc"),
+            "not_implemented": NotImplemented,
+            "an_exception": Exception("hello"),
+            "a_type": type,
+            "a_code": compile("print('hello')", "<string>", "exec"),
+            "a_frame": inspect.currentframe(),
+            "a_traceback": traceback.extract_stack(),
+        }
+    
+    @property
+    def AAA_test_property_that_raises_exception(self) -> str:
+        raise Exception("EMIT: Error Message Itself Test; uncomment and navigate to this node to see the error message")
 
     def _populate_node(self, node: TreeNode[object], load_more: bool = False) -> None:
         data: object = node.data
