@@ -181,8 +181,10 @@ class PropertiesTree(Tree[object]):
         """A mapping of tree nodes to the keys that have already been loaded.
         
         This allows the tree to be collapsed and expanded without duplicating nodes.
-        It's also used for lazy-loading nodes when clicking the ellipsis in long lists.
+        It's also used for lazy-loading nodes when clicking the ellipsis in long lists...
         """
+        self._num_keys_accessed: dict[TreeNode[object], int] = {}
+        """A mapping of tree nodes to the number of keys that have been accessed."""
 
     def _on_tree_node_expanded(self, event: Tree.NodeExpanded[object]) -> None:
         event.stop()
@@ -246,10 +248,11 @@ class PropertiesTree(Tree[object]):
 
         if node not in self._already_loaded:
             self._already_loaded[node] = set()
+            self._num_keys_accessed[node] = 0
 
-        max_keys = 100
+        max_keys = 100 # Max keys to load at once; may add less nodes due to filtering
         if load_more:
-            max_keys += len(self._already_loaded[node])
+            max_keys += self._num_keys_accessed[node]
 
         def key_filter(key: str) -> bool:
             # TODO: allow toggling filtering of private properties
@@ -257,15 +260,17 @@ class PropertiesTree(Tree[object]):
             return not key.startswith("_")
 
         count = 0
+        """Key index + 1, including filtered-out keys."""
         def add_node_with_limit(key: str, value: object, exception: Exception | None = None) -> bool:
             """Add a node to the tree, or return True if the max number of nodes has been reached."""
-            PropertiesTree._add_property_node(node, str(key), value, exception)
-            self._already_loaded[node].add(str(key))
-            nonlocal count
-            count += 1
-            if count >= max_keys:
+            if count > max_keys:
+                for child in node.children:
+                    if child.data is _ShowMoreSentinel:
+                        child.remove()
                 node.add("...", _ShowMoreSentinel).allow_expand = False
                 return True
+            PropertiesTree._add_property_node(node, str(key), value, exception)
+            self._already_loaded[node].add(str(key))
             return False
         
         def safe_dir_items(obj: object) -> Iterable[tuple[str, object, Exception | None]]:
@@ -295,7 +300,10 @@ class PropertiesTree(Tree[object]):
         else:
             iterator = safe_dir_items(data)  # type: ignore
         
+        self._num_keys_accessed[node] = 0
         for key, value, error in iterator:
+            count += 1
+            self._num_keys_accessed[node] += 1
             if not key_filter(str(key)):
                 continue
             if str(key) in self._already_loaded[node]:
