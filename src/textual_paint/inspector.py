@@ -441,49 +441,51 @@ class NodeInfo(Container):
             #    although I'm not sure the module is meant to be public, it's sort of just a helper.)
             name = camel_to_snake(message_class.__name__)
             handler_name = f"on_{message_class.namespace}_{name}" if message_class.namespace else f"on_{name}"
+            handler_names = [handler_name, f"_{handler_name}"]
             # Find any listeners for this event
             # TODO: only look upwards if the event bubbles
             usages: list[Text] = []
             for ancestor in dom_node.ancestors_with_self:
-                if hasattr(ancestor, handler_name):
-                    # Record which class the handler is defined on
-                    # Not sure which order would be needed here
-                    # for cls in type(ancestor).__mro__:
-                    #     if hasattr(cls, handler_name):
-                    #         ...
-                    #         break
-                    # But there's a simpler way: method.__self__.__class__
-                    handler = getattr(ancestor, handler_name)
-                    defining_class = handler.__self__.__class__
-                    try:
-                        line_number = inspect.getsourcelines(handler)[1]
-                        file = inspect.getsourcefile(handler)
-                        if file is None:
-                            def_location = Text.from_markup(f"[#808080](unknown location)[/#808080]")
-                        else:
-                            # def_location = f"{file}:{line_number}"
-                            # def_location = f"[link=file://{file}]{file}:{line_number}[/link]"
-                            # def_location = f"{file}:{line_number} [link=file://{file}](open)[/link]"
-                            # I'm including the line number here hoping that SOME editor will use it.
-                            # TODO: button to execute a command to open the file in an editor
-                            # (configurable? magical? or with a button for each known editor?)
-                            file_uri = pathlib.Path(file).as_uri() + "#" + str(line_number)
-                            def_location = Text.from_markup(f"{escape(file)}:{line_number} [link={escape(file_uri)}](open file)[/link]")
-                    except OSError as e:
-                        def_location = Text.from_markup(f"[#808080](error getting location: [red]{escape(repr(e))}[/red])[/#808080]")
-                    # TODO: link to the DOM node in the tree that has the listener
-                    # Note: css_path_nodes is just like ancestors_with_self, but reversed; it's still DOM nodes
-                    descendant_arrow = Text.from_markup("[#808080] > [/#808080]")
-                    dom_path = descendant_arrow.join([css_path_node.css_identifier_styled for css_path_node in ancestor.css_path_nodes])
-                    handler_qualname = f"{defining_class.__qualname__}.{handler_name}"
-                    usages.append(Text.assemble(
-                        "Listener on DOM node: ",
-                        dom_path,
-                        "\n\n",
-                        handler_qualname,
-                        "\n",
-                        def_location,
-                    ))
+                for handler_name in handler_names:
+                    if hasattr(ancestor, handler_name):
+                        # Record which class the handler is defined on
+                        # Not sure which order would be needed here
+                        # for cls in type(ancestor).__mro__:
+                        #     if hasattr(cls, handler_name):
+                        #         ...
+                        #         break
+                        # But there's a simpler way: method.__self__.__class__
+                        handler = getattr(ancestor, handler_name)
+                        defining_class = handler.__self__.__class__
+                        try:
+                            line_number = inspect.getsourcelines(handler)[1]
+                            file = inspect.getsourcefile(handler)
+                            if file is None:
+                                def_location = Text.from_markup(f"[#808080](unknown location)[/#808080]")
+                            else:
+                                # def_location = f"{file}:{line_number}"
+                                # def_location = f"[link=file://{file}]{file}:{line_number}[/link]"
+                                # def_location = f"{file}:{line_number} [link=file://{file}](open)[/link]"
+                                # I'm including the line number here hoping that SOME editor will use it.
+                                # TODO: button to execute a command to open the file in an editor
+                                # (configurable? magical? or with a button for each known editor?)
+                                file_uri = pathlib.Path(file).as_uri() + "#" + str(line_number)
+                                def_location = Text.from_markup(f"{escape(file)}:{line_number} [link={escape(file_uri)}](open file)[/link]")
+                        except OSError as e:
+                            def_location = Text.from_markup(f"[#808080](error getting location: [red]{escape(repr(e))}[/red])[/#808080]")
+                        # TODO: link to the DOM node in the tree that has the listener
+                        # Note: css_path_nodes is just like ancestors_with_self, but reversed; it's still DOM nodes
+                        descendant_arrow = Text.from_markup("[#808080] > [/#808080]")
+                        dom_path = descendant_arrow.join([css_path_node.css_identifier_styled for css_path_node in ancestor.css_path_nodes])
+                        handler_qualname = f"{defining_class.__qualname__}.{handler_name}"
+                        usages.append(Text.assemble(
+                            "Listener on DOM node: ",
+                            dom_path,
+                            "\n\n",
+                            handler_qualname,
+                            "\n",
+                            def_location,
+                        ))
             if usages:
                 usage_info = Text("\n\n").join(usages)
             else:
