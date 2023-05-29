@@ -443,6 +443,9 @@ class Inspector(Container):
         margin: 1;
         width: 1fr;
     }
+    Inspector Button.inspect_button.picking {
+        color: $accent;
+    }
     Inspector DOMTree {
         height: 1fr;
         scrollbar-gutter: stable;
@@ -462,13 +465,14 @@ class Inspector(Container):
     }
     """
 
+    picking = var(False)
+    """Whether the user is picking a widget to inspect."""
+
     def __init__(self):
         """Initialise the inspector."""
 
         super().__init__()
 
-        self._picking: bool = False
-        """Whether the user is picking a widget to inspect."""
         self._highlight: Container | None = None
         """A simple widget that highlights the widget being inspected."""
         self._highlight_styles: dict[Widget, OriginalStyles] = {}
@@ -483,21 +487,25 @@ class Inspector(Container):
         yield DOMTree(self.app)
         yield NodeInfo()
 
+    def watch_picking(self, picking: bool) -> None:
+        """Watch the picking variable."""
+        self.reset_highlight()
+        if picking:
+            self.capture_mouse()
+        else:
+            self.release_mouse()
+        self.query_one(".inspect_button", Button).set_class(picking, "picking")
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Handle a button being clicked."""
         if event.button.has_class("expand_all_button"):
             self.query_one(DOMTree).root.expand_all()
         elif event.button.has_class("inspect_button"):
-            self._picking = not self._picking
-            self.reset_highlight()
-            if self._picking:
-                self.capture_mouse()
-            else:
-                self.release_mouse()
+            self.picking = not self.picking
 
     def on_mouse_move(self, event: events.MouseMove) -> None:
         """Handle the mouse moving."""
-        if not self._picking:
+        if not self.picking:
             return
         self.highlight(self.get_widget_under_mouse(event.screen_offset))
 
@@ -513,11 +521,10 @@ class Inspector(Container):
     async def on_mouse_down(self, event: events.MouseDown) -> None:
         """Handle the mouse being pressed."""
         self.reset_highlight()
-        if not self._picking:
+        if not self.picking:
             return
         leaf_widget = self.get_widget_under_mouse(event.screen_offset)
-        self.release_mouse()
-        self._picking = False
+        self.picking = False
 
         if leaf_widget is None:
             return
