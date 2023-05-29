@@ -256,14 +256,14 @@ class PropertiesTree(Tree[object]):
             # (or show in a collapsed node)
             return not key.startswith("_")
 
-        index = 0
+        count = 0
         def add_node_with_limit(key: str, value: object, exception: Exception | None = None) -> bool:
             """Add a node to the tree, or return True if the max number of nodes has been reached."""
             PropertiesTree._add_property_node(node, str(key), value, exception)
             self._already_loaded[node].add(str(key))
-            nonlocal index
-            index += 1
-            if index >= max_keys:
+            nonlocal count
+            count += 1
+            if count >= max_keys:
                 node.add("...", _ShowMoreSentinel).allow_expand = False
                 return True
             return False
