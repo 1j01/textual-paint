@@ -377,7 +377,13 @@ class PropertiesTree(Tree[object]):
             node.set_label(with_name(PropertiesTree.highlighter(repr(data))))
         elif callable(data):
             # Filtered out by default
-            node.set_label(Text(f"{type(data).__name__} {name}"))
+            # TODO: allow expanding things like widget.log, which is callable but also has methods for each log type
+            node.allow_expand = False
+            node.set_label(Text.assemble(
+                f"{type(data).__name__} ",
+                Text.styled(name, "bold"),
+                PropertiesTree.highlighter(str(inspect.signature(data))),
+            ))
         elif hasattr(data, "__dict__") or hasattr(data, "__slots__") or isinstance(data, dict):
             node.set_label(with_name(PropertiesTree.highlighter(repr(data))))
         else:
