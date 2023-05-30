@@ -368,10 +368,10 @@ class PropertiesTree(Tree[object]):
                 Text.from_markup(f"[b]{escape(name)}[/b]"),
                 Text.from_markup(f"[#808080]({length})[/#808080]"),
                 Text("="),
-                PropertiesTree.highlighter(repr(data))
+                PropertiesTree.highlighter(repr(data))  # type: ignore
             ))
             # Can I perhaps DRY with with_name() with with_name taking a length parameter? In other words:
-            # Can I perhaps DRY with with_name() with with_name() with with_name(text, length) as the parameters?
+            # Can I maybe DRY this with with_name with with_name with with_name(text, length) as the signature?
         elif isinstance(data, (str, bytes, int, float, bool, type(None))):
             node.allow_expand = False
             node.set_label(with_name(PropertiesTree.highlighter(repr(data))))
@@ -385,7 +385,9 @@ class PropertiesTree(Tree[object]):
                 PropertiesTree.highlighter(str(inspect.signature(data))),
             ))
         elif hasattr(data, "__dict__") or hasattr(data, "__slots__") or isinstance(data, dict):
-            node.set_label(with_name(PropertiesTree.highlighter(repr(data))))
+            # Pyright gives an error here due to the more specific "object | dict[Unknown, Unknown]"
+            # even though object is a superclass of dict and repr takes an object.
+            node.set_label(with_name(PropertiesTree.highlighter(repr(data))))  # type: ignore
         else:
             node.allow_expand = False
             node.set_label(with_name(PropertiesTree.highlighter(repr(data))))
