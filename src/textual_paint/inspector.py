@@ -3,7 +3,6 @@
 import asyncio
 import inspect
 import pathlib
-from types import EllipsisType
 from typing import Any, Iterable, NamedTuple, Optional, Type, TypeGuard
 from rich.markup import escape
 from rich.text import Text
