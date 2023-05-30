@@ -241,6 +241,11 @@ class PropertiesTree(Tree[object]):
     def AAA_test_property_that_raises_exception(self) -> str:
         raise Exception("EMIT: Error Message Itself Test; uncomment and navigate to this node to see the error message")
 
+    def filter_property(self, key: str, value: object) -> bool:
+        # TODO: allow toggling filtering of private properties
+        # (or show in a collapsed node)
+        return not key.startswith("_") and not callable(value)
+
     def _populate_node(self, node: TreeNode[object], load_more: bool = False) -> None:
         """Populate a node with its children, or some of them.
         
@@ -259,11 +264,6 @@ class PropertiesTree(Tree[object]):
         max_keys = 100 # Max keys to load at once; may add less nodes due to filtering
         if load_more:
             max_keys += self._num_keys_accessed[node]
-
-        def key_filter(key: str) -> bool:
-            # TODO: allow toggling filtering of private properties
-            # (or show in a collapsed node)
-            return not key.startswith("_")
 
         count = 0
         """Key index + 1, including filtered-out keys."""
@@ -311,7 +311,7 @@ class PropertiesTree(Tree[object]):
             if only_counting:
                 continue
             self._num_keys_accessed[node] += 1
-            if not key_filter(str(key)):
+            if not self.filter_property(str(key), value):
                 continue
             if str(key) in self._already_loaded[node]:
                 continue
@@ -376,8 +376,8 @@ class PropertiesTree(Tree[object]):
             node.allow_expand = False
             node.set_label(with_name(PropertiesTree.highlighter(repr(data))))
         elif callable(data):
-            # node.set_label(Text(f"{type(data).__name__} {name}"))
-            node.remove()
+            # Filtered out by default
+            node.set_label(Text(f"{type(data).__name__} {name}"))
         elif hasattr(data, "__dict__") or hasattr(data, "__slots__") or isinstance(data, dict):
             node.set_label(with_name(PropertiesTree.highlighter(repr(data))))
         else:
