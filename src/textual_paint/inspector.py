@@ -274,20 +274,6 @@ class PropertiesTree(Tree[object]):
         only_counting = False
         """Flag set when we've reached the limit and aren't adding any more nodes."""
 
-        def add_node_with_limit(key: str, value: object, exception: Exception | None = None) -> bool:
-            """Add a node to the tree, or return True if the max number of nodes has been reached."""
-            nonlocal count, ellipsis_node
-            if count > max_keys:
-                for child in node.children:
-                    if child.data is _ShowMoreSentinel:
-                        child.remove()
-                ellipsis_node = node.add("...", _ShowMoreSentinel)
-                ellipsis_node.allow_expand = False
-                return True
-            PropertiesTree._add_property_node(node, str(key), value, exception)
-            self._already_loaded[node].add(str(key))
-            return False
-        
         def safe_dir_items(obj: object) -> Iterable[tuple[str, object, Exception | None]]:
             """Yields tuples of (key, value, error) for each key in dir(obj)."""
             # for key, value in obj.__dict__.items():
@@ -320,7 +306,7 @@ class PropertiesTree(Tree[object]):
             iterator = safe_dir_items(data)  # type: ignore
         
         self._num_keys_accessed[node] = 0
-        for key, value, error in iterator:
+        for key, value, exception in iterator:
             count += 1
             if only_counting:
                 continue
@@ -329,9 +315,17 @@ class PropertiesTree(Tree[object]):
                 continue
             if str(key) in self._already_loaded[node]:
                 continue
-            if add_node_with_limit(key, value, error):
+            if count > max_keys:
+                for child in node.children:
+                    if child.data is _ShowMoreSentinel:
+                        child.remove()
+                ellipsis_node = node.add("...", _ShowMoreSentinel)
+                ellipsis_node.allow_expand = False
                 # break
                 only_counting = True
+                continue
+            PropertiesTree._add_property_node(node, str(key), value, exception)
+            self._already_loaded[node].add(str(key))
         if ellipsis_node is not None:
             ellipsis_node.label = f"... +{count - max_keys} more"
 
