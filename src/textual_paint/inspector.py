@@ -842,3 +842,5 @@ class Inspector(Container):
                 if box not in used_boxes:
                     box.remove()
                     del self._highlight_boxes[dom_node][name]
+            if not self._highlight_boxes[dom_node]:
+                del self._highlight_boxes[dom_node]
