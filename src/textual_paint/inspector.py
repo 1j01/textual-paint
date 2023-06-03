@@ -637,7 +637,7 @@ class Inspector(Container):
 
         super().__init__()
 
-        self._highlight_boxes: list[Container] = []
+        self._highlight_boxes: dict[Widget, dict[str, Container]] = {}
         """Extra elements added to highlight the border/margin/padding of the widget being inspected."""
         self._highlight_styles: dict[Widget, OriginalStyles] = {}
         """Stores the original styles of any hovered widgets. Unrelated to _highlight_boxes."""
@@ -674,8 +674,9 @@ class Inspector(Container):
         self.highlight(self.get_widget_under_mouse(event.screen_offset))
 
     def get_widget_under_mouse(self, screen_offset: Offset) -> Widget | None:
-        for widget in self._highlight_boxes:
-            widget.visible = False # prevent the highlight boxes from interfering with picking
+        for widgets in self._highlight_boxes.values():
+            for widget in widgets.values():
+                widget.visible = False # prevent the highlight boxes from interfering with picking
         try:
             leaf_widget, _ = self.app.get_widget_at(*screen_offset)  # type: ignore
         except NoWidget:
@@ -728,8 +729,12 @@ class Inspector(Container):
 
     def reset_highlight(self, except_widgets: Iterable[Widget] = ()) -> None:
         """Reset the highlight."""
-        for added_widget in self._highlight_boxes:
-            added_widget.remove()
+        for widget in self._highlight_boxes:
+            if widget in except_widgets:
+                continue
+            added_widgets = self._highlight_boxes[widget]
+            for added_widget in added_widgets.values():
+                added_widget.remove()
         for widget, old in list(self._highlight_styles.items()):
             if widget in except_widgets:
                 continue
@@ -796,9 +801,17 @@ class Inspector(Container):
         if "inspector_highlight" not in self.app.styles.layers: # type: ignore
             self.app.styles.layers += ("inspector_highlight",) # type: ignore
         
+        self._highlight_boxes[dom_node] = {}
+        used_boxes: list[Container] = []
         def show_box(name: str, region: Region, color: str) -> None:
             """Draw a box to the screen."""
-            box = Container(classes="inspector_highlight")
+            try:
+                box = self._highlight_boxes[dom_node][name]
+                # reset if hidden by get_widget_under_mouse (to avoid picking the highlight box)
+                box.visible = True
+            except KeyError:
+                box = Container(classes="inspector_highlight")
+                self._highlight_boxes[dom_node][name] = box
             # box.styles.border = ("round", color)
             # The alpha doesn't actually blend with what's behind it, just a solid background.
             # Still, it's better with it, since it responds to the theme (dark/light).
@@ -812,12 +825,17 @@ class Inspector(Container):
             # box.styles.dock = cast(str, "top") # "str" is incompatible with "str | None"
             # box.styles.dock = cast(str | None, "top") # "str | None" is incompatible with "str | None"
             box.styles.dock = "top" # type: ignore
-            self._highlight_boxes.append(box)
             self.app.mount(box) # type: ignore
+            used_boxes.append(box)
 
         # show_box("region", dom_node.region, "blue")
         # show_box("scrollable_content_region", dom_node.scrollable_content_region, "red")
         map_geometry = self.screen.find_widget(dom_node)
         regions = subtract_regions(map_geometry.region, map_geometry.clip)
-        for region in regions:
-            show_box("clipped", region, "aquamarine")
+        for index, region in enumerate(regions):
+            show_box(f"clipped:{index}", region, "aquamarine")
+        # remove unused boxes
+        for name, box in list(self._highlight_boxes[dom_node].items()):
+            if box not in used_boxes:
+                box.remove()
+                del self._highlight_boxes[dom_node][name]
