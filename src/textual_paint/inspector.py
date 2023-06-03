@@ -674,16 +674,13 @@ class Inspector(Container):
         self.highlight(self.get_widget_under_mouse(event.screen_offset))
 
     def get_widget_under_mouse(self, screen_offset: Offset) -> Widget | None:
-        for widgets in self._highlight_boxes.values():
-            for widget in widgets.values():
-                widget.visible = False # prevent the highlight boxes from interfering with picking
-        try:
-            leaf_widget, _ = self.app.get_widget_at(*screen_offset)  # type: ignore
-        except NoWidget:
-            return None
-        if self in leaf_widget.ancestors_with_self and not ALLOW_INSPECTING_INSPECTOR:
-            return None
-        return leaf_widget
+        for widget, _ in self.screen.get_widgets_at(*screen_offset):  # type: ignore
+            if widget.has_class("inspector_highlight") or (
+                self in widget.ancestors_with_self and not ALLOW_INSPECTING_INSPECTOR
+            ):
+                continue
+            return widget
+        return None
 
     async def on_mouse_down(self, event: events.MouseDown) -> None:
         """Handle the mouse being pressed."""
