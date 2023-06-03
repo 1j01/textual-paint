@@ -57,6 +57,14 @@ def subtract_regions(a: Region, b: Region) -> list[Region]:
 
     return result
 
+def subtract_multiple_regions(base: Region, negations: Iterable[Region]) -> list[Region]:
+    result: list[Region] = [base]
+    for negation in negations:
+        new_result: list[Region] = []
+        for region in result:
+            new_result.extend(subtract_regions(region, negation))
+        result = new_result
+    return result
 
 class DOMTree(Tree[DOMNode]):
     """A widget that displays the widget hierarchy."""
@@ -874,7 +882,10 @@ class Inspector(Container):
             map_geometry = self.screen.find_widget(dom_node)
         except NoWidget:
             return
-        regions = subtract_regions(map_geometry.region, map_geometry.clip)
+        # Show the hovered widget's region, as it extends OUTSIDE of the clip region
+        # (i.e. excluding what's normally visible, showing only the overflow),
+        # and excluding the region of the inspector itself, since overlap causes confusion.
+        regions = subtract_multiple_regions(map_geometry.region, [map_geometry.clip, self.region])
         for index, region in enumerate(regions):
             show_box(f"clipped:{index}", region, "aquamarine")
         # remove unused boxes
