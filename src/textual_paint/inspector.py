@@ -703,6 +703,10 @@ class Inspector(Container):
         if leaf_widget is None:
             return
 
+        # `with self.prevent(DOMTree.Hovered):` would prevent the event from firing at all.
+        # We just want to prevent the highlight from being shown in on_domtree_hovered.
+        self._prevent_highlight = True
+
         # Expand the tree to the selected widget.
         tree = self.query_one(DOMTree)
         tree_node = tree.root
@@ -724,6 +728,25 @@ class Inspector(Container):
         tree.select_node(tree_node)
         tree.scroll_to_node(tree_node)
         tree.action_select_cursor()
+        
+        def clear_prevent_highlight() -> None:
+            print("clear_prevent_highlight", hasattr(self, "_prevent_highlight"))
+            if hasattr(self, "_prevent_highlight"):
+                del self._prevent_highlight
+        # self.call_later(clear_prevent_highlight) # Too early.
+        # self.call_after_refresh(clear_prevent_highlight) # Too early.
+        # self.set_timer(0.1, clear_prevent_highlight) # Not super happy with this...
+        # call_later waits for messages to be processed within a specific object,
+        # so maybe I can wait for the DOMTree...
+        # self.query_one(DOMTree).call_later(clear_prevent_highlight)
+        # That seems to work! ...Sometimes!
+        # Maybe it should wait for both the DOMTree and the Inspector...
+        # def wait_for_domtree() -> None:
+        #     print("wait_for_domtree", hasattr(self, "_prevent_highlight"))
+        #     self.query_one(DOMTree).call_later(clear_prevent_highlight)
+        # self.call_later(wait_for_domtree)
+        # Still unreliable. Just use a timer for now.
+        self.set_timer(0.1, clear_prevent_highlight)
 
     def on_domtree_selected(self, event: DOMTree.Selected) -> None:
         """Handle a node being selected in the DOM tree."""
@@ -762,6 +785,15 @@ class Inspector(Container):
 
     def highlight(self, dom_node: DOMNode | None) -> None:
         """Highlight a DOM node."""
+        print("highlight")
+        import traceback
+        traceback.print_stack(limit=2)
+
+        if hasattr(self, "_prevent_highlight") and dom_node is not None:
+            print("highlight prevented")
+            del self._prevent_highlight
+            return
+        print("Highlighting DOM node:", dom_node)
 
         if not isinstance(dom_node, Widget):
             # Only widgets have a region, App (the root) doesn't.
