@@ -15,13 +15,48 @@ from textual.color import Color
 from textual.containers import Container, VerticalScroll
 from textual.dom import DOMNode
 from textual.errors import NoWidget
-from textual.geometry import Offset
+from textual.geometry import Offset, Region
 from textual.message import Message
 from textual.reactive import var
 from textual.widget import Widget
 from textual.widgets import Button, Static, TabPane, TabbedContent, Tree
 from textual.widgets.tree import TreeNode
 from textual.css._style_properties import BorderDefinition
+
+def subtract_regions(a: Region, b: Region) -> list[Region]:
+    result: list[Region] = []
+
+    # Check for no overlap or complete containment
+    if (
+        b.x >= a.x + a.width or
+        b.x + b.width <= a.x or
+        b.y >= a.y + a.height or
+        b.y + b.height <= a.y
+    ):
+        result.append(a)
+        return result
+
+    # Check for complete overlap
+    if (
+        b.x >= a.x and
+        b.x + b.width <= a.x + a.width and
+        b.y >= a.y and
+        b.y + b.height <= a.y + a.height
+    ):
+        return result
+
+    # Calculate remaining regions
+    if b.x > a.x:
+        result.append(Region(a.x, a.y, b.x - a.x, a.height))
+    if b.x + b.width < a.x + a.width:
+        result.append(Region(b.x + b.width, a.y, a.x + a.width - (b.x + b.width), a.height))
+    if b.y > a.y:
+        result.append(Region(a.x, a.y, a.width, b.y - a.y))
+    if b.y + b.height < a.y + a.height:
+        result.append(Region(a.x, b.y + b.height, a.width, a.y + a.height - (b.y + b.height)))
+
+    return result
+
 
 class DOMTree(Tree[DOMNode]):
     """A widget that displays the widget hierarchy."""
@@ -602,10 +637,10 @@ class Inspector(Container):
 
         super().__init__()
 
-        self._highlight: Container | None = None
-        """A simple widget that highlights the widget being inspected."""
+        self._highlight_boxes: list[Container] = []
+        """Extra elements added to highlight the border/margin/padding of the widget being inspected."""
         self._highlight_styles: dict[Widget, OriginalStyles] = {}
-        """Stores the original styles of any Hovered widgets."""
+        """Stores the original styles of any hovered widgets. Unrelated to _highlight_boxes."""
 
     def compose(self) -> ComposeResult:
         """Add sub-widgets."""
@@ -693,8 +728,8 @@ class Inspector(Container):
 
     def reset_highlight(self, except_widgets: Iterable[Widget] = ()) -> None:
         """Reset the highlight."""
-        if self._highlight is not None:
-            self._highlight.remove()
+        for added_widget in self._highlight_boxes:
+            added_widget.remove()
         for widget, old in list(self._highlight_styles.items()):
             if widget in except_widgets:
                 continue
@@ -755,13 +790,34 @@ class Inspector(Container):
             )
             widget.styles.tint = Color.parse("aquamarine").with_alpha(0.5)
 
-        """
-        self._highlight = Container()
-        self._highlight.styles.border = ("round", "blue")
-        self._highlight.border_title = dom_node.css_identifier_styled
-        self._highlight.styles.width = dom_node.region.width
-        self._highlight.styles.height = dom_node.region.height
-        self._highlight.styles.offset = (dom_node.region.x, dom_node.region.y)
-        # self._highlight.styles.layer = "inspector_highlight"
-        # self._highlight.styles.dock = "top"
-        """
+        # Highlight the clipped region of the hovered widget.
+        # TODO: Highlight the metrics of the hovered widget: padding, border, margin.
+
+        if "inspector_highlight" not in self.app.styles.layers: # type: ignore
+            self.app.styles.layers += ("inspector_highlight",) # type: ignore
+        
+        def show_box(name: str, region: Region, color: str) -> None:
+            """Draw a box to the screen."""
+            box = Container(classes="inspector_highlight")
+            # box.styles.border = ("round", color)
+            # The alpha doesn't actually blend with what's behind it, just a solid background.
+            # Still, it's better with it, since it responds to the theme (dark/light).
+            box.styles.background = Color.parse(color).with_alpha(0.5)
+            # box.border_title = name
+            box.styles.width = region.width
+            box.styles.height = region.height
+            box.styles.offset = (region.x, region.y)
+            box.styles.layer = "inspector_highlight"
+            # box.styles.dock = "top" # "Literal['top']" is incompatible with "str | None"
+            # box.styles.dock = cast(str, "top") # "str" is incompatible with "str | None"
+            # box.styles.dock = cast(str | None, "top") # "str | None" is incompatible with "str | None"
+            box.styles.dock = "top" # type: ignore
+            self._highlight_boxes.append(box)
+            self.app.mount(box) # type: ignore
+
+        # show_box("region", dom_node.region, "blue")
+        # show_box("scrollable_content_region", dom_node.scrollable_content_region, "red")
+        map_geometry = self.screen.find_widget(dom_node)
+        regions = subtract_regions(map_geometry.region, map_geometry.clip)
+        for region in regions:
+            show_box("clipped", region, "aquamarine")
