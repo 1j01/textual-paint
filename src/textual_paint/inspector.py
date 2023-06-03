@@ -838,7 +838,9 @@ class Inspector(Container):
         for index, region in enumerate(regions):
             show_box(f"clipped:{index}", region, "aquamarine")
         # remove unused boxes
-        for name, box in list(self._highlight_boxes[dom_node].items()):
-            if box not in used_boxes:
-                box.remove()
-                del self._highlight_boxes[dom_node][name]
+        # including boxes associated with an old dom_node
+        for dom_node, boxes in list(self._highlight_boxes.items()):
+            for name, box in list(boxes.items()):
+                if box not in used_boxes:
+                    box.remove()
+                    del self._highlight_boxes[dom_node][name]
