@@ -830,7 +830,10 @@ class Inspector(Container):
 
         # show_box("region", dom_node.region, "blue")
         # show_box("scrollable_content_region", dom_node.scrollable_content_region, "red")
-        map_geometry = self.screen.find_widget(dom_node)
+        try:
+            map_geometry = self.screen.find_widget(dom_node)
+        except NoWidget:
+            return
         regions = subtract_regions(map_geometry.region, map_geometry.clip)
         for index, region in enumerate(regions):
             show_box(f"clipped:{index}", region, "aquamarine")
