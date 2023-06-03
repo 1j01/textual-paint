@@ -33,7 +33,7 @@ class DOMTree(Tree[DOMNode]):
         """
 
         def __init__(
-            self, tree: "DOMTree", tree_node: TreeNode[DOMNode], dom_node: DOMNode
+            self, tree: "DOMTree", tree_node: TreeNode[DOMNode] | None, dom_node: DOMNode | None
         ) -> None:
             """Initialise the Hovered message.
 
@@ -45,9 +45,9 @@ class DOMTree(Tree[DOMNode]):
             super().__init__()
             self.tree: DOMTree = tree
             """The `DOMTree` that had a node hovered."""
-            self.tree_node: TreeNode[DOMNode] = tree_node
+            self.tree_node: TreeNode[DOMNode] | None = tree_node
             """The tree node that was hovered. Only _represents_ the DOM node."""
-            self.dom_node: DOMNode = dom_node
+            self.dom_node: DOMNode | None = dom_node
             """The DOM node that was hovered."""
 
         # @property
@@ -146,6 +146,10 @@ class DOMTree(Tree[DOMNode]):
             assert isinstance(node.data, DOMNode), "All nodes in DOMTree should have DOMNode data, got: " + repr(node.data)
             self.post_message(self.Hovered(self, node, node.data))
         # TODO: post when None? it seems to be reset anyways? but not if you move the mouse off the whole tree without moving it off a node
+    
+    def on_leave(self, event: events.Leave) -> None:
+        """Extend the leave event to post a message when the mouse leaves the tree."""
+        self.post_message(self.Hovered(self, None, None))
 
 class _ShowMoreSentinelType: pass
 _ShowMoreSentinel = _ShowMoreSentinelType()
@@ -635,6 +639,8 @@ class Inspector(Container):
         self.highlight(self.get_widget_under_mouse(event.screen_offset))
 
     def get_widget_under_mouse(self, screen_offset: Offset) -> Widget | None:
+        for widget in self._highlight_boxes:
+            widget.visible = False # prevent the highlight boxes from interfering with picking
         try:
             leaf_widget, _ = self.app.get_widget_at(*screen_offset)  # type: ignore
         except NoWidget:
