@@ -798,7 +798,8 @@ class Inspector(Container):
         if "inspector_highlight" not in self.app.styles.layers: # type: ignore
             self.app.styles.layers += ("inspector_highlight",) # type: ignore
         
-        self._highlight_boxes[dom_node] = {}
+        if dom_node not in self._highlight_boxes:
+            self._highlight_boxes[dom_node] = {}
         used_boxes: list[Container] = []
         def show_box(name: str, region: Region, color: str) -> None:
             """Draw a box to the screen."""
