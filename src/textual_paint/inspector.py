@@ -176,15 +176,25 @@ class DOMTree(Tree[DOMNode]):
     def watch_hover_line(self, previous_hover_line: int, hover_line: int) -> None:
         """Extend the hover line watcher to post a message when a node is hovered."""
         super().watch_hover_line(previous_hover_line, hover_line)
-        node: TreeNode[DOMNode] | None = self._get_node(hover_line)
+        node: TreeNode[DOMNode] | None = self._get_node(hover_line) if hover_line > -1 else None
+        # print("watch_hover_line", previous_hover_line, hover_line, node)
         if node is not None:
             assert isinstance(node.data, DOMNode), "All nodes in DOMTree should have DOMNode data, got: " + repr(node.data)
             self.post_message(self.Hovered(self, node, node.data))
-        # TODO: post when None? it seems to be reset anyways? but not if you move the mouse off the whole tree without moving it off a node
+        else:
+            self.post_message(self.Hovered(self, None, None))
     
     def on_leave(self, event: events.Leave) -> None:
-        """Extend the leave event to post a message when the mouse leaves the tree."""
-        self.post_message(self.Hovered(self, None, None))
+        """Handle the mouse leaving the tree."""
+        self.hover_line = -1
+        # """Post a message when the mouse leaves the tree."""
+        # self.post_message(self.Hovered(self, None, None))
+
+    def on_enter(self, event: events.Enter) -> None:
+        pass
+        # """Post a message when the mouse enters the tree, since hover_line won't change."""
+        # self.watch_hover_line(self.hover_line, self.hover_line)
+
 
 class _ShowMoreSentinelType: pass
 _ShowMoreSentinel = _ShowMoreSentinelType()
