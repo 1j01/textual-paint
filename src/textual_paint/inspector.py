@@ -855,8 +855,6 @@ class Inspector(Container):
             """Draw a box to the screen."""
             try:
                 box = self._highlight_boxes[dom_node][name]
-                # reset if hidden by get_widget_under_mouse (to avoid picking the highlight box)
-                box.visible = True
             except KeyError:
                 box = Container(classes="inspector_highlight")
                 self._highlight_boxes[dom_node][name] = box
