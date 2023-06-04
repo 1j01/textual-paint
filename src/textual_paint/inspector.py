@@ -615,7 +615,7 @@ class NodeInfo(Container):
                 else:
                     action = f"open_file({file!r}, {line_number})"
                     return Text.assemble(
-                        Text(f"{file}:{line_number} "),
+                        Text.styled(f"{file}:{line_number} ", "green"),
                         Text.from_markup(f"[@click={action}](Open)[/@click]"),
                     )
             except OSError as e:
