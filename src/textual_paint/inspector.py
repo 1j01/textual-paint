@@ -606,18 +606,7 @@ class NodeInfo(Container):
                     available_events.append(value)
         def message_info(message_class: Type[Message]) -> Text:
             """Return a description of a message class, listing any handlers."""
-            # A. Ideally Message would have a static method that returns the handler name.
-            # B. I tried constructing a message instance and getting the handler name from that,
-            #    with `message_class()._handler_name`, but:
-            #    1. this could have side effects,
-            #    2. this uses a private property, and
-            #    3. __init__ needs parameters, different for different message types.
-            #       (Constructing the base class and finagling it to use the subclass's namespace/name
-            #        might be possible, but seems like a lot of work for a fragile hack.)
-            # C. Duplicate the code from `Message.__init__`. It's not much code, since we can import camel_to_snake,
-            #    although I'm not sure the module is meant to be public, it's sort of just a helper.)
-            name = camel_to_snake(message_class.__name__)
-            handler_name = f"on_{message_class.namespace}_{name}" if message_class.namespace else f"on_{name}"
+            handler_name = message_class.handler_name
             handler_names = [handler_name, f"_{handler_name}"]
             # Find any listeners for this event
             # TODO: only look upwards if the event bubbles
