@@ -3428,6 +3428,8 @@ class PaintApp(App[None]):
     def action_toggle_inspector(self) -> None:
         inspector = self.query_one(Inspector)
         inspector.display = not inspector.display
+        if not inspector.display:
+            inspector.reset_highlight()
 
     def compose(self) -> ComposeResult:
         """Add our widgets."""
