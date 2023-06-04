@@ -609,9 +609,10 @@ class NodeInfo(Container):
             handler_name = message_class.handler_name
             handler_names = [handler_name, f"_{handler_name}"]
             # Find any listeners for this event
-            # TODO: only look upwards if the event bubbles
+            # Only look upwards if the event bubbles
+            potential_handlers = dom_node.ancestors_with_self if message_class.bubble else [dom_node]
             usages: list[Text] = []
-            for ancestor in dom_node.ancestors_with_self:
+            for ancestor in potential_handlers:
                 for handler_name in handler_names:
                     if hasattr(ancestor, handler_name):
                         # Record which class the handler is defined on
