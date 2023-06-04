@@ -219,9 +219,14 @@ class DOMTree(Tree[DOMNode]):
                     del self._wait_for_expand
                     break
         # Select the node in the tree.
+        # Note: `select_node` just places the cursor on the node. It doesn't actually select it.
         self.select_node(tree_node)
         self.scroll_to_node(tree_node)
+        # Don't toggle the node when selecting it.
+        auto_expand = self.auto_expand
+        self.auto_expand = False
         self.action_select_cursor()
+        self.auto_expand = auto_expand
 
 
 class _ShowMoreSentinelType: pass
@@ -253,12 +258,14 @@ class PropertiesTree(Tree[object]):
             classes=classes,
             disabled=disabled,
         )
+
         self._already_loaded: dict[TreeNode[object], set[str]] = {}
         """A mapping of tree nodes to the keys that have already been loaded.
         
         This allows the tree to be collapsed and expanded without duplicating nodes.
         It's also used for lazy-loading nodes when clicking the ellipsis in long lists...
         """
+
         self._num_keys_accessed: dict[TreeNode[object], int] = {}
         """A mapping of tree nodes to the number of keys that have been accessed."""
 
@@ -481,8 +488,50 @@ class PropertiesTree(Tree[object]):
 
 class NodeInfo(Container):
 
+    class FollowLinkToNode(Message):
+        """A message sent when a link is clicked, pointing to a DOM node."""
+        def __init__(self, dom_node: DOMNode) -> None:
+            super().__init__()
+            self.dom_node = dom_node
+
+    class StaticWithLinkSupport(Static):
+        """Static text that supports DOM node links.
+        
+        This class exists because actions can't target an arbitrary parent.
+        The only supported namespaces are `screen` and `app`.
+        So action_select_node has to be defined directly on the widget that
+        contains the @click actions.
+        (Maybe it could be an ad-hoc method on the widget instead.)
+        https://textual.textualize.io/guide/actions/#namespaces
+        """
+
+        def __init__(self, node_info: "NodeInfo", *, name: str | None = None, id: str | None = None, classes: str | None = None, disabled: bool = False) -> None:
+            super().__init__(name=name, id=id, classes=classes, disabled=disabled)
+            self._node_info = node_info
+
+        def action_select_node(self, link_id: int) -> None:
+            """Select a DOM node."""
+            dom_node = self._node_info._link_id_to_node.get(link_id)
+            print("action_select_node", link_id, dom_node)
+            if dom_node is None:
+                return
+            self.post_message(NodeInfo.FollowLinkToNode(dom_node))
+
+
     dom_node: var[DOMNode | None] = var[Optional[DOMNode]](None)
     """The DOM node being inspected."""
+
+    def __init__(self, *, name: str | None = None, id: str | None = None, classes: str | None = None, disabled: bool = False) -> None:
+        super().__init__(name=name, id=id, classes=classes, disabled=disabled)
+
+        self._link_id_counter = 0
+        """A counter used to generate unique IDs for links,
+        since CSS selectors aren't unique (without something like `nth-child()`),
+        and DOMNodes can't be used as arguments to an action function.
+        """
+
+        self._link_id_to_node: dict[int, DOMNode] = {}
+        """A mapping of link IDs to DOM nodes."""
 
     def compose(self) -> ComposeResult:
         """Add sub-widgets."""
@@ -495,11 +544,14 @@ class NodeInfo(Container):
             with TabPane("Keys", id="key_bindings"):
                 yield VerticalScroll(Static(classes="key_bindings"))
             with TabPane("Events", id="events"):
-                yield VerticalScroll(Static(classes="events"))
+                yield VerticalScroll(self.StaticWithLinkSupport(self, classes="events"))
 
     def watch_dom_node(self, dom_node: DOMNode | None) -> None:
         """Update the info displayed when the DOM node changes."""
         print("watch_dom_node", dom_node)
+
+        self._link_id_to_node.clear()
+
         properties_tree = self.query_one(PropertiesTree)
         properties_static = self.query_one(".properties_nothing_selected", Static)
         styles_static = self.query_one(".styles", Static)
@@ -592,10 +644,13 @@ class NodeInfo(Container):
                                 def_location = Text.from_markup(f"{escape(file)}:{line_number} [link={escape(file_uri)}](open file)[/link]")
                         except OSError as e:
                             def_location = Text.from_markup(f"[#808080](error getting location: [red]{escape(repr(e))}[/red])[/#808080]")
-                        # TODO: link to the DOM node in the tree that has the listener
                         # Note: css_path_nodes is just like ancestors_with_self, but reversed; it's still DOM nodes
                         descendant_arrow = Text.from_markup("[#808080] > [/#808080]")
                         dom_path = descendant_arrow.join([css_path_node.css_identifier_styled for css_path_node in ancestor.css_path_nodes])
+                        link_id = self._link_id_counter
+                        self._link_id_counter += 1
+                        self._link_id_to_node[link_id] = ancestor
+                        dom_path.apply_meta({"@click": f"select_node({link_id})"})
                         handler_qualname = f"{defining_class.__qualname__}.{handler_name}"
                         usages.append(Text.assemble(
                             "Listener on DOM node: ",
@@ -776,6 +831,10 @@ class Inspector(Container):
     def on_domtree_hovered(self, event: DOMTree.Hovered) -> None:
         """Handle a DOM node being hovered/highlighted."""
         self.highlight(event.dom_node)
+
+    async def on_node_info_follow_link_to_node(self, event: NodeInfo.FollowLinkToNode) -> None:
+        """Handle a link being clicked in the NodeInfo panel."""
+        await self.query_one(DOMTree).expand_to_dom_node(event.dom_node)
 
     def reset_highlight(self, except_widgets: Iterable[Widget] = ()) -> None:
         """Reset the highlight."""
