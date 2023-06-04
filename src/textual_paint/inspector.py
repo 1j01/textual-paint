@@ -438,7 +438,7 @@ class PropertiesTree(Tree[object]):
         def with_name(text: Text) -> Text:
             """Formats a key=value line."""
             return Text.assemble(
-                Text.from_markup(f"[b]{escape(name)}[/b]="), text
+                Text.styled(name, "bold"), "=", text
             )
 
         if exception is not None:
@@ -456,11 +456,11 @@ class PropertiesTree(Tree[object]):
             #     with_name(PropertiesTree.highlighter(repr(data))),
             #     Text.from_markup(f" [#808080]({length})[/#808080]"),
             # ))
-            # In the middle I think is best, although it's the most complicated:
+            # In the middle I think is best, although it's a little more complex:
             node.set_label(Text.assemble(
-                Text.from_markup(f"[b]{escape(name)}[/b]"),
-                Text.from_markup(f"[#808080]({length})[/#808080]"),
-                Text("="),
+                Text.styled(name, "bold"),
+                Text.styled(f"({length})", "#808080"),
+                "=",
                 PropertiesTree.highlighter(repr(data))  # type: ignore
             ))
             # Can I perhaps DRY with with_name() with with_name taking a length parameter? In other words:
@@ -611,10 +611,13 @@ class NodeInfo(Container):
                 line_number = inspect.getsourcelines(obj)[1]
                 file = inspect.getsourcefile(obj)
                 if file is None:
-                    return Text.from_markup(f"[#808080](unknown location)[/#808080]")
+                    return Text.styled(f"(unknown location)", "#808080")
                 else:
                     action = f"open_file({file!r}, {line_number})"
-                    return Text.from_markup(f"{escape(file)}:{line_number} [@click={action}](Open)[/@click]")
+                    return Text.assemble(
+                        Text(f"{file}:{line_number} "),
+                        Text.from_markup(f"[@click={action}](Open)[/@click]"),
+                    )
             except OSError as e:
                 return Text.from_markup(f"[#808080](error getting location: [red]{escape(repr(e))}[/red])[/#808080]")
 
@@ -640,7 +643,7 @@ class NodeInfo(Container):
                         defining_class = handler.__self__.__class__
                         def_location = location_info(handler)
                         # Note: css_path_nodes is just like ancestors_with_self, but reversed; it's still DOM nodes
-                        descendant_arrow = Text.from_markup("[#808080] > [/#808080]")
+                        descendant_arrow = Text.styled(" > ", "#808080")
                         dom_path = descendant_arrow.join([css_path_node.css_identifier_styled for css_path_node in ancestor.css_path_nodes])
                         link_id = self._link_id_counter
                         self._link_id_counter += 1
