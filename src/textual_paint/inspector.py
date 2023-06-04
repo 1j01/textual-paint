@@ -604,6 +604,20 @@ class NodeInfo(Container):
             for value in cls.__dict__.values():
                 if isinstance(value, type) and issubclass(value, Message):
                     available_events.append(value)
+
+        def location_info(obj: Any) -> Text:
+            """Shows the source code location of an object, with a link to open the file."""
+            try:
+                line_number = inspect.getsourcelines(obj)[1]
+                file = inspect.getsourcefile(obj)
+                if file is None:
+                    return Text.from_markup(f"[#808080](unknown location)[/#808080]")
+                else:
+                    action = f"open_file({file!r}, {line_number})"
+                    return Text.from_markup(f"{escape(file)}:{line_number} [@click={action}](Open)[/@click]")
+            except OSError as e:
+                return Text.from_markup(f"[#808080](error getting location: [red]{escape(repr(e))}[/red])[/#808080]")
+
         def message_info(message_class: Type[Message]) -> Text:
             """Return a description of a message class, listing any handlers."""
             handler_name = message_class.handler_name
@@ -624,16 +638,7 @@ class NodeInfo(Container):
                         # But there's a simpler way: method.__self__.__class__
                         handler = getattr(ancestor, handler_name)
                         defining_class = handler.__self__.__class__
-                        try:
-                            line_number = inspect.getsourcelines(handler)[1]
-                            file = inspect.getsourcefile(handler)
-                            if file is None:
-                                def_location = Text.from_markup(f"[#808080](unknown location)[/#808080]")
-                            else:
-                                action = f"open_file({file!r}, {line_number})"
-                                def_location = Text.from_markup(f"{escape(file)}:{line_number} [@click={action}](Open)[/@click]")
-                        except OSError as e:
-                            def_location = Text.from_markup(f"[#808080](error getting location: [red]{escape(repr(e))}[/red])[/#808080]")
+                        def_location = location_info(handler)
                         # Note: css_path_nodes is just like ancestors_with_self, but reversed; it's still DOM nodes
                         descendant_arrow = Text.from_markup("[#808080] > [/#808080]")
                         dom_path = descendant_arrow.join([css_path_node.css_identifier_styled for css_path_node in ancestor.css_path_nodes])
@@ -655,11 +660,13 @@ class NodeInfo(Container):
             else:
                 usage_info = Text(f"No listeners found for {' or '.join(handler_names)}")
             
-            # TODO: link to source code for the message class
+            def_location = location_info(message_class)
             qualname = message_class.__qualname__
             doc = inspect.getdoc(message_class) or '(No docstring)'
             return Text.assemble(
                 Text.styled(qualname, "bold"),
+                "\n",
+                def_location,
                 "\n",
                 Text.styled(doc, "#808080"),
                 "\n",
