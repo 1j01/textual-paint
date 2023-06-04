@@ -853,6 +853,7 @@ class Inspector(Container):
         used_boxes: list[Container] = []
         def show_box(name: str, region: Region, color: str) -> None:
             """Draw a box to the screen."""
+            assert isinstance(dom_node, Widget), "dom_node needed for association with highlight box, but got: " + repr(dom_node)
             try:
                 box = self._highlight_boxes[dom_node][name]
             except KeyError:
@@ -877,7 +878,7 @@ class Inspector(Container):
         # show_box("region", dom_node.region, "blue")
         # show_box("scrollable_content_region", dom_node.scrollable_content_region, "red")
         try:
-            map_geometry = self.screen.find_widget(dom_node)
+            map_geometry = self.screen.find_widget(dom_node) # type: ignore
         except NoWidget:
             return
         # Show the hovered widget's region, as it extends OUTSIDE of the clip region
