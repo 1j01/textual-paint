@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 
-"""Launches an editor with a given file and line number, based on what is running.
+"""Launches an editor with a given file and line number.
+If TEXTUAL_EDITOR environment variable is set, it will be used as the editor.
+Otherwise, the editor will be detected based on what processes are running,
+falling back to VISUAL or EDITOR environment variables.
+
+Note that "Textual" here refers to the TUI framework; it's not meant to contrast with "visual",
+as you may very well prefer a graphical editor while working on a TUI app.
 
 Based on https://github.com/facebook/create-react-app/blob/0f5e990b8a04f53861d64ff53751517bbf73d867/packages/react-dev-utils/launchEditor.js
 Ported to Python using ChatGPT.
@@ -167,15 +173,15 @@ def get_arguments_for_line_number(editor: str, file_name: str, line_number: str,
 
 def guess_editor() -> list[str | None]:
     # Explicit config always wins
-    if 'REACT_EDITOR' in os.environ:
-        # `return shlex.split(os.environ['REACT_EDITOR'])` gives:
+    if 'TEXTUAL_EDITOR' in os.environ:
+        # `return shlex.split(os.environ['TEXTUAL_EDITOR'])` gives:
         #   Expression of type "list[str]" cannot be assigned to return type "list[str | None]"
         #     "list[str]" is incompatible with "list[str | None]"
         #       TypeVar "_T@list" is invariant
         #         Type "str" cannot be assigned to type "str | None"
         #           Type cannot be assigned to type "None" Pylance(reportGeneralTypeIssues)
         # This works around the issue:
-        return [*shlex.split(os.environ['REACT_EDITOR'])]
+        return [*shlex.split(os.environ['TEXTUAL_EDITOR'])]
 
     # We can find out which editor is currently running by:
     # `ps x` on macOS and Linux
@@ -227,7 +233,7 @@ def print_instructions(file_name: str, error_message: str | None = None) -> None
             error_message += '.'
         print(f"The editor process exited with an error: {error_message}")
     print()
-    print("To set up the editor integration, add something like REACT_EDITOR=atom to the .env.local file in your project folder and restart the development server. Learn more: https://goo.gl/MMTaZt")
+    print("To set up the editor integration, add something like TEXTUAL_EDITOR=atom to the .env.local file in your project folder and restart the development server. Learn more: https://goo.gl/MMTaZt")
     print()
 
 _child_process = None
