@@ -24,6 +24,7 @@ from textual.widgets.tree import TreeNode
 from textual.css._style_properties import BorderDefinition
 
 def subtract_regions(a: Region, b: Region) -> list[Region]:
+    """Subtract region `b` from region `a`."""
     result: list[Region] = []
 
     # Check for no overlap or complete containment
@@ -58,6 +59,7 @@ def subtract_regions(a: Region, b: Region) -> list[Region]:
     return result
 
 def subtract_multiple_regions(base: Region, negations: Iterable[Region]) -> list[Region]:
+    """Subtract multiple regions from a base region."""
     result: list[Region] = [base]
     for negation in negations:
         new_result: list[Region] = []
@@ -135,6 +137,7 @@ class DOMTree(Tree[DOMNode]):
         classes: str | None = None,
         disabled: bool = False,
     ):
+        """Initialise the DOMTree widget."""
         super().__init__(
             root.css_identifier_styled,
             root,
@@ -143,14 +146,14 @@ class DOMTree(Tree[DOMNode]):
             classes=classes,
             disabled=disabled,
         )
-        self._root_dom_node = root
 
     def _on_tree_node_expanded(self, event: Tree.NodeExpanded[DOMNode]) -> None:
+        """Called when a node is expanded; loads the children."""
         event.stop()
         dom_node = event.node.data
         if dom_node is None:
             return
-        # event.node.remove_children()
+        # event.node.remove_children() was inefficient and maybe caused some other problems
         for child in dom_node.children:
             exists = False
             for node in event.node.children:
@@ -183,6 +186,7 @@ class DOMTree(Tree[DOMNode]):
 
     def watch_hover_line(self, previous_hover_line: int, hover_line: int) -> None:
         """Extend the hover line watcher to post a message when a node is hovered."""
+        # Could use self.watch() instead https://textual.textualize.io/api/dom_node/#textual.dom.DOMNode.watch
         super().watch_hover_line(previous_hover_line, hover_line)
         node: TreeNode[DOMNode] | None = self._get_node(hover_line) if hover_line > -1 else None
         # print("watch_hover_line", previous_hover_line, hover_line, node)
@@ -195,13 +199,6 @@ class DOMTree(Tree[DOMNode]):
     def on_leave(self, event: events.Leave) -> None:
         """Handle the mouse leaving the tree."""
         self.hover_line = -1
-        # """Post a message when the mouse leaves the tree."""
-        # self.post_message(self.Hovered(self, None, None))
-
-    def on_enter(self, event: events.Enter) -> None:
-        pass
-        # """Post a message when the mouse enters the tree, since hover_line won't change."""
-        # self.watch_hover_line(self.hover_line, self.hover_line)
 
 
 class _ShowMoreSentinelType: pass
@@ -224,6 +221,7 @@ class PropertiesTree(Tree[object]):
         classes: str | None = None,
         disabled: bool = False,
     ):
+        """Initialise the PropertiesTree widget."""
         super().__init__(
             label,
             root,
@@ -232,7 +230,6 @@ class PropertiesTree(Tree[object]):
             classes=classes,
             disabled=disabled,
         )
-        self._root_dom_node = root
         self._already_loaded: dict[TreeNode[object], set[str]] = {}
         """A mapping of tree nodes to the keys that have already been loaded.
         
@@ -243,10 +240,12 @@ class PropertiesTree(Tree[object]):
         """A mapping of tree nodes to the number of keys that have been accessed."""
 
     def _on_tree_node_expanded(self, event: Tree.NodeExpanded[object]) -> None:
+        """Called when a node is expanded; loads the children."""
         event.stop()
         self._populate_node(event.node)
 
     def _on_tree_node_selected(self, event: Tree.NodeSelected[object]) -> None:
+        """Called when a node is selected with the mouse or keyboard."""
         event.stop()
         if event.node.data is _ShowMoreSentinel:
             event.node.remove()
@@ -295,9 +294,14 @@ class PropertiesTree(Tree[object]):
     
     @property
     def AAA_test_property_that_raises_exception(self) -> str:
-        raise Exception("EMIT: Error Message Itself Test; uncomment and navigate to this node to see the error message")
+        """This property raises an exception when accessed.
+        
+        Navigate to this node in the DOM Tree and look in the Properties Panel to see the error message.
+        """
+        raise Exception("EMIT: Error Message Itself Test")
 
     def filter_property(self, key: str, value: object) -> bool:
+        """Return True if the property should be shown in the tree."""
         # TODO: allow toggling filtering of private properties
         # (or show in a collapsed node)
         return not key.startswith("_") and not callable(value)
@@ -348,6 +352,7 @@ class PropertiesTree(Tree[object]):
                     yield (key, None, e)
 
         def with_no_error(key_val: tuple[str, object]) -> tuple[str, object, None]:
+            """Adds a None error slot to a key-value pair."""
             return (key_val[0], key_val[1], None)
 
         iterator: Iterable[tuple[str, object, Exception | None]]
@@ -400,6 +405,7 @@ class PropertiesTree(Tree[object]):
         node = parent_node.add(name, data)
 
         def with_name(text: Text) -> Text:
+            """Formats a key=value line."""
             return Text.assemble(
                 Text.from_markup(f"[b]{escape(name)}[/b]="), text
             )
@@ -692,6 +698,7 @@ class Inspector(Container):
         self.highlight(self.get_widget_under_mouse(event.screen_offset))
 
     def get_widget_under_mouse(self, screen_offset: Offset) -> Widget | None:
+        """Get the widget under the mouse, ignoring the inspector's highlights and (optionally) the inspector panel."""
         for widget, _ in self.screen.get_widgets_at(*screen_offset):  # type: ignore
             if widget.has_class("inspector_highlight") or (
                 self in widget.ancestors_with_self and not ALLOW_INSPECTING_INSPECTOR
@@ -716,6 +723,7 @@ class Inspector(Container):
         self._prevent_highlight = True
 
         # Expand the tree to the selected widget.
+        # TODO: move to DOMTree
         tree = self.query_one(DOMTree)
         tree_node = tree.root
         for dom_node in reversed(leaf_widget.ancestors_with_self):
@@ -738,6 +746,7 @@ class Inspector(Container):
         tree.action_select_cursor()
         
         def clear_prevent_highlight() -> None:
+            """Clear the _prevent_highlight flag."""
             print("clear_prevent_highlight", hasattr(self, "_prevent_highlight"))
             if hasattr(self, "_prevent_highlight"):
                 del self._prevent_highlight
@@ -852,18 +861,16 @@ class Inspector(Container):
             self._highlight_boxes[dom_node] = {}
         used_boxes: list[Container] = []
         def show_box(name: str, region: Region, color: str) -> None:
-            """Draw a box to the screen."""
+            """Draw a box to the screen, re-using an old one if possible."""
             assert isinstance(dom_node, Widget), "dom_node needed for association with highlight box, but got: " + repr(dom_node)
             try:
                 box = self._highlight_boxes[dom_node][name]
             except KeyError:
                 box = Container(classes="inspector_highlight")
                 self._highlight_boxes[dom_node][name] = box
-            # box.styles.border = ("round", color)
             # The alpha doesn't actually blend with what's behind it, just a solid background.
             # Still, it's better with it, since it responds to the theme (dark/light).
             box.styles.background = Color.parse(color).with_alpha(0.5)
-            # box.border_title = name
             box.styles.width = region.width
             box.styles.height = region.height
             box.styles.offset = (region.x, region.y)
