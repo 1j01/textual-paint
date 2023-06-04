@@ -651,7 +651,12 @@ class NodeInfo(Container):
                         dom_path.apply_meta({"@click": f"select_node({link_id})"})
                         handler_qualname = f"{defining_class.__qualname__}.{handler_name}"
                         usages.append(Text.assemble(
-                            "Listener on DOM node: ",
+                            # "Listener on DOM node: ", # too verbose
+                            "🎯 ", # looks nice; different metaphor
+                            # "📥 ", fits mail metaphor
+                            # "📭 ", fits mail metaphor
+                            # Fitting the mail metaphor is not necessarily the best way to go since
+                            # a Message class delivered like a letter is. It bubbles up the DOM tree. 🫧🆙🌲
                             dom_path,
                             "\n\n",
                             handler_qualname,
@@ -667,6 +672,11 @@ class NodeInfo(Container):
             qualname = message_class.__qualname__
             doc = inspect.getdoc(message_class) or '(No docstring)'
             return Text.assemble(
+                # ✉️ doesn't show up as an emoji in VS Code at least
+                # 📨 shows with an inbox tray in Apple's emoji font
+                # "📩 ", is okay
+                # "📤 ", is too similar to 📥 for visual scanning
+                "📧 ", # represents email, but the E could be said to stand for "Event"
                 Text.styled(qualname, "bold"),
                 "\n",
                 def_location,
