@@ -688,6 +688,16 @@ class Inspector(Container):
     def on_mouse_move(self, event: events.MouseMove) -> None:
         """Handle the mouse moving."""
         if not self.picking:
+            # When highlighting for reasons other than picking,
+            # the inspector captures the mouse in order to get the mouse move events,
+            # and should release it as soon as the mouse moves, resetting the highlight.
+            # Would it be cleaner to attach a mouse move handler to the app instead?
+            # It seems like the only blessed way to do it is by adding methods to a class,
+            # but dynamically setting a method might work.
+            # That said, I think it explicitly looks at the MRO, so I'm not sure that would work.
+            if self.app.mouse_captured is self:
+                self.release_mouse()
+                self.reset_highlight()
             return
         self.highlight(self.get_widget_under_mouse(event.screen_offset))
 
@@ -764,6 +774,10 @@ class Inspector(Container):
     def on_domtree_hovered(self, event: DOMTree.Hovered) -> None:
         """Handle a DOM node being hovered/highlighted."""
         self.highlight(event.dom_node)
+        # Even if not picking with Inspect Element, capture the mouse
+        # in order to reset the highlight when the mouse moves.
+        # If not picking, it will be released in on_mouse_move.
+        self.capture_mouse()
 
     def reset_highlight(self, except_widgets: Iterable[Widget] = ()) -> None:
         """Reset the highlight."""
