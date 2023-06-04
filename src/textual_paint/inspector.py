@@ -659,7 +659,10 @@ class NodeInfo(Container):
             qualname = message_class.__qualname__
             doc = inspect.getdoc(message_class) or '(No docstring)'
             return Text.assemble(
-                Text.from_markup(f"[b]{escape(qualname)}[/b]\n[#808080]{escape(doc)}[/#808080]\n"),
+                Text.styled(qualname, "bold"),
+                "\n",
+                Text.styled(doc, "#808080"),
+                "\n",
                 usage_info,
                 "\n",
             )
