@@ -2,15 +2,14 @@
 
 import asyncio
 import inspect
-import pathlib
 from typing import Any, Iterable, NamedTuple, Optional, Type, TypeGuard
+
 from rich.markup import escape
 from rich.text import Text
 from rich.highlighter import ReprHighlighter
 # from rich.syntax import Syntax
 from textual import events
 from textual.app import ComposeResult
-from textual.case import camel_to_snake
 from textual.color import Color
 from textual.containers import Container, VerticalScroll
 from textual.dom import DOMNode
@@ -22,6 +21,8 @@ from textual.widget import Widget
 from textual.widgets import Button, Static, TabPane, TabbedContent, Tree
 from textual.widgets.tree import TreeNode
 from textual.css._style_properties import BorderDefinition
+
+from launch_editor import launch_editor
 
 def subtract_regions(a: Region, b: Region) -> list[Region]:
     """Subtract region `b` from region `a`."""
@@ -495,7 +496,7 @@ class NodeInfo(Container):
             self.dom_node = dom_node
 
     class StaticWithLinkSupport(Static):
-        """Static text that supports DOM node links.
+        """Static text that supports DOM node links and file opening links.
         
         This class exists because actions can't target an arbitrary parent.
         The only supported namespaces are `screen` and `app`.
@@ -516,6 +517,11 @@ class NodeInfo(Container):
             if dom_node is None:
                 return
             self.post_message(NodeInfo.FollowLinkToNode(dom_node))
+        
+        def action_open_file(self, path: str, line_number: int | None = None, column_number: int | None = None) -> None:
+            """Open a file."""
+            print("action_open_file", path, line_number, column_number)
+            launch_editor(path, line_number, column_number)
 
 
     dom_node: var[DOMNode | None] = var[Optional[DOMNode]](None)
@@ -634,14 +640,8 @@ class NodeInfo(Container):
                             if file is None:
                                 def_location = Text.from_markup(f"[#808080](unknown location)[/#808080]")
                             else:
-                                # def_location = f"{file}:{line_number}"
-                                # def_location = f"[link=file://{file}]{file}:{line_number}[/link]"
-                                # def_location = f"{file}:{line_number} [link=file://{file}](open)[/link]"
-                                # I'm including the line number here hoping that SOME editor will use it.
-                                # TODO: button to execute a command to open the file in an editor
-                                # (configurable? magical? or with a button for each known editor?)
-                                file_uri = pathlib.Path(file).as_uri() + "#" + str(line_number)
-                                def_location = Text.from_markup(f"{escape(file)}:{line_number} [link={escape(file_uri)}](open file)[/link]")
+                                action = f"open_file({file!r}, {line_number})"
+                                def_location = Text.from_markup(f"{escape(file)}:{line_number} [@click={action}](Open)[/@click]")
                         except OSError as e:
                             def_location = Text.from_markup(f"[#808080](error getting location: [red]{escape(repr(e))}[/red])[/#808080]")
                         # Note: css_path_nodes is just like ancestors_with_self, but reversed; it's still DOM nodes

@@ -303,9 +303,9 @@ def launch_editor(file_name: str, line_number: int|None=None, col_number: int|No
     if platform.system() == 'Windows':
         # On Windows, launch the editor in a shell because spawn can only
         # launch .exe files.
-        _child_process = subprocess.Popen(['cmd.exe', '/C', editor] + args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
+        _child_process = subprocess.Popen(['cmd.exe', '/C', editor] + args) #, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
     else:
-        _child_process = subprocess.Popen([editor] + args, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
+        _child_process = subprocess.Popen([editor] + args) #, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
     _child_process.wait()
 
     if _child_process.returncode:
