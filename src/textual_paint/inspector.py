@@ -815,10 +815,11 @@ class Inspector(Container):
 
         # Expand the tree to the selected widget.
         await self.query_one(DOMTree).expand_to_dom_node(leaf_widget)
-        
-        def clear_prevent_highlight() -> None:
-            """Clear the _prevent_highlight flag."""
-            print("clear_prevent_highlight", hasattr(self, "_prevent_highlight"))
+
+        def focus_and_clear_prevent_highlight() -> None:
+            """Focus the DOMTree, and clear the _prevent_highlight flag. Both of these things seem to need a delay."""
+            print("focus_and_clear_prevent_highlight", hasattr(self, "_prevent_highlight"))
+            self.query_one(DOMTree).focus()
             if hasattr(self, "_prevent_highlight"):
                 del self._prevent_highlight
         # self.call_later(clear_prevent_highlight) # Too early.
@@ -834,7 +835,7 @@ class Inspector(Container):
         #     self.query_one(DOMTree).call_later(clear_prevent_highlight)
         # self.call_later(wait_for_domtree)
         # Still unreliable. Just use a timer for now.
-        self.set_timer(0.1, clear_prevent_highlight)
+        self.set_timer(0.1, focus_and_clear_prevent_highlight)
 
     def on_domtree_selected(self, event: DOMTree.Selected) -> None:
         """Handle a node being selected in the DOM tree."""
