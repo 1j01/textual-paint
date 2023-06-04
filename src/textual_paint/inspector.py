@@ -663,7 +663,7 @@ class NodeInfo(Container):
             if usages:
                 usage_info = Text("\n\n").join(usages)
             else:
-                usage_info = Text(f"No listeners found for {handler_name}")
+                usage_info = Text(f"No listeners found for {' or '.join(handler_names)}")
             
             # TODO: link to source code for the message class
             qualname = message_class.__qualname__
