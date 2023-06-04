@@ -1,10 +1,13 @@
-"""Launches an editor and waits for it to exit.
+#!/usr/bin/env python3
+
+"""Launches an editor with a given file and line number, based on what is running.
 
 Based on https://github.com/facebook/create-react-app/blob/0f5e990b8a04f53861d64ff53751517bbf73d867/packages/react-dev-utils/launchEditor.js
 Ported to Python using ChatGPT.
 """
 
 import os
+import shlex
 import subprocess
 import platform
 import re
@@ -164,7 +167,7 @@ def get_arguments_for_line_number(editor, file_name, line_number, col_number, wo
 def guess_editor():
     # Explicit config always wins
     if 'REACT_EDITOR' in os.environ:
-        return [shlex.split(os.environ['REACT_EDITOR'])]
+        return shlex.split(os.environ['REACT_EDITOR'])
 
     # We can find out which editor is currently running by:
     # `ps x` on macOS and Linux
@@ -214,6 +217,7 @@ def print_instructions(file_name, error_message=None):
 _child_process = None
 
 def launch_editor(file_name, line_number, col_number):
+    """Opens an editor with the specified file name and line number, and waits for the process to exit."""
     if not os.path.exists(file_name):
         return
 
@@ -260,7 +264,7 @@ def launch_editor(file_name, line_number, col_number):
 
     workspace = None
     if line_number:
-        args.extend(get_arguments_for_line_number(editor, file_name, line_number, col_number, workspace))
+        args.extend(get_arguments_for_line_number(editor, file_name, str(line_number), str(col_number), workspace))
     else:
         args.append(file_name)
 
