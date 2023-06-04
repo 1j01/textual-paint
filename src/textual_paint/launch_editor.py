@@ -199,7 +199,7 @@ def guess_editor() -> list[str | None]:
             for process_name in process_names:
                 if process_name in output:
                     return [COMMON_EDITORS_LINUX[process_name]]
-    except Exception as e:
+    except subprocess.CalledProcessError:
         pass
 
     # Last resort, use old skool env vars
