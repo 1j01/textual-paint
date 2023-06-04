@@ -200,6 +200,29 @@ class DOMTree(Tree[DOMNode]):
         """Handle the mouse leaving the tree."""
         self.hover_line = -1
 
+    async def expand_to_dom_node(self, dom_node: DOMNode) -> None:
+        """Drill down to the given DOM node in the tree."""
+        tree_node = self.root
+        # Expand nodes until we get to the one we want.
+        for dom_node in reversed(dom_node.ancestors_with_self):
+            for node in (*tree_node.children, tree_node): # tree_node in case it's the root
+                if node.data == dom_node:
+                    tree_node = node
+                    tree_node.expand()
+                    async def wait_for_expand() -> None:
+                        # while not tree_node.is_expanded: # this is set immediately
+                        #     await asyncio.sleep(0.01)
+                        await asyncio.sleep(0.01)
+                    task = asyncio.create_task(wait_for_expand())
+                    self._wait_for_expand = task
+                    await task
+                    del self._wait_for_expand
+                    break
+        # Select the node in the tree.
+        self.select_node(tree_node)
+        self.scroll_to_node(tree_node)
+        self.action_select_cursor()
+
 
 class _ShowMoreSentinelType: pass
 _ShowMoreSentinel = _ShowMoreSentinelType()
@@ -723,27 +746,7 @@ class Inspector(Container):
         self._prevent_highlight = True
 
         # Expand the tree to the selected widget.
-        # TODO: move to DOMTree
-        tree = self.query_one(DOMTree)
-        tree_node = tree.root
-        for dom_node in reversed(leaf_widget.ancestors_with_self):
-            for node in (*tree_node.children, tree_node): # tree_node in case it's the root
-                if node.data == dom_node:
-                    tree_node = node
-                    tree_node.expand()
-                    async def wait_for_expand() -> None:
-                        # while not tree_node.is_expanded: # this is set immediately
-                        #     await asyncio.sleep(0.01)
-                        await asyncio.sleep(0.01)
-                    task = asyncio.create_task(wait_for_expand())
-                    self._wait_for_expand = task
-                    await task
-                    del self._wait_for_expand
-                    break
-        # Select the widget in the tree.
-        tree.select_node(tree_node)
-        tree.scroll_to_node(tree_node)
-        tree.action_select_cursor()
+        await self.query_one(DOMTree).expand_to_dom_node(leaf_widget)
         
         def clear_prevent_highlight() -> None:
             """Clear the _prevent_highlight flag."""
