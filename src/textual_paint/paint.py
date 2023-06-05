@@ -2567,7 +2567,7 @@ class PaintApp(App[None]):
         The goal is to tint an arbitrary region of the screen.
         """
         self._filters.append(self._hacky_filter)
-        self.canvas.refresh()
+        self.canvas.refresh(Region(5, 5, 10, 10))
         self.call_after_refresh(self._filters.pop)
 
     def get_backup_file_path(self) -> str:
