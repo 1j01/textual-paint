@@ -43,6 +43,7 @@ from file_dialogs import SaveAsDialogWindow, OpenDialogWindow
 from edit_colors import EditColorsDialogWindow
 from localization.i18n import get as _, load_language, remove_hotkey
 from wallpaper import get_config_dir, set_wallpaper
+from filter_test import Colorize
 
 from __init__ import __version__
 
@@ -2557,6 +2558,18 @@ class PaintApp(App[None]):
         self.backup_interval = 10
         self.set_interval(self.backup_interval, self.save_backup)
 
+        self.set_interval(1, self.hack)
+
+    def hack(self) -> None:
+        """Testing a filter to update one region with a tint.
+        
+        This does work to tint a specific widget, but that can already be done with `styles.tint`.
+        The goal is to tint an arbitrary region of the screen.
+        """
+        self._filters.append(self._hacky_filter)
+        self.canvas.refresh()
+        self.call_after_refresh(self._filters.pop)
+
     def get_backup_file_path(self) -> str:
         """Returns the path to the backup file."""
         backup_file_path = self.file_path or _("Untitled")
@@ -4493,6 +4506,9 @@ if args.clear_screen:
     os.system("cls||clear")
 
 app.call_later(app.start_backup_interval)
+
+app._hacky_filter = Colorize()
+# app._filters.append(app._hacky_filter)
 
 if __name__ == "__main__":
     app.run()
