@@ -2575,6 +2575,7 @@ class PaintApp(App[None]):
             dummy.styles.width = 20
             dummy.styles.height = 5
             dummy.styles.dock = "top"
+            dummy.styles.layer = "window"
         self.dummy.refresh(Region(5, 5, 10, 10))
         self.call_after_refresh(self._filters.pop)
 
