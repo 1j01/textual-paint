@@ -246,7 +246,7 @@ class ColorField(Widget):
     def render_line(self, y: int) -> Strip:
         """Render a line of the widget."""
         segments: list[Segment] = []
-        crosshair = "✜" # Options: ┼+✜✛✚╋╬⁘⁛⌖⯐ or
+        crosshair = "✜" # Options: ┼+✜✛⊹✚╋╬⁘⁛⌖⯐ or
         #  ╻
         # ╺ ╸
         #  ╹

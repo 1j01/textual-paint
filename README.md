@@ -289,7 +289,7 @@ The default symbols used may not be the best on your particular system, so I may
 
 ### Cursor
 
-A crosshair cursor could use one of `+✜✛✚╋╬⁘⁛⌖⯐`, but whilst that imitates the look, it might be better to show the pixel under the cursor, i.e. character cell, surrounded by dashes, like this:
+A crosshair cursor could use one of `+✜✛⊹✚╋╬⁘⁛⌖⯐`, but whilst that imitates the look, it might be better to show the pixel under the cursor, i.e. character cell, surrounded by dashes, like this:
 
 ```
  ╻
