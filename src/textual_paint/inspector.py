@@ -544,6 +544,9 @@ class NodeInfo(Container):
 
     def compose(self) -> ComposeResult:
         """Add sub-widgets."""
+        # FIXME: when resizing NodeInfo very large, the scrollbar stops reaching all the way, and eventually disappears.
+        # I think NodeInfo is going offscreen in this case, since it's not limited by what the layout can fit.
+        yield ResizeHandle(self, "top")
         with TabbedContent(initial="properties"):
             with TabPane("Props", id="properties"):
                 yield PropertiesTree("", classes="properties")
@@ -777,7 +780,7 @@ class ResizeHandle(Widget):
         # char = "⣿" if self._horizontal_resize else "⠶"
         # char = "┃" if self._horizontal_resize else "━"
         # char = "│" if self._horizontal_resize else "─"
-        char = "║" if self._horizontal_resize else "═"
+        char = "║" if self._horizontal_resize else "═" * self.size.width
         return Strip([Segment(char, Style(color="#808080"))])
 
 
