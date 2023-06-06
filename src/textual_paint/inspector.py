@@ -6,7 +6,6 @@ from typing import Any, Iterable, Literal, NamedTuple, Optional, Type, TypeGuard
 
 from rich.markup import escape
 from rich.segment import Segment
-from rich.style import Style
 from rich.text import Text
 from rich.highlighter import ReprHighlighter
 # from rich.syntax import Syntax
@@ -710,10 +709,11 @@ class ResizeHandle(Widget):
         width: auto;
         height: auto;
         background: $panel;
-        color: black;
+        color: rgba(128,128,128,0);
     }
     ResizeHandle:hover {
         background: $panel-lighten-1;
+        color: rgba(128,128,128,0.3);
     }
     ResizeHandle.-active {
         background: $panel-darken-1;
@@ -781,7 +781,7 @@ class ResizeHandle(Widget):
         # char = "┃" if self._horizontal_resize else "━"
         # char = "│" if self._horizontal_resize else "─"
         char = "║" if self._horizontal_resize else "═" * self.size.width
-        return Strip([Segment(char, Style(color="#808080"))])
+        return Strip([Segment(char, self.rich_style)])
 
 
 class OriginalStyles(NamedTuple):
