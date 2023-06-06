@@ -3429,7 +3429,7 @@ class PaintApp(App[None]):
         inspector = self.query_one(Inspector)
         inspector.display = not inspector.display
         if not inspector.display:
-            inspector.reset_highlight()
+            inspector.picking = False
 
     def compose(self) -> ComposeResult:
         """Add our widgets."""
