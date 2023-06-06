@@ -547,13 +547,13 @@ class NodeInfo(Container):
         with TabbedContent(initial="properties"):
             with TabPane("Props", id="properties"):
                 yield PropertiesTree("", classes="properties")
-                yield Static("", classes="properties_nothing_selected")
+                yield Static("", classes="properties_nothing_selected tab_content_static")
             with TabPane("CSS", id="styles"):
-                yield VerticalScroll(Static(classes="styles"))
+                yield VerticalScroll(Static(classes="styles tab_content_static"))
             with TabPane("Keys", id="key_bindings"):
-                yield VerticalScroll(Static(classes="key_bindings"))
+                yield VerticalScroll(Static(classes="key_bindings tab_content_static"))
             with TabPane("Events", id="events"):
-                yield VerticalScroll(self.StaticWithLinkSupport(self, classes="events"))
+                yield VerticalScroll(self.StaticWithLinkSupport(self, classes="events tab_content_static"))
 
     def watch_dom_node(self, dom_node: DOMNode | None) -> None:
         """Update the info displayed when the DOM node changes."""
@@ -828,7 +828,7 @@ class Inspector(Container):
         padding: 0 !important;
         margin: 0 !important;
     }
-    Inspector Static {
+    Inspector .tab_content_static {
         margin-bottom: 1;
     }
     """
