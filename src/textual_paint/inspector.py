@@ -40,6 +40,13 @@ def set_rule(self: Styles, rule: str, value: object | None) -> bool:
     return original_set_rule.__get__(self)(rule, value)
 Styles.set_rule = set_rule
 
+rule_set_call_stacks: dict[RuleSet, list[inspect.FrameInfo]] = {}
+original_rule_set_init = RuleSet.__init__
+def rule_set_init(self: RuleSet, *args, **kwargs):
+    original_rule_set_init.__get__(self)(*args, **kwargs)
+    rule_set_call_stacks[self] = inspect.stack()
+RuleSet.__init__ = rule_set_init
+
 
 def subtract_regions(a: Region, b: Region) -> list[Region]:
     """Subtract region `b` from region `a`."""
@@ -652,15 +659,14 @@ class NodeInfo(Container):
                 return None
             return (frame_info.filename, frame_info.lineno)
         
-        def style_location_info(rule: str) -> Text:
+        def style_location_info(location: tuple[str, int | None] | None) -> Text:
             """Shows a link to open the the source code where a style is set."""
             # TODO: DRY with `location_info()`
-            location = trace_inline_style(rule)
             if location is None:
                 return Text.styled(f"(unknown location)", "#808080")
             else:
                 file, line_number = location
-                action = f"open_file({file!r}, {line_number})"
+                action = f"open_file({file!r}, {line_number!r})"
                 return Text.assemble(
                     # Text.styled(f"{file}:{line_number} ", "green"),
                     Text.from_markup(f"[@click={action}](Open)[/@click]"),
@@ -681,7 +687,7 @@ class NodeInfo(Container):
                 ": ",
                 value,
                 " ",
-                style_location_info(rule),
+                style_location_info(trace_inline_style(rule)),
             )
         inline_style_text = Text.assemble(
             Text.styled("inline styles", "italic"),
@@ -692,12 +698,51 @@ class NodeInfo(Container):
             "\n}",
         )
 
-        text = Text.assemble(
+        def format_rule_set(rule_set: RuleSet) -> Text:
+            """Formats a CSS rule set for display, with a link to open the source code."""
+            path: str | None = None
+            line_number: int | None = None
+            try:
+                stack = rule_set_call_stacks[rule_set]
+                # look up the stack to find local named "path"
+                for frame_info in stack:
+                    if frame_info.function == "parse":
+                        path = frame_info.frame.f_locals["path"]
+                        assert isinstance(path, str)
+                        break
+            except KeyError:
+                path = None
+                pass
+            if path is not None and ":" in path:
+                path, widget_name = path.rsplit(":", 1)
+                # parse the python file to find the line number of the widget definition
+                # could use `ast` module for robustness
+                # to avoid things like finding DEFAULT_CSS from the wrong widget
+                with open(path) as f:
+                    lines = f.readlines()
+                for i, line in enumerate(lines):
+                    if f"class {widget_name}" in line:
+                        line_number = i + 1
+                        # keep looking for DEFAULT_CSS more specifically
+                    if line_number is not None and "DEFAULT_CSS" in line:
+                        line_number = i + 1
+                        # TODO: find the specific line number of the rule set
+                        break
+            css = rule_set.css
+            selectors, declarations_and_end_curly = css.split("{", 1)
+            return Text.assemble(
+                selectors,
+                "{ ",
+                style_location_info((path, line_number) if path else None),
+                declarations_and_end_curly,
+            )
+
+        styles_text = Text.assemble(
             inline_style_text,
             "\n\n",
-            Text("\n\n").join(Text(rule_set.css) for rule_set in applicable_rule_sets),
+            Text("\n\n").join(format_rule_set(rule_set) for rule_set in applicable_rule_sets),
         )
-        styles_static.update(text)
+        styles_static.update(styles_text)
 
         # key_bindings_static.update("\n".join(map(repr, dom_node.BINDINGS)) or "(None defined with BINDINGS)")
         key_bindings_static.update(Text("\n").join(map(lambda binding: highlighter(repr(binding)), dom_node.BINDINGS)) or "(None defined with BINDINGS)")
