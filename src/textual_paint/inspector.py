@@ -13,6 +13,8 @@ from textual import events
 from textual.app import ComposeResult
 from textual.color import Color
 from textual.containers import Container, VerticalScroll
+from textual.css.match import match
+from textual.css.model import RuleSet, Selector, SelectorSet
 from textual.dom import DOMNode
 from textual.errors import NoWidget
 from textual.geometry import Offset, Region, Size
@@ -587,10 +589,27 @@ class NodeInfo(Container):
         properties_tree.root.collapse()
         properties_tree.root.expand()
 
-        # styles_static.update(dom_node.css_tree)
-        # styles_static.update(dom_node._css_styles.css)
-        styles_static.update(dom_node.styles.css)
+        # styles_static.update(dom_node.styles.css)
         # styles_static.update(Syntax(f"all styles {{\n{dom_node.styles.css}\n}}", "css"))
+        # TODO: sort by specificity
+        # TODO: syntax highlight (`Syntax(css, "css")` almost works but is ugly/inconsistent because it assumes Web CSS flavor, not Textual CSS.)
+        # TODO: mark styles that don't apply because they're overridden
+        # TODO: link to source code where CSS rule sets are defined
+        # TODO: link to source code where inline styles are set,
+        # using call stack magic and instrumentation [optionally]
+        # TODO: edit/toggle rules
+        inline_styles = dom_node.styles.inline
+        fake_selector_set = SelectorSet([Selector("inline styles")])
+        inline_rule_set = RuleSet(selector_set=[fake_selector_set], styles=inline_styles)
+        stylesheet = dom_node.app.stylesheet # type: ignore
+        rule_sets = stylesheet.rules
+        applicable_rule_sets: list[RuleSet] = [inline_rule_set]
+        for rule_set in rule_sets:
+            selector_set = rule_set.selector_set
+            if match(selector_set, dom_node):
+                applicable_rule_sets.append(rule_set)
+        
+        styles_static.update("\n\n".join(rule_set.css for rule_set in applicable_rule_sets))
 
         # key_bindings_static.update("\n".join(map(repr, dom_node.BINDINGS)) or "(None defined with BINDINGS)")
         highlighter = ReprHighlighter()
