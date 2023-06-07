@@ -247,7 +247,7 @@ def launch_editor(file_name: str, line_number: int|None=None, col_number: int|No
     # via: https://github.com/nodejs/node/blob/c3bb4b1aa5e907d489619fb43d233c3336bfc03d/lib/child_process.js#L333
     # and it should be a positive integer
     if not (isinstance(line_number, int) and line_number > 0):
-        return
+        line_number = None
 
     # col_number is optional, but should be a positive integer too
     # default is 1
