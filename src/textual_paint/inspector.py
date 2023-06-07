@@ -27,7 +27,7 @@ from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import Button, Static, TabPane, TabbedContent, Tree
 from textual.widgets.tree import TreeNode
-from textual.css._style_properties import BorderDefinition
+# from textual.css._style_properties import BorderDefinition
 
 from launch_editor import launch_editor
 
@@ -953,12 +953,12 @@ class ResizeHandle(Widget):
 class OriginalStyles(NamedTuple):
     """The original styles of a widget before highlighting."""
 
-    border: BorderDefinition
-    """The original border of the widget."""
-    border_title: str | Text | None
-    """The original border title of the widget."""
-    background: Color | None
-    """The original background of the widget."""
+    # border: BorderDefinition | None
+    # """The original border of the widget."""
+    # border_title: str | Text | None
+    # """The original border title of the widget."""
+    # background: Color | None
+    # """The original background of the widget."""
     tint: Color | None
     """The original tint of the widget."""
 
@@ -1121,9 +1121,9 @@ class Inspector(Container):
         for widget, old in list(self._highlight_styles.items()):
             if widget in except_widgets:
                 continue
-            widget.styles.border = old.border
-            widget.border_title = old.border_title
-            widget.styles.background = old.background
+            # widget.styles.border = old.border
+            # widget.border_title = old.border_title
+            # widget.styles.background = old.background
             widget.styles.tint = old.tint
             del self._highlight_styles[widget]
 
@@ -1180,10 +1180,10 @@ class Inspector(Container):
             if widget in self._highlight_styles:
                 continue
             self._highlight_styles[widget] = OriginalStyles(
-                background=widget.styles.background,
-                border=widget.styles.border,
-                border_title=widget.border_title,
-                tint=widget.styles.tint,
+                # background=widget.styles.inline.background if widget.styles.inline.has_rule("background") else None,
+                # border=widget.styles.inline.border if widget.styles.inline.has_rule("border") else None,
+                # border_title=widget.border_title,
+                tint=widget.styles.inline.tint if widget.styles.inline.has_rule("tint") else None,
             )
             widget.styles.tint = Color.parse("aquamarine").with_alpha(0.5)
 
