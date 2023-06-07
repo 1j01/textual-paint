@@ -14,7 +14,8 @@ from textual.app import ComposeResult
 from textual.color import Color
 from textual.containers import Container, VerticalScroll
 from textual.css.match import match
-from textual.css.model import RuleSet, Selector, SelectorSet
+from textual.css.model import RuleSet
+from textual.css.styles import Styles
 from textual.dom import DOMNode
 from textual.errors import NoWidget
 from textual.geometry import Offset, Region, Size
@@ -27,6 +28,18 @@ from textual.widgets.tree import TreeNode
 from textual.css._style_properties import BorderDefinition
 
 from launch_editor import launch_editor
+
+# Instrument style setting in order to link to the source code where inline styles are set.
+inline_style_call_stacks: dict[DOMNode, dict[str, list[inspect.FrameInfo]]] = {}
+original_set_rule = Styles.set_rule
+def set_rule(self: Styles, rule: str, value: object | None) -> bool:
+    if self.node and self.node.styles.inline is self:
+        if self.node not in inline_style_call_stacks:
+            inline_style_call_stacks[self.node] = {}
+        inline_style_call_stacks[self.node][rule] = inspect.stack()
+    return original_set_rule.__get__(self)(rule, value)
+Styles.set_rule = set_rule
+
 
 def subtract_regions(a: Region, b: Region) -> list[Region]:
     """Subtract region `b` from region `a`."""
@@ -553,7 +566,7 @@ class NodeInfo(Container):
                 yield PropertiesTree("", classes="properties")
                 yield Static("", classes="properties_nothing_selected tab_content_static")
             with TabPane("CSS", id="styles"):
-                yield VerticalScroll(Static(classes="styles tab_content_static"))
+                yield VerticalScroll(self.StaticWithLinkSupport(self, classes="styles tab_content_static"))
             with TabPane("Keys", id="key_bindings"):
                 yield VerticalScroll(Static(classes="key_bindings tab_content_static"))
             with TabPane("Events", id="events"):
@@ -589,30 +602,104 @@ class NodeInfo(Container):
         properties_tree.root.collapse()
         properties_tree.root.expand()
 
+        highlighter = ReprHighlighter()
+
         # styles_static.update(dom_node.styles.css)
         # styles_static.update(Syntax(f"all styles {{\n{dom_node.styles.css}\n}}", "css"))
         # TODO: sort by specificity
         # TODO: syntax highlight (`Syntax(css, "css")` almost works but is ugly/inconsistent because it assumes Web CSS flavor, not Textual CSS.)
         # TODO: mark styles that don't apply because they're overridden
         # TODO: link to source code where CSS rule sets are defined
-        # TODO: link to source code where inline styles are set,
-        # using call stack magic and instrumentation [optionally]
         # TODO: edit/toggle rules
-        inline_styles = dom_node.styles.inline
-        fake_selector_set = SelectorSet([Selector("inline styles")])
-        inline_rule_set = RuleSet(selector_set=[fake_selector_set], styles=inline_styles)
+
         stylesheet = dom_node.app.stylesheet # type: ignore
         rule_sets = stylesheet.rules
-        applicable_rule_sets: list[RuleSet] = [inline_rule_set]
+        applicable_rule_sets: list[RuleSet] = []
         for rule_set in rule_sets:
             selector_set = rule_set.selector_set
             if match(selector_set, dom_node):
                 applicable_rule_sets.append(rule_set)
         
-        styles_static.update("\n\n".join(rule_set.css for rule_set in applicable_rule_sets))
+        to_ignore = [("inspector.py", "set_rule"), ("styles.py", "set_rule"), ("_style_properties.py", "__set__")]
+        def should_ignore(frame_info: inspect.FrameInfo) -> bool:
+            """Filter out frames that are not relevant to the user."""
+            for (ignore_filename, ignore_func_name) in to_ignore:
+                if frame_info.filename.endswith(ignore_filename) and frame_info.function == ignore_func_name:
+                    return True
+            return False
+        def trace_inline_style(rule: str) -> tuple[str, int] | None:
+            """Returns the location where a style is set, or None if it can't be found."""
+            try:
+                source = inline_style_call_stacks[dom_node]
+                # This can definitely cause KeyError, though I'm not quite sure why yet
+                # maybe styles are set other than through `set_rule`,
+                # such as `merge` or `merge_rules`?
+                # Or it could have to do with compound properties since `border` is a shorthand,
+                # and it's the one that's causing the KeyError. That's probably it. TODO: try to fix this.
+                frame_infos = source[rule]
+            except KeyError:
+                return None
+            frame_infos = [frame_info for frame_info in frame_infos if not should_ignore(frame_info)]
+            if not frame_infos:
+                return None
+            try:
+                # The first frame after the ignored ones is likely the one we want.
+                # However, if you define a helper function for setting styles,
+                # it may not be very useful, as it would only locate the helper function.
+                # The UI is only a single button, for now, but full stack traces could be exposed.
+                frame_info = frame_infos[0]
+            except IndexError: # just in case
+                return None
+            return (frame_info.filename, frame_info.lineno)
+        
+        def style_location_info(rule: str) -> Text:
+            """Shows a link to open the the source code where a style is set."""
+            # TODO: DRY with `location_info()`
+            location = trace_inline_style(rule)
+            if location is None:
+                return Text.styled(f"(unknown location)", "#808080")
+            else:
+                file, line_number = location
+                action = f"open_file({file!r}, {line_number})"
+                return Text.assemble(
+                    # Text.styled(f"{file}:{line_number} ", "green"),
+                    Text.from_markup(f"[@click={action}](Open)[/@click]"),
+                )
+
+        # `css_lines` property has the code for formatting declarations;
+        # I don't think there's a way to do it for a single declaration.
+        css_lines = dom_node.styles.inline.css_lines
+        # inline_rules = dom_node.styles.inline.get_rules()
+        def format_inline_style_line(css_line: str) -> Text:
+            """Formats a single CSS line for display, with a link to open the source code."""
+            rule, value = css_line.split(":", 1)
+            rule = rule.strip()
+            value = value.strip()
+            return Text.assemble(
+                "  ",
+                rule,
+                ": ",
+                value,
+                " ",
+                style_location_info(rule),
+            )
+        inline_style_text = Text.assemble(
+            Text.styled("inline styles", "italic"),
+            " {\n",
+            Text("\n").join(
+                format_inline_style_line(css_line) for css_line in css_lines
+            ),
+            "\n}",
+        )
+
+        text = Text.assemble(
+            inline_style_text,
+            "\n\n",
+            Text("\n\n").join(Text(rule_set.css) for rule_set in applicable_rule_sets),
+        )
+        styles_static.update(text)
 
         # key_bindings_static.update("\n".join(map(repr, dom_node.BINDINGS)) or "(None defined with BINDINGS)")
-        highlighter = ReprHighlighter()
         key_bindings_static.update(Text("\n").join(map(lambda binding: highlighter(repr(binding)), dom_node.BINDINGS)) or "(None defined with BINDINGS)")
 
         # For events, look for class properties that are subclasses of Message
