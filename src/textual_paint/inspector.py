@@ -2,10 +2,12 @@
 
 import asyncio
 import inspect
+import os
 from typing import Any, Iterable, Literal, NamedTuple, Optional, Type, TypeGuard
 
 from rich.markup import escape
 from rich.segment import Segment
+from rich.style import Style
 from rich.text import Text
 from rich.highlighter import ReprHighlighter
 # from rich.syntax import Syntax
@@ -659,17 +661,16 @@ class NodeInfo(Container):
                 return None
             return (frame_info.filename, frame_info.lineno)
         
-        def format_location_info(location: tuple[str, int | None] | None, verbose: bool = False) -> Text:
+        def format_location_info(location: tuple[str, int | None] | None) -> Text:
             """Shows a link to open the the source code where a style is set."""
             if location is None:
                 return Text.styled(f"(unknown location)", "#808080")
             else:
                 file, line_number = location
                 action = f"open_file({file!r}, {line_number!r})"
-                return Text.assemble(
-                    *([Text.styled(f"{file}:{line_number} ", "green")] if verbose else []),
-                    Text.from_markup(f"[@click={action}](Open)[/@click]"),
-                )
+                file_name = os.path.basename(file)
+                location_string = f"{file_name}:{line_number}" if line_number is not None else file_name
+                return Text.styled(location_string, Style(meta={"@click": action}))
 
         # `css_lines` property has the code for formatting declarations;
         # I don't think there's a way to do it for a single declaration.
@@ -765,7 +766,7 @@ class NodeInfo(Container):
             try:
                 line_number = inspect.getsourcelines(obj)[1]
                 file = inspect.getsourcefile(obj)
-                return format_location_info((file, line_number) if file else None, True)
+                return format_location_info((file, line_number) if file else None)
             except OSError as e:
                 return Text.from_markup(f"[#808080](error getting location: [red]{escape(repr(e))}[/red])[/#808080]")
 
@@ -808,7 +809,7 @@ class NodeInfo(Container):
                             dom_path,
                             "\n\n",
                             handler_qualname,
-                            "\n",
+                            " ",
                             def_location,
                         ))
             if usages:
@@ -826,7 +827,7 @@ class NodeInfo(Container):
                 # "📤 ", is too similar to 📥 for visual scanning
                 "📧 ", # represents email, but the E could be said to stand for "Event"
                 Text.styled(qualname, "bold"),
-                "\n",
+                " ",
                 def_location,
                 "\n",
                 Text.styled(doc, "#808080"),
@@ -976,6 +977,7 @@ class Inspector(Container):
     }
     Inspector .tab_content_static {
         margin-bottom: 1;
+        link-color: $accent;
     }
     """
 
