@@ -17,7 +17,7 @@ from textual.color import Color
 from textual.containers import Container, VerticalScroll
 from textual.css.match import match
 from textual.css.model import RuleSet
-from textual.css.styles import Styles
+from textual.css.styles import RulesMap, Styles
 from textual.dom import DOMNode
 from textual.errors import NoWidget
 from textual.geometry import Offset, Region, Size
@@ -674,16 +674,38 @@ class NodeInfo(Container):
 
         # `css_lines` property has the code for formatting declarations;
         # I don't think there's a way to do it for a single declaration.
-        css_lines = dom_node.styles.inline.css_lines
-        # inline_rules = dom_node.styles.inline.get_rules()
-        def format_inline_style_line(css_line: str) -> Text:
+        # css_lines = dom_node.styles.inline.css_lines
+        # But we need to associate the snake_cased/hyphenated/shorthand CSS property names,
+        # in order to provide links to the source code.
+        inline_styles = dom_node.styles.inline
+        inline_rules = inline_styles.get_rules()
+        def format_inline_style_line(rule: str) -> Text:
             """Formats a single CSS line for display, with a link to open the source code."""
-            rule, value = css_line.split(":", 1)
-            rule = rule.strip()
+            # Ugly hack for creating a string from a single rule,
+            # while associating the snake_cased/hyphenated/shorthand CSS property names.
+            # TODO: display as shorthand properties when possible, as css_lines does.
+            # This code currently breaks things up into the individual rules,
+            # in order to associate the stack traces with the rules.
+            # (The stacks are captured for individual properties, not shorthands.)
+            # This could be cleaned up a lot with some API changes in `Styles`.
+            single_rule_rules_map = RulesMap()
+            single_rule_rules_map[rule] = inline_rules[rule]
+            important: set[str] = set()
+            if rule in inline_styles.important:
+                important.add(rule)
+            single_rule_styles = Styles(
+                node=inline_styles.node,
+                _rules=single_rule_rules_map,
+                important=important
+            )
+
+            css_line = single_rule_styles.css_lines[0]
+            rule_hyphenated, value = css_line.split(":", 1)
+            rule_hyphenated = rule_hyphenated.strip()
             value = value.strip()
             return Text.assemble(
                 "  ",
-                rule,
+                rule_hyphenated,
                 ": ",
                 value,
                 " ",
@@ -693,7 +715,7 @@ class NodeInfo(Container):
             Text.styled("inline styles", "italic"),
             " {\n",
             Text("\n").join(
-                format_inline_style_line(css_line) for css_line in css_lines
+                format_inline_style_line(rule) for rule in inline_rules
             ),
             "\n}",
         )
