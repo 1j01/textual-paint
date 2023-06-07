@@ -659,16 +659,15 @@ class NodeInfo(Container):
                 return None
             return (frame_info.filename, frame_info.lineno)
         
-        def style_location_info(location: tuple[str, int | None] | None) -> Text:
+        def format_location_info(location: tuple[str, int | None] | None, verbose: bool = False) -> Text:
             """Shows a link to open the the source code where a style is set."""
-            # TODO: DRY with `location_info()`
             if location is None:
                 return Text.styled(f"(unknown location)", "#808080")
             else:
                 file, line_number = location
                 action = f"open_file({file!r}, {line_number!r})"
                 return Text.assemble(
-                    # Text.styled(f"{file}:{line_number} ", "green"),
+                    *([Text.styled(f"{file}:{line_number} ", "green")] if verbose else []),
                     Text.from_markup(f"[@click={action}](Open)[/@click]"),
                 )
 
@@ -687,7 +686,7 @@ class NodeInfo(Container):
                 ": ",
                 value,
                 " ",
-                style_location_info(trace_inline_style(rule)),
+                format_location_info(trace_inline_style(rule)),
             )
         inline_style_text = Text.assemble(
             Text.styled("inline styles", "italic"),
@@ -733,7 +732,7 @@ class NodeInfo(Container):
             return Text.assemble(
                 selectors,
                 "{ ",
-                style_location_info((path, line_number) if path else None),
+                format_location_info((path, line_number) if path else None),
                 declarations_and_end_curly,
             )
 
@@ -761,19 +760,12 @@ class NodeInfo(Container):
                 if isinstance(value, type) and issubclass(value, Message):
                     available_events.append(value)
 
-        def location_info(obj: Any) -> Text:
+        def format_object_location_info(obj: Any) -> Text:
             """Shows the source code location of an object, with a link to open the file."""
             try:
                 line_number = inspect.getsourcelines(obj)[1]
                 file = inspect.getsourcefile(obj)
-                if file is None:
-                    return Text.styled(f"(unknown location)", "#808080")
-                else:
-                    action = f"open_file({file!r}, {line_number})"
-                    return Text.assemble(
-                        Text.styled(f"{file}:{line_number} ", "green"),
-                        Text.from_markup(f"[@click={action}](Open)[/@click]"),
-                    )
+                return format_location_info((file, line_number) if file else None, True)
             except OSError as e:
                 return Text.from_markup(f"[#808080](error getting location: [red]{escape(repr(e))}[/red])[/#808080]")
 
@@ -797,7 +789,7 @@ class NodeInfo(Container):
                         # But there's a simpler way: method.__self__.__class__
                         handler = getattr(ancestor, handler_name)
                         defining_class = handler.__self__.__class__
-                        def_location = location_info(handler)
+                        def_location = format_object_location_info(handler)
                         # Note: css_path_nodes is just like ancestors_with_self, but reversed; it's still DOM nodes
                         descendant_arrow = Text.styled(" > ", "#808080")
                         dom_path = descendant_arrow.join([css_path_node.css_identifier_styled for css_path_node in ancestor.css_path_nodes])
@@ -824,7 +816,7 @@ class NodeInfo(Container):
             else:
                 usage_info = Text(f"No listeners found for {' or '.join(handler_names)}")
             
-            def_location = location_info(message_class)
+            def_location = format_object_location_info(message_class)
             qualname = message_class.__qualname__
             doc = inspect.getdoc(message_class) or '(No docstring)'
             return Text.assemble(
