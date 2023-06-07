@@ -618,7 +618,6 @@ class NodeInfo(Container):
         # TODO: sort by specificity
         # TODO: syntax highlight (`Syntax(css, "css")` almost works but is ugly/inconsistent because it assumes Web CSS flavor, not Textual CSS.)
         # TODO: mark styles that don't apply because they're overridden
-        # TODO: link to source code where CSS rule sets are defined
         # TODO: edit/toggle rules
 
         stylesheet = dom_node.app.stylesheet # type: ignore
