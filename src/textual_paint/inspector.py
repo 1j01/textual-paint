@@ -628,7 +628,16 @@ class NodeInfo(Container):
             if match(selector_set, dom_node):
                 applicable_rule_sets.append(rule_set)
         
-        to_ignore = [("inspector.py", "set_rule"), ("styles.py", "set_rule"), ("_style_properties.py", "__set__")]
+        to_ignore = [
+            ("inspector.py", "set_rule"), # inspector's instrumentation
+            ("styles.py", "set_rule"),
+            ("_style_properties.py", "__set__"),
+            # framework style setter shortcuts
+            # found with regexp /self\.styles\.(\w+) = /
+            ("dom.py", "display"),
+            ("dom.py", "visible"),
+            ("widget.py", "offset"),
+        ]
         def should_ignore(frame_info: inspect.FrameInfo) -> bool:
             """Filter out frames that are not relevant to the user."""
             for (ignore_filename, ignore_func_name) in to_ignore:
