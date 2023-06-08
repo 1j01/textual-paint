@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from typing import Iterable
+
 from textual.widgets import DirectoryTree
 from textual.widgets._tree import TreeNode
 from textual.widgets._directory_tree import DirEntry

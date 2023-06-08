@@ -57,7 +57,7 @@ from textual.widgets import Button, Static, TabPane, TabbedContent, Tree
 from textual.widgets.tree import TreeNode
 # from textual.css._style_properties import BorderDefinition
 
-from launch_editor import launch_editor
+from .launch_editor import launch_editor
 
 # Instrument style setting in order to link to the source code where inline styles are set.
 inline_style_call_stacks: dict[DOMNode, dict[str, list[inspect.FrameInfo]]] = {}

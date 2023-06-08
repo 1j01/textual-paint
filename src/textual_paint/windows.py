@@ -1,5 +1,6 @@
 from typing import Any, Callable
 from typing_extensions import Self
+
 from textual import events, on
 from textual.message import Message
 from textual.app import ComposeResult
@@ -10,7 +11,8 @@ from textual.widget import Widget
 from textual.widgets import Button, Static, DataTable
 from textual.containers import Container, Horizontal, Vertical
 from textual.css.query import NoMatches
-from localization.i18n import get as _
+
+from .localization.i18n import get as _
 
 class WindowTitleBar(Container):
     """A title bar widget."""

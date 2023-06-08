@@ -1,5 +1,6 @@
 import re
 from typing import Any, Callable
+
 from textual import events
 from textual.containers import Container
 from textual.reactive import var
@@ -7,7 +8,8 @@ from textual.widgets import Button, Static
 from textual.message import Message
 from textual.dom import NoScreen
 from rich.text import Text
-from localization.i18n import markup_hotkey, get_hotkey, get_direction
+
+from .localization.i18n import markup_hotkey, get_hotkey, get_direction
 
 def to_snake_case(name: str) -> str:
     name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)

@@ -1,4 +1,5 @@
 from typing import Any, Callable
+
 from rich.segment import Segment
 from rich.style import Style
 from textual import events
@@ -12,8 +13,9 @@ from textual.color import Color as Color
 from textual.widget import Widget
 from textual.widgets import Button, Input, Label
 from textual.containers import Container
-from localization.i18n import get as _
-from windows import DialogWindow
+
+from .localization.i18n import get as _
+from .windows import DialogWindow
 
 
 # https://github.com/kouzhudong/win2k/blob/ce6323f76d5cd7d136b74427dad8f94ee4c389d2/trunk/private/shell/win16/comdlg/color.c#L38-L43

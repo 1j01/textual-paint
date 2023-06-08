@@ -36,15 +36,15 @@ from textual.color import Color, ColorParseError
 from PIL import Image, UnidentifiedImageError
 from pyfiglet import Figlet, FigletFont
 
-from menus import MenuBar, Menu, MenuItem, Separator
-from inspector import Inspector
-from windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon, get_question_icon
-from file_dialogs import SaveAsDialogWindow, OpenDialogWindow
-from edit_colors import EditColorsDialogWindow
-from localization.i18n import get as _, load_language, remove_hotkey
-from wallpaper import get_config_dir, set_wallpaper
+from .menus import MenuBar, Menu, MenuItem, Separator
+from .inspector import Inspector
+from .windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon, get_question_icon
+from .file_dialogs import SaveAsDialogWindow, OpenDialogWindow
+from .edit_colors import EditColorsDialogWindow
+from .localization.i18n import get as _, load_language, remove_hotkey
+from .wallpaper import get_config_dir, set_wallpaper
 
-from __init__ import __version__
+from .__init__ import __version__
 
 MAX_FILE_SIZE = 500000 # 500 KB
 

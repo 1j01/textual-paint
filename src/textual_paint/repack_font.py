@@ -3,7 +3,7 @@
 import os
 from PIL import Image
 
-from figlet_font_writer import FIGletFontWriter
+from .figlet_font_writer import FIGletFontWriter
 
 block_char_lookup = {
     0x0: ' ',
