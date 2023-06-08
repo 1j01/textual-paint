@@ -4494,5 +4494,9 @@ if args.clear_screen:
 
 app.call_later(app.start_backup_interval)
 
-if __name__ == "__main__":
+def main() -> None:
+    """Entry point for the textual-paint CLI."""
     app.run()
+
+if __name__ == "__main__":
+    main()
