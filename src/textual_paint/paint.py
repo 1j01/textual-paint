@@ -166,34 +166,38 @@ parser.add_argument('--recode-samples', action='store_true', help='Open and save
 
 parser.add_argument('filename', nargs='?', default=None, help='Path to a file to open. File will be created if it doesn\'t exist.')
 
-# Automatically update the readme with the current arguments.
-# TODO: disable for release builds (or I could make this another dev flag, but I like the idea of it being automatic)
-# (maybe a pre-commit hook!? That might be ideal, but it might also be cumbersome to set up.)
-readme_help_start = re.compile(r"```\n.*--help\n")
-readme_help_end = re.compile(r"```")
-readme_file_path = os.path.join(os.path.dirname(__file__), "../../README.md")
-with open(readme_file_path, "r+") as f:
-    # By default, argparse uses the terminal width for formatting help text,
-    # even when using format_help() to get a string.
-    # The only way to override that is to override the formatter_class.
-    # This is hacky, but it seems like the simplest way to fix the width
-    # without creating a separate ArgumentParser, and without breaking the wrapping for --help.
-    # This lambda works because python uses the same syntax for construction and function calls,
-    # so formatter_class doesn't need to be an actual class.
-    # See: https://stackoverflow.com/questions/44333577/explain-lambda-argparse-helpformatterprog-width
-    width = 80
-    old_formatter_class = parser.formatter_class
-    parser.formatter_class = lambda prog: argparse.HelpFormatter(prog, width=width)
-    help_text = parser.format_help()
-    parser.formatter_class = old_formatter_class
-    
-    md = f.read()
-    start = readme_help_start.search(md).end()
-    end = readme_help_end.search(md, start).start()
-    md = md[:start] + help_text + md[end:]
-    f.seek(0)
-    f.write(md)
-    f.truncate()
+def update_cli_help_on_readme():
+    """Update the readme with the current CLI usage info"""
+    readme_help_start = re.compile(r"```\n.*--help\n")
+    readme_help_end = re.compile(r"```")
+    readme_file_path = os.path.join(os.path.dirname(__file__), "../../README.md")
+    with open(readme_file_path, "r+") as f:
+        # By default, argparse uses the terminal width for formatting help text,
+        # even when using format_help() to get a string.
+        # The only way to override that is to override the formatter_class.
+        # This is hacky, but it seems like the simplest way to fix the width
+        # without creating a separate ArgumentParser, and without breaking the wrapping for --help.
+        # This lambda works because python uses the same syntax for construction and function calls,
+        # so formatter_class doesn't need to be an actual class.
+        # See: https://stackoverflow.com/questions/44333577/explain-lambda-argparse-helpformatterprog-width
+        width = 80
+        old_formatter_class = parser.formatter_class
+        parser.formatter_class = lambda prog: argparse.HelpFormatter(prog, width=width)
+        help_text = parser.format_help()
+        parser.formatter_class = old_formatter_class
+        
+        md = f.read()
+        start = readme_help_start.search(md).end()
+        end = readme_help_end.search(md, start).start()
+        md = md[:start] + help_text + md[end:]
+        f.seek(0)
+        f.write(md)
+        f.truncate()
+# Manually disabled for release.
+# TODO: disable for release builds, while keeping it automatic during development.
+# (I could make this another dev flag, but I like the idea of it being automatic.)
+# (Maybe a pre-commit hook would be ideal, if it's worth the complexity.)
+# update_cli_help_on_readme()
 
 # print("__name__:", __name__)
 # sys.exit()
