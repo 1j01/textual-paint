@@ -211,12 +211,12 @@ pip install "textual[dev]" stransi psutil watchdog pyperclip pyright
 
 Run via Textual's CLI for live-reloading CSS support, and enable other development features:
 ```bash
-textual run --dev "src/textual_paint/paint.py --clear-screen --inspect-layout --restart-on-changes"
+textual run --dev "src.textual_paint.paint --clear-screen --inspect-layout --restart-on-changes"
 ```
 
 Or run more basically:
 ```bash
-python src/textual_paint/paint.py
+python -m src.textual_paint.paint
 ```
 
 `--clear-screen` is useful for development, because it's sometimes jarring to see error messages that have actually been fixed, when exiting the program.
