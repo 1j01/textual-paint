@@ -219,6 +219,16 @@ Or run more basically:
 python -m src.textual_paint.paint
 ```
 
+Or install the CLI globally:
+```bash
+pip install --editable .
+```
+
+Then run:
+```bash
+textual-paint
+```
+
 `--clear-screen` is useful for development, because it's sometimes jarring to see error messages that have actually been fixed, when exiting the program.
 
 `--inspect-layout` lets you middle click to visualize the layout breakdown by labeling each widget in the hierarchy, and coloring their regions. The labels affect the layout, so you can also hold Ctrl to only colorize, and you can remember how the colors correspond to the labels, to build a mental model of the layout.
