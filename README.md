@@ -204,6 +204,12 @@ The program has only been tested on Linux. Issues on other platforms are as-yet 
 
 ## Development
 
+Recommended: create a virtual environment:
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
 Install Textual and other dependencies:
 ```bash
 pip install "textual[dev]" stransi psutil watchdog pyperclip pyright
@@ -219,7 +225,7 @@ Or run more basically:
 python -m src.textual_paint.paint
 ```
 
-Or install the CLI globally:
+Or install the CLI globally\*:
 ```bash
 pip install --editable .
 ```
@@ -228,6 +234,8 @@ Then run:
 ```bash
 textual-paint
 ```
+
+\*If you use a virtual environment, it will only install within that environment.
 
 `--clear-screen` is useful for development, because it's sometimes jarring to see error messages that have actually been fixed, when exiting the program.
 
