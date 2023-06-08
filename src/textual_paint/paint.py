@@ -38,7 +38,7 @@ from pyfiglet import Figlet, FigletFont
 
 from .menus import MenuBar, Menu, MenuItem, Separator
 from .inspector import Inspector
-from .windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon, get_question_icon
+from .windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon, get_question_icon, get_paint_icon
 from .file_dialogs import SaveAsDialogWindow, OpenDialogWindow
 from .edit_colors import EditColorsDialogWindow
 from .localization.i18n import get as _, load_language, remove_hotkey
@@ -3412,12 +3412,7 @@ class PaintApp(App[None]):
     def action_about_paint(self) -> None:
         """Show the About Paint dialog."""
         self.close_windows("#about_paint_dialog")
-        window = DialogWindow(
-            id="about_paint_dialog",
-            title=_("About Paint"),
-            handle_button=lambda button: window.close(),
-        )
-        window.content.mount(Static(f"""🎨 [b]Textual Paint[/b]
+        message = Static(f"""🎨 [b]Textual Paint[/b]
 
 [i]MS Paint in your terminal.[/i]
 
@@ -3425,8 +3420,14 @@ class PaintApp(App[None]):
 [b]Author:[/b] [link=https://isaiahodhner.io/]Isaiah Odhner[/link]
 [b]License:[/b] [link=https://github.com/1j01/textual-paint/blob/main/LICENSE.txt]MIT[/link]
 [b]Source Code:[/b] [link=https://github.com/1j01/textual-paint]github.com/1j01/textual-paint[/link]
-"""))
-        window.content.mount(Button(_("OK"), classes="ok submit"))
+""")
+        window = MessageBox(
+            id="about_paint_dialog",
+            title=_("About Paint"),
+            handle_button=lambda button: window.close(),
+            icon_widget=get_paint_icon(),
+            message=message,
+        )
         self.mount(window)
 
     def action_toggle_inspector(self) -> None:
