@@ -86,7 +86,7 @@ textual-paint
 
 ```
 $ python3 paint.py --help
-usage: paint.py [options] [filename]
+usage: textual-paint [options] [filename]
 
 Paint in the terminal.
 
