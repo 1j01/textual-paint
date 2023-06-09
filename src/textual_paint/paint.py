@@ -200,30 +200,10 @@ def update_cli_help_on_readme():
 # update_cli_help_on_readme()
 
 # print("__name__:", __name__)
+# print("sys.argv:", sys.argv)
 # sys.exit()
 
-if __name__ == "<run_path>":
-    # When using Textual's CLI, arguments have to be passed inside an argument:
-    # `textual run --dev "src/textual_paint/paint.py LICENSE.txt"`
-    # so we need to look for an argument containing "paint.py",
-    # and parse the rest of the string as arguments.
-    # For some reason sys.argv[0] is showing the path to paint.py instead of textual,
-    # so I have skip over arguments until after "run".
-    args = None
-    got_run = False
-    for arg in sys.argv:
-        if arg == "run":
-            got_run = True
-            continue
-        if not got_run:
-            continue
-        match = re.match(r"(?:.*[\\/])?paint\.py(.*)", arg)
-        if match:
-            args = parser.parse_args(match.group(1).split())
-            break
-    assert args is not None, "Couldn't find paint.py in command line arguments"
-else:
-    args = parser.parse_args()
+args = parser.parse_args()
 
 load_language(args.language)
 
