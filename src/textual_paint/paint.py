@@ -37,7 +37,6 @@ from PIL import Image, UnidentifiedImageError
 from pyfiglet import Figlet, FigletFont
 
 from .menus import MenuBar, Menu, MenuItem, Separator
-from .inspector import Inspector
 from .windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon, get_question_icon, get_paint_icon
 from .file_dialogs import SaveAsDialogWindow, OpenDialogWindow
 from .edit_colors import EditColorsDialogWindow
@@ -3411,6 +3410,10 @@ class PaintApp(App[None]):
         self.mount(window)
 
     def action_toggle_inspector(self) -> None:
+        if not inspect_layout:
+            return
+        # importing the inspector adds instrumentation which can slow down startup
+        from .inspector import Inspector
         inspector = self.query_one(Inspector)
         inspector.display = not inspector.display
         if not inspector.display:
@@ -3503,6 +3506,10 @@ class PaintApp(App[None]):
                 Static(id="status_dimensions"),
                 id="status_bar",
             )
+        if not inspect_layout:
+            return
+        # importing the inspector adds instrumentation which can slow down startup
+        from .inspector import Inspector
         inspector = Inspector()
         inspector.display = False
         yield inspector
