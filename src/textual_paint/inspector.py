@@ -72,7 +72,7 @@ Styles.set_rule = set_rule
 
 rule_set_call_stacks: dict[RuleSet, list[inspect.FrameInfo]] = {}
 original_rule_set_init = RuleSet.__init__
-def rule_set_init(self: RuleSet, *args, **kwargs):
+def rule_set_init(self: RuleSet, *args: Any, **kwargs: Any):
     original_rule_set_init.__get__(self)(*args, **kwargs)
     rule_set_call_stacks[self] = inspect.stack()
 RuleSet.__init__ = rule_set_init
