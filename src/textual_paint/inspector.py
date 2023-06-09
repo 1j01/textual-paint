@@ -41,7 +41,7 @@ from rich.highlighter import ReprHighlighter
 # from rich.syntax import Syntax
 from textual import events
 from textual.app import ComposeResult
-from textual.color import Color
+from textual.color import Color, ColorParseError
 from textual.containers import Container, VerticalScroll
 from textual.css.match import match
 from textual.css.model import RuleSet
@@ -736,15 +736,26 @@ class NodeInfo(Container):
             )
 
             css_line = single_rule_styles.css_lines[0]
-            rule_hyphenated, value = css_line.split(":", 1)
+            rule_hyphenated, value_and_semicolon = css_line.split(":", 1)
             rule_hyphenated = rule_hyphenated.strip()
-            value = value.strip()
+            value_and_semicolon = value_and_semicolon.strip()
+            value_text: Text | str = value_and_semicolon[:-1].strip()
+            # try:
+            #     Color.parse(value_text)
+            #     value_text = Text.styled(value_text, f"on {value_text}")
+            # except ColorParseError:
+            #     pass
+            value: Any = inline_rules[rule]
+            # TODO: apply color highlighting to border values that are a border style followed by a color
+            # and apply it to non-inline styles too
+            if isinstance(value, Color):
+                value_text = Text.styled(value_text, Style(bgcolor=value.rich_color, color=value.get_contrast_text().rich_color))
             return Text.assemble(
                 "  ",
                 rule_hyphenated,
                 ": ",
-                value,
-                " ",
+                value_text,
+                "; ",
                 format_location_info(trace_inline_style(rule)),
             )
         inline_style_text = Text.assemble(
