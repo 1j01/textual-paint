@@ -52,6 +52,12 @@ Screen {
     border-top: tall $panel-darken-2;
 }
 
+Tooltip {
+    background: #ffffdd;
+    color: black;
+    padding: 0;
+}
+
 #colors_box {
     height: 6;
     layout: grid;
