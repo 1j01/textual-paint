@@ -4305,11 +4305,14 @@ class PaintApp(App[None]):
                 #             filepaths.append(os.path.join(root, file))
             return filepaths
         
-        filepaths = _extract_filepaths(event.text)
-        if filepaths:
-            file_path = filepaths[0]
-            self.open_from_file_path(file_path, lambda: None)
-            return
+        try:
+            filepaths = _extract_filepaths(event.text)
+            if filepaths:
+                file_path = filepaths[0]
+                self.open_from_file_path(file_path, lambda: None)
+                return
+        except ValueError:
+            pass
         
         # Text pasting is only supported with Ctrl+V or Edit > Paste, handled separately.
         return
