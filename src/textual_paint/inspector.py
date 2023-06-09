@@ -38,10 +38,9 @@ from rich.segment import Segment
 from rich.style import Style
 from rich.text import Text
 from rich.highlighter import ReprHighlighter
-# from rich.syntax import Syntax
 from textual import events
 from textual.app import ComposeResult
-from textual.color import Color, ColorParseError
+from textual.color import Color
 from textual.containers import Container, VerticalScroll
 from textual.css.match import match
 from textual.css.model import RuleSet
@@ -641,8 +640,6 @@ class NodeInfo(Container):
 
         highlighter = ReprHighlighter()
 
-        # styles_static.update(dom_node.styles.css)
-        # styles_static.update(Syntax(f"all styles {{\n{dom_node.styles.css}\n}}", "css"))
         # TODO: sort by specificity
         # TODO: syntax highlight (`Syntax(css, "css")` almost works but is ugly/inconsistent because it assumes Web CSS flavor, not Textual CSS.)
         # TODO: mark styles that don't apply because they're overridden
@@ -676,11 +673,6 @@ class NodeInfo(Container):
             """Returns the location where a style is set, or None if it can't be found."""
             try:
                 source = inline_style_call_stacks[dom_node]
-                # This can definitely cause KeyError, though I'm not quite sure why yet
-                # maybe styles are set other than through `set_rule`,
-                # such as `merge` or `merge_rules`?
-                # Or it could have to do with compound properties since `border` is a shorthand,
-                # and it's the one that's causing the KeyError. That's probably it. TODO: try to fix this.
                 frame_infos = source[rule]
             except KeyError:
                 return None
@@ -719,7 +711,8 @@ class NodeInfo(Container):
             """Formats a single CSS line for display, with a link to open the source code."""
             # Ugly hack for creating a string from a single rule,
             # while associating the snake_cased/hyphenated/shorthand CSS property names.
-            # TODO: display as shorthand properties when possible, as css_lines does.
+            # TODO: display as shorthand properties when possible, as css_lines does
+            # (only if all the call stacks match? (along with the values matching))
             # This code currently breaks things up into the individual rules,
             # in order to associate the stack traces with the rules.
             # (The stacks are captured for individual properties, not shorthands.)
@@ -740,11 +733,6 @@ class NodeInfo(Container):
             rule_hyphenated = rule_hyphenated.strip()
             value_and_semicolon = value_and_semicolon.strip()
             value_text: Text | str = value_and_semicolon[:-1].strip()
-            # try:
-            #     Color.parse(value_text)
-            #     value_text = Text.styled(value_text, f"on {value_text}")
-            # except ColorParseError:
-            #     pass
             value: Any = inline_rules[rule]
             # TODO: apply color highlighting to border values that are a border style followed by a color
             # and apply it to non-inline styles too
