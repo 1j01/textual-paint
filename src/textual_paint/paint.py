@@ -838,9 +838,9 @@ class AnsiArtDocument:
         # Ignore case and trailing '~' (indicating a backup file)
         # Alternative: pathlib.Path.suffix
         file_ext_with_dot = os.path.splitext(file_path)[1].lower().rstrip("~")
-        print("File extension:", file_ext_with_dot)
+        # print("File extension:", file_ext_with_dot)
         ext_to_id = Image.registered_extensions() # maps extension to format ID, e.g. '.jp2': 'JPEG2000'
-        print("Supported image formats by extension:", Image.EXTENSION)
+        # print("Supported image formats by extension:", Image.EXTENSION)
         if file_ext_with_dot in ext_to_id:
             return ext_to_id[file_ext_with_dot]
         ext_to_id = {
@@ -860,7 +860,7 @@ class AnsiArtDocument:
     def encode_based_on_file_extension(self, file_path: str) -> bytes:
         """Encode the image according to the file extension."""
         format_id = self.format_from_extension(file_path)
-        print("Supported image formats for writing:", Image.SAVE.keys())
+        # print("Supported image formats for writing:", Image.SAVE.keys())
         if format_id == "ANSI":
             # This maybe shouldn't use UTF-8... but there's not a singular encoding for "ANSI art".
             return self.get_ansi().encode("utf-8")
@@ -1539,7 +1539,7 @@ class AnsiArtDocument:
         Raises UnidentifiedImageError if the format is not detected.
         """
         format_id = AnsiArtDocument.format_from_extension(file_path)
-        print("Supported image formats for reading:", Image.OPEN.keys())
+        # print("Supported image formats for reading:", Image.OPEN.keys())
         # TODO: try loading as image first, then as text if that fails with UnidentifiedImageError
         # That way it can handle images without file extensions.
         if format_id in Image.OPEN:
@@ -2914,7 +2914,7 @@ class PaintApp(App[None]):
                     opening_backup = False
                     try:
                         backup_file_path = self.get_backup_file_path()
-                        print("Comparing files:", file_path, backup_file_path)
+                        # print("Comparing files:", file_path, backup_file_path)
                         if os.path.samefile(file_path, backup_file_path):
                             print("Not discarding backup because it is now open in the editor:", backup_file_path)
                             opening_backup = True
@@ -3274,12 +3274,12 @@ class PaintApp(App[None]):
             """
             radio_buttons = window.content.query(RadioButton)
             radio_button_absolute_positions = [radio_button.region.offset for radio_button in radio_buttons]
-            print("radio_button_absolute_positions", radio_button_absolute_positions)
+            # print("radio_button_absolute_positions", radio_button_absolute_positions)
             order = [0, 3, 1, 4, 2]
             radio_button_absolute_target_positions = [radio_button_absolute_positions[order[i]] for i in range(len(radio_buttons))]
             for radio_button, radio_button_absolute_position, radio_button_absolute_target_position in zip(radio_buttons, radio_button_absolute_positions, radio_button_absolute_target_positions):
                 relative_position = radio_button_absolute_target_position - radio_button_absolute_position
-                print(radio_button, relative_position)
+                # print(radio_button, relative_position)
                 radio_button.styles.offset = relative_position
         self.mount(window)
         # TODO: avoid flash of incorrect ordering by doing this before rendering but after layout
@@ -4285,7 +4285,7 @@ class PaintApp(App[None]):
                 split_filepaths = shlex.split(text)
 
             split_filepaths = shlex.split(text)
-            print(split_filepaths)
+            # print(split_filepaths)
             filepaths: list[str] = []
             for i in split_filepaths:
                 item = i.replace("\x00", "").replace('"', "")

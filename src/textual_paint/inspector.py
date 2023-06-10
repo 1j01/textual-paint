@@ -566,14 +566,14 @@ class NodeInfo(Container):
         def action_select_node(self, link_id: int) -> None:
             """Select a DOM node."""
             dom_node = self._node_info._link_id_to_node.get(link_id)
-            print("action_select_node", link_id, dom_node)
+            # print("action_select_node", link_id, dom_node)
             if dom_node is None:
                 return
             self.post_message(NodeInfo.FollowLinkToNode(dom_node))
         
         def action_open_file(self, path: str, line_number: int | None = None, column_number: int | None = None) -> None:
             """Open a file."""
-            print("action_open_file", path, line_number, column_number)
+            # print("action_open_file", path, line_number, column_number)
             launch_editor(path, line_number, column_number)
 
 
@@ -610,7 +610,7 @@ class NodeInfo(Container):
 
     def watch_dom_node(self, dom_node: DOMNode | None) -> None:
         """Update the info displayed when the DOM node changes."""
-        print("watch_dom_node", dom_node)
+        # print("watch_dom_node", dom_node)
 
         self._link_id_to_node.clear()
 
@@ -1138,7 +1138,7 @@ class Inspector(Container):
 
         def focus_and_clear_prevent_highlight() -> None:
             """Focus the DOMTree, and clear the _prevent_highlight flag. Both of these things seem to need a delay."""
-            print("focus_and_clear_prevent_highlight", hasattr(self, "_prevent_highlight"))
+            # print("focus_and_clear_prevent_highlight", hasattr(self, "_prevent_highlight"))
             self.query_one(DOMTree).focus()
             if hasattr(self, "_prevent_highlight"):
                 del self._prevent_highlight
@@ -1159,7 +1159,7 @@ class Inspector(Container):
 
     def on_domtree_selected(self, event: DOMTree.Selected) -> None:
         """Handle a node being selected in the DOM tree."""
-        print("Inspecting DOM node:", event.dom_node)
+        # print("Inspecting DOM node:", event.dom_node)
         self.query_one(NodeInfo).dom_node = event.dom_node
 
     def on_domtree_hovered(self, event: DOMTree.Hovered) -> None:
@@ -1198,15 +1198,15 @@ class Inspector(Container):
 
     def highlight(self, dom_node: DOMNode | None) -> None:
         """Highlight a DOM node."""
-        print("highlight")
-        import traceback
-        traceback.print_stack(limit=2)
+        # print("highlight")
+        # import traceback
+        # traceback.print_stack(limit=2)
 
         if hasattr(self, "_prevent_highlight") and dom_node is not None:
-            print("highlight prevented")
+            # print("highlight prevented")
             del self._prevent_highlight
             return
-        print("Highlighting DOM node:", dom_node)
+        # print("Highlighting DOM node:", dom_node)
 
         if not isinstance(dom_node, Widget):
             # Only widgets have a region, App (the root) doesn't.
