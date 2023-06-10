@@ -641,7 +641,7 @@ class NodeInfo(Container):
         highlighter = ReprHighlighter()
 
         # TODO: sort by specificity
-        # TODO: syntax highlight (`Syntax(css, "css")` almost works but is ugly/inconsistent because it assumes Web CSS flavor, not Textual CSS.)
+        # TODO: syntax highlight numbers (with optional units) and keywords
         # TODO: mark styles that don't apply because they're overridden
         # TODO: edit/toggle rules
 
@@ -739,14 +739,22 @@ class NodeInfo(Container):
             value_and_semicolon = value_and_semicolon.strip()
             value_text: Text | str = value_and_semicolon[:-1].strip()
             # value: Any = rules[rule]
-            # TODO: apply color highlighting to border values that are a border style followed by a color
+            # TODO: explore using already-parsed values instead of re-parsing colors
             # Note: rules[rule] won't be a Color for border-left etc. even if it SHOWS as just a color.
             # if isinstance(value, Color):
             #     value_text = Text.styled(value_text, Style(bgcolor=value.rich_color, color=value.get_contrast_text().rich_color))
+            
+            # This is a bit specific, but it handles border values that are a border style followed by a color
+            # (as well as plain colors).
+            if " " in value_text:
+                optional_keyword, possible_color = value_text.split(" ", 1)
+            else:
+                optional_keyword, possible_color = "", value_text
             try:
-                color = Color.parse(value_text)
-                # value_text = Text.styled(value_text, f"on {value_text}") # doesn't handle all Textual Color values, only Rich Color values
-                value_text = Text.styled(value_text, Style.from_color(bgcolor=color.rich_color, color=color.get_contrast_text().rich_color))
+                color = Color.parse(possible_color)
+                # value_text = Text.styled(possible_color, f"on {value_text}") # doesn't handle all Textual Color values, only Rich Color values
+                value_text = Text.styled(possible_color, Style.from_color(bgcolor=color.rich_color, color=color.get_contrast_text().rich_color))
+                value_text = Text.assemble(optional_keyword, " ", value_text)
             except ColorParseError:
                 pass
             return Text.assemble(
