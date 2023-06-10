@@ -819,14 +819,6 @@ class NodeInfo(Container):
                         # TODO: find the specific line number of the rule set
                         break
             return format_styles_block(rule_set.styles, rule_set.selectors, format_location_info((path, line_number) if path else None))
-            # css = rule_set.css
-            # selectors, declarations_and_end_curly = css.split("{", 1)
-            # return Text.assemble(
-            #     selectors,
-            #     "{ ",
-            #     format_location_info((path, line_number) if path else None),
-            #     declarations_and_end_curly,
-            # )
 
         styles_text = Text.assemble(
             inline_style_text,
@@ -935,7 +927,9 @@ class NodeInfo(Container):
 class ResizeHandle(Widget):
     """A handle for resizing a panel.
     
-    This is a child of the panel, and is positioned on the edge of the panel.
+    This should be a child of the panel.
+    Therefore, one of the sides of the divide needs to be a container.
+    It will be positioned on the edge of the panel according to the `side` parameter.
     The panel can use min-width, min-height, max-width, and max-height to limit the size.
     """
 
@@ -1012,9 +1006,6 @@ class ResizeHandle(Widget):
         return container.height if self._horizontal_resize else 1
 
     def render_line(self, y: int) -> Strip:
-        # char = "⣿" if self._horizontal_resize else "⠶"
-        # char = "┃" if self._horizontal_resize else "━"
-        # char = "│" if self._horizontal_resize else "─"
         char = "║" if self._horizontal_resize else "═" * self.size.width
         return Strip([Segment(char, self.rich_style)])
 
