@@ -754,7 +754,7 @@ class NodeInfo(Container):
                 color = Color.parse(possible_color)
                 # value_text = Text.styled(possible_color, f"on {value_text}") # doesn't handle all Textual Color values, only Rich Color values
                 value_text = Text.styled(possible_color, Style.from_color(bgcolor=color.rich_color, color=color.get_contrast_text().rich_color))
-                value_text = Text.assemble(optional_keyword, " ", value_text)
+                value_text = Text.assemble(optional_keyword, " " if optional_keyword else "", value_text)
             except ColorParseError:
                 pass
             return Text.assemble(
