@@ -705,10 +705,11 @@ class NodeInfo(Container):
         # css_lines = dom_node.styles.inline.css_lines
         # But we need to associate the snake_cased/hyphenated/shorthand CSS property names,
         # in order to provide links to the source code.
-        inline_styles = dom_node.styles.inline
-        inline_rules = inline_styles.get_rules()
-        def format_inline_style_line(rule: str) -> Text:
+        
+        def format_style_line(rule: str, styles: Styles, rules: RulesMap, inline: bool) -> Text:
             """Formats a single CSS line for display, with a link to open the source code."""
+            # TODO: probably refactor arguments to take simpler data (!important flag bool etc....)
+
             # Ugly hack for creating a string from a single rule,
             # while associating the snake_cased/hyphenated/shorthand CSS property names.
             # TODO: display as shorthand properties when possible, as css_lines does
@@ -718,24 +719,27 @@ class NodeInfo(Container):
             # (The stacks are captured for individual properties, not shorthands.)
             # This could be cleaned up a lot with some API changes in `Styles`.
             single_rule_rules_map = RulesMap()
-            single_rule_rules_map[rule] = inline_rules[rule]
+            single_rule_rules_map[rule] = rules[rule]
             important: set[str] = set()
-            if rule in inline_styles.important:
+            if rule in styles.important:
                 important.add(rule)
             single_rule_styles = Styles(
-                node=inline_styles.node,
+                node=styles.node,
                 _rules=single_rule_rules_map,
                 important=important
             )
 
-            css_line = single_rule_styles.css_lines[0]
+            try:
+                css_line = single_rule_styles.css_lines[0]
+            except IndexError:
+                # This happens for properties not part of the CSS API, like `auto_scrollbar_color`.
+                return Text("")
             rule_hyphenated, value_and_semicolon = css_line.split(":", 1)
             rule_hyphenated = rule_hyphenated.strip()
             value_and_semicolon = value_and_semicolon.strip()
             value_text: Text | str = value_and_semicolon[:-1].strip()
-            value: Any = inline_rules[rule]
+            value: Any = rules[rule]
             # TODO: apply color highlighting to border values that are a border style followed by a color
-            # and apply it to non-inline styles too
             if isinstance(value, Color):
                 value_text = Text.styled(value_text, Style(bgcolor=value.rich_color, color=value.get_contrast_text().rich_color))
             return Text.assemble(
@@ -743,18 +747,32 @@ class NodeInfo(Container):
                 rule_hyphenated,
                 ": ",
                 value_text,
-                "; ",
-                format_location_info(trace_inline_style(rule)),
+                *(
+                    ["; ", format_location_info(trace_inline_style(rule)),]
+                    if inline
+                    else [";"]
+                ),
+                "\n",
             )
-        inline_style_text = Text.assemble(
-            Text.styled("inline styles", "italic"),
-            " {\n",
-            Text("\n").join(
-                format_inline_style_line(rule) for rule in inline_rules
-            ),
-            "\n}",
-        )
-
+        def format_styles_block(styles: Styles, name: Text | str, rule_set_location_info: Text | None) -> Text:
+            inline = rule_set_location_info is None
+            rules = styles.get_rules()
+            return Text.assemble(
+                name,
+                " {",
+                *(
+                    [" ", rule_set_location_info]
+                    if rule_set_location_info is not None
+                    else []
+                ),
+                "\n",
+                Text().join(
+                    format_style_line(rule, styles, rules, inline) for rule in rules
+                ),
+                "}",
+            )
+        inline_style_text = format_styles_block(dom_node.styles.inline, Text.styled("inline styles", "italic"), None)
+        
         def format_rule_set(rule_set: RuleSet) -> Text:
             """Formats a CSS rule set for display, with a link to open the source code."""
             path: str | None = None
@@ -785,14 +803,15 @@ class NodeInfo(Container):
                         line_number = i + 1
                         # TODO: find the specific line number of the rule set
                         break
-            css = rule_set.css
-            selectors, declarations_and_end_curly = css.split("{", 1)
-            return Text.assemble(
-                selectors,
-                "{ ",
-                format_location_info((path, line_number) if path else None),
-                declarations_and_end_curly,
-            )
+            return format_styles_block(rule_set.styles, rule_set.selectors, format_location_info((path, line_number) if path else None))
+            # css = rule_set.css
+            # selectors, declarations_and_end_curly = css.split("{", 1)
+            # return Text.assemble(
+            #     selectors,
+            #     "{ ",
+            #     format_location_info((path, line_number) if path else None),
+            #     declarations_and_end_curly,
+            # )
 
         styles_text = Text.assemble(
             inline_style_text,
