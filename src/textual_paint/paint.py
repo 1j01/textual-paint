@@ -2215,7 +2215,14 @@ class PaintApp(App[None]):
     """Flag to postpone saving the backup until a tool preview action is reverted, so as not to save it into the backup file"""
     backup_folder: Optional[str] = None
     """The folder to save a temporary backup file to. If None, will save alongside the file being edited."""
-
+    backup_checked_for: Optional[str] = None
+    """The file path last checked for a backup save.
+    
+    This is tracked to prevent discarding Untitled.ans~ when loading a document on startup.
+    Indicates that the file path either was loaded (recovered) or was not found.
+    Not set when failing to load a backup, since the file maybe shouldn't be discarded in that case.
+    """
+    
     mouse_gesture_cancelled = False
     """For Undo/Redo, to interrupt the current action"""
     mouse_at_start: Offset = Offset(0, 0)
@@ -2582,9 +2589,16 @@ class PaintApp(App[None]):
                 with open(backup_file_path, "r") as f:
                     backup_content = f.read()
                     backup_image = AnsiArtDocument.from_text(backup_content)
+                    self.backup_checked_for = backup_file_path
                     # TODO: make backup use image format when appropriate
             except Exception as e:
                 self.message_box(_("Paint"), _("A backup file was found, but was not recovered.") + "\n" + _("An unexpected error occurred while reading %1.", backup_file_path), "ok", error=e)
+                # Don't set self.backup_checked_for, so the backup won't be discarded,
+                # to allow for manual recovery.
+                # Actually, it will be overwritten when saving a new backup...
+                # TODO: numbered session files; I had some plans for this in a commit message
+                # See: 74ffc34de4b789ec1da2ae2e08bf99f1bb4670c9
+                # I could make backup_checked_for into owned_backup_file_path (or a dict if needed)
                 return
             # This creates an undo
             self.resize_document(backup_image.width, backup_image.height)
@@ -2602,6 +2616,8 @@ class PaintApp(App[None]):
             # This message may be ambiguous if the main file has been changed since the backup was made.
             # TODO: UX design; maybe compare file modification times
             self.message_box(_("Paint"), _("Recovered document from backup.\nKeep changes?"), "yes/no", handle_button)
+        else:
+            self.backup_checked_for = backup_file_path
 
     def action_save(self) -> None:
         """Start the save action, but don't wait for the Save As dialog to close if it's a new file."""
@@ -2797,7 +2813,13 @@ class PaintApp(App[None]):
     def discard_backup(self) -> None:
         """Deletes the backup file, if it exists."""
         backup_file_path = self.get_backup_file_path()
+        if self.backup_checked_for != backup_file_path:
+            # Avoids discarding Untitled.ans~ on startup.
+            print(f"Not discarding backup {backup_file_path!r} because it doesn't match the backup file checked for: {self.backup_checked_for!r}")
+            return
         print("Discarding backup (if it exists):", backup_file_path)
+        # import traceback
+        # traceback.print_stack()
         try:
             os.remove(backup_file_path)
         except FileNotFoundError:
