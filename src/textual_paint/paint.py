@@ -2940,6 +2940,8 @@ class PaintApp(App[None]):
                         if os.path.samefile(file_path, backup_file_path):
                             print("Not discarding backup because it is now open in the editor:", backup_file_path)
                             opening_backup = True
+                    except FileNotFoundError:
+                        pass
                     except OSError as e:
                         print("Error comparing files:", e)
                     if not opening_backup:
