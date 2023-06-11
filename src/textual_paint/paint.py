@@ -673,7 +673,7 @@ assert ansi_detector_pattern.search("\x80") is None, "Ç (in CP 437) or € (U+0
 # This SVG template is based on the template in rich/_export_format.py
 # It removes the simulated window frame, and crops the SVG to just the terminal content.
 # It was very nice during development to automate saving a file as SVG:
-# textual run --dev "src/textual_paint/paint.py --restart-on-changes samples/ship.ans" --press ctrl+shift+s,.,s,v,g,enter
+# textual run --dev "src.textual_paint.paint --restart-on-changes samples/ship.ans" --press ctrl+shift+s,.,s,v,g,enter
 # (The Ctrl+Shift+S shortcut doesn't work when actually trying it as a user, but it works to simulate it.)
 CUSTOM_CONSOLE_SVG_FORMAT = """\
 <svg class="rich-terminal" viewBox="0 0 {terminal_width} {terminal_height}" xmlns="http://www.w3.org/2000/svg">
@@ -1187,7 +1187,7 @@ class AnsiArtDocument:
         (Fun fact: I got the pathological SVG working before the rigid grid SVG as saved by the app.)
 
         To test it, run the following command:
-        textual run --dev "src/textual_paint/paint.py --language en --clear-screen --inspect-layout --restart-on-changes 'samples/pathological_character_grid.svg'" --press ctrl+shift+s,left,left,left,left,.,s,a,v,e,d,enter,enter
+        textual run --dev "src.textual_paint.paint --language en --clear-screen --inspect-layout --restart-on-changes 'samples/pathological_character_grid.svg'" --press ctrl+shift+s,left,left,left,left,.,s,a,v,e,d,enter,enter
         and check samples/pathological_character_grid.saved.svg
         There's also useful debug visuals saved in debug.svg (if enabled).
         Then add ".saved" to that command and run it to check the saved file.

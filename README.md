@@ -250,7 +250,7 @@ This also makes it run slower.
 
 Often it's useful to exclude events with `textual console -x EVENT`.
 
-To test file encoding, run `textual run --dev "src/textual_paint/paint.py --recode-samples"`.
+To test file encoding, run `textual run --dev "src.textual_paint.paint --recode-samples"`.
 
 If there are differences in the ANSI files, you can set up a special diff like this:
 ```bash

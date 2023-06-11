@@ -196,7 +196,7 @@ class Window(Container):
         if not self.parent:
             # Can happen when saying Yes to "Save changes to X?" prompt during Save As
             # I got this using automation (so it might need to be fast to happen):
-            # textual run --dev "src/textual_paint/paint.py --language en --clear-screen --inspect-layout --restart-on-changes question_icon.ans" --press ctrl+shift+s,.,_,r,i,c,h,_,c,o,n,s,o,l,e,_,m,a,r,k,u,p,enter,enter
+            # textual run --dev "src.textual_paint.paint --language en --clear-screen --inspect-layout --restart-on-changes question_icon.ans" --press ctrl+shift+s,.,_,r,i,c,h,_,c,o,n,s,o,l,e,_,m,a,r,k,u,p,enter,enter
             return
         assert isinstance(self.parent, Widget), "Window parent should be a Widget, but got: " + repr(self.parent)
         if self.parent.children[-1] is not self:
