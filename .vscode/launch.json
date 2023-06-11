@@ -8,11 +8,13 @@
 			"name": "Run Textual App",
 			"type": "python",
 			"request": "launch",
-			// Replace this with the output of `which textual`
-			// TODO: is there a way to get this from the environment??
+			// TODO: is there a way to get this from the environment, i.e. to use
+			// the binary that `which textual` would return,
 			// or to use textual as "module" but still run the correct app?
-			// I tried a lot of variations of this, but none worked.
-			"program": "${userHome}/.local/bin/textual",
+			// At least with a virtual environment, I can point to a location
+			// that should exist if you follow the readme instructions.
+			// Although the docs for "program" say "Absolute path to the program."
+			"program": ".venv/bin/textual",
 			"args": ["run", "--dev", "src.textual_paint.paint --clear-screen --inspect-layout"],
 			"console": "integratedTerminal",
 			"justMyCode": false
@@ -23,7 +25,7 @@
 			"request": "launch",
 			// "program": "src.textual_paint.paint",
 			// "args": ["LICENSE.txt"],
-			"program": "${userHome}/.local/bin/textual",
+			"program": ".venv/bin/textual",
 			"args": ["run", "--dev", "src.textual_paint.paint --clear-screen --inspect-layout LICENSE.txt"],
 			"console": "integratedTerminal",
 			"justMyCode": false
@@ -41,7 +43,7 @@
 			"name": "Debug --restart-on-changes file matching",
 			"type": "python",
 			"request": "launch",
-			"program": "${userHome}/.local/bin/textual",
+			"program": ".venv/bin/textual",
 			"args": ["run", "--dev", "src.textual_paint.paint --clear-screen --restart-on-changes"],
 			"console": "integratedTerminal",
 			"justMyCode": false
