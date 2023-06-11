@@ -59,6 +59,7 @@ from textual.widgets.tree import TreeNode
 from .launch_editor import launch_editor
 
 # Instrument style setting in order to link to the source code where inline styles are set.
+# TODO: make optional for performance
 inline_style_call_stacks: dict[DOMNode, dict[str, list[inspect.FrameInfo]]] = {}
 original_set_rule = Styles.set_rule
 def set_rule(self: Styles, rule: str, value: object | None) -> bool:
@@ -124,6 +125,7 @@ def subtract_multiple_regions(base: Region, negations: Iterable[Region]) -> list
 
 class DOMTree(Tree[DOMNode]):
     """A widget that displays the widget hierarchy."""
+    # TODO: live update
     
     class Hovered(Message, bubble=True):
         """Posted when a node in the tree is hovered with the mouse or highlighted with the keyboard.
@@ -596,6 +598,7 @@ class NodeInfo(Container):
         """Add sub-widgets."""
         # FIXME: when resizing NodeInfo very large, the scrollbar stops reaching all the way, and eventually disappears.
         # I think NodeInfo is going offscreen in this case, since it's not limited by what the layout can fit.
+        # TODO: performance: don't render tabs when not visible (but don't unload contents when switching tabs, only when switching nodes)
         yield ResizeHandle(self, "top")
         with TabbedContent(initial="properties"):
             with TabPane("Props", id="properties"):
