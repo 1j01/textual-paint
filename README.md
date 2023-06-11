@@ -6,14 +6,7 @@ MS Paint in your terminal.
 
 This is a TUI (Text User Interface) image editor, inspired by MS Paint, built with [Textual](https://textual.textualize.io/).
 
-<!-- GitHub doesn't support line-height style in markdown, so I can't use inline HTML for the screenshot without seams between rows of text. But I can include the HTML inside <foreignObject> in an SVG file and include that as an <img> element. -->
-<!-- GitHub doesn't support figure/figcaption in markdown, so I have to use a table. -->
-<table>
-<tr><td align="center">
 <img src="screenshot.svg" alt="MS Paint like interface" />
-</td></tr>
-<tr><td align="center">This screenshot of Textual Paint is the terminal's screen buffer copied as HTML, wrapped in SVG, placed in HTML inside Markdown.<br>This might not render correctly in your browser.</tr></td>
-</table>
 
 ## Features
 

@@ -2169,6 +2169,8 @@ class PaintApp(App[None]):
         Binding("f3", "custom_zoom", _("Custom Zoom")),
         # Dev tool to inspect the widget tree.
         Binding("f12", "toggle_inspector", _("Toggle Inspector")),
+        # Update screenshot on readme.
+        Binding("ctrl+j", "update_screenshot", _("Update Screenshot")),
     ]
 
     show_tools_box = var(True)
@@ -2844,6 +2846,11 @@ class PaintApp(App[None]):
             self.prompt_save_changes(self.file_path or _("Untitled"), restart_program)
         else:
             restart_program()
+
+    def action_update_screenshot(self) -> None:
+        """Update the screenshot on the readme."""
+        folder = os.path.join(os.path.dirname(__file__), "..", "..")
+        self.save_screenshot(filename="screenshot.svg", path=folder)
 
     def message_box(self,
         title: str,
