@@ -63,7 +63,7 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
 
 ## Usage
 
-<!-- ### Installation
+### Installation
 
 ```bash
 pip install textual-paint
@@ -73,12 +73,12 @@ pip install textual-paint
 
 ```bash
 textual-paint
-``` -->
+```
 
 ### Command Line Options
 
 ```
-$ python3 paint.py --help
+$ textual-paint --help
 usage: textual-paint [options] [filename]
 
 Paint in the terminal.
