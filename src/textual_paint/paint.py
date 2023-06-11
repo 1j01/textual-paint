@@ -3420,7 +3420,7 @@ class PaintApp(App[None]):
     def action_about_paint(self) -> None:
         """Show the About Paint dialog."""
         self.close_windows("#about_paint_dialog")
-        message = Static(f"""🎨 [b]Textual Paint[/b]
+        message = Static(f"""[b]Textual Paint[/b]
 
 [i]MS Paint in your terminal.[/i]
 
