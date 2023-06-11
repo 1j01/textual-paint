@@ -49,6 +49,11 @@ class EnhancedDirectoryTree(DirectoryTree):
                     else:
                         # print("scrolling", node)
                         _go_to_node(node)
+                        # If the target path is a directory, expand it.
+                        # This might not always be desired, for a general API,
+                        # but for File > New, File > Open, it should expand the current directory.
+                        if node.data.path.is_dir():
+                            _add_to_load_queue(node)
             return node
         node.add = add.__get__(node, type(node))
 
