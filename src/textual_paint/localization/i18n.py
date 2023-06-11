@@ -1,9 +1,12 @@
+import os
 import json
 import re
 
 translations: dict[str, str] = {}
 base_language = "en"
 current_language = base_language
+localization_folder = os.path.dirname(__file__)
+untranslated_file = os.path.join(localization_folder, "untranslated.txt")
 
 def get_direction() -> str:
 	"""Get the text direction for the current language."""
@@ -18,7 +21,8 @@ def load_language(language_code: str):
 	if language_code == base_language:
 		return
 	try:
-		with open(f"localization/{language_code}/localizations.js", "r") as f:
+		file = os.path.join(localization_folder, language_code, "localizations.js")
+		with open(file, "r") as f:
 			# find the JSON object
 			js = f.read()
 			start = js.find("{")
@@ -36,7 +40,7 @@ def load_language(language_code: str):
 
 untranslated: set[str] = set()
 try:
-	with open("localization/untranslated.txt", "r") as f:
+	with open(untranslated_file, "r") as f:
 		untranslated = set(f.read().splitlines())
 except FileNotFoundError:
 	pass
@@ -73,7 +77,7 @@ def get(base_language_str: str, *interpolations: str) -> str:
 		if base_language_str not in untranslated and current_language != base_language:
 			untranslated.add(base_language_str)
 			# append to untranslated strings file
-			with open("localization/untranslated.txt", "a") as f:
+			with open(untranslated_file, "a") as f:
 				f.write(base_language_str + "\n")
 		return base_language_str
 
