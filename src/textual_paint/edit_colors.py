@@ -371,12 +371,12 @@ class EditColorsDialogWindow(DialogWindow):
             input_containers: list[Container] = []
             for component_letter in color_model:
                 text_with_hotkey: str = {
-                    "h": "Hu&e:",
-                    "s": "&Sat:",
-                    "l": "&Lum:",
-                    "r": "&Red:",
-                    "g": "&Green:",
-                    "b": "Bl&ue:",
+                    "h": _("Hu&e:"),
+                    "s": _("&Sat:"),
+                    "l": _("&Lum:"),
+                    "r": _("&Red:"),
+                    "g": _("&Green:"),
+                    "b": _("Bl&ue:"),
                 }[component_letter]
                 text_without_hotkey = text_with_hotkey.replace("&", "")
                 max_value: int = {

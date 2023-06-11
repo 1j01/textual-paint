@@ -9,3 +9,20 @@ Filename
 Do you want to replace it?
 Reload
 Choose Character
+Toggle Inspector
+Backup Save Failed
+Basic Colors
+Custom Colors
+Color
+Add to Custom Colors
+Hu&e:
+&Sat:
+&Lum:
+&Red:
+&Green:
+Bl&ue:
+100%
+200%
+400%
+600%
+800%
