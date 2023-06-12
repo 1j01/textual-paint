@@ -4,7 +4,7 @@ import glob
 import json
 from typing import Generator, Any
 
-from parse_rc_file import parse_rc_file
+from .parse_rc_file import parse_rc_file
 
 
 base_lang: str = "en"
