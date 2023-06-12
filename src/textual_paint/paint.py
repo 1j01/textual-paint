@@ -2589,6 +2589,7 @@ class PaintApp(App[None]):
         saved_future: asyncio.Future[None] = asyncio.Future()
 
         def handle_selected_file_path(file_path: str) -> None:
+            reload_after_save = False # in case of information loss on save, show it immediately
             def on_save_confirmed() -> None:
                 async def async_on_save_confirmed() -> None:
                     self.stop_action_in_progress()
@@ -2604,7 +2605,13 @@ class PaintApp(App[None]):
                         self.file_path = file_path
                         self.saved_undo_count = len(self.undos)
                         window.close()
-                        saved_future.set_result(None)
+                        if reload_after_save:
+                            # Sigh... callbacks and coroutines
+                            def after_reload() -> None:
+                                saved_future.set_result(None)
+                            self.open_from_file_path(file_path, after_reload)
+                        else:
+                            saved_future.set_result(None)
 
                     # TODO: should this look for a backup file and offer to recover it?
                     # Seems kinda weird? But the backup file will be deleted on close,
@@ -2615,10 +2622,20 @@ class PaintApp(App[None]):
                 task = asyncio.create_task(async_on_save_confirmed())
                 self.background_tasks.add(task)
                 task.add_done_callback(self.background_tasks.discard)
-            if os.path.exists(file_path):
-                self.confirm_overwrite(file_path, on_save_confirmed)
+            def after_confirming_any_information_loss() -> None:
+                if os.path.exists(file_path):
+                    self.confirm_overwrite(file_path, on_save_confirmed)
+                else:
+                    on_save_confirmed()
+            format_id = AnsiArtDocument.format_from_extension(file_path)
+            if format_id == "PLAINTEXT":
+                reload_after_save = True
+                self.confirm_lose_color_information(after_confirming_any_information_loss)
+            elif format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP"):
+                after_confirming_any_information_loss()
             else:
-                on_save_confirmed()
+                reload_after_save = True
+                self.confirm_lose_text_information(after_confirming_any_information_loss)
 
         window = SaveAsDialogWindow(
             title=_("Save As"),
@@ -2709,6 +2726,24 @@ class PaintApp(App[None]):
             task.add_done_callback(self.background_tasks.discard)
 
         self.message_box(_("Paint"), message, "yes/no/cancel", handle_button)
+
+    def confirm_lose_color_information(self, callback: Callable[[], None]) -> None:
+        """Confirms discarding color information when saving as a plain text file."""
+        message = _("Saving into this format may cause some loss of color information.") + "\n" + _("Do you want to continue?")
+        def handle_button(button: Button) -> None:
+            if button.has_class("yes"):
+                callback()
+
+        self.message_box(_("Paint"), message, "yes/no", handle_button)
+
+    def confirm_lose_text_information(self, callback: Callable[[], None]) -> None:
+        """Confirms discarding text information when saving as a plain text file."""
+        message = _("Saving into this format will cause loss of any text information (letters, numbers, or symbols.)") + "\n" + _("Do you want to continue?")
+        def handle_button(button: Button) -> None:
+            if button.has_class("yes"):
+                callback()
+
+        self.message_box(_("Paint"), message, "yes/no", handle_button)
 
     def is_document_modified(self) -> bool:
         """Returns whether the document has been modified since the last save."""
