@@ -2170,7 +2170,7 @@ class PaintApp(App[None]):
         # Dev tool to inspect the widget tree.
         Binding("f12", "toggle_inspector", _("Toggle Inspector")),
         # Update screenshot on readme.
-        Binding("f10", "update_screenshot", _("Update Screenshot")),
+        Binding("ctrl+j", "update_screenshot", _("Update Screenshot")),
     ]
 
     show_tools_box = var(True)
