@@ -2606,12 +2606,11 @@ class PaintApp(App[None]):
                         self.saved_undo_count = len(self.undos)
                         window.close()
                         if reload_after_save:
-                            # Sigh... callbacks and coroutines
-                            def after_reload() -> None:
-                                saved_future.set_result(None)
-                            self.open_from_file_path(file_path, after_reload)
-                        else:
-                            saved_future.set_result(None)
+                            # TODO: make this undoable
+                            new_image = AnsiArtDocument.decode_based_on_file_extension(content, file_path)
+                            self.canvas.image = self.image = new_image
+                            self.canvas.refresh(layout=True)
+                        saved_future.set_result(None)
 
                     # TODO: should this look for a backup file and offer to recover it?
                     # Seems kinda weird? But the backup file will be deleted on close,
