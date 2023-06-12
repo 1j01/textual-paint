@@ -52,7 +52,7 @@ from textual.message import Message
 from textual.reactive import var
 from textual.strip import Strip
 from textual.widget import Widget
-from textual.widgets import Button, Static, TabPane, TabbedContent, Tree
+from textual.widgets import Button, Input, Static, TabPane, TabbedContent, Tree
 from textual.widgets.tree import TreeNode
 # from textual.css._style_properties import BorderDefinition
 
@@ -544,6 +544,18 @@ class PropertiesTree(Tree[object]):
 
 class NodeInfo(Container):
 
+    DEFAULT_CSS = """
+    NodeInfo {
+        layers: style_value_input;
+    }
+    .style_value_input {
+        layer: style_value_input;
+        dock: top;
+        border: none !important;
+        padding: 0 !important;
+    }
+    """
+
     class FollowLinkToNode(Message):
         """A message sent when a link is clicked, pointing to a DOM node."""
         def __init__(self, dom_node: DOMNode) -> None:
@@ -594,6 +606,12 @@ class NodeInfo(Container):
         self._link_id_to_node: dict[int, DOMNode] = {}
         """A mapping of link IDs to DOM nodes."""
 
+        self._style_value_input = Input(classes="style_value_input")
+        """An input for editing the value of a CSS style."""
+
+        self._editing_rule: str | None = None
+        """The property name of the CSS declaration currently being edited."""
+
     def compose(self) -> ComposeResult:
         """Add sub-widgets."""
         # FIXME: when resizing NodeInfo very large, the scrollbar stops reaching all the way, and eventually disappears.
@@ -623,6 +641,9 @@ class NodeInfo(Container):
         key_bindings_static = self.query_one(".key_bindings", Static)
         events_static = self.query_one(".events", Static)
 
+        self._style_value_input.remove()
+        self._editing_rule = None
+
         if dom_node is None:
             nothing_selected_message = "Nothing selected"
             properties_tree.display = False
@@ -646,7 +667,8 @@ class NodeInfo(Container):
         # TODO: sort by specificity
         # TODO: syntax highlight numbers (with optional units) and keywords
         # TODO: mark styles that don't apply because they're overridden
-        # TODO: edit/toggle rules
+        # TODO: toggle rules
+        # TODO: add new rules
 
         stylesheet = dom_node.app.stylesheet # type: ignore
         rule_sets = stylesheet.rules
@@ -672,7 +694,7 @@ class NodeInfo(Container):
                 if frame_info.filename.endswith(ignore_filename) and frame_info.function == ignore_func_name:
                     return True
             return False
-        def trace_inline_style(rule: str) -> tuple[str, int] | None:
+        def trace_inline_style(rule: str) -> tuple[str, int] | Literal["EDITED_WITH_INSPECTOR"] | None:
             """Returns the location where a style is set, or None if it can't be found."""
             try:
                 source = inline_style_call_stacks[dom_node]
@@ -690,12 +712,16 @@ class NodeInfo(Container):
                 frame_info = frame_infos[0]
             except IndexError: # just in case
                 return None
+            if frame_info.filename.endswith("inspector.py") and frame_info.function == "_apply_style_value":
+                return "EDITED_WITH_INSPECTOR"
             return (frame_info.filename, frame_info.lineno)
         
-        def format_location_info(location: tuple[str, int | None] | None) -> Text:
+        def format_location_info(location: tuple[str, int | None] | Literal["EDITED_WITH_INSPECTOR"] | None) -> Text:
             """Shows a link to open the the source code where a style is set."""
             if location is None:
                 return Text.styled(f"(unknown location)", "#808080")
+            elif location == "EDITED_WITH_INSPECTOR":
+                return Text.styled(f"(edited)", "#808080")
             else:
                 file, line_number = location
                 action = f"open_file({file!r}, {line_number!r})"
@@ -740,26 +766,28 @@ class NodeInfo(Container):
             rule_hyphenated, value_and_semicolon = css_line.split(":", 1)
             rule_hyphenated = rule_hyphenated.strip()
             value_and_semicolon = value_and_semicolon.strip()
-            value_text: Text | str = value_and_semicolon[:-1].strip()
+            value_str = value_and_semicolon[:-1].strip()
             # value: Any = rules[rule]
             # TODO: explore using already-parsed values instead of re-parsing colors
             # Note: rules[rule] won't be a Color for border-left etc. even if it SHOWS as just a color.
             # if isinstance(value, Color):
-            #     value_text = Text.styled(value_text, Style(bgcolor=value.rich_color, color=value.get_contrast_text().rich_color))
+            #     value_text = Text.styled(value_str, Style(bgcolor=value.rich_color, color=value.get_contrast_text().rich_color))
             
             # This is a bit specific, but it handles border values that are a border style followed by a color
             # (as well as plain colors).
-            if " " in value_text:
-                optional_keyword, possible_color = value_text.split(" ", 1)
+            if " " in value_str:
+                optional_keyword, possible_color = value_str.split(" ", 1)
             else:
-                optional_keyword, possible_color = "", value_text
+                optional_keyword, possible_color = "", value_str
             try:
                 color = Color.parse(possible_color)
-                # value_text = Text.styled(possible_color, f"on {value_text}") # doesn't handle all Textual Color values, only Rich Color values
+                # value_text = Text.styled(possible_color, f"on {value_str}") # doesn't handle all Textual Color values, only Rich Color values
                 value_text = Text.styled(possible_color, Style.from_color(bgcolor=color.rich_color, color=color.get_contrast_text().rich_color))
                 value_text = Text.assemble(optional_keyword, " " if optional_keyword else "", value_text)
             except ColorParseError:
+                value_text = Text(value_str)
                 pass
+            value_text.apply_meta({"rule": rule, "value": value_str, "inline": inline})
             return Text.assemble(
                 "  ",
                 rule_hyphenated,
@@ -926,6 +954,69 @@ class NodeInfo(Container):
             events_static.update(Text("\n").join(map(message_info, available_events)))
         else:
             events_static.update(f"(No message types exported by {type(dom_node).__name__!r} or its superclasses)")
+
+    def _get_rule_at(self, x: int, y: int) -> str | None:
+        """Return the rule (property name) at the given absolute position, or None."""
+        try:
+            style = self.screen.get_style_at(x, y)  # type: ignore
+        except NoWidget: # shouldn't really happen
+            return None
+        if "rule" in style.meta:
+            return style.meta["rule"]
+        else:
+            return None
+
+    def on_mouse_down(self, event: events.MouseDown) -> None:
+        """Select a rule to edit."""
+        self._apply_style_value() # TODO: not if the input is clicked
+        x, y = event.screen_offset
+        rule = self._get_rule_at(x, y)
+        if rule is not None:
+            meta = self.screen.get_style_at(*event.screen_offset).meta  # type: ignore
+            assert "value" in meta, "Style meta has rule without value"
+            assert "inline" in meta, "Style meta has rule without inline bool"
+            if not meta["inline"]:
+                return # TODO: edit stylesheet rules
+            input_parent = self.query_one("#styles VerticalScroll")
+            input_parent.mount(self._style_value_input) # before setting value
+            
+            # Find leftmost and rightmost positions of the rule
+            while x > 0 and self._get_rule_at(x - 1, y) == rule:
+                x -= 1
+            left = x
+            # while x < self.size.width and self._get_rule_at(x, y) == rule:
+            #     x += 1
+            # right = x
+            right = input_parent.region.right
+            self._style_value_input.styles.width = right - left
+            # TODO: scroll together with the VerticalScroll
+            self._style_value_input.offset = Offset(left, y) - input_parent.region.offset
+            self._style_value_input.value = meta["value"]
+            self._style_value_input.focus()
+            self._editing_rule = rule
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Called when the user presses Enter in an input."""
+        if event.input is self._style_value_input:
+            self._apply_style_value()
+
+    # NOTE: THIS FUNCTION'S NAME is relied upon by trace_inline_style
+    def _apply_style_value(self) -> None:
+        """Apply a new style value."""
+        if self._editing_rule is None:
+            return
+        # Editing style sheet rules is not yet supported
+        assert self.dom_node is not None, "editing style of no DOM node"
+        # TODO: error handling
+        new_styles = Styles.parse(f"{self._editing_rule}: {self._style_value_input.value};", "<inspector input>")
+        self.dom_node.styles.set_rule(self._editing_rule, new_styles.get_rule(self._editing_rule))
+        self.dom_node.refresh()
+        self.watch_dom_node(self.dom_node) # refresh the inspector
+        self._style_value_input.remove()
+        self._editing_rule = None
+
+
+
 
 class ResizeHandle(Widget):
     """A handle for resizing a panel.
