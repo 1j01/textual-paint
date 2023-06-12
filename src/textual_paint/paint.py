@@ -2606,7 +2606,7 @@ class PaintApp(App[None]):
                         self.saved_undo_count = len(self.undos)
                         window.close()
                         if reload_after_save:
-                            # TODO: make this undoable
+                            self.resize_document(self.image.width, self.image.height) # (hackily) make this undoable
                             new_image = AnsiArtDocument.decode_based_on_file_extension(content, file_path)
                             self.canvas.image = self.image = new_image
                             self.canvas.refresh(layout=True)
@@ -3269,7 +3269,7 @@ class PaintApp(App[None]):
         self.cancel_preview()
 
         # NOTE: This function is relied on to create an undo even if the size doesn't change,
-        # when recovering from a backup.
+        # when recovering from a backup, and when reloading file content when losing information during Save As.
         # TODO: DRY undo state creation (at least the undos/redos part)
         action = Action(_("Attributes"), Region(0, 0, self.image.width, self.image.height))
         action.is_resize = True
