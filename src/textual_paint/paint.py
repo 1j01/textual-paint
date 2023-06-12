@@ -9,7 +9,7 @@ import argparse
 import asyncio
 from enum import Enum
 from random import randint, random
-from typing import Any, NamedTuple, Optional, Callable, Iterator
+from typing import Any, Coroutine, NamedTuple, Optional, Callable, Iterator
 
 import stransi
 from rich.segment import Segment
@@ -4407,7 +4407,7 @@ if args.recode_samples:
     async def recode_samples() -> None:
         """Re-encodes all sample files in parallel."""
         samples_folder = os.path.join(os.path.dirname(__file__), "../../samples")
-        tasks = []
+        tasks: list[Coroutine[Any, Any, None]] = []
         for file_path in Path(samples_folder).glob("**/*"):
             # Skip backup files in case some sample file is being edited.
             if file_path.name.endswith("~"):
