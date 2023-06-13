@@ -2717,7 +2717,15 @@ class PaintApp(App[None]):
                 return
             async def async_handle_button(button: Button):
                 if button.has_class("yes"):
-                    await self.save()
+                    # If save fails, such as due to an unknown file extension,
+                    # doing nothing (after the error message) is fine for New, but confusing for Open.
+                    # It might be better to show Save As, but note that currently any file dialog is closed when opening one,
+                    # regardless of type, with `self.close_windows("SaveAsDialogWindow, OpenDialogWindow")`
+                    # It's at least better to return in case of an error, so that it doesn't
+                    # tell you to save with a different filename whilst also permanently unloading the document.
+                    # (For testing, open e.g. pyproject.toml, edit it, then hit New, Open, or Save.)
+                    if not await self.save():
+                        return
                 callback()
             # https://textual.textualize.io/blog/2023/02/11/the-heisenbug-lurking-in-your-async-code/
             task = asyncio.create_task(async_handle_button(button))
