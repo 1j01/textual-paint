@@ -927,15 +927,16 @@ class NodeInfo(Container):
 
         key_bindings_data_table.clear(columns=True)
         key_bindings_data_table.add_columns("Key", "Action", "Description", "Show", "Key Display", "Priority")
+        check_mark = Text("✅", style="#03AC13", justify="center")
         key_bindings_data_table.add_rows(
             [
                 [
                     binding.key,
                     binding.action,
                     binding.description,
-                    "✅" if binding.show else "",
+                    check_mark if binding.show else "",
                     (self.app.get_key_display(binding.key) or binding.key.upper()) if binding.key_display is None else binding.key_display,  # type: ignore
-                    "✅" if binding.priority else "",
+                    check_mark if binding.priority else "",
                 ]
                 for binding in all_bindings
             ]
