@@ -1009,9 +1009,10 @@ class NodeInfo(Container):
         assert self.dom_node is not None, "editing style of no DOM node"
         # TODO: error handling
         new_styles = Styles.parse(f"{self._editing_rule}: {self._style_value_input.value};", "<inspector input>")
-        self.dom_node.styles.set_rule(self._editing_rule, new_styles.get_rule(self._editing_rule))
-        self.dom_node.refresh()
-        self.watch_dom_node(self.dom_node) # refresh the inspector
+        if new_styles.get_rule(self._editing_rule) != self.dom_node.styles.get_rule(self._editing_rule):
+            self.dom_node.styles.set_rule(self._editing_rule, new_styles.get_rule(self._editing_rule))
+            self.dom_node.refresh()
+            self.watch_dom_node(self.dom_node) # refresh the inspector
         self._style_value_input.remove()
         self._editing_rule = None
 
