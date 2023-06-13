@@ -46,7 +46,7 @@ from textual.css.errors import DeclarationError
 from textual.css.match import match
 from textual.css.model import RuleSet
 from textual.css.parse import parse_declarations
-from textual.css.styles import RulesMap, Styles
+from textual.css.styles import RulesMap, Styles, StylesBase
 from textual.css.tokenizer import TokenError
 from textual.dom import DOMNode
 from textual.errors import NoWidget
@@ -64,6 +64,7 @@ from .launch_editor import launch_editor
 # Instrument style setting in order to link to the source code where inline styles are set.
 # TODO: make optional for performance
 inline_style_call_stacks: dict[DOMNode, dict[str, list[inspect.FrameInfo]]] = {}
+
 original_set_rule = Styles.set_rule
 def set_rule(self: Styles, rule: str, value: object | None) -> bool:
     if self.node and self.node.styles.inline is self:
@@ -72,6 +73,28 @@ def set_rule(self: Styles, rule: str, value: object | None) -> bool:
         inline_style_call_stacks[self.node][rule] = inspect.stack()
     return original_set_rule.__get__(self)(rule, value)
 Styles.set_rule = set_rule
+
+original_merge = Styles.merge
+def merge(self: Styles, other: StylesBase) -> None:
+    if self.node and self.node.styles.inline is self:
+        if self.node not in inline_style_call_stacks:
+            inline_style_call_stacks[self.node] = {}
+        stack = inspect.stack()
+        for rule in other.get_rules():
+            inline_style_call_stacks[self.node][rule] = stack
+    return original_merge.__get__(self)(other)
+Styles.merge = merge
+
+original_merge_rules = Styles.merge_rules
+def merge_rules(self: Styles, rules: RulesMap) -> None:
+    if self.node and self.node.styles.inline is self:
+        if self.node not in inline_style_call_stacks:
+            inline_style_call_stacks[self.node] = {}
+        stack = inspect.stack()
+        for rule in rules:
+            inline_style_call_stacks[self.node][rule] = stack
+    return original_merge_rules.__get__(self)(rules)
+Styles.merge_rules = merge_rules
 
 rule_set_call_stacks: dict[RuleSet, list[inspect.FrameInfo]] = {}
 original_rule_set_init = RuleSet.__init__
@@ -695,6 +718,10 @@ class NodeInfo(Container):
         to_ignore = [
             ("inspector.py", "set_rule"), # inspector's instrumentation
             ("styles.py", "set_rule"),
+            ("inspector.py", "merge"), # inspector's instrumentation
+            ("styles.py", "merge"),
+            ("inspector.py", "merge_rules"), # inspector's instrumentation
+            ("styles.py", "merge_rules"),
             ("_style_properties.py", "__set__"),
             # framework style setter shortcuts
             # found with regexp /self\.styles\.(\w+) = /
