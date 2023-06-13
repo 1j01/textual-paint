@@ -915,18 +915,16 @@ class NodeInfo(Container):
         # highlighter = ReprHighlighter()
         # key_bindings_static.update(Text("\n").join(map(lambda binding: highlighter(repr(binding)), dom_node.BINDINGS)) or "(None defined with BINDINGS)")
         
+        # sources = [dom_node]
+        sources = dom_node.ancestors_with_self
         nodes_and_bindings = [
-            (ancestor, ancestor._bindings) for ancestor in dom_node.ancestors_with_self
+            (ancestor, binding) 
+            for ancestor in sources
+            for binding in ancestor._bindings.keys.values() # keys as in keybindings
         ]
-        all_bindings = [
-            binding
-            for _, ancestor_bindings in nodes_and_bindings
-            for binding in ancestor_bindings.keys.values() # keys as in keybindings
-        ]
-        # local_bindings = dom_node._bindings.keys.values()
 
         key_bindings_data_table.clear(columns=True)
-        key_bindings_data_table.add_columns("Key", "Action", "Description", "Show", "Key Display", "Priority")
+        key_bindings_data_table.add_columns("Key", "Action", "Description", "Show", "Key Display", "Priority", "Source")
         check_mark = Text("✅", style="#03AC13", justify="center")
         key_bindings_data_table.add_rows(
             [
@@ -937,8 +935,9 @@ class NodeInfo(Container):
                     check_mark if binding.show else "",
                     (self.app.get_key_display(binding.key) or binding.key.upper()) if binding.key_display is None else binding.key_display,  # type: ignore
                     check_mark if binding.priority else "",
+                    ancestor.css_identifier_styled, # TODO: link to DOM node in tree; link to source code where binding is defined
                 ]
-                for binding in all_bindings
+                for (ancestor, binding) in nodes_and_bindings
             ]
         )
 
