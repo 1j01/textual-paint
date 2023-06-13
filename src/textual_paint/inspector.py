@@ -42,9 +42,12 @@ from textual import events
 from textual.app import ComposeResult
 from textual.color import Color, ColorParseError
 from textual.containers import Container, VerticalScroll
+from textual.css.errors import DeclarationError
 from textual.css.match import match
 from textual.css.model import RuleSet
+from textual.css.parse import parse_declarations
 from textual.css.styles import RulesMap, Styles
+from textual.css.tokenizer import TokenError
 from textual.dom import DOMNode
 from textual.errors import NoWidget
 from textual.geometry import Offset, Region, Size
@@ -548,11 +551,18 @@ class NodeInfo(Container):
     NodeInfo {
         layers: style_value_input;
     }
-    .style_value_input {
+    .style_value_input,
+    .style_value_error {
         layer: style_value_input;
         dock: top;
+    }
+    .style_value_input {
         border: none !important;
         padding: 0 !important;
+    }
+    .style_value_error {
+        width: 1fr;
+        color: red;
     }
     """
 
@@ -609,6 +619,9 @@ class NodeInfo(Container):
         self._style_value_input = Input(classes="style_value_input")
         """An input for editing the value of a CSS style."""
 
+        self._style_value_error = Static(classes="style_value_error")
+        """An error message shown when the CSS value input is invalid."""
+
         self._editing_rule: str | None = None
         """The property name of the CSS declaration currently being edited."""
 
@@ -642,6 +655,7 @@ class NodeInfo(Container):
         events_static = self.query_one(".events", Static)
 
         self._style_value_input.remove()
+        self._style_value_error.remove()
         self._editing_rule = None
 
         if dom_node is None:
@@ -979,6 +993,7 @@ class NodeInfo(Container):
                 return # TODO: edit stylesheet rules
             input_parent = self.query_one("#styles VerticalScroll")
             input_parent.mount(self._style_value_input) # before setting value
+            input_parent.mount(self._style_value_error)
             
             # Find leftmost and rightmost positions of the rule
             while x > 0 and self._get_rule_at(x - 1, y) == rule:
@@ -993,6 +1008,8 @@ class NodeInfo(Container):
             self._style_value_input.offset = Offset(left, y) - input_parent.region.offset
             self._style_value_input.value = meta["value"]
             self._style_value_input.focus()
+            self._style_value_error.offset = Offset(0, y + 1 - input_parent.region.y)
+            self._style_value_error.update("")
             self._editing_rule = rule
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
@@ -1007,13 +1024,30 @@ class NodeInfo(Container):
             return
         # Editing style sheet rules is not yet supported
         assert self.dom_node is not None, "editing style of no DOM node"
-        # TODO: error handling
-        new_styles = Styles.parse(f"{self._editing_rule}: {self._style_value_input.value};", "<inspector input>")
-        if new_styles.get_rule(self._editing_rule) != self.dom_node.styles.get_rule(self._editing_rule):
-            self.dom_node.styles.set_rule(self._editing_rule, new_styles.get_rule(self._editing_rule))
-            self.dom_node.refresh()
-            self.watch_dom_node(self.dom_node) # refresh the inspector
+        declaration = f"{self._editing_rule}: {self._style_value_input.value};"
+        # Based on the code in DOMQuery.set_styles
+        try:
+            new_styles = parse_declarations(declaration, path="set_styles")
+        except TokenError as error:
+            # TokenError provides __rich__, although it doesn't apply terribly well here;
+            # it's too verbose, and it says "Error in stylesheet", which isn't applicable.
+            # TODO: use just some of the guts of TokenError.__rich__
+            self._style_value_error.update(error)
+            return
+        except DeclarationError as error:
+            # error.name, error.token, error.message
+            # error.message can be HelpText, a nice Rich renderable.
+            self._style_value_error.update(error.message)
+            return
+
+        # merge rather than set_rule may allow a little trick of adding a new rule with
+        # "<old rule value>; <new rule>: <new rule value>" which is totally OK
+        # if that works as a stopgap
+        self.dom_node._inline_styles.merge(new_styles)
+        self.dom_node.refresh(layout=True)
+        self.watch_dom_node(self.dom_node) # refresh the inspector
         self._style_value_input.remove()
+        self._style_value_error.remove()
         self._editing_rule = None
 
 
