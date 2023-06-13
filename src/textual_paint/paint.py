@@ -761,7 +761,10 @@ class AnsiArtDocument:
 
     def encode_based_on_file_extension(self, file_path: str) -> bytes:
         """Encode the image according to the file extension."""
-        format_id = self.format_from_extension(file_path)
+        return self.encode_to_format(self.format_from_extension(file_path))
+
+    def encode_to_format(self, format_id: str | None) -> bytes:
+        """Encode the image into the given file format."""
         # print("Supported image formats for writing:", Image.SAVE.keys())
         if format_id == "ANSI":
             # This maybe shouldn't use UTF-8... but there's not a singular encoding for "ANSI art".
@@ -2589,12 +2592,13 @@ class PaintApp(App[None]):
         saved_future: asyncio.Future[None] = asyncio.Future()
 
         def handle_selected_file_path(file_path: str) -> None:
+            format_id = AnsiArtDocument.format_from_extension(file_path)
             reload_after_save = False # in case of information loss on save, show it immediately
             def on_save_confirmed() -> None:
                 async def async_on_save_confirmed() -> None:
                     self.stop_action_in_progress()
                     try:
-                        content = self.image.encode_based_on_file_extension(file_path)
+                        content = self.image.encode_to_format(format_id)
                     except FormatWriteNotSupported as e:
                         self.message_box(_("Save As"), e.localized_message, "ok")
                         return
@@ -2628,7 +2632,8 @@ class PaintApp(App[None]):
                     self.confirm_overwrite(file_path, on_save_confirmed)
                 else:
                     on_save_confirmed()
-            format_id = AnsiArtDocument.format_from_extension(file_path)
+            # `or "ANSI"` here basically just means don't show a warning if format_id is None.
+            # That case will be handled by the FormatWriteNotSupported exception.
             self.confirm_information_loss(format_id or "ANSI", after_confirming_any_information_loss)
 
         window = SaveAsDialogWindow(
@@ -3082,6 +3087,7 @@ class PaintApp(App[None]):
         For a textbox, returns the selected text within the textbox. May include ANSI escape sequences, either way.
 
         Raises FormatWriteNotSupported if the file_path implies a format that can't be encoded.
+        Defaults to ANSI if `file_path` is None (or empty string).
         """
         sel = self.image.selection
         if sel is None:
@@ -3096,8 +3102,8 @@ class PaintApp(App[None]):
             if sel.textbox_mode:
                 text = selected_text(sel).encode("utf-8")
             else:
-                string_for_ext_detection = file_path or "this_text_before_the_dot_is_needed.ans"
-                text = sel.contained_image.encode_based_on_file_extension(string_for_ext_detection)
+                format_id = AnsiArtDocument.format_from_extension(file_path) if file_path else "ANSI"
+                text = sel.contained_image.encode_to_format(format_id)
         finally:
             if not had_contained_image:
                 sel.contained_image = None
