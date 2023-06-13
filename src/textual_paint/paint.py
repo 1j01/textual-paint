@@ -2621,20 +2621,15 @@ class PaintApp(App[None]):
                 task = asyncio.create_task(async_on_save_confirmed())
                 self.background_tasks.add(task)
                 task.add_done_callback(self.background_tasks.discard)
-            def after_confirming_any_information_loss() -> None:
+            def after_confirming_any_information_loss(information_loss: bool) -> None:
+                nonlocal reload_after_save
+                reload_after_save = information_loss
                 if os.path.exists(file_path):
                     self.confirm_overwrite(file_path, on_save_confirmed)
                 else:
                     on_save_confirmed()
             format_id = AnsiArtDocument.format_from_extension(file_path)
-            if format_id == "PLAINTEXT":
-                reload_after_save = True
-                self.confirm_lose_color_information(after_confirming_any_information_loss)
-            elif format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP"):
-                after_confirming_any_information_loss()
-            else:
-                reload_after_save = True
-                self.confirm_lose_text_information(after_confirming_any_information_loss)
+            self.confirm_information_loss(format_id or "ANSI", after_confirming_any_information_loss)
 
         window = SaveAsDialogWindow(
             title=_("Save As"),
@@ -2751,6 +2746,15 @@ class PaintApp(App[None]):
                 callback()
 
         self.message_box(_("Paint"), message, "yes/no", handle_button)
+
+    def confirm_information_loss(self, format_id: str, callback: Callable[[bool], None]) -> None:
+        """Confirms discarding information when saving as a particular format."""
+        if format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP"):
+            callback(False)
+        elif format_id == "PLAINTEXT":
+            self.confirm_lose_color_information(lambda: callback(True))
+        else:
+            self.confirm_lose_text_information(lambda: callback(True))
 
     def is_document_modified(self) -> bool:
         """Returns whether the document has been modified since the last save."""
