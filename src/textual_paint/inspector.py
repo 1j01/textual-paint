@@ -1073,9 +1073,15 @@ class NodeInfo(Container):
             self._style_value_error.display = True
             return
 
-        # merge rather than set_rule may allow a little trick of adding a new rule with
-        # "<old rule value>; <new rule>: <new rule value>" which is totally OK
-        # if that works as a stopgap
+        # Tip: `merge` rather than `set_rule` allows a little trick of adding a new rule with
+        # "<old rule value>; <new rule>: <new rule value>"
+        # which is useful as a stopgap until there's a proper way to add new rules.
+        
+        # Prevent "(edited)" if the rule is unchanged.
+        for rule in self.dom_node._inline_styles.get_rules():
+            if new_styles.get_rule(rule) == self.dom_node._inline_styles.get_rule(rule):
+                new_styles.clear_rule(rule)
+        
         self.dom_node._inline_styles.merge(new_styles)
         self.dom_node.refresh(layout=True)
         self.watch_dom_node(self.dom_node) # refresh the inspector
