@@ -664,8 +664,12 @@ class NodeInfo(Container):
             with TabPane("CSS", id="styles"):
                 yield VerticalScroll(self.StaticWithLinkSupport(self, classes="styles tab_content_static"))
             with TabPane("Keys", id="key_bindings"):
-                yield VerticalScroll(DataTable[Text | str](classes="key_bindings"))
+                # TODO: why does DataTable take up space in the VerticalScroll
+                # when display == False?
+                # For now I've swapped the order of the two widgets
+                # so that the Static doesn't get pushed down.
                 yield Static("", classes="key_bindings_nothing_selected tab_content_static")
+                yield VerticalScroll(DataTable[Text | str](classes="key_bindings"))
             with TabPane("Events", id="events"):
                 yield VerticalScroll(self.StaticWithLinkSupport(self, classes="events tab_content_static"))
 
