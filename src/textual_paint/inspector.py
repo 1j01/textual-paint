@@ -55,7 +55,7 @@ from textual.message import Message
 from textual.reactive import var
 from textual.strip import Strip
 from textual.widget import Widget
-from textual.widgets import Button, Input, Static, TabPane, TabbedContent, Tree
+from textual.widgets import Button, DataTable, Input, Static, TabPane, TabbedContent, Tree
 from textual.widgets.tree import TreeNode
 # from textual.css._style_properties import BorderDefinition
 
@@ -587,6 +587,9 @@ class NodeInfo(Container):
         width: 1fr;
         color: red;
     }
+    NodeInfo DataTable {
+        height: 1fr;
+    }
     """
 
     class FollowLinkToNode(Message):
@@ -661,7 +664,8 @@ class NodeInfo(Container):
             with TabPane("CSS", id="styles"):
                 yield VerticalScroll(self.StaticWithLinkSupport(self, classes="styles tab_content_static"))
             with TabPane("Keys", id="key_bindings"):
-                yield VerticalScroll(Static(classes="key_bindings tab_content_static"))
+                yield VerticalScroll(DataTable[Text | str](classes="key_bindings"))
+                yield Static("", classes="key_bindings_nothing_selected tab_content_static")
             with TabPane("Events", id="events"):
                 yield VerticalScroll(self.StaticWithLinkSupport(self, classes="events tab_content_static"))
 
@@ -674,7 +678,8 @@ class NodeInfo(Container):
         properties_tree = self.query_one(PropertiesTree)
         properties_static = self.query_one(".properties_nothing_selected", Static)
         styles_static = self.query_one(".styles", Static)
-        key_bindings_static = self.query_one(".key_bindings", Static)
+        key_bindings_data_table: DataTable[Text | str] = self.query_one(".key_bindings", DataTable)
+        key_bindings_static = self.query_one(".key_bindings_nothing_selected", Static)
         events_static = self.query_one(".events", Static)
 
         self._style_value_input.display = False
@@ -686,6 +691,8 @@ class NodeInfo(Container):
             properties_tree.display = False
             properties_static.display = True
             properties_tree.reset("", None)
+            key_bindings_data_table.display = False
+            key_bindings_static.display = True
             properties_static.update(nothing_selected_message)
             styles_static.update(nothing_selected_message)
             key_bindings_static.update(nothing_selected_message)
@@ -699,7 +706,8 @@ class NodeInfo(Container):
         properties_tree.root.collapse()
         properties_tree.root.expand()
 
-        highlighter = ReprHighlighter()
+        key_bindings_data_table.display = True
+        key_bindings_static.display = False
 
         # TODO: sort by specificity
         # TODO: syntax highlight numbers (with optional units) and keywords
@@ -900,7 +908,34 @@ class NodeInfo(Container):
         styles_static.update(styles_text)
 
         # key_bindings_static.update("\n".join(map(repr, dom_node.BINDINGS)) or "(None defined with BINDINGS)")
-        key_bindings_static.update(Text("\n").join(map(lambda binding: highlighter(repr(binding)), dom_node.BINDINGS)) or "(None defined with BINDINGS)")
+        # highlighter = ReprHighlighter()
+        # key_bindings_static.update(Text("\n").join(map(lambda binding: highlighter(repr(binding)), dom_node.BINDINGS)) or "(None defined with BINDINGS)")
+        
+        nodes_and_bindings = [
+            (ancestor, ancestor._bindings) for ancestor in dom_node.ancestors_with_self
+        ]
+        all_bindings = [
+            binding
+            for _, ancestor_bindings in nodes_and_bindings
+            for binding in ancestor_bindings.keys.values() # keys as in keybindings
+        ]
+        # local_bindings = dom_node._bindings.keys.values()
+
+        key_bindings_data_table.clear(columns=True)
+        key_bindings_data_table.add_columns("Key", "Action", "Description", "Show", "Key Display", "Priority")
+        key_bindings_data_table.add_rows(
+            [
+                [
+                    binding.key,
+                    binding.action,
+                    binding.description,
+                    "✅" if binding.show else "",
+                    (self.app.get_key_display(binding.key) or binding.key.upper()) if binding.key_display is None else binding.key_display,  # type: ignore
+                    "✅" if binding.priority else "",
+                ]
+                for binding in all_bindings
+            ]
+        )
 
         # For events, look for class properties that are subclasses of Message
         # to determine what events are available.
