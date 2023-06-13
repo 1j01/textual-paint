@@ -677,8 +677,8 @@ class NodeInfo(Container):
         key_bindings_static = self.query_one(".key_bindings", Static)
         events_static = self.query_one(".events", Static)
 
-        self._style_value_input.remove()
-        self._style_value_error.remove()
+        self._style_value_input.display = False
+        self._style_value_error.display = False
         self._editing_rule = None
 
         if dom_node is None:
@@ -1009,7 +1009,10 @@ class NodeInfo(Container):
 
     def on_mouse_down(self, event: events.MouseDown) -> None:
         """Select a rule to edit."""
-        self._apply_style_value() # TODO: not if the input is clicked
+        widget, _ = self.screen.get_widget_at(*event.screen_offset)  # type: ignore
+        if widget is self._style_value_input:
+            return
+        self._apply_style_value()
         x, y = event.screen_offset
         rule = self._get_rule_at(x, y)
         if rule is not None:
@@ -1021,6 +1024,7 @@ class NodeInfo(Container):
             input_parent = self.query_one("#styles VerticalScroll")
             input_parent.mount(self._style_value_input) # before setting value
             input_parent.mount(self._style_value_error)
+            self._style_value_input.display = True
             
             # Find leftmost and rightmost positions of the rule
             while x > 0 and self._get_rule_at(x - 1, y) == rule:
@@ -1060,11 +1064,13 @@ class NodeInfo(Container):
             # it's too verbose, and it says "Error in stylesheet", which isn't applicable.
             # TODO: use just some of the guts of TokenError.__rich__
             self._style_value_error.update(error)
+            self._style_value_error.display = True
             return
         except DeclarationError as error:
             # error.name, error.token, error.message
             # error.message can be HelpText, a nice Rich renderable.
             self._style_value_error.update(error.message)
+            self._style_value_error.display = True
             return
 
         # merge rather than set_rule may allow a little trick of adding a new rule with
@@ -1073,8 +1079,8 @@ class NodeInfo(Container):
         self.dom_node._inline_styles.merge(new_styles)
         self.dom_node.refresh(layout=True)
         self.watch_dom_node(self.dom_node) # refresh the inspector
-        self._style_value_input.remove()
-        self._style_value_error.remove()
+        self._style_value_input.display = False
+        self._style_value_error.display = False
         self._editing_rule = None
 
 
