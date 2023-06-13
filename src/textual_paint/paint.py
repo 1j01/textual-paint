@@ -1481,7 +1481,7 @@ class Action:
         """The name of the action, for future display."""
         self.region = region
         """The region of the document that was modified."""
-        self.is_resize = False
+        self.is_full_update = False
         """Indicates that this action resizes the document, and thus should not be undone with a region update.
         
         That is, unless in the future region updates support a mask and work in tandem with resizes.
@@ -1505,7 +1505,7 @@ class Action:
         if self.region is None:
             print("Warning: Action.undo called without a defined region")
             return
-        if self.is_resize:
+        if self.is_full_update:
             target_document.copy(self.sub_image_before)
         else:
             target_document.copy_region(self.sub_image_before, target_region=self.region)
@@ -2422,9 +2422,9 @@ class PaintApp(App[None]):
         self.stop_action_in_progress()
         if len(self.undos) > 0:
             action = self.undos.pop()
-            redo_region = Region(0, 0, self.image.width, self.image.height) if action.is_resize else action.region
+            redo_region = Region(0, 0, self.image.width, self.image.height) if action.is_full_update else action.region
             redo_action = Action(_("Undo") + " " + action.name, redo_region)
-            redo_action.is_resize = action.is_resize
+            redo_action.is_full_update = action.is_full_update
             redo_action.update(self.image)
             action.undo(self.image)
             self.redos.append(redo_action)
@@ -2437,9 +2437,9 @@ class PaintApp(App[None]):
         self.stop_action_in_progress()
         if len(self.redos) > 0:
             action = self.redos.pop()
-            undo_region = Region(0, 0, self.image.width, self.image.height) if action.is_resize else action.region
+            undo_region = Region(0, 0, self.image.width, self.image.height) if action.is_full_update else action.region
             undo_action = Action(_("Undo") + " " + action.name, undo_region)
-            undo_action.is_resize = action.is_resize
+            undo_action.is_full_update = action.is_full_update
             undo_action.update(self.image)
             action.undo(self.image)
             self.undos.append(undo_action)
@@ -3272,7 +3272,7 @@ class PaintApp(App[None]):
         # when recovering from a backup, and when reloading file content when losing information during Save As.
         # TODO: DRY undo state creation (at least the undos/redos part)
         action = Action(_("Attributes"), Region(0, 0, self.image.width, self.image.height))
-        action.is_resize = True
+        action.is_full_update = True
         action.update(self.image)
         if len(self.redos) > 0:
             self.redos = []
