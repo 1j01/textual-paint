@@ -2557,12 +2557,21 @@ class PaintApp(App[None]):
         - doesn't short circuit when the file path matches the current file path, crucially
         - skips backup management
         - skips the file system, which is more efficient
-        - fails to handle errors... FIXME
         """
-        self.resize_document(self.image.width, self.image.height) # (hackily) make this undoable
-        new_image = AnsiArtDocument.decode_based_on_file_extension(content, file_path)
-        self.canvas.image = self.image = new_image
-        self.canvas.refresh(layout=True)
+        # TODO: DRY error handling with open_from_file_path and action_paste_from
+        try:
+            self.resize_document(self.image.width, self.image.height) # (hackily) make this undoable
+            new_image = AnsiArtDocument.decode_based_on_file_extension(content, file_path)
+            self.canvas.image = self.image = new_image
+            self.canvas.refresh(layout=True)
+        except UnicodeDecodeError:
+            self.message_box(_("Open"), file_path + "\n" + _("Paint cannot read this file.") + "\n" + _("Unexpected file format."), "ok")
+        except UnidentifiedImageError as e:
+            self.message_box(_("Open"), _("This is not a valid bitmap file, or its format is not currently supported."), "ok", error=e)
+        except FormatReadNotSupported as e:
+            self.message_box(_("Open"), e.localized_message, "ok")
+        except Exception as e:
+            self.message_box(_("Open"), _("An unexpected error occurred while reading %1.", file_path), "ok", error=e)
 
     async def save(self) -> bool:
         """Save the image to a file.
@@ -2973,7 +2982,7 @@ class PaintApp(App[None]):
     def action_paste_from(self) -> None:
         """Paste a file as a selection."""
         def handle_selected_file_path(file_path: str) -> None:
-            # TODO: DRY error handling with open_from_file_path
+            # TODO: DRY error handling with open_from_file_path and reload_after_save
             try:
                 if os.path.getsize(file_path) > MAX_FILE_SIZE:
                     self.message_box(_("Paste"), _("The file is too large to open."), "ok")
