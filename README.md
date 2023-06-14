@@ -171,7 +171,6 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 
 ## Known Issues
 
-- When saving as a TXT file, color information is discarded without warning. It is considered saved, so the backup will be discarded, even though the saved file doesn't match the visible document.
 - Undo/Redo doesn't work inside the Text tool's textbox. Ctrl+Z will delete the textbox. (Also note that the Text tool works differently from MS Paint; it will overwrite characters and the cursor can move freely, which makes it better for ASCII art and worse for prose.)
 - The selection box border appears inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
 - Pick Color can't be cancelled (with Esc or by pressing both mouse buttons), since it samples the color continuously.

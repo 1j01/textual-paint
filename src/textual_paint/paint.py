@@ -2550,6 +2550,20 @@ class PaintApp(App[None]):
             self.message_box(dialog_title, _("An unexpected error occurred while writing %1.", file_path), "ok", error=e)
         return False
 
+    def reload_after_save(self, content: bytes, file_path: str) -> None:
+        """Reload the document from saved content, to show information loss from the file format.
+        
+        Unlike `open_from_file_path`, this method:
+        - doesn't short circuit when the file path matches the current file path, crucially
+        - skips backup management
+        - skips the file system, which is more efficient
+        - fails to handle errors... FIXME
+        """
+        self.resize_document(self.image.width, self.image.height) # (hackily) make this undoable
+        new_image = AnsiArtDocument.decode_based_on_file_extension(content, file_path)
+        self.canvas.image = self.image = new_image
+        self.canvas.refresh(layout=True)
+
     async def save(self) -> bool:
         """Save the image to a file.
         
@@ -2558,13 +2572,20 @@ class PaintApp(App[None]):
         self.stop_action_in_progress()
         dialog_title = _("Save")
         if self.file_path:
+            format_id = AnsiArtDocument.format_from_extension(self.file_path)
+            information_loss = await self.confirm_information_loss_async(format_id or "ANSI")
             try:
-                content = self.image.encode_based_on_file_extension(self.file_path)
+                content = self.image.encode_to_format(format_id)
             except FormatWriteNotSupported as e:
                 self.message_box(_("Save"), e.localized_message, "ok")
                 return False
             if self.write_file_path(self.file_path, content, dialog_title):
                 self.saved_undo_count = len(self.undos)
+                if information_loss:
+                    # Note: this fails to preview the lost information in the case
+                    # of saving the old file in prompt_save_changes,
+                    # because the document will be unloaded.
+                    self.reload_after_save(content, self.file_path)
                 return True
             else:
                 return False
@@ -2610,10 +2631,7 @@ class PaintApp(App[None]):
                         self.saved_undo_count = len(self.undos)
                         window.close()
                         if reload_after_save:
-                            self.resize_document(self.image.width, self.image.height) # (hackily) make this undoable
-                            new_image = AnsiArtDocument.decode_based_on_file_extension(content, file_path)
-                            self.canvas.image = self.image = new_image
-                            self.canvas.refresh(layout=True)
+                            self.reload_after_save(content, file_path)
                         saved_future.set_result(None)
 
                     # TODO: should this look for a backup file and offer to recover it?
@@ -2753,13 +2771,19 @@ class PaintApp(App[None]):
         self.message_box(_("Paint"), message, "yes/no", handle_button)
 
     def confirm_information_loss(self, format_id: str, callback: Callable[[bool], None]) -> None:
-        """Confirms discarding information when saving as a particular format."""
+        """Confirms discarding information when saving as a particular format. Callback variant. Never calls back if unconfirmed."""
         if format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP"):
             callback(False)
         elif format_id == "PLAINTEXT":
             self.confirm_lose_color_information(lambda: callback(True))
         else:
             self.confirm_lose_text_information(lambda: callback(True))
+
+    async def confirm_information_loss_async(self, format_id: str) -> Coroutine[None, None, bool]:
+        """Confirms discarding information when saving as a particular format. Awaitable variant, which uses the callback variant."""
+        future = asyncio.get_running_loop().create_future()
+        self.confirm_information_loss(format_id, lambda result: future.set_result(result))
+        return await future
 
     def is_document_modified(self) -> bool:
         """Returns whether the document has been modified since the last save."""
