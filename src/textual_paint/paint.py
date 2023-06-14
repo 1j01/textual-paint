@@ -2550,7 +2550,7 @@ class PaintApp(App[None]):
             self.message_box(dialog_title, _("An unexpected error occurred while writing %1.", file_path), "ok", error=e)
         return False
 
-    def reload_after_save(self, content: bytes, file_path: str) -> None:
+    def reload_after_save(self, content: bytes, file_path: str) -> bool:
         """Reload the document from saved content, to show information loss from the file format.
         
         Unlike `open_from_file_path`, this method:
@@ -2564,6 +2564,7 @@ class PaintApp(App[None]):
             new_image = AnsiArtDocument.decode_based_on_file_extension(content, file_path)
             self.canvas.image = self.image = new_image
             self.canvas.refresh(layout=True)
+            return True
         except UnicodeDecodeError:
             self.message_box(_("Open"), file_path + "\n" + _("Paint cannot read this file.") + "\n" + _("Unexpected file format."), "ok")
         except UnidentifiedImageError as e:
@@ -2572,6 +2573,7 @@ class PaintApp(App[None]):
             self.message_box(_("Open"), e.localized_message, "ok")
         except Exception as e:
             self.message_box(_("Open"), _("An unexpected error occurred while reading %1.", file_path), "ok", error=e)
+        return False
 
     async def save(self) -> bool:
         """Save the image to a file.
@@ -2594,7 +2596,7 @@ class PaintApp(App[None]):
                     # Note: this fails to preview the lost information in the case
                     # of saving the old file in prompt_save_changes,
                     # because the document will be unloaded.
-                    self.reload_after_save(content, self.file_path)
+                    return self.reload_after_save(content, self.file_path)
                 return True
             else:
                 return False
@@ -2640,7 +2642,11 @@ class PaintApp(App[None]):
                         self.saved_undo_count = len(self.undos)
                         window.close()
                         if reload_after_save:
-                            self.reload_after_save(content, file_path)
+                            if not self.reload_after_save(content, file_path):
+                                # I'm unsure about this.
+                                # Also, if backup recovery is to happen below,
+                                # it should happen in this case too I think.
+                                return
                         saved_future.set_result(None)
 
                     # TODO: should this look for a backup file and offer to recover it?
