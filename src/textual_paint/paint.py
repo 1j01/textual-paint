@@ -10,6 +10,9 @@ import asyncio
 from enum import Enum
 from random import randint, random
 from typing import Any, Coroutine, NamedTuple, Optional, Callable, Iterator
+from rich.cells import cell_len
+from rich.markdown import Markdown
+from rich.measure import Measurement
 
 import stransi
 from rich.segment import Segment
@@ -1086,22 +1089,48 @@ class AnsiArtDocument:
     @staticmethod
     def from_markdown(content: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
         """Creates a document from the given Markdown, rendering with markdown_it."""
-        md = MarkdownViewer(content, show_table_of_contents=False)
-        region = Region(0, 0, 50, 50)#md.region
-        print("region", region)
-        strips = md.render_lines(region)
-        print("strips", strips)
-        document = AnsiArtDocument(region.width, region.height)
-        for y in range(region.height):
-            strip = strips[y]
-            text = strip.text
-            for x in range(region.width):
-                try:
-                    document.ch[y][x] = text[x]
-                except IndexError:
-                    document.ch[y][x] = '?'
-                document.bg[y][x] = default_bg
-                document.fg[y][x] = default_fg
+        markdown = Markdown(content)
+        
+        width = 80
+        height = 24
+
+        console = Console(
+            width=width,
+            height=height,
+            file=io.StringIO(),
+            force_terminal=True,
+            color_system="truecolor",
+            record=True,
+            legacy_windows=False,
+        )
+        console.print(markdown)
+
+        document = AnsiArtDocument(width, height, default_bg, default_fg)
+
+        with console._record_buffer_lock:
+            segments = list(Segment.filter_control(console._record_buffer))
+
+        print(segments)
+        y = 0
+        for y, line in enumerate(Segment.split_and_crop_lines(segments, length=width)):
+            x = 0
+            for text, style, _control in line:
+                style = style or Style()
+                for char in text:
+                    try:
+                        document.ch[y][x] = char
+                    except IndexError:
+                        # Ignore characters that are outside the bounds of the document.
+                        pass
+                    for _ in range(cell_len(char)):
+                        try:
+                            document.bg[y][x] = style.bgcolor.get_truecolor().hex if style.bgcolor else default_bg
+                            document.fg[y][x] = style.color.get_truecolor().hex if style.color else default_fg
+                        except IndexError:
+                            # Ignore characters that are outside the bounds of the document.
+                            pass
+                        x += 1
+
         return document
 
     @staticmethod
