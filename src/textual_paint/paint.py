@@ -26,7 +26,7 @@ from textual.reactive import var, reactive
 from textual.strip import Strip
 from textual.dom import DOMNode
 from textual.widget import Widget
-from textual.widgets import Button, Static, Input, Header, RadioSet, RadioButton
+from textual.widgets import Button, MarkdownViewer, Static, Input, Header, RadioSet, RadioButton
 from textual.binding import Binding
 from textual.color import Color, ColorParseError
 from PIL import Image, UnidentifiedImageError
@@ -1084,6 +1084,27 @@ class AnsiArtDocument:
         return document
 
     @staticmethod
+    def from_markdown(content: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
+        """Creates a document from the given Markdown, rendering with markdown_it."""
+        md = MarkdownViewer(content, show_table_of_contents=False)
+        region = Region(0, 0, 50, 50)#md.region
+        print("region", region)
+        strips = md.render_lines(region)
+        print("strips", strips)
+        document = AnsiArtDocument(region.width, region.height)
+        for y in range(region.height):
+            strip = strips[y]
+            text = strip.text
+            for x in range(region.width):
+                try:
+                    document.ch[y][x] = text[x]
+                except IndexError:
+                    document.ch[y][x] = '?'
+                document.bg[y][x] = default_bg
+                document.fg[y][x] = default_fg
+        return document
+
+    @staticmethod
     def from_svg(svg: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
         """Creates a document from an SVG containing a character grid with rects for cell backgrounds.
         
@@ -1470,7 +1491,9 @@ class AnsiArtDocument:
             return AnsiArtDocument.from_plain(content.decode('utf-8'), default_bg, default_fg)
         elif format_id == "SVG":
             return AnsiArtDocument.from_svg(content.decode('utf-8'), default_bg, default_fg)
-        elif format_id in Image.SAVE or format_id in ["HTML", "MARKDOWN", "RICH_CONSOLE_MARKUP"]:
+        elif format_id == "MARKDOWN":
+            return AnsiArtDocument.from_markdown(content.decode('utf-8'), default_bg, default_fg)
+        elif format_id in Image.SAVE or format_id in ["HTML", "RICH_CONSOLE_MARKUP"]:
             # This is a write-only format.
             raise FormatReadNotSupported(localized_message=_("Cannot read files saved as %1 format.", format_id))
         else:
