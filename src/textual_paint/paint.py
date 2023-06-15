@@ -1092,7 +1092,7 @@ class AnsiArtDocument:
         markdown = Markdown(content)
         
         width = 80
-        height = 24
+        height = 200
 
         console = Console(
             width=width,
@@ -1110,7 +1110,8 @@ class AnsiArtDocument:
         with console._record_buffer_lock:
             segments = list(Segment.filter_control(console._record_buffer))
 
-        print(segments)
+        # print("segments:", segments)
+        max_width = 0
         y = 0
         for y, line in enumerate(Segment.split_and_crop_lines(segments, length=width)):
             x = 0
@@ -1130,7 +1131,24 @@ class AnsiArtDocument:
                             # Ignore characters that are outside the bounds of the document.
                             pass
                         x += 1
-
+                        max_width = max(max_width, x)
+                        if char != " ":
+                            document.height = y + 1
+        # Crop to the used height.
+        document.bg = document.bg[:document.height]
+        document.fg = document.fg[:document.height]
+        document.ch = document.ch[:document.height]
+        # Handle minimum height.
+        while len(document.ch) <= document.height:
+            document.ch.append([])
+            document.bg.append([])
+            document.fg.append([])
+        # Pad rows to a consistent width.
+        for y in range(document.height):
+            for x in range(len(document.ch[y]), document.width):
+                document.ch[y].append(' ')
+                document.bg[y].append(default_bg)
+                document.fg[y].append(default_fg)
         return document
 
     @staticmethod
