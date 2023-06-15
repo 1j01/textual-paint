@@ -1082,6 +1082,7 @@ class AnsiArtDocument:
         document = AnsiArtDocument(width, height)
         for y in range(height):
             for x in range(width):
+                # TODO: detect color format
                 r, g, b = rgb_image.getpixel((x, y))  # type: ignore
                 document.bg[y][x] = "#" + hex(r)[2:].zfill(2) + hex(g)[2:].zfill(2) + hex(b)[2:].zfill(2)
         return document
