@@ -1059,13 +1059,13 @@ class AnsiArtDocument:
         Raises UnidentifiedImageError if the format is not detected.
         """
         image = Image.open(io.BytesIO(content))
-        rgb_image = image.convert('RGB')
+        rgb_image = image.convert('RGB') # handles indexed images, etc.
         width, height = rgb_image.size
         document = AnsiArtDocument(width, height)
         for y in range(height):
             for x in range(width):
                 r, g, b = rgb_image.getpixel((x, y))  # type: ignore
-                document.bg[y][x] = "#" + hex(r)[2:].zfill(2) + hex(g)[2:].zfill(2) + hex(b)[2:].zfill(2)
+                document.bg[y][x] = "#" + hex(r)[2:].zfill(2) + hex(g)[2:].zfill(2) + hex(b)[2:].zfill(2)  # type: ignore
         return document
 
     @staticmethod
@@ -2555,8 +2555,9 @@ class PaintApp(App[None]):
         
         Unlike `open_from_file_path`, this method:
         - doesn't short circuit when the file path matches the current file path, crucially
-        - skips backup management
+        - skips backup management (discarding or checking for a backup)
         - skips the file system, which is more efficient
+        - is undoable
         """
         # TODO: DRY error handling with open_from_file_path and action_paste_from
         try:
@@ -2787,6 +2788,12 @@ class PaintApp(App[None]):
 
     def confirm_information_loss(self, format_id: str, callback: Callable[[bool], None]) -> None:
         """Confirms discarding information when saving as a particular format. Callback variant. Never calls back if unconfirmed."""
+        # TODO: warn if the file can be saved in the given format, but not opened (with this program)
+        # Note: this may overlap with the information loss warning
+        # TODO: don't warn if the information is not present
+        # Note: image formats will lose any FOREGROUND color information.
+        # This could be considered part of the text information, but could be mentioned.
+        # Also, it could be confusing if a file uses a lot of full block characters (█).
         if format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP"):
             callback(False)
         elif format_id == "PLAINTEXT":
