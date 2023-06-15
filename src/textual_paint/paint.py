@@ -644,6 +644,11 @@ body {{
 </html>
 """
 
+# The only way to do color in markdown is with HTML (or an image, such as SVG),
+# so this is just the HTML format without boilerplate.
+CUSTOM_CONSOLE_MARKDOWN_FORMAT = """\
+<pre style="font-family:monospace;line-height:1"><code>{code}</code></pre>
+"""
 
 class FormatWriteNotSupported(Exception):
     """The format doesn't support writing."""
@@ -749,6 +754,9 @@ class AnsiArtDocument:
             ".svg": "SVG",
             ".html": "HTML",
             ".htm": "HTML",
+            ".md": "MARKDOWN",
+            ".mdown": "MARKDOWN",
+            ".markdown": "MARKDOWN",
             ".txt": "PLAINTEXT",
             ".asc": "PLAINTEXT",
             ".diz": "PLAINTEXT",
@@ -773,6 +781,8 @@ class AnsiArtDocument:
             return self.get_svg().encode("utf-8")
         elif format_id == "HTML":
             return self.get_html().encode("utf-8")
+        elif format_id == "MARKDOWN":
+            return self.get_markdown().encode("utf-8")
         elif format_id == "PLAINTEXT":
             return self.get_plain().encode("utf-8")
         elif format_id == "RICH_CONSOLE_MARKUP":
@@ -830,6 +840,11 @@ class AnsiArtDocument:
         """Get the HTML representation of the document."""
         console = self.get_console()
         return console.export_html(inline_styles=True, code_format=CUSTOM_CONSOLE_HTML_FORMAT)
+    
+    def get_markdown(self) -> str:
+        """Get the Markdown representation of the document."""
+        console = self.get_console()
+        return console.export_html(inline_styles=True, code_format=CUSTOM_CONSOLE_MARKDOWN_FORMAT)
     
     def get_svg(self) -> str:
         """Get the SVG representation of the document."""
@@ -1455,7 +1470,7 @@ class AnsiArtDocument:
             return AnsiArtDocument.from_plain(content.decode('utf-8'), default_bg, default_fg)
         elif format_id == "SVG":
             return AnsiArtDocument.from_svg(content.decode('utf-8'), default_bg, default_fg)
-        elif format_id in Image.SAVE or format_id in ["HTML", "RICH_CONSOLE_MARKUP"]:
+        elif format_id in Image.SAVE or format_id in ["HTML", "MARKDOWN", "RICH_CONSOLE_MARKUP"]:
             # This is a write-only format.
             raise FormatReadNotSupported(localized_message=_("Cannot read files saved as %1 format.", format_id))
         else:
@@ -2792,7 +2807,7 @@ class PaintApp(App[None]):
         # Note: image formats will lose any FOREGROUND color information.
         # This could be considered part of the text information, but could be mentioned.
         # Also, it could be confusing if a file uses a lot of full block characters (█).
-        if format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP"):
+        if format_id in ("ANSI", "SVG", "HTML", "MARKDOWN", "RICH_CONSOLE_MARKUP"):
             callback(False)
         elif format_id == "PLAINTEXT":
             self.confirm_lose_color_information(lambda: callback(True))
