@@ -2555,8 +2555,9 @@ class PaintApp(App[None]):
         
         Unlike `open_from_file_path`, this method:
         - doesn't short circuit when the file path matches the current file path, crucially
-        - skips backup management
+        - skips backup management (discarding or checking for a backup)
         - skips the file system, which is more efficient
+        - is undoable
         """
         # TODO: DRY error handling with open_from_file_path and action_paste_from
         try:
@@ -2787,6 +2788,10 @@ class PaintApp(App[None]):
 
     def confirm_information_loss(self, format_id: str, callback: Callable[[bool], None]) -> None:
         """Confirms discarding information when saving as a particular format. Callback variant. Never calls back if unconfirmed."""
+        # TODO: don't warn if the information is not present
+        # Note: image formats will lose any FOREGROUND color information.
+        # This could be considered part of the text information, but could be mentioned.
+        # Also, it could be confusing if a file uses a lot of full block characters (█).
         if format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP"):
             callback(False)
         elif format_id == "PLAINTEXT":
