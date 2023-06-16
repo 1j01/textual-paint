@@ -203,7 +203,7 @@ source .venv/bin/activate
 
 Install Textual and other dependencies:
 ```bash
-pip install "textual[dev]" stransi psutil watchdog pyperclip pyright
+pip install -r requirements.txt
 ```
 
 Run via Textual's CLI for live-reloading CSS support, and enable other development features:
