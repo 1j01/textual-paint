@@ -3093,6 +3093,113 @@ class PaintApp(App[None]):
         )
         self.mount(window)
 
+    def read_palette(self, file_content: str) -> list[str]:
+        """Read a GIMP Palette file."""
+        format_name = "GIMP Palette"
+        lines = file_content.splitlines()
+        if lines[0] != format_name:
+            raise ValueError(f"Not a {format_name}.")
+
+        colors: list[str] = []
+        line_index = 0
+        while line_index + 1 < len(lines):
+            line_index += 1
+            line = lines[line_index]
+
+            if line[0] == "#" or line == "":
+                continue
+
+            if line.startswith("Name:"):
+                # palette.name = line.split(":", 1)[1].strip()
+                continue
+
+            if line.startswith("Columns:"):
+                # palette.number_of_columns = int(line.split(":", 1)[1])
+                continue
+
+            r_g_b_name = re.match(
+                r"^\s*([0-9]+)\s+([0-9]+)\s+([0-9]+)(?:\s+(.*))?$", line
+            )
+            if not r_g_b_name:
+                raise ValueError(
+                    f"Line {line_index + 1} doesn't match pattern of red green blue name."
+                )
+
+            red = int(r_g_b_name[1])
+            green = int(r_g_b_name[2])
+            blue = int(r_g_b_name[3])
+            # name = r_g_b_name[4]
+            colors.append(f"#{red:02x}{green:02x}{blue:02x}")
+
+        return colors
+
+    def load_palette(self, file_content: str) -> None:
+        """Load a palette from a GIMP palette file."""
+        try:
+            new_colors = self.read_palette(file_content)
+        except ValueError as e:
+            self.message_box(_("Paint"), _("Unexpected file format.") + "\n" + str(e), "ok")
+            return
+        except Exception as e:
+            self.message_box(_("Paint"), _("Failed to read palette file."), "ok", error=e)
+            return
+        global palette
+        palette[:len(new_colors)] = new_colors
+        palette[len(new_colors):] = ["#000000"] * (len(palette) - len(new_colors))
+        self.query_one(ColorsBox).update_palette()
+
+    def action_get_colors(self) -> None:
+
+        def handle_selected_file_path(file_path: str) -> None:
+            with open(file_path, "r") as f:
+                self.load_palette(f.read())
+            window.close()
+
+        self.close_windows("SaveAsDialogWindow, OpenDialogWindow")
+        window = OpenDialogWindow(
+            title=_("Get Colors"),
+            handle_selected_file_path=handle_selected_file_path,
+            selected_file_path=self.file_path,
+        )
+        self.mount(window)
+
+    def action_save_colors(self) -> None:
+        def handle_selected_file_path(file_path: str) -> None:
+            color_lines: list[str] = []
+            for color_str in palette:
+                red, green, blue = Color.parse(color_str).rgb
+                red = str(red).ljust(3, " ")
+                green = str(green).ljust(3, " ")
+                blue = str(blue).ljust(3, " ")
+                name = ""
+                color_line = f"{red} {green} {blue}   {name}"
+                color_lines.append(color_line)
+
+            newline = "\n" # f-strings are stupid, at least until Python 3.12
+            # https://docs.python.org/3.12/whatsnew/3.12.html#pep-701-syntactic-formalization-of-f-strings
+            palette_str = f"""GIMP Palette
+Name: Saved Colors
+Columns: {len(palette) // 2}
+#
+{newline.join(color_lines)}
+"""
+
+            palette_bytes = palette_str.encode("utf-8")
+            # ensure .gpl extension
+            if file_path[-4:].lower() != ".gpl":
+                file_path += ".gpl"
+            success = self.write_file_path(file_path, palette_bytes, _("Save Colors"))
+            if success:
+                window.close()
+
+        self.close_windows("SaveAsDialogWindow, OpenDialogWindow")
+        window = SaveAsDialogWindow(
+            title=_("Save Colors"),
+            handle_selected_file_path=handle_selected_file_path,
+            selected_file_path=self.file_path,
+        )
+        self.mount(window)
+
     def action_print_preview(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_page_setup(self) -> None:
@@ -3519,7 +3626,10 @@ class PaintApp(App[None]):
                     MenuItem(_("&Draw Opaque"), self.action_draw_opaque, 6868, grayed=True, description=_("Makes the current selection either opaque or transparent.")),
                 ])),
                 MenuItem(remove_hotkey(_("&Colors")), submenu=Menu([
-                    MenuItem(_("&Edit Colors..."), self.action_edit_colors, 6869, description=_("Creates a new color.")),
+                    MenuItem(_("&Get Colors..."), self.action_get_colors, 41749, description=_("Uses a previously saved palette of colors.")),
+                    MenuItem(_("&Save Colors..."), self.action_save_colors, 41750, description=_("Saves the current palette of colors to a file.")),
+                    MenuItem(_("&Edit Colors..."), self.action_edit_colors, 41751, description=_("Creates a new color.")),
+                    # MenuItem(_("&Edit Colors..."), self.action_edit_colors, 6869, description=_("Creates a new color.")),
                 ])),
                 MenuItem(remove_hotkey(_("&Help")), submenu=Menu([
                     MenuItem(_("&Help Topics"), self.action_help_topics, 57670, description=_("Displays Help for the current task or command.")),
