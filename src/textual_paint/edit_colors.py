@@ -364,7 +364,7 @@ class EditColorsDialogWindow(DialogWindow):
 
     def on_mount(self) -> None:
         """Called when the window is mounted."""
-        self.basic_colors_grid = ColorGrid(basic_colors, self._current_color.hex)
+        self.basic_colors_grid = ColorGrid(basic_colors, self._current_color.hex, classes="autofocus")
         self.custom_colors_grid = ColorGrid(custom_colors, self._current_color.hex)
         verticals_for_inputs: list[Vertical] = []
         for color_model in ["hsl", "rgb"]:

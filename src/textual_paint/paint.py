@@ -3393,6 +3393,7 @@ Columns: {len(palette) // 2}
                     RadioButton(_("400%"), id="value_4"),
                     RadioButton(_("600%"), id="value_6"),
                     RadioButton(_("800%"), id="value_8"),
+                    classes="autofocus",
                 )
             ),
             Container(
@@ -3480,7 +3481,7 @@ Columns: {len(palette) // 2}
             Vertical(
                 Horizontal(
                     Static(_("Width:")),
-                    Input(id="width_input", value=str(self.image.width)),
+                    Input(id="width_input", value=str(self.image.width), classes="autofocus"),
                 ),
                 Horizontal(
                     Static(_("Height:")),

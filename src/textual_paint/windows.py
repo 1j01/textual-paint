@@ -173,8 +173,8 @@ class Window(Container):
             if self.within_content(self.last_focused_descendant):
                 self.last_focused_descendant.focus(scroll_visible=scroll_visible)
                 return self
-        # Otherwise the submit button or first focusable control
-        for query in [".submit", "Widget"]:
+        # Otherwise the autofocus control, or submit button, or first focusable control
+        for query in [".autofocus", ".submit", "Widget"]:
             controls = self.content.query(query)
             if controls:
                 for control in controls:
