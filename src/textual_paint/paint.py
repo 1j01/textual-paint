@@ -2717,7 +2717,7 @@ class PaintApp(App[None]):
         window = SaveAsDialogWindow(
             title=_("Copy To"),
             handle_selected_file_path=handle_selected_file_path,
-            selected_file_path=self.file_path, # TODO: only the directory
+            selected_file_path=os.path.dirname(self.file_path or ""),
             auto_add_default_extension=".ans",
         )
         self.mount(window)
@@ -3017,7 +3017,7 @@ class PaintApp(App[None]):
         window = OpenDialogWindow(
             title=_("Paste From"),
             handle_selected_file_path=handle_selected_file_path,
-            selected_file_path=self.file_path,
+            selected_file_path=os.path.dirname(self.file_path or ""),
         )
         self.mount(window)
 
