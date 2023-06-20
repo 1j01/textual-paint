@@ -71,9 +71,6 @@ class FileDialogWindow(DialogWindow):
         )
 
         self._expand_directory_tree()
-        # This MIGHT be more reliable even though it's hacky.
-        # I don't know what the exact preconditions are for the expansion to work.
-        # self.call_after_refresh(self._expand_directory_tree)
 
     def on_tree_node_highlighted(self, event: Tree.NodeHighlighted[DirEntry]) -> None:
         """
@@ -99,10 +96,11 @@ class FileDialogWindow(DialogWindow):
         tree = self.content.query_one(EnhancedDirectoryTree)
         self._expanding_directory_tree = True
         target_dir = (self._selected_file_path or os.getcwd()).rstrip(os.path.sep)
+        # Tree expansion is asynchronous (it loads folder contents in a worker)
+        # TODO: make expand_to_path a coroutine and await it, to avoid a race condition
         tree.expand_to_path(target_dir)
-        # There are currently some timers in expand_to_path.
-        # In particular, it waits before selecting the target node,
-        # and this flag is for avoiding responding to that.
+        # In expand_to_path, once all the folders are expanded, it will select the target node.
+        # The _expanding_directory_tree flag is for avoiding responding to that automatic initial selection.
         def done_expanding():
             self._expanding_directory_tree = False
         self.set_timer(0.1, done_expanding)
