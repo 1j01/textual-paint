@@ -61,7 +61,7 @@ class FileDialogWindow(DialogWindow):
             EnhancedDirectoryTree(path="/"),
             Horizontal(
                 Label(_("File name:")),
-                Input(classes="filename_input", value=self._starting_file_name),
+                Input(classes="filename_input autofocus", value=self._starting_file_name),
             ),
             Container(
                 Button(self._submit_label, classes="submit", variant="primary"),
@@ -74,10 +74,6 @@ class FileDialogWindow(DialogWindow):
         # This MIGHT be more reliable even though it's hacky.
         # I don't know what the exact preconditions are for the expansion to work.
         # self.call_after_refresh(self._expand_directory_tree)
-
-        # TODO: can I remove timers and call_later?
-
-        self.call_later(lambda: self.query_one("FileDialogWindow .filename_input", Input).focus())
 
     def on_tree_node_highlighted(self, event: Tree.NodeHighlighted[DirEntry]) -> None:
         """
