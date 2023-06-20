@@ -156,10 +156,33 @@ class Window(Container):
         """
         # print(self.region, self.virtual_region)
         x, y = map(lambda scalar: int(scalar.value), self.styles.offset)
-        if self.region.x < 0:
-            x -= self.region.x
-        if self.region.y < 0:
-            y -= self.region.y
+        h_margin = 4
+        border_h = self.outer_size.height - self.size.height - 1 # bottom border isn't applicable, subtract 1
+        bottom_margin = self.title_bar.outer_size.height + border_h
+        screen_width, screen_height = self.screen.region.size  # type: ignore
+        # Note: You should be able to drag the window left and right off screen most of the way.
+        # Note: Order of constraints CAN matter. It's better for the window to be pushed down after being pushed up,
+        # to ensure that the title bar is visible, however this may not matter since it's not pushed up unless
+        # significantly off-screen at the bottom.
+        # Note: self.region doesn't get updated immediately, so we need to track the modifications
+        # to the offset in order for the constraints to interact properly.
+        r = self.region
+        if r.x < -r.width + h_margin:
+            dx = -(r.x + r.width - h_margin)
+            x += dx
+            r = r.translate(Offset(dx, 0))
+        if r.x > screen_width - h_margin:
+            dx = -(r.x - screen_width + h_margin)
+            x += dx
+            r = r.translate(Offset(dx, 0))
+        if r.y > screen_height - bottom_margin:
+            dy = -(r.y - screen_height + bottom_margin)
+            y += dy
+            r = r.translate(Offset(0, dy))
+        if r.y < 0:
+            dy = -(r.y)
+            y += dy
+            r = r.translate(Offset(0, dy))
         self.styles.offset = (x, y)
 
     def on_focus(self, event: events.Focus) -> None:
