@@ -46,13 +46,25 @@ class FileDialogWindow(DialogWindow):
             filename = self.content.query_one(".filename_input", Input).value
             if not filename:
                 return
-            # TODO: allow entering an absolute or relative path, not just a filename
+
+            file_path = filename
+            # This comes before os.path.join so that "~" (which gives an absolute path)
+            # overrides the currently selected directory (as absolute paths do in general)
+            # >>> import os
+            # >>> os.path.join("foo", os.path.expanduser("~/bar"))
+            # '/home/<user>/bar'
+            # >>> os.path.expanduser(os.path.join("foo", "~/bar"))
+            # 'foo/~/bar'
+            file_path = os.path.expanduser(file_path) # ~ or ~<user>
+            file_path = os.path.expandvars(file_path) # e.g. $HOME, ${HOME}, or on Windows, %USERPROFILE%
+
             if self._directory_tree_selected_path:
-                file_path = os.path.join(self._directory_tree_selected_path, filename)
-            else:
-                file_path = filename
+                file_path = os.path.join(self._directory_tree_selected_path, file_path)
+
             if os.path.splitext(file_path)[1] == "":
                 file_path += self._auto_add_default_extension
+
+            # TODO: if directory, just navigate to it in the directory tree
             self.handle_selected_file_path(file_path)
 
     def on_mount(self) -> None:
