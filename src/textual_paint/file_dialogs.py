@@ -64,7 +64,15 @@ class FileDialogWindow(DialogWindow):
             if os.path.splitext(file_path)[1] == "":
                 file_path += self._auto_add_default_extension
 
-            # TODO: if directory, just navigate to it in the directory tree
+            # if it's a directory, just navigate to it in the directory tree
+            if os.path.isdir(file_path):
+                # self._directory_tree_selected_path = file_path
+                # self._selected_file_path = file_path
+                # self._expand_directory_tree()
+                tree = self.content.query_one(EnhancedDirectoryTree)
+                tree.expand_to_path(file_path)
+                return
+
             self.handle_selected_file_path(file_path)
 
     def on_mount(self) -> None:
