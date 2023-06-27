@@ -116,14 +116,12 @@ class FileDialogWindow(DialogWindow):
         tree = self.content.query_one(EnhancedDirectoryTree)
         self._expanding_directory_tree = True
         target_dir = (self._selected_file_path or os.getcwd()).rstrip(os.path.sep)
-        # Tree expansion is asynchronous (it loads folder contents in a worker)
-        # TODO: make expand_to_path a coroutine and await it, to avoid a race condition
-        tree.expand_to_path(target_dir)
-        # In expand_to_path, once all the folders are expanded, it will select the target node.
-        # The _expanding_directory_tree flag is for avoiding responding to that automatic initial selection.
+        # Tree expansion is asynchronous because it loads folder contents in a worker.
         def done_expanding():
+            # In expand_to_path, once all the folders are expanded, it will select the target node.
+            # The _expanding_directory_tree flag is for avoiding responding to that automatic initial selection.
             self._expanding_directory_tree = False
-        self.set_timer(0.1, done_expanding)
+        tree.expand_to_path(target_dir, done_expanding)
 
 class OpenDialogWindow(FileDialogWindow):
     """A dialog window that lets the user select a file to open.
