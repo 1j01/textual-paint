@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 
+# Install with `pip install -e .` in the root directory of the repository before running this script.
+# This is needed because PYTHON HAS NO GOOD WAY OF IMPORTING FILES RELATIVELY.
+# It can't be done outside of a package. Why? WHY?!
+
 import os
 from PIL import Image
 
-from .figlet_font_writer import FIGletFontWriter
+from textual_paint.figlet_font_writer import FIGletFontWriter
 
 block_char_lookup = {
     0x0: ' ',
@@ -156,8 +160,8 @@ def extract_textures(image_path: str):
 
     return extracted_image, half_size_font.createFigFileData(), full_size_font.createFigFileData()
 
-repo_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
-font_folder = os.path.join(repo_folder, 'fonts/NanoTiny')
+repo_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+font_folder = os.path.join(repo_folder, 'src/textual_paint/fonts/NanoTiny')
 image_input_path = os.path.join(font_folder, 'NanoTiny_v14.png')
 image_output_path = os.path.join(font_folder, 'NanoTiny_v14_no_border.png')
 half_size_flf_output_path = os.path.join(font_folder, 'NanoTiny_v14_2x2.flf')

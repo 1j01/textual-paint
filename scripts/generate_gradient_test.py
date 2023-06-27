@@ -63,7 +63,7 @@ width = 80
 height = 24
 
 # Generate and write the ANSI art to a file
-file_path = os.path.join(os.path.dirname(__file__), '../../samples/gradient_test.ans')
+file_path = os.path.join(os.path.dirname(__file__), '../samples/gradient_test.ans')
 file_path = os.path.abspath(file_path)
 with open(file_path, 'w') as file:
     generate_ansi_art(width, height, file)

@@ -95,7 +95,7 @@ def write_ansi_file(file: TextIO) -> None:
             write('\u001b[0m')
 
 # Generate and write to a file
-file_path = os.path.join(os.path.dirname(__file__), f'../../samples/{box_inner_width}x{box_inner_height}_font_template.ans')
+file_path = os.path.join(os.path.dirname(__file__), f'../samples/{box_inner_width}x{box_inner_height}_font_template.ans')
 file_path = os.path.abspath(file_path)
 with open(file_path, 'w') as file:
     write_ansi_file(file)
