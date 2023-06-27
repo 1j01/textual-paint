@@ -1,6 +1,5 @@
-from asyncio import Future
 from pathlib import Path
-from typing import Iterable
+from typing import Callable, Iterable
 
 from rich.text import TextType
 from textual.widgets import DirectoryTree
@@ -11,18 +10,18 @@ class EnhancedDirectoryTree(DirectoryTree):
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         return [path for path in paths if not (path.name.startswith(".") or path.name.endswith("~") or path.name.startswith("~"))]
 
-    def _go_to_node(self, node: TreeNode[DirEntry], future: Future[None]) -> None:
+    def _go_to_node(self, node: TreeNode[DirEntry], callback: Callable[[], None]) -> None:
         """Scroll to the node, and select it."""
         def _go_to_node_now():
             self.select_node(node)
             region = self._get_label_region(node._line) # type: ignore
             assert region, "Node not found in tree"
             self.scroll_to_region(region, animate=False, top=True)
-            future.set_result(None)
+            callback()
         # Is there a way to avoid this delay?
         self.set_timer(0.01, _go_to_node_now)
 
-    def _expand_matching_child(self, node: TreeNode[DirEntry], remaining_parts: tuple[str], future: Future[None]) -> None:
+    def _expand_matching_child(self, node: TreeNode[DirEntry], remaining_parts: tuple[str], callback: Callable[[], None]) -> None:
         """Hooks into DirectoryTree's add method, and expands the child node matching the next path part, recursively.
         
         Once the last part of the path is reached, it scrolls to and selects the node.
@@ -40,13 +39,13 @@ class EnhancedDirectoryTree(DirectoryTree):
                         if node.data.path.is_dir():
                             sliced_parts = remaining_parts[1:]
                             # print("recursing with sliced_parts", sliced_parts)
-                            _expand_matching_child(node, sliced_parts, future)  # type: ignore
+                            _expand_matching_child(node, sliced_parts, callback)  # type: ignore
                             _add_to_load_queue(node)
                         # else:
                         #     print("Found a file, not as last part of path:", node.data.path, "remaining_parts:", remaining_parts)
                     else:
                         # print("scrolling", node)
-                        _go_to_node(node, future)
+                        _go_to_node(node, callback)
                         # If the target path is a directory, expand it.
                         # This might not always be desired, for a general API,
                         # but for File > New, File > Open, it should expand the current directory.
@@ -73,7 +72,7 @@ class EnhancedDirectoryTree(DirectoryTree):
         for child in node.children:
             expand_if_match(child)
 
-    async def expand_to_path(self, target_path: str | Path) -> None:
+    def expand_to_path(self, target_path: str | Path, callback: Callable[[], None] | None = None) -> None:
         """Expand the directory tree to the target path, loading any directories as needed."""
 
         target_path = Path(target_path)
@@ -85,7 +84,7 @@ class EnhancedDirectoryTree(DirectoryTree):
         # - There should be an attribute to expand to a path initially.
         # - Maybe this method should return the node if it was found.
 
-        future: Future[None] = Future()
-        self._expand_matching_child(self.root, target_path.parts[1:], future)
-        await future
+        if callback is None:
+            callback = lambda: None
+        self._expand_matching_child(self.root, target_path.parts[1:], callback)
 
