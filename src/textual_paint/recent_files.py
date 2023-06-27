@@ -58,36 +58,49 @@ def get_recent_files():
 
 
 def load_recent_files():
+    # Create an empty recent files list
+    recent_files = []
+
     # Lock the recent file for reading
-    with open(RECENT_FILE_PATH, "r") as file:
-        fcntl.lockf(file, fcntl.LOCK_SH)
+    with open(RECENT_FILE_PATH, "a+") as file:
         try:
-            # Parse the XML document
-            root = ET.parse(file).getroot()
-            return root.findall("RecentItem")
-        except ET.ParseError:
-            # Return an empty list if the file is empty or invalid
-            return []
+            # Try to read the file content
+            file.seek(0)
+            fcntl.lockf(file, fcntl.LOCK_SH)
+            content = file.read()
+
+            if content:
+                # Parse the XML document
+                root = ET.fromstring(content)
+                recent_files = root.findall("RecentItem")
+        except (ET.ParseError, FileNotFoundError):
+            # Handle file not found or invalid XML format
+            pass
         finally:
             # Unlock the recent file after reading
             fcntl.lockf(file, fcntl.LOCK_UN)
 
+    return recent_files
+
 
 def save_recent_files(recent_files):
+    # Create the root element
+    root = ET.Element("RecentFiles")
+
+    # Add each recent item to the root element
+    for item in recent_files:
+        root.append(item)
+
+    # Serialize the XML document
+    xml_data = ET.tostring(root, encoding="utf-8")
+
     # Lock the recent file for writing
     with open(RECENT_FILE_PATH, "w") as file:
         fcntl.lockf(file, fcntl.LOCK_EX)
         try:
-            # Create the root element
-            root = ET.Element("RecentFiles")
-
-            # Add each recent item to the root element
-            for item in recent_files:
-                root.append(item)
-
             # Write the XML document to the file
             file.write("<?xml version=\"1.0\"?>\n")
-            file.write(ET.tostring(root, encoding="utf-8").decode())
+            file.write(xml_data.decode())
         finally:
             # Unlock the recent file after writing
             fcntl.lockf(file, fcntl.LOCK_UN)
