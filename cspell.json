@@ -70,6 +70,7 @@
 		"Playscii",
 		"polyline",
 		"psutil",
+		"pybabel",
 		"pycache",
 		"pyfiglet",
 		"Pylance",
@@ -107,6 +108,8 @@
 		"vkey",
 		"webp",
 		"webstorm",
-		"wstorm"
+		"wstorm",
+		"xgettext",
+		"xpot"
 	]
 }

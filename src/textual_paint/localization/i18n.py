@@ -8,6 +8,14 @@ current_language = base_language
 localization_folder = os.path.dirname(__file__)
 untranslated_file = os.path.join(localization_folder, "untranslated.txt")
 
+TRACK_UNTRANSLATED = False
+"""Whether to update the untranslated.txt file with any untranslated strings.
+
+This should be disabled in production.
+A better way to do this would be static source code analysis, using xgettext, pybabel, or xpot.
+https://docs.python.org/3/library/gettext.html#internationalizing-your-programs-and-modules
+"""
+
 def get_direction() -> str:
 	"""Get the text direction for the current language."""
 	if current_language in ["ar", "he"]:
@@ -38,12 +46,13 @@ def load_language(language_code: str):
 	except Exception as e:
 		print(f"Could not load language '{language_code}': {e}")
 
-untranslated: set[str] = set()
-try:
-	with open(untranslated_file, "r") as f:
-		untranslated = set(f.read().splitlines())
-except FileNotFoundError:
-	pass
+if TRACK_UNTRANSLATED:
+	untranslated: set[str] = set()
+	try:
+		with open(untranslated_file, "r") as f:
+			untranslated = set(f.read().splitlines())
+	except FileNotFoundError:
+		pass
 
 def get(base_language_str: str, *interpolations: str) -> str:
 	"""Get a localized string."""
@@ -74,11 +83,13 @@ def get(base_language_str: str, *interpolations: str) -> str:
 		if base_language_str[-3:] == "...":
 			return find_localization(base_language_str[:-3]) + "..."
 
-		if base_language_str not in untranslated and current_language != base_language:
-			untranslated.add(base_language_str)
-			# append to untranslated strings file
-			with open(untranslated_file, "a") as f:
-				f.write(base_language_str + "\n")
+		if TRACK_UNTRANSLATED:
+			if base_language_str not in untranslated and current_language != base_language:
+				untranslated.add(base_language_str)
+				# append to untranslated strings file
+				with open(untranslated_file, "a") as f:
+					f.write(base_language_str + "\n")
+
 		return base_language_str
 
 	def interpolate(text: str, interpolations: tuple[str]):
