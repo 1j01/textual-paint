@@ -19,12 +19,28 @@ Screen {
 .-dark-mode #editing_area {
     background: $surface-lighten-2;
 }
+.view_bitmap #editing_area {
+    background: #55aaaa; /* default Windows98 wallpaper theme color */
+}
 
 
 #canvas {
     width: auto;
     height: auto;
     margin: 1 2;
+}
+
+.view_bitmap #tools_box,
+.view_bitmap #colors_box,
+.view_bitmap #status_bar,
+.view_bitmap MenuBar,
+.view_bitmap Header {
+    display: none !important; /* doesn't work because it's an inline style; works differently from browser CSS */
+    width: 0 !important;
+    height: 0 !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
 #tools_box {

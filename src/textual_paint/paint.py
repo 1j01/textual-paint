@@ -1823,6 +1823,10 @@ class Canvas(Widget):
 
         This either starts drawing, or if both mouse buttons are pressed, cancels the current action.
         """
+        if self.app.has_class("view_bitmap"):
+            # Exiting is handled by the PaintApp.
+            return
+
         self.fix_mouse_event(event)  # not needed, pointer isn't captured yet.
         event.x //= self.magnification
         event.y //= self.magnification
@@ -1871,6 +1875,11 @@ class Canvas(Widget):
         if self.pointer_active:
             self.post_message(self.ToolUpdate(event))
         else:
+            # I put this in the else block just for performance.
+            # Hopefully it wouldn't matter much, but
+            # the pointer should never be active in View Bitmap mode.
+            if self.app.has_class("view_bitmap"):
+                return
             self.post_message(self.ToolPreviewUpdate(event))
 
     def on_mouse_up(self, event: events.MouseUp) -> None:
@@ -3428,7 +3437,8 @@ Columns: {len(palette) // 2}
     def action_show_thumbnail(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_view_bitmap(self) -> None:
-        self.message_box(_("Paint"), "Not implemented.", "ok")
+        self.cancel_preview()
+        self.toggle_class("view_bitmap")
     def action_flip_rotate(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_stretch_skew(self) -> None:
@@ -3616,7 +3626,7 @@ Columns: {len(palette) // 2}
                         MenuItem(_("Show &Grid\tCtrl+G"), self.action_show_grid, 37677, grayed=True, description=_("Shows or hides the grid.")),
                         MenuItem(_("Show T&humbnail"), self.action_show_thumbnail, 37676, grayed=True, description=_("Shows or hides the thumbnail view of the picture.")),
                     ])),
-                    MenuItem(_("&View Bitmap\tCtrl+F"), self.action_view_bitmap, 37673, grayed=True, description=_("Displays the entire picture.")),
+                    MenuItem(_("&View Bitmap\tCtrl+F"), self.action_view_bitmap, 37673, description=_("Displays the entire picture.")),
                 ])),
                 MenuItem(remove_hotkey(_("&Image")), submenu=Menu([
                     MenuItem(_("&Flip/Rotate...\tCtrl+R"), self.action_flip_rotate, 37680, grayed=True, description=_("Flips or rotates the picture or a selection.")),
@@ -4309,8 +4319,13 @@ Columns: {len(palette) // 2}
             key = key[len("shift+"):]
         if "ctrl" in key:
             # Don't interfere with Ctrl+C, Ctrl+V, etc.
+            # and don't double-handle Ctrl+F (View Bitmap)
             return
-        
+
+        if self.has_class("view_bitmap"):
+            self.remove_class("view_bitmap")
+            return
+
         if self.image.selection and not self.image.selection.textbox_mode:
             # TODO: smear selection if shift is held
             if key == "left":
@@ -4511,6 +4526,13 @@ Columns: {len(palette) // 2}
             if self.query_one(MenuBar).any_menus_open():
                 self.query_one(MenuBar).close()
                 return
+
+        # Exit View Bitmap mode if clicking anywhere
+        if self.has_class("view_bitmap"):
+            def exit_view_bitmap_mode() -> None:
+                self.remove_class("view_bitmap")
+            # Call later to avoid drawing on the canvas when exiting
+            self.call_later(exit_view_bitmap_mode)
 
         # Deselect if clicking outside the canvas
         if leaf_widget is self.editing_area:
