@@ -12,12 +12,12 @@ class EnhancedDirectoryTree(DirectoryTree):
 
     def _go_to_node(self, node: TreeNode[DirEntry]) -> None:
         """Scroll to the node, and select it."""
-        self.set_timer(0.01, lambda: self.select_node(node))
-        def scroll_node_to_top():
+        def _go_to_node_now():
+            self.select_node(node)
             region = self._get_label_region(node._line) # type: ignore
             assert region, "Node not found in tree"
             self.scroll_to_region(region, animate=False, top=True)
-        self.set_timer(0.01, scroll_node_to_top)
+        self.set_timer(0.01, _go_to_node_now)
 
     def _expand_matching_child(self, node: TreeNode[DirEntry], remaining_parts: tuple[str]) -> None:
         """Hooks into DirectoryTree's add method, and expands the child node matching the next path part, recursively.
