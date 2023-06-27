@@ -2,6 +2,7 @@ from typing import Any, Callable
 from typing_extensions import Self
 
 from textual import events, on
+from textual.dom import NoScreen
 from textual.message import Message
 from textual.app import ComposeResult
 from textual.containers import Container
@@ -159,7 +160,15 @@ class Window(Container):
         h_margin = 4
         border_h = self.outer_size.height - self.size.height - 1 # bottom border isn't applicable, subtract 1
         bottom_margin = self.title_bar.outer_size.height + border_h
-        screen_width, screen_height = self.screen.region.size  # type: ignore
+        try:
+            screen = self.screen  # type: ignore
+        except NoScreen:
+            # I got when hitting Ctrl+O rapidly.
+            # Any old Open dialog is closed when opening the Open dialog.
+            # If a dialog is closed immediately as its opening,
+            # the initial `constrain_to_screen` happens after the widget is unmounted.
+            return
+        screen_width, screen_height = screen.region.size
         # Note: You should be able to drag the window left and right off screen most of the way.
         # Note: Order of constraints CAN matter. It's better for the window to be pushed down after being pushed up,
         # to ensure that the title bar is visible, however this may not matter since it's not pushed up unless
