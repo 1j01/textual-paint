@@ -2795,15 +2795,27 @@ class PaintApp(App[None]):
 
         self.message_box(_("Paint"), message, "yes/no", handle_button)
 
+    def confirm_save_non_openable_file(self, callback: Callable[[], None]) -> None:
+        """Confirms saving into a format that can only be saved, not opened."""
+        message = _("This format can only be saved, not opened.") + "\n" + _("Do you want to continue?")
+        def handle_button(button: Button) -> None:
+            if button.has_class("yes"):
+                callback()
+
+        self.message_box(_("Paint"), message, "yes/no", handle_button)
+
     def confirm_information_loss(self, format_id: str, callback: Callable[[bool], None]) -> None:
         """Confirms discarding information when saving as a particular format. Callback variant. Never calls back if unconfirmed."""
-        # TODO: warn if the file can be saved in the given format, but not opened (with this program)
-        # Note: this may overlap with the information loss warning
         # TODO: don't warn if the information is not present
         # Note: image formats will lose any FOREGROUND color information.
         # This could be considered part of the text information, but could be mentioned.
         # Also, it could be confusing if a file uses a lot of full block characters (█).
-        if format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP"):
+        # TODO: is this all the formats that can't be opened?
+        # TODO: consider overlap between non-openable format and information loss warnings
+        non_openable = (format_id in ("HTML", "RICH_CONSOLE_MARKUP")) or (format_id in Image.SAVE and not format_id in Image.OPEN)
+        if non_openable:
+            self.confirm_save_non_openable_file(lambda: callback(True))
+        elif format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP"):
             callback(False)
         elif format_id == "PLAINTEXT":
             self.confirm_lose_color_information(lambda: callback(True))
