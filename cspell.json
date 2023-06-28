@@ -19,7 +19,7 @@
 		"**/samples/*",
 		"**/samples/**/*",
 		"__pycache__",
-		"*.egg-info/**/*"
+		"**/*.egg-info/**/*"
 	],
 	"words": [
 		"appcode",
