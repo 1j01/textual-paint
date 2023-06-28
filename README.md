@@ -251,6 +251,21 @@ git config --local "diff.cat-show-all.textconv" "cat --show-all"
 but you should check that `cat --show-all samples/2x2.ans` works on your system first.
 Also, note that it might not work with your Git GUI of choice; you may need to use the command line.
 
+### Troubleshooting
+
+> `Unable to import 'app' from module 'src.textual_paint.paint'`
+
+- Make sure to activate the virtual environment, if you're using one.
+- Make sure to run the program from the root directory of the repository.
+
+> `ModuleNotFoundError: No module named 'src'`
+
+- Make sure to run the program from the root directory of the repository.
+
+> `ImportError: attempted relative import with no known parent package`
+
+- `paint.py` can only be run as a module, not as a script. I just... I haven't had the heart to remove the shebang line.
+
 ### Linting
   
 ```bash
