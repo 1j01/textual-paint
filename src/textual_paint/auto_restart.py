@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 import os
 import sys
 import psutil
+from textual.dom import NoScreen
 
 from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
 from watchdog.observers import Observer
@@ -66,7 +67,10 @@ class RestartHandler(PatternMatchingEventHandler):
             # These seem like they'd just cause trouble... they're not changes, are they?
             return
         print("Reloading due to FS change:", event.event_type, event.src_path)
-        _app.screen.styles.background = "red"  # type: ignore
+        try:
+            _app.screen.styles.background = "red"  # type: ignore
+        except NoScreen:
+            pass
         # The unsaved changes prompt seems to need call_from_thread,
         # or else it gets "no running event loop",
         # whereas restart_program() (inside or outside action_reload) needs to NOT use it,
@@ -77,7 +81,10 @@ class RestartHandler(PatternMatchingEventHandler):
             _app.call_from_thread(_app.action_reload)  # type: ignore
         else:
             restart_program()
-        _app.screen.styles.background = "yellow"  # type: ignore
+        try:
+            _app.screen.styles.background = "yellow"  # type: ignore
+        except NoScreen:
+            pass
 
 def restart_on_changes(app: PaintApp):
     """Restarts the current program when a file is changed"""
