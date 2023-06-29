@@ -2831,13 +2831,16 @@ class PaintApp(App[None]):
                 self.confirm_save_non_openable_file(lambda: callback(False))
             else:
                 callback(False)
-        else:
-            # Image formats
-            assert format_id in Image.SAVE, f"Unknown format ID: {format_id!r}"
+        elif format_id in Image.SAVE:
+            # Image formats Pillow supports for writing
             if non_openable:
                 self.confirm_save_non_openable_file(lambda: self.confirm_lose_text_information(lambda: callback(False)))
             else:
                 self.confirm_lose_text_information(lambda: callback(True))
+        else:
+            # Read-only format or unknown format
+            # An error message will be shown when attempting to encode.
+            callback(False)
 
     async def confirm_information_loss_async(self, format_id: str) -> Coroutine[None, None, bool]:
         """Confirms discarding information when saving as a particular format. Awaitable variant, which uses the callback variant."""
