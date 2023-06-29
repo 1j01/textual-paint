@@ -2594,7 +2594,9 @@ class PaintApp(App[None]):
         dialog_title = _("Save")
         if self.file_path:
             format_id = AnsiArtDocument.format_from_extension(self.file_path)
-            information_loss = await self.confirm_information_loss_async(format_id or "ANSI")
+            # Note: `should_reload` implies information loss, but information loss doesn't imply `should_reload`.
+            # In the case of write-only formats, this function should return False.
+            should_reload = await self.confirm_information_loss_async(format_id or "ANSI")
             try:
                 content = self.image.encode_to_format(format_id)
             except FormatWriteNotSupported as e:
@@ -2602,7 +2604,7 @@ class PaintApp(App[None]):
                 return False
             if self.write_file_path(self.file_path, content, dialog_title):
                 self.saved_undo_count = len(self.undos)
-                if information_loss:
+                if should_reload:
                     # Note: this fails to preview the lost information in the case
                     # of saving the old file in prompt_save_changes,
                     # because the document will be unloaded.
@@ -2668,9 +2670,11 @@ class PaintApp(App[None]):
                 task = asyncio.create_task(async_on_save_confirmed())
                 self.background_tasks.add(task)
                 task.add_done_callback(self.background_tasks.discard)
-            def after_confirming_any_information_loss(information_loss: bool) -> None:
+            def after_confirming_any_information_loss(should_reload: bool) -> None:
+                # Note: `should_reload` implies information loss, but information loss doesn't imply `should_reload`.
+                # In the case of write-only formats, this callback should be passed False.
                 nonlocal reload_after_save
-                reload_after_save = information_loss
+                reload_after_save = should_reload
                 if os.path.exists(file_path):
                     self.confirm_overwrite(file_path, on_save_confirmed)
                 else:
@@ -2805,7 +2809,13 @@ class PaintApp(App[None]):
         self.message_box(_("Paint"), message, "yes/no", handle_button)
 
     def confirm_information_loss(self, format_id: str, callback: Callable[[bool], None]) -> None:
-        """Confirms discarding information when saving as a particular format. Callback variant. Never calls back if unconfirmed."""
+        """Confirms discarding information when saving as a particular format. Callback variant. Never calls back if unconfirmed.
+        
+        The callback argument is whether there's information loss AND the file is openable.
+        This is used to determine whether the file should be reloaded to show the information loss.
+        It can't be reloaded if it's not openable.
+        Some formats like PDF (currently) are color-only and can't be opened.
+        """
         # TODO: don't warn if the information is not present
         # Note: image formats will lose any FOREGROUND color information.
         # This could be considered part of the text information, but could be mentioned.
