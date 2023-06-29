@@ -2814,7 +2814,9 @@ class PaintApp(App[None]):
         # TODO: consider overlap between non-openable format and information loss warnings
         non_openable = (format_id in ("HTML", "RICH_CONSOLE_MARKUP")) or (format_id in Image.SAVE and not format_id in Image.OPEN)
         if non_openable:
-            self.confirm_save_non_openable_file(lambda: callback(True))
+            # The callback argument is whether there's information loss.
+            # If True, it will try to load the file to show the loss, and it would error in this case.
+            self.confirm_save_non_openable_file(lambda: callback(False))
         elif format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP"):
             callback(False)
         elif format_id == "PLAINTEXT":
