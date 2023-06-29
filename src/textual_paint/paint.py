@@ -2596,7 +2596,7 @@ class PaintApp(App[None]):
             format_id = AnsiArtDocument.format_from_extension(self.file_path)
             # Note: `should_reload` implies information loss, but information loss doesn't imply `should_reload`.
             # In the case of write-only formats, this function should return False.
-            should_reload = await self.confirm_information_loss_async(format_id or "ANSI")
+            should_reload = await self.confirm_information_loss_async(format_id)
             try:
                 content = self.image.encode_to_format(format_id)
             except FormatWriteNotSupported as e:
@@ -2679,9 +2679,7 @@ class PaintApp(App[None]):
                     self.confirm_overwrite(file_path, on_save_confirmed)
                 else:
                     on_save_confirmed()
-            # `or "ANSI"` here basically just means don't show a warning if format_id is None.
-            # That case will be handled by the FormatWriteNotSupported exception.
-            self.confirm_information_loss(format_id or "ANSI", after_confirming_any_information_loss)
+            self.confirm_information_loss(format_id, after_confirming_any_information_loss)
 
         window = SaveAsDialogWindow(
             title=_("Save As"),
@@ -2808,7 +2806,7 @@ class PaintApp(App[None]):
 
         self.message_box(_("Paint"), message, "yes/no", handle_button)
 
-    def confirm_information_loss(self, format_id: str, callback: Callable[[bool], None]) -> None:
+    def confirm_information_loss(self, format_id: str | None, callback: Callable[[bool], None]) -> None:
         """Confirms discarding information when saving as a particular format. Callback variant. Never calls back if unconfirmed.
         
         The callback argument is whether there's information loss AND the file is openable.
