@@ -2811,18 +2811,23 @@ class PaintApp(App[None]):
         # This could be considered part of the text information, but could be mentioned.
         # Also, it could be confusing if a file uses a lot of full block characters (█).
         # TODO: is this all the formats that can't be opened?
-        # TODO: consider overlap between non-openable format and information loss warnings
-        non_openable = (format_id in ("HTML", "RICH_CONSOLE_MARKUP")) or (format_id in Image.SAVE and not format_id in Image.OPEN)
-        if non_openable:
-            # The callback argument is whether there's information loss.
-            # If True, it will try to load the file to show the loss, and it would error in this case.
-            self.confirm_save_non_openable_file(lambda: callback(False))
-        elif format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP"):
-            callback(False)
-        elif format_id == "PLAINTEXT":
+        non_openable = format_id in ("HTML", "RICH_CONSOLE_MARKUP") or (format_id in Image.SAVE and not format_id in Image.OPEN)
+        supports_text_and_color = format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP")
+        if format_id == "PLAINTEXT":
             self.confirm_lose_color_information(lambda: callback(True))
+        elif supports_text_and_color:
+            # This is handled before Pillow's image formats, so that bespoke format support overrides Pillow.
+            if non_openable:
+                self.confirm_save_non_openable_file(lambda: callback(False))
+            else:
+                callback(False)
         else:
-            self.confirm_lose_text_information(lambda: callback(True))
+            # Image formats
+            assert format_id in Image.SAVE, f"Unknown format ID: {format_id!r}"
+            if non_openable:
+                self.confirm_save_non_openable_file(lambda: self.confirm_lose_text_information(lambda: callback(False)))
+            else:
+                self.confirm_lose_text_information(lambda: callback(True))
 
     async def confirm_information_loss_async(self, format_id: str) -> Coroutine[None, None, bool]:
         """Confirms discarding information when saving as a particular format. Awaitable variant, which uses the callback variant."""
