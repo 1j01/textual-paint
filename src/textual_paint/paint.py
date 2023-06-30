@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 import base64
-import html
 import io
 import os
 from pathlib import Path
