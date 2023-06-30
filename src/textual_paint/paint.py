@@ -2872,7 +2872,7 @@ class PaintApp(App[None]):
             # An error message will be shown when attempting to encode.
             callback(False)
 
-    async def confirm_information_loss_async(self, format_id: str) -> Coroutine[None, None, bool]:
+    async def confirm_information_loss_async(self, format_id: str | None) -> Coroutine[None, None, bool]:
         """Confirms discarding information when saving as a particular format. Awaitable variant, which uses the callback variant."""
         future = asyncio.get_running_loop().create_future()
         self.confirm_information_loss(format_id, lambda result: future.set_result(result))
