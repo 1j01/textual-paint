@@ -811,7 +811,11 @@ class AnsiArtDocument:
                 color = Color.parse(self.bg[y][x])
                 pixels[x, y] = (color.r, color.g, color.b)
         buffer = io.BytesIO()
-        image.save(buffer, pil_format_id, lossless=True)
+        # `lossless` is for WebP
+        # `sizes` is for ICO, since it defaults to a list of square sizes, blurring/distorting the image.
+        # `bitmap_format` is also for ICO. I get "Compressed icons are not supported" in Ubuntu's image viewer,
+        # and thumbnails don't render when it uses the default PNG sub-format.
+        image.save(buffer, pil_format_id, lossless=True, sizes=[size], bitmap_format="bmp")
         return buffer.getvalue()
 
     def get_ansi(self) -> str:
