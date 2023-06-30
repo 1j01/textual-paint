@@ -2056,7 +2056,7 @@ class PaintApp(App[None]):
         # it ignores the Shift.
         Binding("ctrl+shift+z,shift+ctrl+z,ctrl+y,f4", "redo", _("Repeat")),
         Binding("ctrl+x", "cut", _("Cut")),
-        Binding("ctrl+c", "copy", _("Copy")),
+        Binding("ctrl+c", "copy(True)", _("Copy")),
         Binding("ctrl+v", "paste", _("Paste")),
         Binding("ctrl+g", "toggle_grid", _("Show Grid")),
         Binding("ctrl+f", "view_bitmap", _("View Bitmap")),
@@ -3301,11 +3301,14 @@ Columns: {len(palette) // 2}
                 sel.contained_image = None
         return text
 
-    def action_copy(self) -> bool:
+    def action_copy(self, from_ctrl_c: bool = False) -> bool:
         """Copy the selection to the clipboard."""
         try:
             content = self.get_selected_content()
             if content is None:
+                if from_ctrl_c:
+                    message = "Press Ctrl+Q to quit."
+                    self.get_widget_by_id("status_text", Static).update(message)
                 return False
             # TODO: avoid redundant encoding/decoding, if it's not too much trouble to make things bytes|str.
             text = content.decode("utf-8")
