@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+import base64
+import html
 import io
 import os
 from pathlib import Path
@@ -574,11 +576,19 @@ assert ansi_detector_pattern.search("\x80") is None, "Ç (in CP 437) or € (U+0
 
 # This SVG template is based on the template in rich/_export_format.py
 # It removes the simulated window frame, and crops the SVG to just the terminal content.
+# It also adds a placeholder for ANSI data to be stored in the SVG,
+# in order to support opening the file after saving it, in a perfectly lossless way.
+# (I have also implemented a more general SVG loading mechanism, but it's now a fallback.)
 # It was very nice during development to automate saving a file as SVG:
 # textual run --dev "src.textual_paint.paint --restart-on-changes samples/ship.ans" --press ctrl+shift+s,.,s,v,g,enter
 # (The Ctrl+Shift+S shortcut doesn't work when actually trying it as a user, but it works to simulate it.)
 CUSTOM_CONSOLE_SVG_FORMAT = """\
-<svg class="rich-terminal" viewBox="0 0 {terminal_width} {terminal_height}" xmlns="http://www.w3.org/2000/svg">
+<svg
+    class="rich-terminal"
+    viewBox="0 0 {terminal_width} {terminal_height}"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:txtpnt="http://github.com/1j01/textual-paint"
+>
     <!-- Generated with Rich https://www.textualize.io and Textual Paint https://github.com/1j01/textual-paint -->
     <style>
 
@@ -614,6 +624,7 @@ CUSTOM_CONSOLE_SVG_FORMAT = """\
       <rect x="0" y="0" width="{terminal_width}" height="{terminal_height}" />
     </clipPath>
     {lines}
+    <txtpnt:ansi>%ANSI_GOES_HERE%</txtpnt:ansi>
     </defs>
 
     <g clip-path="url(#{unique_id}-clip-terminal)">
@@ -834,7 +845,13 @@ class AnsiArtDocument:
     def get_svg(self) -> str:
         """Get the SVG representation of the document."""
         console = self.get_console()
-        return console.export_svg(code_format=CUSTOM_CONSOLE_SVG_FORMAT)
+        svg = console.export_svg(code_format=CUSTOM_CONSOLE_SVG_FORMAT)
+        # Include ANSI in the SVG so it can be loaded perfectly when re-opened.
+        # This can't use the .format() template since e.g. "{anything}" in the document would case a KeyError.
+        # (And I can't do it beforehand on the template because the template uses .format() itself...
+        # unless I escaped all the braces, but that would be ugly! So I'm just using a different syntax.)
+        # `html.escape` leaves control codes, which blows up ET.fromstring, so use base64 instead.
+        return svg.replace("%ANSI_GOES_HERE%", base64.b64encode(self.get_ansi().encode("utf-8")).decode("utf-8"))
     
     def get_renderable(self) -> Text:
         """Get a Rich renderable for the document."""
@@ -1072,6 +1089,8 @@ class AnsiArtDocument:
     def from_svg(svg: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
         """Creates a document from an SVG containing a character grid with rects for cell backgrounds.
         
+        - If the SVG contains a special <ansi> element, this is used instead of anything else.
+        Otherwise it falls back to flexible grid detection:
         - rect elements can be in any order.
         - rect elements can even be in different groups, however transforms are not considered.
         - rect elements can vary in size, spanning different numbers of cells, and the grid can be wonky.
@@ -1099,6 +1118,13 @@ class AnsiArtDocument:
         """
         import xml.etree.ElementTree as ET
         root = ET.fromstring(svg)
+
+        ansi_el = root.find(".//{http://github.com/1j01/textual-paint}ansi")
+        if ansi_el is not None:
+            if ansi_el.text is None:
+                return AnsiArtDocument(1, 1, default_bg, default_fg)
+            text = base64.b64decode(ansi_el.text).decode("utf-8")
+            return AnsiArtDocument.from_ansi(text, default_bg, default_fg)
 
         def add_debug_marker(x: float, y: float, color: str) -> None:
             """Adds a circle to the SVG at the given position, for debugging."""
@@ -2818,7 +2844,7 @@ class PaintApp(App[None]):
         # Note: image formats will lose any FOREGROUND color information.
         # This could be considered part of the text information, but could be mentioned.
         # Also, it could be confusing if a file uses a lot of full block characters (█).
-        # TODO: is this all the formats that can't be opened?
+        # TODO: warn about lossy JPEG encoding? or just disable the format!
         non_openable = format_id in ("HTML", "RICH_CONSOLE_MARKUP") or (format_id in Image.SAVE and not format_id in Image.OPEN)
         supports_text_and_color = format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP")
         if format_id == "PLAINTEXT":

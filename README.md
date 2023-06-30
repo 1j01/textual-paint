@@ -18,10 +18,7 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
   - File formats, chosen by typing a file extension in the Save As dialog:
     - [x] ANSI (.ans) — Note that while it handles many more ANSI control codes when loading than those that it uses to save files, you may have limited success loading other ANSI files that you find on the web, or create with other tools. ANSI files can vary a lot and even encode animations!
     - [x] Plain Text (.txt) — discards color information
-    - [x] SVG (.svg) — mainly save only; can open SVGs saved by Textual Paint, but it's not a perfect round-trip
-      - wide characters are treated as one cell wide when opening, leading to shifting of cells to the right
-      - beware opening large documents saved as SVG, as it gets exponentially slower with size
-      - note that for fun, as a challenge, I made it quite flexible; it can handle uneven grids of unsorted rectangles (but probably to fix the performance, I'll make it more strict)
+    - [x] SVG (.svg) — can open SVGs saved by Textual Paint, which embed ANSI data; can also open some other SVGs that consist of a grid of rectangles and text elements. For fun, as a challenge, I made it quite flexible; it can handle uneven grids of unsorted rectangles. But that's only used as a fallback, because it's not perfect.
     - [x] HTML (.html) — save only
     - [x] PNG (.png)
     - [x] Bitmap (.bmp)
