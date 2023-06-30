@@ -2611,6 +2611,8 @@ class PaintApp(App[None]):
             new_image = AnsiArtDocument.decode_based_on_file_extension(content, file_path)
             self.canvas.image = self.image = new_image
             self.canvas.refresh(layout=True)
+            # awkward to do this in here as well as externally, but this should be updated with the new undo count
+            self.saved_undo_count = len(self.undos)
             return True
         except UnicodeDecodeError:
             self.message_box(_("Open"), file_path + "\n" + _("Paint cannot read this file.") + "\n" + _("Unexpected file format."), "ok")
@@ -2640,7 +2642,7 @@ class PaintApp(App[None]):
                 self.message_box(_("Save"), e.localized_message, "ok")
                 return False
             if self.write_file_path(self.file_path, content, dialog_title):
-                self.saved_undo_count = len(self.undos)
+                self.saved_undo_count = len(self.undos) # also set in reload_after_save
                 if should_reload:
                     # Note: this fails to preview the lost information in the case
                     # of saving the old file in prompt_save_changes,
@@ -2688,7 +2690,7 @@ class PaintApp(App[None]):
                     if success:
                         self.discard_backup() # for OLD file_path (must be done before changing self.file_path)
                         self.file_path = file_path
-                        self.saved_undo_count = len(self.undos)
+                        self.saved_undo_count = len(self.undos) # also set in reload_after_save
                         window.close()
                         if reload_after_save:
                             if not self.reload_after_save(content, file_path):
