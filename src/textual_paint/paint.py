@@ -2698,11 +2698,12 @@ class PaintApp(App[None]):
                                 return
                         saved_future.set_result(None)
 
-                    # TODO: should this look for a backup file and offer to recover it?
-                    # Seems kinda weird? But the backup file will be deleted on close,
-                    # so it also seems weird to just silently delete it.
-                    # Could give a different message, or could rename the backup file so it's not deleted.
-                    # Probably should give a different message.
+                    # It's important to look for a backup file even for Save As, so that
+                    # self.backup_checked_for is set; otherwise the backup will get left behind when closing,
+                    # since it avoids deleting a backup file without first trying to recover from it (if it exists).
+                    # TODO: Give a special message for clarity, or create numbered backup files to avoid conflict.
+                    # See: commit message 74ffc34de4b789ec1da2ae2e08bf99f1bb4670c9 regarding numbered backup files.
+                    self.recover_from_backup()
                 # https://textual.textualize.io/blog/2023/02/11/the-heisenbug-lurking-in-your-async-code/
                 task = asyncio.create_task(async_on_save_confirmed())
                 self.background_tasks.add(task)
