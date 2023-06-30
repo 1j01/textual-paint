@@ -45,7 +45,7 @@ from .auto_restart import restart_on_changes, restart_program
 from .__init__ import __version__
 
 MAX_FILE_SIZE = 500000 # 500 KB
-
+DEBUG_SVG_LOADING = False # writes debug.svg when flexible character grid loader is used
 
 # These can go away now that args are parsed up top
 ascii_only_icons = False
@@ -1128,6 +1128,8 @@ class AnsiArtDocument:
 
         def add_debug_marker(x: float, y: float, color: str) -> None:
             """Adds a circle to the SVG at the given position, for debugging."""
+            if not DEBUG_SVG_LOADING:
+                return
             # without the namespace, it won't show up!
             marker = ET.Element("{http://www.w3.org/2000/svg}circle")
             marker.attrib["cx"] = str(x)
@@ -1224,7 +1226,8 @@ class AnsiArtDocument:
                     # Combinatorial explosion is much worse with logging enabled.
                     # print("Ignoring outer_rect: " + ET.tostring(outer_rect, encoding="unicode"))
                     # For debugging, outline the ignored rect.
-                    outer_rect.attrib["style"] = "stroke:#ff0000;stroke-width:1;stroke-dasharray:1,1;fill:none"
+                    if DEBUG_SVG_LOADING:
+                        outer_rect.attrib["style"] = "stroke:#ff0000;stroke-width:1;stroke-dasharray:1,1;fill:none"
 
         rects = [rect for rect in rects if rect not in rects_to_ignore]
 
@@ -1324,15 +1327,16 @@ class AnsiArtDocument:
             # Sort tracks
             tracks.sort(key=lambda track: (track.min_center + track.max_center) / 2)
             # Visualize the tracks for debug
-            for track in tracks:
-                ET.SubElement(root, "{http://www.w3.org/2000/svg}rect", {
-                    "x": str(track.min_center) if coord_attrib == "x" else "0",
-                    "y": str(track.min_center) if coord_attrib == "y" else "0",
-                    "width": str(track.max_center - track.min_center + 0.001) if coord_attrib == "x" else "100%",
-                    "height": str(track.max_center - track.min_center + 0.001) if coord_attrib == "y" else "100%",
-                    # "style": "stroke:#0000ff;stroke-width:0.1;stroke-dasharray:1,1;fill:none"
-                    "style": "fill:#0000ff;fill-opacity:0.1;stroke:#0000ff;stroke-width:0.1"
-                })
+            if DEBUG_SVG_LOADING:
+                for track in tracks:
+                    ET.SubElement(root, "{http://www.w3.org/2000/svg}rect", {
+                        "x": str(track.min_center) if coord_attrib == "x" else "0",
+                        "y": str(track.min_center) if coord_attrib == "y" else "0",
+                        "width": str(track.max_center - track.min_center + 0.001) if coord_attrib == "x" else "100%",
+                        "height": str(track.max_center - track.min_center + 0.001) if coord_attrib == "y" else "100%",
+                        # "style": "stroke:#0000ff;stroke-width:0.1;stroke-dasharray:1,1;fill:none"
+                        "style": "fill:#0000ff;fill-opacity:0.1;stroke:#0000ff;stroke-width:0.1"
+                    })
 
             # Find the average spacing between tracks, ignoring gaps that are likely to be more than one cell.
             # I'm calling this gap because I'm lazy.
@@ -1343,13 +1347,14 @@ class AnsiArtDocument:
                 i_center = (tracks[i].max_center + tracks[i].min_center) / 2
                 j_center = (tracks[i + 1].max_center + tracks[i + 1].min_center) / 2
                 gap = abs(j_center - i_center) # abs shouldn't be necessary, but just in case I guess
-                ET.SubElement(root, "{http://www.w3.org/2000/svg}line", {
-                    "x1": str(i_center) if coord_attrib == "x" else ("5%" if i % 2 == 0 else "2%"),
-                    "y1": str(i_center) if coord_attrib == "y" else ("5%" if i % 2 == 0 else "2%"),
-                    "x2": str(j_center) if coord_attrib == "x" else ("5%" if i % 2 == 0 else "2%"),
-                    "y2": str(j_center) if coord_attrib == "y" else ("5%" if i % 2 == 0 else "2%"),
-                    "stroke": "#ff0000" if gap > max_gap else "#0051ff",
-                })
+                if DEBUG_SVG_LOADING:
+                    ET.SubElement(root, "{http://www.w3.org/2000/svg}line", {
+                        "x1": str(i_center) if coord_attrib == "x" else ("5%" if i % 2 == 0 else "2%"),
+                        "y1": str(i_center) if coord_attrib == "y" else ("5%" if i % 2 == 0 else "2%"),
+                        "x2": str(j_center) if coord_attrib == "x" else ("5%" if i % 2 == 0 else "2%"),
+                        "y2": str(j_center) if coord_attrib == "y" else ("5%" if i % 2 == 0 else "2%"),
+                        "stroke": "#ff0000" if gap > max_gap else "#0051ff",
+                    })
                 all_gaps.append(gap)
                 if gap <= max_gap:
                     gaps.append(gap)
@@ -1457,7 +1462,8 @@ class AnsiArtDocument:
                 continue
         
         # For debugging, write the SVG with the ignored rects outlined, and coordinate markers added.
-        ET.ElementTree(root).write("debug.svg", encoding="unicode")
+        if DEBUG_SVG_LOADING:
+            ET.ElementTree(root).write("debug.svg", encoding="unicode")
 
         return document
 
