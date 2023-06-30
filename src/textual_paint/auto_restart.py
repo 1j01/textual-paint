@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 import os
 import sys
 import psutil
-from textual.dom import NoScreen
+from textual.app import ScreenStackError
 
 from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
 from watchdog.observers import Observer
@@ -69,7 +69,7 @@ class RestartHandler(PatternMatchingEventHandler):
         print("Reloading due to FS change:", event.event_type, event.src_path)
         try:
             _app.screen.styles.background = "red"  # type: ignore
-        except NoScreen:
+        except ScreenStackError:
             pass
         # The unsaved changes prompt seems to need call_from_thread,
         # or else it gets "no running event loop",
@@ -83,7 +83,7 @@ class RestartHandler(PatternMatchingEventHandler):
             restart_program()
         try:
             _app.screen.styles.background = "yellow"  # type: ignore
-        except NoScreen:
+        except ScreenStackError:
             pass
 
 def restart_on_changes(app: PaintApp):
