@@ -25,7 +25,6 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
     - [x] GIF (.gif)
     - [x] TIFF (.tiff)
     - [x] WebP (.webp)
-    - [x] JPEG (.jpg) — low quality <-- (TODO: set quality level? maybe enlarge image before saving?) -->
     - [x] Windows Icon (.ico) — opens largest size in the file
     - [x] Mac OS Icon (.icns) — opens largest size in the file
     - [x] Windows Cursor (.cur) — open only

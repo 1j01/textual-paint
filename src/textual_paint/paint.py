@@ -787,6 +787,12 @@ class AnsiArtDocument:
             return self.get_plain().encode("utf-8")
         elif format_id == "RICH_CONSOLE_MARKUP":
             return self.get_rich_console_markup().encode("utf-8")
+        elif format_id == "JPEG":
+            # Disabled because of low quality.
+            # On the scale of images you're able to (performantly) edit in this app (currently),
+            # JPEG is not a good choice.
+            # Note: if ever re-enabling this, make sure to re-enable warning in confirm_information_loss.
+            raise FormatWriteNotSupported(localized_message=_("Cannot write files in %1 format.", format_id) + "\n\n" + _("To save your changes, use a different filename."))
         elif format_id in Image.SAVE:
             return self.encode_image_format(format_id)
         elif format_id is None:
@@ -2849,11 +2855,15 @@ class PaintApp(App[None]):
         # Note: image formats will lose any FOREGROUND color information.
         # This could be considered part of the text information, but could be mentioned.
         # Also, it could be confusing if a file uses a lot of full block characters (█).
-        # TODO: warn about lossy JPEG encoding? or just disable the format!
         non_openable = format_id in ("HTML", "RICH_CONSOLE_MARKUP") or (format_id in Image.SAVE and not format_id in Image.OPEN)
         supports_text_and_color = format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP")
         if format_id == "PLAINTEXT":
             self.confirm_lose_color_information(lambda: callback(True))
+        elif format_id == "JPEG":
+            # JPEG is disabled for saving because it's lossy.
+            # We don't need to warn about that here, because we will show an error when attempting to encode.
+            # Any warning here would just be annoying preamble to the error.
+            callback(False)
         elif supports_text_and_color:
             # This is handled before Pillow's image formats, so that bespoke format support overrides Pillow.
             if non_openable:
