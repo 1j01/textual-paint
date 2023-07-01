@@ -17,7 +17,7 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
   - [x] Automatically saves a temporary `.ans~` backup file alongside the file you're editing, for recovery in case of a crash
   - File formats, chosen by typing a file extension in the Save As dialog:
     - [x] ANSI (.ans) — Note that while it handles many more ANSI control codes when loading than those that it uses to save files, you may have limited success loading other ANSI files that you find on the web, or create with other tools. ANSI files can vary a lot and even encode animations!
-    - [x] Plain Text (.txt) — discards color information
+    - [x] Plain Text (.txt)
     - [x] SVG (.svg) — can open SVGs saved by Textual Paint, which embed ANSI data; can also open some other SVGs that consist of a grid of rectangles and text elements. For fun, as a challenge, I made it quite flexible; it can handle uneven grids of unsorted rectangles. But that's only used as a fallback, because it's not perfect.
     - [x] HTML (.htm, html) — write-only (opening not supported)
     - [x] PNG (.png) — opens first frame of an APNG file
@@ -106,8 +106,8 @@ options:
 
 - <kbd>Ctrl</kbd>+<kbd>D</kbd>: Toggle Dark Mode
 - <kbd>Ctrl</kbd>+<kbd>Q</kbd>: Quit
-- <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>: Save As **IF SHIFT IS DETECTED** — might trigger Save instead, and overwrite the open file! ⚠️
-- <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd>: Redo **IF SHIFT IS DETECTED** — might trigger Undo instead.
+- <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>: Save As **IF SHIFT IS DETECTED** — ⚠️ it might trigger Save instead, and overwrite the open file!
+- <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd>: Redo **IF SHIFT IS DETECTED** — ⚠️ it might trigger Undo instead.
 
 The rest match MS Paint's keyboard shortcuts:
 
@@ -168,7 +168,7 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 
 ## Known Issues
 
-- Undo/Redo doesn't work inside the Text tool's textbox. Ctrl+Z will delete the textbox. (Also note that the Text tool works differently from MS Paint; it will overwrite characters and the cursor can move freely, which makes it better for ASCII art and worse for prose.)
+- Undo/Redo doesn't work inside the Text tool's textbox. Ctrl+Z will delete the textbox. (Also note that the Text tool works differently from MS Paint; it will overwrite characters and the cursor can move freely, which makes it better for ASCII art, but worse for prose.)
 - The selection box border appears inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
 - Pick Color can't be cancelled (with Esc or by pressing both mouse buttons), since it samples the color continuously.
 - Pressing both mouse buttons stops the current tool, but doesn't undo the current action.
@@ -192,7 +192,7 @@ The program has only been tested on Linux. Issues on other platforms are as-yet 
 
 ## Development
 
-Recommended: create a virtual environment:
+Recommended: first, create a virtual environment:
 ```bash
 python -m venv .venv
 source .venv/bin/activate
@@ -203,7 +203,7 @@ Install Textual and other dependencies:
 pip install -r requirements.txt
 ```
 
-Run via Textual's CLI for live-reloading CSS support, and enable other development features:
+Run the app via Textual's CLI for live-reloading CSS support, and enable other development features:
 ```bash
 textual run --dev "src.textual_paint.paint --clear-screen --inspect-layout --restart-on-changes"
 ```
@@ -225,9 +225,9 @@ textual-paint
 
 \*If you use a virtual environment, it will only install within that environment.
 
-`--clear-screen` is useful for development, because it's sometimes jarring to see error messages that have actually been fixed, when exiting the program.
+`--clear-screen` is useful for development, because it's sometimes jarring or perplexing to see error messages that have actually been fixed, when exiting the program.
 
-`--inspect-layout` lets you middle click to visualize the layout breakdown by labeling each widget in the hierarchy, and coloring their regions. The labels affect the layout, so you can also hold Ctrl to only colorize, and you can remember how the colors correspond to the labels, to build a mental model of the layout.
+`--inspect-layout` enables a DOM inspector accessible with F12, which I built. It also lets you apply a rainbow highlight and labels to all ancestors under the mouse with middle click, but this is mostly obsolete/redundant with the DOM inspector now. The labels affect the layout, so you can also hold Ctrl to only colorize, and you can remember how the colors correspond to the labels, to build a mental model of the layout.
 
 `--restart-on-changes` automatically restarts the program when any Python files change. This works by the program restarting itself directly. (Programs like `modd` or `nodemon` that run your program in a subprocess don't work well with Textual's escape sequences.)
 
@@ -285,7 +285,7 @@ python -m pipreqs.pipreqs --ignore .history --force
 ## Unicode Symbols and Emojis for Paint Tools
 
 The first thing I did in this project was to collect possible characters to represent all the tool icons in MS Paint, to gauge how good of a recreation it would be possible to achieve, starting from looks.
-Unfortunately, I haven't run into any significant roadblocks, so I'm apparently recreating MS Paint. [Again.](https://jspaint.app)
+As it turns out, I didn't run into any significant roadblocks, so I ended up recreating MS Paint. [Again.](https://jspaint.app)
 
 These are the symbols I've found so far:
 
@@ -321,6 +321,6 @@ A crosshair cursor could use one of `+✜✛⊹✚╋╬⁘⁛⌖⯐`, but whils
 ## See Also
 
 - [JavE](http://jave.de/), an advanced Java-based ASCII art editor
-- [Playscii](http://vectorpoem.com/playscii/), a beautiful ASCII/ANSI art editor. This is also written in Python and MIT licensed, so I might take some code from it, for converting images to ANSI, for example. Maybe even try to support (or piggy back off of) its file format.
+- [Playscii](http://vectorpoem.com/playscii/), a beautiful ASCII/ANSI art editor. This is also written in Python and MIT licensed, so I might take some code from it, for converting images to ANSI, for example. Who knows, maybe I could even try to support its file format.
 - [cmdpxl](https://github.com/knosmos/cmdpxl), a pixel art editor for the terminal using the keyboard
 - [pypixelart](https://github.com/douglascdev/pypixelart), a pixel art editor using vim-like keybindings, inspired by cmdpxl but not terminal-based
