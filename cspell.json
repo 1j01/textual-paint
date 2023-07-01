@@ -22,6 +22,7 @@
 		"**/*.egg-info/**/*"
 	],
 	"words": [
+		"APNG",
 		"appcode",
 		"appscript",
 		"asyncio",

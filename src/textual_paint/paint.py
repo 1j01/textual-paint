@@ -49,7 +49,8 @@ DEBUG_SVG_LOADING = False # writes debug.svg when flexible character grid loader
 # JPEG is disabled because of low quality.
 # On the scale of images you're able to (performantly) edit in this app (currently),
 # JPEG is not a good choice.
-SAVE_DISABLED_FORMATS = ["JPEG"]
+# ICNS is disabled because it only supports a limited set of sizes.
+SAVE_DISABLED_FORMATS = ["JPEG", "ICNS"]
 
 # These can go away now that args are parsed up top
 ascii_only_icons = False

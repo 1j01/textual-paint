@@ -19,16 +19,17 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
     - [x] ANSI (.ans) — Note that while it handles many more ANSI control codes when loading than those that it uses to save files, you may have limited success loading other ANSI files that you find on the web, or create with other tools. ANSI files can vary a lot and even encode animations!
     - [x] Plain Text (.txt) — discards color information
     - [x] SVG (.svg) — can open SVGs saved by Textual Paint, which embed ANSI data; can also open some other SVGs that consist of a grid of rectangles and text elements. For fun, as a challenge, I made it quite flexible; it can handle uneven grids of unsorted rectangles. But that's only used as a fallback, because it's not perfect.
-    - [x] HTML (.html) — save only
-    - [x] PNG (.png)
+    - [x] HTML (.htm, html) — write-only (opening not supported)
+    - [x] PNG (.png) — opens first frame of an APNG file
     - [x] Bitmap (.bmp)
-    - [x] GIF (.gif)
-    - [x] TIFF (.tiff)
-    - [x] WebP (.webp)
+    - [x] GIF (.gif) — opens first frame
+    - [x] TIFF (.tiff) — opens first frame
+    - [x] WebP (.webp) — opens first frame
+    - [x] JPEG (.jpg, .jpeg) — saving disabled because it's lossy (it would destroy your pixel art)
     - [x] Windows Icon (.ico) — opens largest size in the file
-    - [x] Mac OS Icon (.icns) — opens largest size in the file
-    - [x] Windows Cursor (.cur) — open only
-    - and more, see [Pillow's documentation](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html)
+    - [x] Mac OS Icon (.icns) — opens largest size in the file; saving disabled because it requires specific sizes
+    - [x] Windows Cursor (.cur) — opens largest size in the file; saving not supported by Pillow (and it would need a defined hot spot)
+    - See [Pillow's documentation](https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html) for more supported formats.
     - Note that metadata is not preserved when opening and saving image files. (This is however common for many image editors.)
 - Tools
     - [x] Free-Form Select
