@@ -643,6 +643,7 @@ CUSTOM_CONSOLE_SVG_FORMAT = """\
 
 CUSTOM_CONSOLE_HTML_FORMAT = """\
 <!DOCTYPE html>
+<html>
 <head>
 <meta charset="UTF-8">
 <style>
@@ -653,7 +654,6 @@ body {{
 }}
 </style>
 </head>
-<html>
 <body>
     <pre style="font-family:monospace;line-height:1"><code>{code}</code></pre>
 </body>
