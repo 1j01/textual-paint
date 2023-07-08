@@ -179,7 +179,6 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 - Some languages don't display correctly.
 - Large files can make the program very slow, as can magnifying the canvas. There is a 500 KB limit when opening files to prevent it from freezing.
 - Free-Form Select stamping/finalizing is incorrect when the selection is off-screen to the left or top.
-- Moving the selection with the arrow keys does not cut out the selection from the canvas, it only moves the selection box.
 - Status bar description can be left blank when selecting a menu item <!--I'm guessing Leave can come after close-->
 - Menu items like Copy/Cut/Paste are not grayed out when inapplicable. Only unimplemented items are grayed out.
 - Set As Wallpaper may not work on your system. For me, on Ubuntu, the wallpaper setting is updated but the picture is not, unless I manually pick it. There is however untested support for many platforms, and you may have better luck than me.

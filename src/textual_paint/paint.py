@@ -3875,9 +3875,13 @@ Columns: {len(palette) // 2}
             # )
 
     def extract_to_selection(self, erase_underlying: bool = True) -> None:
-        """Extracts image data underlying the selection from the document into the selection."""
+        """Extracts image data underlying the selection from the document into the selection.
+        
+        This creates an undo state with the current tool's name, which should be Select or Free-Form Select.
+        """
         sel = self.image.selection
         assert sel is not None, "extract_to_selection called without a selection"
+        assert sel.contained_image is None, "extract_to_selection called after a selection was already extracted"
         # TODO: DRY action handling
         self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
         self.image_at_start.copy_region(self.image)
@@ -4443,6 +4447,8 @@ Columns: {len(palette) // 2}
         # (It is useless to position it _completely_ outside, since you could just delete it.)
         sel = self.image.selection
         assert sel is not None, "move_selection_absolute called without a selection"
+        if sel.contained_image is None:
+            self.extract_to_selection()
         offset = Offset(
             max(1-sel.region.width, min(self.image.width - 1, x)),
             max(1-sel.region.height, min(self.image.height - 1, y)),
