@@ -746,6 +746,23 @@ class AnsiArtDocument:
         self.bg = new_bg
         self.fg = new_fg
 
+    def invert(self) -> None:
+        """Invert the foreground and background colors."""
+        self.invert_region(Region(0, 0, self.width, self.height))
+
+    def invert_region(self, region: Region) -> None:
+        """Invert the foreground and background colors in the given region."""
+        # TODO: DRY color inversion, and/or simplify it. It shouldn't need a Style object.
+        for y in range(region.y, region.y + region.height):
+            for x in range(region.x, region.x + region.width):
+                style = Style(color=self.fg[y][x], bgcolor=self.bg[y][x])
+                assert style.color is not None
+                assert style.bgcolor is not None
+                assert style.color.triplet is not None
+                assert style.bgcolor.triplet is not None
+                self.bg[y][x] = f"#{(255 - style.bgcolor.triplet.red):02x}{(255 - style.bgcolor.triplet.green):02x}{(255 - style.bgcolor.triplet.blue):02x}"
+                self.fg[y][x] = f"#{(255 - style.color.triplet.red):02x}{(255 - style.color.triplet.green):02x}{(255 - style.color.triplet.blue):02x}"
+
     @staticmethod
     def format_from_extension(file_path: str) -> str | None:
         """Get the format ID from the file extension of the given path.
@@ -2330,10 +2347,11 @@ class PaintApp(App[None]):
                 return
         if self.selected_tool == Tool.free_form_select:
             # Invert the underlying colors
+            # TODO: DRY color inversion, and/or simplify it. It shouldn't need a Style object.
             style = Style(color=self.image.fg[y][x], bgcolor=self.image.bg[y][x])
             assert style.color is not None
             assert style.bgcolor is not None
-            # Why do I need these extra asserts here and not in the other place I do color inversion,
+            # Why do I need these extra asserts here and not in Canvas.render_line
             # using pyright, even though hovering over the other place shows that it also considers
             # triplet to be ColorTriplet|None?
             assert style.color.triplet is not None
@@ -3516,15 +3534,49 @@ Columns: {len(palette) // 2}
         self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_show_thumbnail(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
+
     def action_view_bitmap(self) -> None:
+        """Shows the image in full-screen, without the UI."""
         self.cancel_preview()
         self.toggle_class("view_bitmap")
+
     def action_flip_rotate(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_stretch_skew(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
+
     def action_invert_colors(self) -> None:
-        self.message_box(_("Paint"), "Not implemented.", "ok")
+        """Invert the colors of the image or selection."""
+        self.cancel_preview()
+        sel = self.image.selection
+        if sel:
+            if sel.textbox_mode:
+                return
+            if sel.contained_image is None:
+                # TODO: DRY undo state creation (at least the undos/redos part)
+                # FIXME: handle Free-Form Select's mask
+                action = Action(_("Invert Colors"), sel.region)
+                action.update(self.image)
+                if len(self.redos) > 0:
+                    self.redos = []
+                self.undos.append(action)
+
+                self.image.invert_region(sel.region)
+                self.canvas.refresh_scaled_region(sel.region)
+            else:
+                # No extra undo state if the selection is already cut out
+                sel.contained_image.invert()
+                self.canvas.refresh_scaled_region(sel.region)
+        else:
+            # TODO: DRY undo state creation (at least the undos/redos part)
+            action = Action(_("Invert Colors"), Region(0, 0, self.image.width, self.image.height))
+            action.update(self.image)
+            if len(self.redos) > 0:
+                self.redos = []
+            self.undos.append(action)
+
+            self.image.invert()
+            self.canvas.refresh()        
     
     def resize_document(self, width: int, height: int) -> None:
         """Resize the document, creating an undo state, and refresh the canvas."""
@@ -3732,7 +3784,7 @@ Columns: {len(palette) // 2}
                 MenuItem(remove_hotkey(_("&Image")), submenu=Menu([
                     MenuItem(_("&Flip/Rotate...\tCtrl+R"), self.action_flip_rotate, 37680, grayed=True, description=_("Flips or rotates the picture or a selection.")),
                     MenuItem(_("&Stretch/Skew...\tCtrl+W"), self.action_stretch_skew, 37681, grayed=True, description=_("Stretches or skews the picture or a selection.")),
-                    MenuItem(_("&Invert Colors\tCtrl+I"), self.action_invert_colors, 37682, grayed=True, description=_("Inverts the colors of the picture or a selection.")),
+                    MenuItem(_("&Invert Colors\tCtrl+I"), self.action_invert_colors, 37682, description=_("Inverts the colors of the picture or a selection.")),
                     MenuItem(_("&Attributes...\tCtrl+E"), self.action_attributes, 37683, description=_("Changes the attributes of the picture.")),
                     MenuItem(_("&Clear Image\tCtrl+Shft+N"), self.action_clear_image, 37684, description=_("Clears the picture or selection.")),
                     MenuItem(_("&Draw Opaque"), self.action_draw_opaque, 6868, grayed=True, description=_("Makes the current selection either opaque or transparent.")),
