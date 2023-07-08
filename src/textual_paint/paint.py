@@ -3882,7 +3882,40 @@ Columns: {len(palette) // 2}
             #     (y - h / 2) * self.magnification / prev_magnification,
             #     animate=False,
             # )
-        
+
+    def extract_to_selection(self, erase_underlying: bool = True) -> None:
+        """Extracts image data underlying the selection from the document into the selection."""
+        sel = self.image.selection
+        assert sel is not None, "extract_to_selection called without a selection"
+        # TODO: DRY action handling
+        self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
+        self.image_at_start.copy_region(self.image)
+        action = Action(self.selected_tool.get_name())
+        if len(self.redos) > 0:
+            self.redos = []
+        self.undos.append(action)
+        sel.copy_from_document(self.image)
+        if erase_underlying:
+            self.erase_region(sel.region, sel.mask)
+
+        # TODO: Optimize the region storage for Text, Select, and Free-Form Select tools.
+        # Right now I'm copying the whole image here, because later, when the selection is melded into the canvas,
+        # it _implicitly updates_ the undo action, by changing the document without creating a new Action.
+        # This is the intended behavior, in that it allows the user to undo the
+        # selection and any changes to it as one action. But it's not efficient for large images.
+        # I could:
+        # - Update the region when melding to be the union of the two rectangles.
+        # - Make Action support a list of regions, and add the new region on meld.
+        # - Make Action support a list of sub-actions (or just one), and make meld a sub-action.
+        # - Add a new Action on meld, but mark it for skipping when undoing, and skipping ahead to when redoing.
+
+        # `affected_region = sel.region` doesn't encompass the new region when melding
+        affected_region = Region(0, 0, self.image.width, self.image.height)
+
+        action.region = affected_region
+        action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
+        action.update(self.image_at_start)
+        self.canvas.refresh_scaled_region(affected_region)
 
     def on_canvas_tool_start(self, event: Canvas.ToolStart) -> None:
         """Called when the user starts drawing on the canvas."""
@@ -3938,37 +3971,7 @@ Columns: {len(palette) // 2}
                     if event.ctrl:
                         sel.copy_to_document(self.image)
                     return
-                # Cut out the selected part of the image from the document to use as the selection's image data.
-                # TODO: DRY with the below action handling
-                self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
-                self.image_at_start.copy_region(self.image)
-                action = Action(self.selected_tool.get_name())
-                if len(self.redos) > 0:
-                    self.redos = []
-                self.undos.append(action)
-                sel.copy_from_document(self.image)
-                if not event.ctrl:
-                    self.erase_region(sel.region, sel.mask)
- 
-                # TODO: Optimize the region storage for selection tools, and Text tool.
-                # Right now I'm copying the whole image here, because later, when the selection is melded into the canvas,
-                # it _implicitly updates_ the undo action, by changing the document without creating a new Action.
-                # This is the intended behavior, in that it allows the user to undo the
-                # selection and any changes to it as one action. But it's not efficient for large images.
-                # I could:
-                # - Update the region when melding to be the union of the two rectangles.
-                # - Make Action support a list of regions, and add the new region on meld.
-                # - Make Action support a list of sub-actions (or just one), and make meld a sub-action.
-                # - Add a new Action on meld, but mark it for skipping when undoing, and skipping ahead to when redoing.
-
-                # `affected_region = sel.region` doesn't encompass the new region when melding
-                affected_region = Region(0, 0, self.image.width, self.image.height)
-                
-                # TODO: DRY with the below action handling
-                action.region = affected_region
-                action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
-                action.update(self.image_at_start)
-                self.canvas.refresh_scaled_region(affected_region)
+                self.extract_to_selection(not event.ctrl)
                 return
             self.meld_selection()
             return
