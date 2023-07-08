@@ -3587,8 +3587,29 @@ Columns: {len(palette) // 2}
         self.mount(window)
     
     def action_clear_image(self) -> None:
-        self.message_box(_("Paint"), "Not implemented.", "ok")
+        """Clear the image, creating an undo state."""
+        # This could be simplified to use erase_region, but that would be marginally slower.
+        # It could also be simplified to action_select_all+action_clear_selection,
+        # but it's better to keep a meaningful name for the undo state.
+        # TODO: DRY undo state creation
+        self.cancel_preview()
+        action = Action(_("Clear Image"), Region(0, 0, self.image.width, self.image.height))
+        action.is_full_update = True
+        action.update(self.image)
+        if len(self.redos) > 0:
+            self.redos = []
+        self.undos.append(action)
+
+        for y in range(self.image.height):
+            for x in range(self.image.width):
+                self.image.ch[y][x] = " "
+                self.image.fg[y][x] = "#000000"
+                self.image.bg[y][x] = "#ffffff"
+
+        self.canvas.refresh()
+
     def action_draw_opaque(self) -> None:
+        """Toggles opaque/transparent selection mode."""
         self.message_box(_("Paint"), "Not implemented.", "ok")
     
     def action_help_topics(self) -> None:
@@ -3713,7 +3734,7 @@ Columns: {len(palette) // 2}
                     MenuItem(_("&Stretch/Skew...\tCtrl+W"), self.action_stretch_skew, 37681, grayed=True, description=_("Stretches or skews the picture or a selection.")),
                     MenuItem(_("&Invert Colors\tCtrl+I"), self.action_invert_colors, 37682, grayed=True, description=_("Inverts the colors of the picture or a selection.")),
                     MenuItem(_("&Attributes...\tCtrl+E"), self.action_attributes, 37683, description=_("Changes the attributes of the picture.")),
-                    MenuItem(_("&Clear Image\tCtrl+Shft+N"), self.action_clear_image, 37684, grayed=True, description=_("Clears the picture or selection.")),
+                    MenuItem(_("&Clear Image\tCtrl+Shft+N"), self.action_clear_image, 37684, description=_("Clears the picture or selection.")),
                     MenuItem(_("&Draw Opaque"), self.action_draw_opaque, 6868, grayed=True, description=_("Makes the current selection either opaque or transparent.")),
                 ])),
                 MenuItem(remove_hotkey(_("&Colors")), submenu=Menu([
