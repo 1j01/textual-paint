@@ -3553,20 +3553,11 @@ Columns: {len(palette) // 2}
             if sel.textbox_mode:
                 return
             if sel.contained_image is None:
-                # TODO: DRY undo state creation (at least the undos/redos part)
-                # FIXME: handle Free-Form Select's mask
-                action = Action(_("Invert Colors"), sel.region)
-                action.update(self.image)
-                if len(self.redos) > 0:
-                    self.redos = []
-                self.undos.append(action)
-
-                self.image.invert_region(sel.region)
-                self.canvas.refresh_scaled_region(sel.region)
-            else:
-                # No extra undo state if the selection is already cut out
-                sel.contained_image.invert()
-                self.canvas.refresh_scaled_region(sel.region)
+                self.extract_to_selection()
+                assert sel.contained_image is not None
+            # Note: no undo state will be created if the selection is already extracted
+            sel.contained_image.invert()
+            self.canvas.refresh_scaled_region(sel.region)
         else:
             # TODO: DRY undo state creation (at least the undos/redos part)
             action = Action(_("Invert Colors"), Region(0, 0, self.image.width, self.image.height))
