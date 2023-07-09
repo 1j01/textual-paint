@@ -47,6 +47,7 @@ from textual_paint.character_picker import CharacterSelectorDialogWindow
 from textual_paint.colors_box import ColorsBox
 from textual_paint.edit_colors import EditColorsDialogWindow
 from textual_paint.file_dialogs import OpenDialogWindow, SaveAsDialogWindow
+from textual_paint.flip_text_art import flip_text
 from textual_paint.graphics_primitives import (bezier_curve_walk,
                                                bresenham_walk, flood_fill,
                                                is_inside_polygon,
@@ -1811,9 +1812,14 @@ Columns: {len(self.palette) // 2}
 
         source = AnsiArtDocument(self.image.width, self.image.height)
         source.copy(self.image)
+        flipped_text = flip_text(self.image.get_plain())
+        text_source = AnsiArtDocument.from_plain(flipped_text)
         for y in range(self.image.height):
             for x in range(self.image.width):
-                self.image.ch[y][self.image.width - x - 1] = source.ch[y][x]
+                try:
+                    self.image.ch[y][x] = text_source.ch[y][x]
+                except IndexError:
+                    self.image.ch[y][x] = " "
                 self.image.st[y][self.image.width - x - 1] = source.st[y][x]
         self.canvas.refresh()
 
