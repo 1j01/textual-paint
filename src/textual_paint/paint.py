@@ -2458,9 +2458,7 @@ class PaintApp(App[None]):
         self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
         self.image_at_start.copy_region(self.image)
         action = Action(self.selected_tool.get_name())
-        if len(self.redos) > 0:
-            self.redos = []
-        self.undos.append(action)
+        self.add_action(action)
 
         if self.selected_tool == Tool.polygon:
             affected_region = self.draw_current_polygon()
@@ -2518,6 +2516,12 @@ class PaintApp(App[None]):
             action.undo(self.image)
             self.undos.append(undo_action)
             self.canvas.refresh(layout=True)
+
+    def add_action(self, action: Action) -> None:
+        """Adds an action to the undo stack, clearing redos."""
+        if len(self.redos) > 0:
+            self.redos = []
+        self.undos.append(action)
 
     def close_windows(self, selector: str) -> None:
         """Close all windows matching the CSS selector."""
@@ -3584,12 +3588,10 @@ Columns: {len(palette) // 2}
             sel.contained_image.invert()
             self.canvas.refresh_scaled_region(sel.region)
         else:
-            # TODO: DRY undo state creation (at least the undos/redos part)
+            # TODO: DRY undo state creation
             action = Action(_("Invert Colors"), Region(0, 0, self.image.width, self.image.height))
             action.update(self.image)
-            if len(self.redos) > 0:
-                self.redos = []
-            self.undos.append(action)
+            self.add_action(action)
 
             self.image.invert()
             self.canvas.refresh()        
@@ -3600,13 +3602,11 @@ Columns: {len(palette) // 2}
 
         # NOTE: This function is relied on to create an undo even if the size doesn't change,
         # when recovering from a backup, and when reloading file content when losing information during Save As.
-        # TODO: DRY undo state creation (at least the undos/redos part)
+        # TODO: DRY undo state creation
         action = Action(_("Attributes"), Region(0, 0, self.image.width, self.image.height))
         action.is_full_update = True
         action.update(self.image)
-        if len(self.redos) > 0:
-            self.redos = []
-        self.undos.append(action)
+        self.add_action(action)
 
         self.image.resize(width, height, default_bg=self.selected_bg_color, default_fg=self.selected_fg_color)
         
@@ -3664,9 +3664,7 @@ Columns: {len(palette) // 2}
         action = Action(_("Clear Image"), Region(0, 0, self.image.width, self.image.height))
         action.is_full_update = True
         action.update(self.image)
-        if len(self.redos) > 0:
-            self.redos = []
-        self.undos.append(action)
+        self.add_action(action)
 
         for y in range(self.image.height):
             for x in range(self.image.width):
@@ -3911,9 +3909,7 @@ Columns: {len(palette) // 2}
         self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
         self.image_at_start.copy_region(self.image)
         action = Action(self.selected_tool.get_name())
-        if len(self.redos) > 0:
-            self.redos = []
-        self.undos.append(action)
+        self.add_action(action)
         sel.copy_from_document(self.image)
         if erase_underlying:
             self.erase_region(sel.region, sel.mask)
@@ -3995,9 +3991,7 @@ Columns: {len(palette) // 2}
                             sel.pasted = False # don't create undo when melding (TODO: rename flag or refactor)
 
                             action = Action("Paste")
-                            if len(self.redos) > 0:
-                                self.redos = []
-                            self.undos.append(action)
+                            self.add_action(action)
                             # The region must be the whole canvas, because when the selection
                             # is melded with the canvas, it could be anywhere.
                             # This could be optimized, see extract_to_selection.
@@ -4014,10 +4008,8 @@ Columns: {len(palette) // 2}
 
         self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
         self.image_at_start.copy_region(self.image)
-        if len(self.redos) > 0:
-            self.redos = []
         action = Action(self.selected_tool.get_name())
-        self.undos.append(action)
+        self.add_action(action)
         
         affected_region = None
         if self.selected_tool == Tool.pencil or self.selected_tool == Tool.brush:
@@ -4189,9 +4181,7 @@ Columns: {len(palette) // 2}
             self.image_at_start = AnsiArtDocument(self.image.width, self.image.height)
             self.image_at_start.copy_region(self.image)
             action = Action(self.selected_tool.get_name())
-            if len(self.redos) > 0:
-                self.redos = []
-            self.undos.append(action)
+            self.add_action(action)
 
         region = self.image.selection.region
         if meld:
