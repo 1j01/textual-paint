@@ -182,7 +182,6 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 - Status bar description can be left blank when selecting a menu item <!--I'm guessing Leave can come after close-->
 - Menu items like Copy/Cut/Paste are not grayed out when inapplicable. Only unimplemented items are grayed out.
 - Set As Wallpaper may not work on your system. For me, on Ubuntu, the wallpaper setting is updated but the picture is not, unless I manually pick it. There is however untested support for many platforms, and you may have better luck than me.
-- If you paste and then stamp the selection with Ctrl+Click, the stamp(s) can't be undone. An undo state is only created when finalizing the selection, for pasted selections.
 - ANSI files (.ans) are treated as UTF-8 when saving and loading, rather than CP437 or Windows-1252 or any other encodings. Unicode is nice and modern terminals support it, but it's not the standard for ANSI files. There isn't really a standard for ANSI files.
 - ANSI files are loaded with a white background. This may make sense as a default for text files, but ANSI files either draw a background or assume a black background, being designed for terminals.
 - Can click Cancel button of Edit Colors dialog while opening it, if the mouse lines up with it.

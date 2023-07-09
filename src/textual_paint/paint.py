@@ -3964,7 +3964,23 @@ Columns: {len(palette) // 2}
                     # Already cut out, don't replace the image data.
                     # But if you hold Ctrl, stamp the selection.
                     if event.ctrl:
+                        # If pasted, it needs an undo state.
+                        # Otherwise, one should have been already created.
+                        if sel.pasted:
+                            sel.pasted = False # don't create undo when melding (TODO: rename flag or refactor)
+
+                            action = Action("Paste")
+                            if len(self.redos) > 0:
+                                self.redos = []
+                            self.undos.append(action)
+                            # The region must be the whole canvas, because when the selection
+                            # is melded with the canvas, it could be anywhere.
+                            # This could be optimized, see extract_to_selection.
+                            action.region = Region(0, 0, self.image.width, self.image.height)
+                            action.update(self.image)
                         sel.copy_to_document(self.image)
+                        # Don't need to refresh canvas since selection occludes the affected region,
+                        # and has the same content anyway, being a stamp.
                     return
                 self.extract_to_selection(not event.ctrl)
                 return
