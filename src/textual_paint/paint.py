@@ -2120,7 +2120,10 @@ class PaintApp(App[None]):
         Binding("ctrl+f", "view_bitmap", _("View Bitmap")),
         Binding("ctrl+r", "flip_rotate", _("Flip/Rotate")),
         Binding("ctrl+w", "stretch_skew", _("Stretch/Skew")),
-        Binding("ctrl+i", "invert_colors", _("Invert Colors")),
+        # Unfortunately, Ctrl+I is indistinguishable from Tab, which is used for focus switching.
+        # To support Ctrl+I, we have to use a priority binding, and ignore it in
+        # cases where focus switching is desired.
+        Binding("ctrl+i,tab", "invert_colors_unless_should_switch_focus", _("Invert Colors"), priority=True),
         Binding("ctrl+e", "attributes", _("Attributes")),
         Binding("delete", "clear_selection(True)", _("Clear Selection")),
         Binding("ctrl+a", "select_all", _("Select All")),
@@ -3544,6 +3547,17 @@ Columns: {len(palette) // 2}
         self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_stretch_skew(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
+
+    def action_invert_colors_unless_should_switch_focus(self) -> None:
+        """Try to distinguish between Tab and Ctrl+I scenarios."""
+        # pretty simple heuristic, but seems effective
+        # I didn't make the dialogs modal, but it's OK if this
+        # assumes you'll be interacting with the modal rather than the canvas
+        # (even though you can, for instance, draw on the canvas while the dialog is open)
+        if self.query(DialogWindow):
+            self.action_focus_next()
+        else:
+            self.action_invert_colors()
 
     def action_invert_colors(self) -> None:
         """Invert the colors of the image or selection."""
