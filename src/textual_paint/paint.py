@@ -3548,13 +3548,23 @@ Columns: {len(palette) // 2}
     def action_stretch_skew(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
 
-    def action_invert_colors_unless_should_switch_focus(self) -> None:
+    async def action_invert_colors_unless_should_switch_focus(self) -> None:
         """Try to distinguish between Tab and Ctrl+I scenarios."""
         # pretty simple heuristic, but seems effective
         # I didn't make the dialogs modal, but it's OK if this
         # assumes you'll be interacting with the modal rather than the canvas
         # (even though you can, for instance, draw on the canvas while the dialog is open)
         if self.query(DialogWindow):
+            # self.action_focus_next()
+            # DialogWindow has a special focus_next action that wraps within the dialog.
+            # await self.run_action("focus_next", self.query_one(DialogWindow))
+            # There may be multiple dialogs open, so we need to find the one that's focused.
+            node = self.focused
+            while node is not None:
+                if isinstance(node, DialogWindow):
+                    await self.run_action("focus_next", node)
+                    return
+                node = node.parent
             self.action_focus_next()
         else:
             self.action_invert_colors()
