@@ -3548,7 +3548,76 @@ Columns: {len(palette) // 2}
         self.toggle_class("view_bitmap")
 
     def action_flip_rotate(self) -> None:
+        """Show dialog to flip or rotate the image."""
+        self.close_windows("#flip_rotate_dialog")
+        def handle_button(button: Button) -> None:
+            if button.has_class("ok"):
+                if window.content.query_one("#flip_horizontal", RadioButton).value:
+                    self.action_flip_horizontal()
+                elif window.content.query_one("#flip_vertical", RadioButton).value:
+                    self.action_flip_vertical()
+                elif window.content.query_one("#rotate_by_angle", RadioButton).value:
+                    self.action_rotate_by_angle()
+            window.close()
+        window = DialogWindow(
+            id="flip_rotate_dialog",
+            title=_("Flip/Rotate"),
+            handle_button=handle_button,
+        )
+        window.content.mount(
+            RadioSet(
+                RadioButton(_("Flip horizontal"), id="flip_horizontal", classes="autofocus"),
+                RadioButton(_("Flip vertical"), id="flip_vertical"),
+                RadioButton(_("Rotate by angle"), id="rotate_by_angle"),
+                classes="autofocus",
+            ),
+            Container(
+                Button(_("OK"), classes="ok submit", variant="primary"),
+                Button(_("Cancel"), classes="cancel"),
+                classes="buttons",
+            )
+        )
+        window.content.query_one(RadioSet).border_title = _("Flip and Rotate")
+        window.content.query_one("#flip_horizontal", RadioButton).value = True
+        self.mount(window)
+
+    def action_flip_horizontal(self) -> None:
+        """Flip the image horizontally."""
+
+        action = Action(_("Flip horizontal"), Region(0, 0, self.image.width, self.image.height))
+        action.is_full_update = True
+        action.update(self.image)
+        self.add_action(action)
+
+        source = AnsiArtDocument(self.image.width, self.image.height)
+        source.copy(self.image)
+        for y in range(self.image.height):
+            for x in range(self.image.width):
+                self.image.ch[y][self.image.width - x - 1] = source.ch[y][x]
+                self.image.fg[y][self.image.width - x - 1] = source.fg[y][x]
+                self.image.bg[y][self.image.width - x - 1] = source.bg[y][x]
+        self.canvas.refresh()
+
+    def action_flip_vertical(self) -> None:
+        """Flip the image vertically."""
+
+        action = Action(_("Flip vertical"), Region(0, 0, self.image.width, self.image.height))
+        action.is_full_update = True
+        action.update(self.image)
+        self.add_action(action)
+
+        source = AnsiArtDocument(self.image.width, self.image.height)
+        source.copy(self.image)
+        for y in range(self.image.height):
+            for x in range(self.image.width):
+                self.image.ch[self.image.height - y - 1][x] = source.ch[y][x]
+                self.image.fg[self.image.height - y - 1][x] = source.fg[y][x]
+                self.image.bg[self.image.height - y - 1][x] = source.bg[y][x]
+        self.canvas.refresh()
+    
+    def action_rotate_by_angle(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
+
     def action_stretch_skew(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
 
@@ -3796,7 +3865,7 @@ Columns: {len(palette) // 2}
                     MenuItem(_("&View Bitmap\tCtrl+F"), self.action_view_bitmap, 37673, description=_("Displays the entire picture.")),
                 ])),
                 MenuItem(remove_hotkey(_("&Image")), submenu=Menu([
-                    MenuItem(_("&Flip/Rotate...\tCtrl+R"), self.action_flip_rotate, 37680, grayed=True, description=_("Flips or rotates the picture or a selection.")),
+                    MenuItem(_("&Flip/Rotate...\tCtrl+R"), self.action_flip_rotate, 37680, description=_("Flips or rotates the picture or a selection.")),
                     MenuItem(_("&Stretch/Skew...\tCtrl+W"), self.action_stretch_skew, 37681, grayed=True, description=_("Stretches or skews the picture or a selection.")),
                     MenuItem(_("&Invert Colors\tCtrl+I"), self.action_invert_colors, 37682, description=_("Inverts the colors of the picture or a selection.")),
                     MenuItem(_("&Attributes...\tCtrl+E"), self.action_attributes, 37683, description=_("Changes the attributes of the picture.")),
