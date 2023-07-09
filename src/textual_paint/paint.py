@@ -3548,7 +3548,7 @@ Columns: {len(palette) // 2}
     def action_stretch_skew(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
 
-    async def action_invert_colors_unless_should_switch_focus(self) -> None:
+    def action_invert_colors_unless_should_switch_focus(self) -> None:
         """Try to distinguish between Tab and Ctrl+I scenarios."""
         # pretty simple heuristic, but seems effective
         # I didn't make the dialogs modal, but it's OK if this
@@ -3562,7 +3562,8 @@ Columns: {len(palette) // 2}
             node = self.focused
             while node is not None:
                 if isinstance(node, DialogWindow):
-                    await self.run_action("focus_next", node)
+                    # await self.run_action("focus_next", node)
+                    node.action_focus_next()
                     return
                 node = node.parent
             self.action_focus_next()
