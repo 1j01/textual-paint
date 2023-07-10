@@ -3557,7 +3557,11 @@ Columns: {len(palette) // 2}
                 elif window.content.query_one("#flip_vertical", RadioButton).value:
                     self.action_flip_vertical()
                 elif window.content.query_one("#rotate_by_angle", RadioButton).value:
-                    self.action_rotate_by_angle()
+                    radio_button = window.content.query_one("#angle", RadioSet).pressed_button
+                    assert radio_button is not None, "There should always be a pressed button; one should've been selected initially."
+                    assert radio_button.id is not None, "Each radio button should have been given an ID."
+                    angle = int(radio_button.id.split("_")[-1])
+                    self.action_rotate_by_angle(angle)
             window.close()
         window = DialogWindow(
             id="flip_rotate_dialog",
@@ -3565,11 +3569,21 @@ Columns: {len(palette) // 2}
             handle_button=handle_button,
         )
         window.content.mount(
-            RadioSet(
-                RadioButton(_("Flip horizontal"), id="flip_horizontal", classes="autofocus"),
-                RadioButton(_("Flip vertical"), id="flip_vertical"),
-                RadioButton(_("Rotate by angle"), id="rotate_by_angle"),
-                classes="autofocus",
+            Container(
+                RadioSet(
+                    RadioButton(_("Flip horizontal"), id="flip_horizontal", classes="autofocus"),
+                    RadioButton(_("Flip vertical"), id="flip_vertical"),
+                    RadioButton(_("Rotate by angle"), id="rotate_by_angle"),
+                    classes="autofocus",
+                ),
+                RadioSet(
+                    RadioButton(_("90°"), id="angle_90"),
+                    RadioButton(_("180°"), id="angle_180"),
+                    RadioButton(_("270°"), id="angle_270"),
+                    classes="autofocus",
+                    id="angle",
+                ),
+                id="flip_rotate_fieldset",
             ),
             Container(
                 Button(_("OK"), classes="ok submit", variant="primary"),
@@ -3577,8 +3591,9 @@ Columns: {len(palette) // 2}
                 classes="buttons",
             )
         )
-        window.content.query_one(RadioSet).border_title = _("Flip or rotate")
+        window.content.query_one("#flip_rotate_fieldset", Container).border_title = _("Flip or rotate")
         window.content.query_one("#flip_horizontal", RadioButton).value = True
+        window.content.query_one("#angle_90", RadioButton).value = True
         self.mount(window)
 
     def action_flip_horizontal(self) -> None:
@@ -3615,66 +3630,34 @@ Columns: {len(palette) // 2}
                 self.image.bg[self.image.height - y - 1][x] = source.bg[y][x]
         self.canvas.refresh()
     
-    def action_rotate_by_angle(self) -> None:
-        """Shows a dialog to rotate the image by a given angle."""
-        # TODO: merge with action_flip_rotate dialog
-        self.close_windows("#rotate_by_angle_dialog")
-        def handle_button(button: Button) -> None:
-            if button.has_class("ok"):
-                radio_button = window.content.query_one("#angle", RadioSet).pressed_button
-                assert radio_button is not None, "There should always be a pressed button; one should've been selected initially."
-                assert radio_button.id is not None, "Each radio button should have been given an ID."
-                angle = int(radio_button.id.split("_")[-1])
-                
-                action = Action(_("Rotate by angle"), Region(0, 0, self.image.width, self.image.height))
-                action.is_full_update = True
-                action.update(self.image)
-                self.add_action(action)
+    def action_rotate_by_angle(self, angle: int) -> None:
+        """Rotate the image by the given angle, one of 90, 180, or 270."""
+        action = Action(_("Rotate by angle"), Region(0, 0, self.image.width, self.image.height))
+        action.is_full_update = True
+        action.update(self.image)
+        self.add_action(action)
 
-                source = AnsiArtDocument(self.image.width, self.image.height)
-                source.copy(self.image)
+        source = AnsiArtDocument(self.image.width, self.image.height)
+        source.copy(self.image)
 
-                if angle != 180:
-                    self.image.resize(self.image.height, self.image.width)
-                
-                for y in range(self.image.height):
-                    for x in range(self.image.width):
-                        if angle == 90:
-                            self.image.ch[y][x] = source.ch[self.image.width - x - 1][y]
-                            self.image.fg[y][x] = source.fg[self.image.width - x - 1][y]
-                            self.image.bg[y][x] = source.bg[self.image.width - x - 1][y]
-                        elif angle == 180:
-                            self.image.ch[y][x] = source.ch[self.image.height - y - 1][self.image.width - x - 1]
-                            self.image.fg[y][x] = source.fg[self.image.height - y - 1][self.image.width - x - 1]
-                            self.image.bg[y][x] = source.bg[self.image.height - y - 1][self.image.width - x - 1]
-                        elif angle == 270:
-                            self.image.ch[y][x] = source.ch[x][self.image.height - y - 1]
-                            self.image.fg[y][x] = source.fg[x][self.image.height - y - 1]
-                            self.image.bg[y][x] = source.bg[x][self.image.height - y - 1]
-                self.canvas.refresh(layout=True)
-            window.close()
-        window = DialogWindow(
-            id="rotate_by_angle_dialog",
-            title=_("Rotate by angle"),
-            handle_button=handle_button,
-        )
-        window.content.mount(
-            RadioSet(
-                RadioButton(_("90°"), id="angle_90"),
-                RadioButton(_("180°"), id="angle_180"),
-                RadioButton(_("270°"), id="angle_270"),
-                classes="autofocus",
-                id="angle",
-            ),
-            Container(
-                Button(_("OK"), classes="ok submit", variant="primary"),
-                Button(_("Cancel"), classes="cancel"),
-                classes="buttons",
-            )
-        )
-        window.content.query_one(RadioSet).border_title = _("Rotate by angle")
-        window.content.query_one("#angle_90", RadioButton).value = True
-        self.mount(window)
+        if angle != 180:
+            self.image.resize(self.image.height, self.image.width)
+        
+        for y in range(self.image.height):
+            for x in range(self.image.width):
+                if angle == 90:
+                    self.image.ch[y][x] = source.ch[self.image.width - x - 1][y]
+                    self.image.fg[y][x] = source.fg[self.image.width - x - 1][y]
+                    self.image.bg[y][x] = source.bg[self.image.width - x - 1][y]
+                elif angle == 180:
+                    self.image.ch[y][x] = source.ch[self.image.height - y - 1][self.image.width - x - 1]
+                    self.image.fg[y][x] = source.fg[self.image.height - y - 1][self.image.width - x - 1]
+                    self.image.bg[y][x] = source.bg[self.image.height - y - 1][self.image.width - x - 1]
+                elif angle == 270:
+                    self.image.ch[y][x] = source.ch[x][self.image.height - y - 1]
+                    self.image.fg[y][x] = source.fg[x][self.image.height - y - 1]
+                    self.image.bg[y][x] = source.bg[x][self.image.height - y - 1]
+        self.canvas.refresh(layout=True)
 
     def action_stretch_skew(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
