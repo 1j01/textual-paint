@@ -355,8 +355,17 @@ DialogWindow .buttons Button {
     width: 20;
 }
 
+#flip_rotate_dialog #flip_rotate_fieldset {
+    width: auto;
+    height: auto;
+    border: round black;
+}
 #flip_rotate_dialog RadioSet {
     layout: vertical;
+    border: none;
+}
+#flip_rotate_dialog RadioSet#angle {
+    padding-left: 4;
 }
 
 EditColorsDialogWindow .window_content {
