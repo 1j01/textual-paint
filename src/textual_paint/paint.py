@@ -17,7 +17,7 @@ from rich.segment import Segment
 from rich.style import Style
 from rich.console import Console
 from rich.text import Text
-from textual import events
+from textual import events, on
 from textual.message import Message
 from textual.app import App, ComposeResult
 from textual.containers import Container, Vertical, Horizontal
@@ -3575,6 +3575,7 @@ Columns: {len(palette) // 2}
                     RadioButton(_("Flip vertical"), id="flip_vertical"),
                     RadioButton(_("Rotate by angle"), id="rotate_by_angle"),
                     classes="autofocus",
+                    id="flip_rotate_radio_set",
                 ),
                 RadioSet(
                     RadioButton(_("90°"), id="angle_90"),
@@ -3595,6 +3596,11 @@ Columns: {len(palette) // 2}
         window.content.query_one("#flip_horizontal", RadioButton).value = True
         window.content.query_one("#angle_90", RadioButton).value = True
         self.mount(window)
+
+    @on(RadioSet.Changed, "#flip_rotate_radio_set")
+    def conditionally_enable_angle_radio_buttons(self, event: RadioSet.Changed) -> None:
+        """Enable/disable the angle radio buttons based on the logically-outer radio selection."""
+        self.query_one("#angle", RadioSet).disabled = event.pressed.id != "rotate_by_angle"
 
     def action_flip_horizontal(self) -> None:
         """Flip the image horizontally."""
