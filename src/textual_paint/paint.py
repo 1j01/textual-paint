@@ -792,6 +792,8 @@ class AnsiArtDocument:
             ".asc": "PLAINTEXT",
             ".diz": "PLAINTEXT",
             ".ans": "ANSI",
+            ".irc": "IRC",
+            ".mirc": "IRC",
             "._rich_console_markup": "RICH_CONSOLE_MARKUP",
         }
         if file_ext_with_dot in ext_to_id:
@@ -808,6 +810,9 @@ class AnsiArtDocument:
         if format_id == "ANSI":
             # This maybe shouldn't use UTF-8... but there's not a singular encoding for "ANSI art".
             return self.get_ansi().encode("utf-8")
+        elif format_id == "IRC":
+            # Also not sure about UTF-8 here.
+            return self.get_irc().encode("utf-8")
         elif format_id == "SVG":
             return self.get_svg().encode("utf-8")
         elif format_id == "HTML":
@@ -855,6 +860,63 @@ class AnsiArtDocument:
             else:
                 ansi += text
         return ansi
+
+    def get_irc(self) -> str:
+        """Get the mIRC code representation of the document."""
+        renderable = self.get_renderable()
+        console = self.get_console(render_contents=False)
+        segments = renderable.render(console=console)
+        irc_palette = [
+            (0, "White", "rgb(255,255,255)", "#FFFFFF"),
+            (1, "Black", "rgb(0,0,0)", "#000000"),
+            (2, "Navy", "rgb(0,0,127)", "#00007F"),
+            (3, "Green", "rgb(0,147,0)", "#009300"),
+            (4, "Red", "rgb(255,0,0)", "#FF0000"),
+            (5, "Maroon", "rgb(127,0,0)", "#7F0000"),
+            (6, "Purple", "rgb(156,0,156)", "#9C009C"),
+            (7, "Orange", "rgb(252,127,0)", "#FC7F00"),
+            (8, "Yellow", "rgb(255,255,0)", "#FFFF00"),
+            (9, "Light Green", "rgb(0,252,0)", "#00FC00"),
+            (10, "Teal", "rgb(0,147,147)", "#009393"),
+            (11, "Cyan", "rgb(0,255,255)", "#00FFFF"),
+            (12, "Royal blue", "rgb(0,0,252)", "#0000FC"),
+            (13, "Magenta", "rgb(255,0,255)", "#FF00FF"),
+            (14, "Gray", "rgb(127,127,127)", "#7F7F7F"),
+            (15, "Light Gray", "rgb(210,210,210)", "#D2D2D2"),
+        ]
+        def color_distance(a: Color, b: Color) -> float:
+            """Perceptual color distance between two colors."""
+            # https://www.compuphase.com/cmetric.htm
+            red_mean = (a.r + b.r) // 2
+            red = a.r - b.r
+            green = a.g - b.g
+            blue = a.b - b.b
+            return math.sqrt((((512 + red_mean) * red * red) >> 8) + 4 * green * green + (((767 - red_mean) * blue * blue) >> 8))
+
+        def closest_color(color: Color) -> int:
+            """Get the closest color in the palette to the given color."""
+            closest_color = 0
+            closest_distance = 1
+            for index, _, _, hex in irc_palette:
+                distance = color_distance(color, Color.parse(hex))
+                if distance < closest_distance:
+                    closest_color = index
+                    closest_distance = distance
+            return closest_color
+        irc_text = ""
+        for text, style, _ in Segment.filter_control(
+            Segment.simplify(segments)
+        ):
+            if style and style.color is not None and style.bgcolor is not None:
+                irc_text += "\x03"
+                irc_text += str(closest_color(Color.from_rich_color(style.color)))
+                irc_text += ","
+                irc_text += str(closest_color(Color.from_rich_color(style.bgcolor)))
+                irc_text += text
+            else:
+                irc_text += text
+        # ^O is the mIRC code for "reset to default colors"
+        return irc_text + "\x0F"
 
     def get_plain(self) -> str:
         """Get the plain text representation of the document."""
@@ -2893,14 +2955,20 @@ class PaintApp(App[None]):
         # Note: image formats will lose any FOREGROUND color information.
         # This could be considered part of the text information, but could be mentioned.
         # Also, it could be confusing if a file uses a lot of full block characters (█).
-        non_openable = format_id in ("HTML", "RICH_CONSOLE_MARKUP") or (format_id in Image.SAVE and not format_id in Image.OPEN)
-        supports_text_and_color = format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP")
+        non_openable = format_id in ("HTML", "RICH_CONSOLE_MARKUP", "IRC") or (format_id in Image.SAVE and not format_id in Image.OPEN)
+        supports_text_and_color = format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP", "IRC")
         if format_id == "PLAINTEXT":
             self.confirm_lose_color_information(lambda: callback(True))
         elif format_id in SAVE_DISABLED_FORMATS:
             # We will show an error when attempting to encode.
             # Any warning here would just be annoying preamble to the error.
             callback(False)
+        elif format_id == "IRC":
+            # mIRC codes support only a limited color palette, so warn about color loss.
+            # Don't reload the file, because it's not openable.
+            # TODO: make it openable, it's the only way to preview the color loss properly,
+            # and would be nice anyway.
+            self.confirm_save_non_openable_file(lambda: self.confirm_lose_color_information(lambda: callback(False)))
         elif supports_text_and_color:
             # This is handled before Pillow's image formats, so that bespoke format support overrides Pillow.
             if non_openable:
