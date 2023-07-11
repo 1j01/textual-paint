@@ -376,21 +376,29 @@ DialogWindow .buttons Button {
 }
 #stretch_skew_dialog .window_content Horizontal {
     margin: 1;
-    margin-left: 4;
 }
 #stretch_skew_dialog .window_content Horizontal Static {
-    width: 10;
     height: 3;
     content-align-vertical: middle;
 }
 #stretch_skew_dialog .window_content Input {
     width: 10;
 }
+#stretch_skew_dialog .window_content .stretch_skew_icon {
+    width: auto;
+    margin-right: 3;
+}
 #stretch_skew_dialog .window_content .left-label {
     width: 15;
 }
 #stretch_skew_dialog .window_content .right-label {
     width: 10;
+}
+
+#stretch_skew_icons {
+    dock: left;
+    width: 5;
+    offset: 5 4;
 }
 
 EditColorsDialogWindow .window_content {

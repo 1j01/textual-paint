@@ -3683,14 +3683,31 @@ Columns: {len(palette) // 2}
             title=_("Stretch/Skew"),
             handle_button=handle_button,
         )
+        try:
+            with open(os.path.join(os.path.dirname(__file__), "stretch_skew_icons.ans")) as f:
+                icons_ansi = f.read()
+                icons_doc = AnsiArtDocument.from_ansi(icons_ansi)
+                icons_rich_markup = icons_doc.get_rich_console_markup()
+                icons_rich_markup = icons_rich_markup.replace("on #004040", "").replace("on rgb(0,64,64)", "")
+                icon_height = icons_doc.height // 4
+                lines = icons_rich_markup.split("\n")
+                icons: list[Text | str] = []
+                for i in range(4):
+                    icon_markup = "\n".join(lines[i * icon_height : (i + 1) * icon_height])
+                    icons.append(Text.from_markup(icon_markup))
+        except Exception as e:
+            print("Failed to load icons for Stretch/Skew dialog:", repr(e))
+            icons = [""] * 4
         window.content.mount(
             Container(
                 Horizontal(
+                    Static(icons[0], classes="stretch_skew_icon"),
                     Static(_("Horizontal:"), classes="left-label"),
                     Input(value="100", id="horizontal_stretch", classes="autofocus"),
                     Static(_("%"), classes="right-label"),
                 ),
                 Horizontal(
+                    Static(icons[1], classes="stretch_skew_icon"),
                     Static(_("Vertical:"), classes="left-label"),
                     Input(value="100", id="vertical_stretch"),
                     Static(_("%"), classes="right-label"),
@@ -3700,11 +3717,13 @@ Columns: {len(palette) // 2}
             ),
             Container(
                 Horizontal(
+                    Static(icons[2], classes="stretch_skew_icon"),
                     Static(_("Horizontal:"), classes="left-label"),
                     Input(value="0", id="horizontal_skew"),
                     Static(_("Degrees"), classes="right-label"),
                 ),
                 Horizontal(
+                    Static(icons[3], classes="stretch_skew_icon"),
                     Static(_("Vertical:"), classes="left-label"),
                     Input(value="0", id="vertical_skew"),
                     Static(_("Degrees"), classes="right-label"),
