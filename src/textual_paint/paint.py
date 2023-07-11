@@ -898,7 +898,7 @@ class AnsiArtDocument:
         def closest_color(color: Color) -> int:
             """Get the closest color in the palette to the given color."""
             closest_color = 0
-            closest_distance = 1
+            closest_distance = float("inf")
             for index, _, _, hex in irc_palette:
                 distance = color_distance(color, Color.parse(hex))
                 if distance < closest_distance:
