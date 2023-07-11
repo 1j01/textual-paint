@@ -371,6 +371,16 @@ class CharInput(Input, inherit_bindings=False):
         with self.prevent(Input.Changed):
             self.post_message(self.CharSelected(event.value))
 
+    def on_paste(self, event: events.Paste) -> None:
+        """Called when text is pasted, OR a file is dropped on the terminal."""
+        # _on_paste in Input stops the event from propagating,
+        # but this breaks file drag and drop.
+        # This can't be overridden since the event system calls
+        # methods of each class in the MRO.
+        # So instead, I'll call the app's on_paste method directly.
+        assert isinstance(self.app, PaintApp)
+        self.app.on_paste(event)
+
     def validate_cursor_position(self, cursor_position: int) -> int:
         """Force the cursor position to 0 so that it's over the character."""
         return 0
@@ -4871,6 +4881,9 @@ Columns: {len(palette) // 2}
 
     def on_paste(self, event: events.Paste) -> None:
         """Called when a file is dropped into the terminal, or when text is pasted with middle click."""
+        # Note: this method is called directly by CharInput,
+        # to work around Input stopping propagation of Paste events.
+
         # Detect file drop
         def _extract_filepaths(text: str) -> list[str]:
             """Extracts escaped filepaths from text.
