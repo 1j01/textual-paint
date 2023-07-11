@@ -316,6 +316,25 @@ palette = [
     "rgb(255,128,64)",
 ]
 
+irc_palette: list[tuple[int, str, str, str]] = [
+    (0, "White", "rgb(255,255,255)", "#FFFFFF"),
+    (1, "Black", "rgb(0,0,0)", "#000000"),
+    (2, "Navy", "rgb(0,0,127)", "#00007F"),
+    (3, "Green", "rgb(0,147,0)", "#009300"),
+    (4, "Red", "rgb(255,0,0)", "#FF0000"),
+    (5, "Maroon", "rgb(127,0,0)", "#7F0000"),
+    (6, "Purple", "rgb(156,0,156)", "#9C009C"),
+    (7, "Orange", "rgb(252,127,0)", "#FC7F00"),
+    (8, "Yellow", "rgb(255,255,0)", "#FFFF00"),
+    (9, "Light Green", "rgb(0,252,0)", "#00FC00"),
+    (10, "Teal", "rgb(0,147,147)", "#009393"),
+    (11, "Cyan", "rgb(0,255,255)", "#00FFFF"),
+    (12, "Royal blue", "rgb(0,0,252)", "#0000FC"),
+    (13, "Magenta", "rgb(255,0,255)", "#FF00FF"),
+    (14, "Gray", "rgb(127,127,127)", "#7F7F7F"),
+    (15, "Light Gray", "rgb(210,210,210)", "#D2D2D2"),
+]
+
 class ToolsBox(Container):
     """Widget containing tool buttons"""
 
@@ -866,24 +885,7 @@ class AnsiArtDocument:
         renderable = self.get_renderable()
         console = self.get_console(render_contents=False)
         segments = renderable.render(console=console)
-        irc_palette = [
-            (0, "White", "rgb(255,255,255)", "#FFFFFF"),
-            (1, "Black", "rgb(0,0,0)", "#000000"),
-            (2, "Navy", "rgb(0,0,127)", "#00007F"),
-            (3, "Green", "rgb(0,147,0)", "#009300"),
-            (4, "Red", "rgb(255,0,0)", "#FF0000"),
-            (5, "Maroon", "rgb(127,0,0)", "#7F0000"),
-            (6, "Purple", "rgb(156,0,156)", "#9C009C"),
-            (7, "Orange", "rgb(252,127,0)", "#FC7F00"),
-            (8, "Yellow", "rgb(255,255,0)", "#FFFF00"),
-            (9, "Light Green", "rgb(0,252,0)", "#00FC00"),
-            (10, "Teal", "rgb(0,147,147)", "#009393"),
-            (11, "Cyan", "rgb(0,255,255)", "#00FFFF"),
-            (12, "Royal blue", "rgb(0,0,252)", "#0000FC"),
-            (13, "Magenta", "rgb(255,0,255)", "#FF00FF"),
-            (14, "Gray", "rgb(127,127,127)", "#7F7F7F"),
-            (15, "Light Gray", "rgb(210,210,210)", "#D2D2D2"),
-        ]
+
         def color_distance(a: Color, b: Color) -> float:
             """Perceptual color distance between two colors."""
             # https://www.compuphase.com/cmetric.htm
@@ -903,6 +905,8 @@ class AnsiArtDocument:
                     closest_color = index
                     closest_distance = distance
             return closest_color
+
+        # TODO: simplify after converting to IRC colors, to remove unnecessary color codes
         irc_text = ""
         for text, style, _ in Segment.filter_control(
             Segment.simplify(segments)
@@ -987,7 +991,84 @@ class AnsiArtDocument:
             for x, char in enumerate(line):
                 document.ch[y][x] = char
         return document
-    
+
+    @staticmethod
+    def from_irc(text: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
+        """Creates a document from text with mIRC codes."""
+
+        document = AnsiArtDocument(0, 0, default_bg, default_fg)
+        # Minimum size of 1x1, so that the document is never empty.
+        width = 1
+        height = 1
+
+        x = 0
+        y = 0
+        bg_color = default_bg
+        fg_color = default_fg
+
+        color_escape = "\x03"
+        color_escape_re = re.compile(r"\x03(\d{1,2})?(?:,(\d{1,2}))?")
+        reset_escape = "\x0F"
+
+        index = 0
+        while index < len(text):
+            char = text[index]
+            if char == color_escape:
+                match = color_escape_re.match(text[index:])
+                if match:
+                    index += len(match.group(0))
+                    bg_color = default_bg
+                    fg_color = default_fg
+                    if match.group(1):
+                        fg_color = irc_palette[int(match.group(1))][3]
+                    if match.group(2):
+                        bg_color = irc_palette[int(match.group(2))][3]
+                    continue
+            if char == reset_escape:
+                index += 1
+                bg_color = default_bg
+                fg_color = default_fg
+                continue
+            if char == "\n":
+                width = max(width, x)
+                x = 0
+                y += 1
+                height = max(height, y)
+                index += 1
+                continue
+            # Handle a single character, adding rows/columns as needed.
+            while len(document.ch) <= y:
+                document.ch.append([])
+                document.bg.append([])
+                document.fg.append([])
+            while len(document.ch[y]) <= x:
+                document.ch[y].append(' ')
+                document.bg[y].append(default_bg)
+                document.fg[y].append(default_fg)
+            document.ch[y][x] = char
+            document.bg[y][x] = bg_color
+            document.fg[y][x] = fg_color
+            width = max(x + 1, width)
+            height = max(y + 1, height)
+            x += 1
+            index += 1
+
+        document.width = width
+        document.height = height
+        # Handle minimum height.
+        while len(document.ch) <= document.height:
+            document.ch.append([])
+            document.bg.append([])
+            document.fg.append([])
+        # Pad rows to a consistent width.
+        for y in range(document.height):
+            for x in range(len(document.ch[y]), document.width):
+                document.ch[y].append(' ')
+                document.bg[y].append(default_bg)
+                document.fg[y].append(default_fg)
+
+        return document
+
     @staticmethod
     def from_ansi(text: str, default_bg: str = "#ffffff", default_fg: str = "#000000", max_width: int = 100000) -> 'AnsiArtDocument':
         """Creates a document from the given ANSI text."""
@@ -1577,6 +1658,8 @@ class AnsiArtDocument:
             return AnsiArtDocument.from_image_format(content)
         elif format_id == "ANSI":
             return AnsiArtDocument.from_ansi(content.decode('utf-8'), default_bg, default_fg)
+        elif format_id == "IRC":
+            return AnsiArtDocument.from_irc(content.decode('utf-8'), default_bg, default_fg)
         elif format_id == "PLAINTEXT":
             return AnsiArtDocument.from_plain(content.decode('utf-8'), default_bg, default_fg)
         elif format_id == "SVG":
@@ -2955,20 +3038,16 @@ class PaintApp(App[None]):
         # Note: image formats will lose any FOREGROUND color information.
         # This could be considered part of the text information, but could be mentioned.
         # Also, it could be confusing if a file uses a lot of full block characters (█).
-        non_openable = format_id in ("HTML", "RICH_CONSOLE_MARKUP", "IRC") or (format_id in Image.SAVE and not format_id in Image.OPEN)
+        non_openable = format_id in ("HTML", "RICH_CONSOLE_MARKUP") or (format_id in Image.SAVE and not format_id in Image.OPEN)
         supports_text_and_color = format_id in ("ANSI", "SVG", "HTML", "RICH_CONSOLE_MARKUP", "IRC")
-        if format_id == "PLAINTEXT":
+        # Note: "IRC" format supports text and color, but only limited colors,
+        # so it still needs a warning.
+        if format_id in ["PLAINTEXT", "IRC"]:
             self.confirm_lose_color_information(lambda: callback(True))
         elif format_id in SAVE_DISABLED_FORMATS:
             # We will show an error when attempting to encode.
             # Any warning here would just be annoying preamble to the error.
             callback(False)
-        elif format_id == "IRC":
-            # mIRC codes support only a limited color palette, so warn about color loss.
-            # Don't reload the file, because it's not openable.
-            # TODO: make it openable, it's the only way to preview the color loss properly,
-            # and would be nice anyway.
-            self.confirm_save_non_openable_file(lambda: self.confirm_lose_color_information(lambda: callback(False)))
         elif supports_text_and_color:
             # This is handled before Pillow's image formats, so that bespoke format support overrides Pillow.
             if non_openable:
