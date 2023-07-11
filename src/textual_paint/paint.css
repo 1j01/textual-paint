@@ -351,21 +351,46 @@ DialogWindow .buttons Button {
     /* TODO: what's different between this and the FileDialogWindow, where 1fr works? */
     content-align-vertical: middle;
 }
-#attributes_dialog Input {
+#attributes_dialog .window_content Input {
     width: 20;
 }
 
-#flip_rotate_dialog #flip_rotate_fieldset {
+.fieldset {
     width: auto;
     height: auto;
     border: round black;
 }
+
 #flip_rotate_dialog RadioSet {
     layout: vertical;
     border: none;
 }
 #flip_rotate_dialog RadioSet#angle {
     padding-left: 4;
+}
+
+#stretch_skew_dialog .window_content Horizontal,
+#stretch_skew_dialog .window_content Vertical {
+    height: auto;
+    width: auto;
+}
+#stretch_skew_dialog .window_content Horizontal {
+    margin: 1;
+    margin-left: 4;
+}
+#stretch_skew_dialog .window_content Horizontal Static {
+    width: 10;
+    height: 3;
+    content-align-vertical: middle;
+}
+#stretch_skew_dialog .window_content Input {
+    width: 10;
+}
+#stretch_skew_dialog .window_content .left-label {
+    width: 15;
+}
+#stretch_skew_dialog .window_content .right-label {
+    width: 10;
 }
 
 EditColorsDialogWindow .window_content {

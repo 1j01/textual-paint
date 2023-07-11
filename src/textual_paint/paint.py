@@ -2,6 +2,7 @@
 
 import base64
 import io
+import math
 import os
 from pathlib import Path
 import re
@@ -3585,6 +3586,7 @@ Columns: {len(palette) // 2}
                     id="angle",
                 ),
                 id="flip_rotate_fieldset",
+                classes="fieldset",
             ),
             Container(
                 Button(_("OK"), classes="ok submit", variant="primary"),
@@ -3666,7 +3668,134 @@ Columns: {len(palette) // 2}
         self.canvas.refresh(layout=True)
 
     def action_stretch_skew(self) -> None:
-        self.message_box(_("Paint"), "Not implemented.", "ok")
+        """Open the stretch/skew dialog."""
+        self.close_windows("#stretch_skew_dialog")
+        def handle_button(button: Button) -> None:
+            if button.has_class("ok"):
+                horizontal_stretch = float(window.content.query_one("#horizontal_stretch", Input).value)
+                vertical_stretch = float(window.content.query_one("#vertical_stretch", Input).value)
+                horizontal_skew = float(window.content.query_one("#horizontal_skew", Input).value)
+                vertical_skew = float(window.content.query_one("#vertical_skew", Input).value)
+                self.action_stretch_skew_by(horizontal_stretch, vertical_stretch, horizontal_skew, vertical_skew)
+            window.close()
+        window = DialogWindow(
+            id="stretch_skew_dialog",
+            title=_("Stretch/Skew"),
+            handle_button=handle_button,
+        )
+        window.content.mount(
+            Container(
+                Horizontal(
+                    Static(_("Horizontal:"), classes="left-label"),
+                    Input(value="100", id="horizontal_stretch", classes="autofocus"),
+                    Static(_("%"), classes="right-label"),
+                ),
+                Horizontal(
+                    Static(_("Vertical:"), classes="left-label"),
+                    Input(value="100", id="vertical_stretch"),
+                    Static(_("%"), classes="right-label"),
+                ),
+                id="stretch_fieldset",
+                classes="fieldset",
+            ),
+            Container(
+                Horizontal(
+                    Static(_("Horizontal:"), classes="left-label"),
+                    Input(value="0", id="horizontal_skew"),
+                    Static(_("Degrees"), classes="right-label"),
+                ),
+                Horizontal(
+                    Static(_("Vertical:"), classes="left-label"),
+                    Input(value="0", id="vertical_skew"),
+                    Static(_("Degrees"), classes="right-label"),
+                ),
+                id="skew_fieldset",
+                classes="fieldset",
+            ),
+            Container(
+                Button(_("OK"), classes="ok submit", variant="primary"),
+                Button(_("Cancel"), classes="cancel"),
+                classes="buttons",
+            )
+        )
+        window.content.query_one("#stretch_fieldset", Container).border_title = _("Stretch")
+        window.content.query_one("#skew_fieldset", Container).border_title = _("Skew")
+        window.content.query_one("#horizontal_stretch", Input).value = "100"
+        window.content.query_one("#vertical_stretch", Input).value = "100"
+        window.content.query_one("#horizontal_skew", Input).value = "0"
+        window.content.query_one("#vertical_skew", Input).value = "0"
+        self.mount(window)
+
+    def action_stretch_skew_by(self, horizontal_stretch: float, vertical_stretch: float, horizontal_skew: float, vertical_skew: float) -> None:
+        """Stretch/skew the image by the given amounts."""
+
+        # Convert units
+        horizontal_stretch = horizontal_stretch / 100
+        vertical_stretch = vertical_stretch / 100
+        horizontal_skew = math.radians(horizontal_skew)
+        vertical_skew = math.radians(vertical_skew)
+
+        # Record original state for undo
+        action = Action(_("Stretch/skew"), Region(0, 0, self.image.width, self.image.height))
+        action.is_full_update = True
+        action.update(self.image)
+        self.add_action(action)
+
+        # Record original state for the transform (yes this is a bit inefficient)
+        # (technically we could use action.sub_image_before)
+        source = AnsiArtDocument(self.image.width, self.image.height)
+        source.copy(self.image)
+
+        w = source.width * horizontal_stretch
+        h = source.height * vertical_stretch
+
+        # Find bounds of transformed image, from each corner
+        bb_min_x = float("inf")
+        bb_max_x = float("-inf")
+        bb_min_y = float("inf")
+        bb_max_y = float("-inf")
+        for x01, y01 in ((0, 0), (0, 1), (1, 0), (1, 1)):
+            x = math.tan(-horizontal_skew) * h * x01 + w * y01
+            y = math.tan(-vertical_skew) * w * y01 + h * x01
+            bb_min_x = min(bb_min_x, x)
+            bb_max_x = max(bb_max_x, x)
+            bb_min_y = min(bb_min_y, y)
+            bb_max_y = max(bb_max_y, y)
+
+        bb_x = bb_min_x
+        bb_y = bb_min_y
+        bb_w = bb_max_x - bb_min_x
+        bb_h = bb_max_y - bb_min_y
+
+        # self.image.resize(0, 0) # clear the image
+        self.image.resize(max(1, int(bb_w)), max(1, int(bb_h)))
+
+        # Reverse transformation matrix values
+        x_scale = 1 / horizontal_stretch
+        v_skew = -vertical_skew
+        h_skew = -horizontal_skew
+        y_scale = 1 / vertical_stretch
+
+        for y in range(self.image.height):
+            for x in range(self.image.width):
+                # Apply inverse transformation
+                sample_x = x_scale * x - math.tan(h_skew) * y + bb_x
+                sample_y = -math.tan(v_skew) * x + y_scale * y + bb_y
+
+                # Convert to integer coordinates
+                # round() causes artifacts where for instance a 200% stretch will result in a 3-1-3-1 pattern instead of 2-2-2-2
+                sample_x = int(sample_x)
+                sample_y = int(sample_y)
+
+                if 0 <= sample_x < source.width and 0 <= sample_y < source.height:
+                    self.image.ch[y][x] = source.ch[sample_y][sample_x]
+                    self.image.fg[y][x] = source.fg[sample_y][sample_x]
+                    self.image.bg[y][x] = source.bg[sample_y][sample_x]
+                else:
+                    self.image.ch[y][x] = " "
+                    self.image.fg[y][x] = "#000000" # default_fg — if this was a variable, would it allocate less strings?
+                    self.image.bg[y][x] = "#ffffff" # default_bg
+        self.canvas.refresh(layout=True)
 
     def action_invert_colors_unless_should_switch_focus(self) -> None:
         """Try to distinguish between Tab and Ctrl+I scenarios."""
@@ -3913,7 +4042,7 @@ Columns: {len(palette) // 2}
                 ])),
                 MenuItem(remove_hotkey(_("&Image")), submenu=Menu([
                     MenuItem(_("&Flip/Rotate...\tCtrl+R"), self.action_flip_rotate, 37680, description=_("Flips or rotates the picture or a selection.")),
-                    MenuItem(_("&Stretch/Skew...\tCtrl+W"), self.action_stretch_skew, 37681, grayed=True, description=_("Stretches or skews the picture or a selection.")),
+                    MenuItem(_("&Stretch/Skew...\tCtrl+W"), self.action_stretch_skew, 37681, description=_("Stretches or skews the picture or a selection.")),
                     MenuItem(_("&Invert Colors\tCtrl+I"), self.action_invert_colors, 37682, description=_("Inverts the colors of the picture or a selection.")),
                     MenuItem(_("&Attributes...\tCtrl+E"), self.action_attributes, 37683, description=_("Changes the attributes of the picture.")),
                     MenuItem(_("&Clear Image\tCtrl+Shft+N"), self.action_clear_image, 37684, description=_("Clears the picture or selection.")),
