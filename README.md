@@ -17,6 +17,7 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
   - [x] Automatically saves a temporary `.ans~` backup file alongside the file you're editing, for recovery in case of a crash
   - File formats, chosen by typing a file extension in the Save As dialog:
     - [x] ANSI (.ans) — Note that while it handles many more ANSI control codes when loading than those that it uses to save files, you may have limited success loading other ANSI files that you find on the web, or create with other tools. ANSI files can vary a lot and even encode animations!
+    - [x] mIRC codes (.irc, .mirc) — invented file extensions, and not to be confused with .mrc mIRC script files
     - [x] Plain Text (.txt)
     - [x] SVG (.svg) — can open SVGs saved by Textual Paint, which embed ANSI data; can also open some other SVGs that consist of a grid of rectangles and text elements. For fun, as a challenge, I made it quite flexible; it can handle uneven grids of unsorted rectangles. But that's only used as a fallback, because it's not perfect.
     - [x] HTML (.htm, html) — write-only (opening not supported)
