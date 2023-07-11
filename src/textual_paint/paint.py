@@ -3189,6 +3189,12 @@ class PaintApp(App[None]):
                     # TODO: handle pasting image files
                     self.paste(f.read())
                 window.close()
+            except UnicodeDecodeError:
+                self.message_box(_("Open"), file_path + "\n" + _("Paint cannot read this file.") + "\n" + _("Unexpected file format."), "ok")
+            except UnidentifiedImageError as e:
+                self.message_box(_("Open"), _("This is not a valid bitmap file, or its format is not currently supported."), "ok", error=e)
+            except FormatReadNotSupported as e:
+                self.message_box(_("Open"), e.localized_message, "ok")
             except FileNotFoundError:
                 self.message_box(_("Paint"), file_path + "\n" + _("File not found.") + "\n" + _("Please verify that the correct path and file name are given."), "ok")
             except IsADirectoryError:
