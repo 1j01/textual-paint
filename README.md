@@ -201,7 +201,6 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 - Can click Cancel button of Edit Colors dialog while opening it, if the mouse lines up with it.
 - Hitting Enter in View Bitmap mode exits the mode but may also trigger a menu item. Menu items ought to be disabled when hidden, and View Bitmap should prevent the key event from taking other actions if possible.
 - Airbrush is continuous in space instead of time. It should keep spraying while the mouse stays still.
-- After setting a custom zoom level, the magnifier tool will not return to the custom zoom level when un-magnifying and re-magnifying.
 
 The program has only been tested on Linux. Issues on other platforms are as-yet _unknown_ :)
 

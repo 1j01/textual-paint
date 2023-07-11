@@ -2441,6 +2441,9 @@ class PaintApp(App[None]):
     def watch_magnification(self, old_magnification: int, magnification: int) -> None:
         """Called when magnification changes."""
         self.canvas.magnification = magnification
+        if old_magnification != 1:
+            self.return_to_magnification = old_magnification
+
         # TODO: keep the top left corner of the viewport in the same place
         # https://github.com/1j01/jspaint/blob/12a90c6bb9d36f495dc6a07114f9667c82ee5228/src/functions.js#L326-L351
         # This will matter more when large documents don't freeze up the program...
