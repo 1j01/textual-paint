@@ -916,6 +916,9 @@ class AnsiArtDocument:
                 irc_text += str(closest_color(Color.from_rich_color(style.color)))
                 irc_text += ","
                 irc_text += str(closest_color(Color.from_rich_color(style.bgcolor)))
+                if text[0] in "0123456789,":
+                    # separate the color code from the text with an ending escape character
+                    irc_text += "\x03"
                 irc_text += text
             else:
                 irc_text += text
@@ -1007,7 +1010,8 @@ class AnsiArtDocument:
         fg_color = default_fg
 
         color_escape = "\x03"
-        color_escape_re = re.compile(r"\x03(\d{1,2})?(?:,(\d{1,2}))?")
+        # an optional escape code at the end disambiguates a digit from part of the color code
+        color_escape_re = re.compile(r"\x03(\d{1,2})?(?:,(\d{1,2}))?\x03?")
         reset_escape = "\x0F"
 
         index = 0
@@ -1017,6 +1021,7 @@ class AnsiArtDocument:
                 match = color_escape_re.match(text[index:])
                 if match:
                     index += len(match.group(0))
+                    # TODO: should a one-value syntax reset the background?
                     bg_color = default_bg
                     fg_color = default_fg
                     if match.group(1):
