@@ -48,8 +48,18 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
     - [x] Polygon
     - [x] Ellipse
     - [x] Rounded Rectangle
+- Commands
+  - [x] **Undo** and **Repeat** (AKA redo)
+  - [x] **Cut**, **Copy**, **Paste**, **Clear Selection** (AKA delete), **Select All**
+  - [x] **Paste From** (insert file as selection), **Copy To** (save selection to file)
+  - [x] **Flip/Rotate**
+  - [x] **Stretch/Skew**
+  - [x] **Invert Colors**
+  - [x] **Attributes** (resize canvas; in the future may change color/text modes, maybe text encoding)
+  - [x] **Clear Image**
+  - [x] **Edit Colors**
+  - most other commands too!
 - [x] Color palette
-- [x] Undo/Redo
 - [x] Efficient screen updates and undo/redo history, by tracking regions affected by each action
 	- You could totally use this program over SSH! Haha, this "what if" project could actually be useful. Of course, it should be mentioned that you can also run graphical programs over SSH, but this might be more responsive, or just fit your vibe better.
 - [x] Brush previews
@@ -57,6 +67,8 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
 - [x] Status bar
 - [x] Keyboard shortcuts
 - [x] Localization into 26 languages: Arabic, Czech, Danish, German, Greek, English, Spanish, Finnish, French, Hebrew, Hungarian, Italian, Japanese, Korean, Dutch, Norwegian, Polish, Portuguese, Brazilian Portuguese, Russian, Slovak, Slovenian, Swedish, Turkish, Chinese, Simplified Chinese
+- [x] Dark mode
+- [x] Zooming works with text, despite running in the terminal :)
 
 ## Usage
 
@@ -169,6 +181,7 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 ## Known Issues
 
 - Undo/Redo doesn't work inside the Text tool's textbox. Ctrl+Z will delete the textbox. (Also note that the Text tool works differently from MS Paint; it will overwrite characters and the cursor can move freely, which makes it better for ASCII art, but worse for prose.)
+- The Text tool's cursor doesn't blink.
 - The selection box border appears inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
 - Pick Color can't be cancelled (with Esc or by pressing both mouse buttons), since it samples the color continuously.
 - Pressing both mouse buttons stops the current tool, but doesn't undo the current action.
@@ -179,12 +192,17 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 - Some languages don't display correctly.
 - Large files can make the program very slow, as can magnifying the canvas. There is a 500 KB limit when opening files to prevent it from freezing.
 - Free-Form Select stamping/finalizing is incorrect when the selection is off-screen to the left or top.
-- Status bar description can be left blank when selecting a menu item <!--I'm guessing Leave can come after close-->
+- Status bar description can be left blank when selecting a menu item. (I think the `Leave` event can come after closing, once the mouse moves.)
 - Menu items like Copy/Cut/Paste are not grayed out when inapplicable. Only unimplemented items are grayed out.
 - Set As Wallpaper may not work on your system. For me, on Ubuntu, the wallpaper setting is updated but the picture is not, unless I manually pick it. There is however untested support for many platforms, and you may have better luck than me.
 - ANSI files (.ans) are treated as UTF-8 when saving and loading, rather than CP437 or Windows-1252 or any other encodings. Unicode is nice and modern terminals support it, but it's not the standard for ANSI files. There isn't really a standard for ANSI files.
 - ANSI files are loaded with a white background. This may make sense as a default for text files, but ANSI files either draw a background or assume a black background, being designed for terminals.
 - Can click Cancel button of Edit Colors dialog while opening it, if the mouse lines up with it.
+- Hitting Enter in View Bitmap mode exits the mode but may also trigger a menu item. Menu items ought to be disabled when hidden, and View Bitmap should prevent the key event from taking other actions if possible.
+- Airbrush is continuous in space instead of time. It should keep spraying while the mouse stays still.
+- After setting a custom zoom level, the magnifier tool will not return to the custom zoom level when un-magnifying and re-magnifying.
+- Pasting into the character input box of the color palette changes the displayed character but not the character used for drawing.
+- Dragging and dropping files may fail if the character input box is focused. Click in the area around the canvas to remove focus.
 
 The program has only been tested on Linux. Issues on other platforms are as-yet _unknown_ :)
 
