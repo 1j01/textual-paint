@@ -359,22 +359,17 @@ class CharInput(Input, inherit_bindings=False):
         """Limit the value to a single character."""
         return value[-1] if value else " "
     
-    # Using watch_value caused a bug where the character would oscillate between multiple values
+    # Previously this used watch_value,
+    # and had a bug where the character would oscillate between multiple values
     # due to a feedback loop between watch_value and on_char_input_char_selected.
     # watch_value would queue up a CharSelected message, and then on_char_input_char_selected would
     # receive an older CharSelected message and set the value to the old value,
     # which would cause watch_value to queue up another CharSelected event, and it would cycle through values.
     # (Usually it wasn't a problem because the key events would be processed in time.)
-    # async def watch_value(self, value: str) -> None:
-    #     """Called when value changes."""
-    #     self.post_message(self.CharSelected(value))
-    # Instead, we override on_key to send the message.
-    async def on_key(self, event: events.Key) -> None:
-        """Called when a key is pressed."""
-        if event.is_printable:
-            assert event.character is not None, "is_printable should imply character is not None"
-            self.value = event.character
-            self.post_message(self.CharSelected(self.value))
+    def on_input_changed(self, event: Input.Changed) -> None:
+        """Called when value changes."""
+        with self.prevent(Input.Changed):
+            self.post_message(self.CharSelected(event.value))
 
     def validate_cursor_position(self, cursor_position: int) -> int:
         """Force the cursor position to 0 so that it's over the character."""
