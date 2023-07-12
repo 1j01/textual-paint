@@ -198,9 +198,18 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 - Set As Wallpaper may not work on your system. For me, on Ubuntu, the wallpaper setting is updated but the picture is not, unless I manually pick it. There is however untested support for many platforms, and you may have better luck than me.
 - ANSI files (.ans) are treated as UTF-8 when saving and loading, rather than CP437 or Windows-1252 or any other encodings. Unicode is nice and modern terminals support it, but it's not the standard for ANSI files. There isn't really a standard for ANSI files.
 - ANSI files are loaded with a white background. This may make sense as a default for text files, but ANSI files either draw a background or assume a black background, being designed for terminals.
-- Can click Cancel button of Edit Colors dialog while opening it, if the mouse lines up with it.
 - Hitting Enter in View Bitmap mode exits the mode but may also trigger a menu item. Menu items ought to be disabled when hidden, and View Bitmap should prevent the key event from taking other actions if possible.
 - Airbrush is continuous in space instead of time. It should keep spraying while the mouse stays still.
+- Error messages may not show up when opening a file fails.
+- Edit Colors dialog
+  - Focus ring shows even while grid is not focused
+  - Can show two cells as selected, instead of one across both grids
+  - Custom colors order X/Y is different from MS Paint
+  - Pressing enter in color grid should select color and close
+  - Selection ring is hard to see in dark mode
+  - Focus ring is invisible on a black color cell
+  - When dragging on the color field or luminosity slider, the cursor can be seen to jump back to earlier places where the mouse was, before settling at the current position. (This may only be visible when the program is running slowly, such while debugging. I haven't observed this on the canvas, so maybe it has something to do with the dialog being on a separate layer.)
+  - When opening the Edit Colors dialog, it may immediately close, if the mouse lines up with the "OK" or "Cancel" buttons. (This doesn't seem to currently happen, but I haven't knowingly fixed it. A git bisect turned up a bogus commit, possibly due to reproducing the behavior being unreliable. It also seems like it might depend on the specific layout of the dialog, which changed during development, and maybe even the terminal size.)
 
 The program has only been tested on Linux. Issues on other platforms are as-yet _unknown_ :)
 
