@@ -316,23 +316,23 @@ palette = [
     "rgb(255,128,64)",
 ]
 
-irc_palette: list[tuple[int, str, str, str]] = [
-    (0, "White", "rgb(255,255,255)", "#FFFFFF"),
-    (1, "Black", "rgb(0,0,0)", "#000000"),
-    (2, "Navy", "rgb(0,0,127)", "#00007F"),
-    (3, "Green", "rgb(0,147,0)", "#009300"),
-    (4, "Red", "rgb(255,0,0)", "#FF0000"),
-    (5, "Maroon", "rgb(127,0,0)", "#7F0000"),
-    (6, "Purple", "rgb(156,0,156)", "#9C009C"),
-    (7, "Orange", "rgb(252,127,0)", "#FC7F00"),
-    (8, "Yellow", "rgb(255,255,0)", "#FFFF00"),
-    (9, "Light Green", "rgb(0,252,0)", "#00FC00"),
-    (10, "Teal", "rgb(0,147,147)", "#009393"),
-    (11, "Cyan", "rgb(0,255,255)", "#00FFFF"),
-    (12, "Royal blue", "rgb(0,0,252)", "#0000FC"),
-    (13, "Magenta", "rgb(255,0,255)", "#FF00FF"),
-    (14, "Gray", "rgb(127,127,127)", "#7F7F7F"),
-    (15, "Light Gray", "rgb(210,210,210)", "#D2D2D2"),
+irc_palette = [
+    "rgb(255,255,255)", # 0 White
+    "rgb(0,0,0)", # 1 Black
+    "rgb(0,0,127)", # 2 Navy
+    "rgb(0,147,0)", # 3 Green
+    "rgb(255,0,0)", # 4 Red
+    "rgb(127,0,0)", # 5 Maroon
+    "rgb(156,0,156)", # 6 Purple
+    "rgb(252,127,0)", # 7 Orange
+    "rgb(255,255,0)", # 8 Yellow
+    "rgb(0,252,0)", # 9 Light Green
+    "rgb(0,147,147)", # 10 Teal
+    "rgb(0,255,255)", # 11 Cyan
+    "rgb(0,0,252)", # 12 Royal blue
+    "rgb(255,0,255)", # 13 Magenta
+    "rgb(127,127,127)", # 14 Gray
+    "rgb(210,210,210)", # 15 Light Gray
 ]
 
 class ToolsBox(Container):
@@ -899,7 +899,7 @@ class AnsiArtDocument:
             """Get the closest color in the palette to the given color."""
             closest_color = 0
             closest_distance = float("inf")
-            for index, _, _, hex in irc_palette:
+            for index, hex in enumerate(irc_palette):
                 distance = color_distance(color, Color.parse(hex))
                 if distance < closest_distance:
                     closest_color = index
@@ -1025,9 +1025,9 @@ class AnsiArtDocument:
                     bg_color = default_bg
                     fg_color = default_fg
                     if match.group(1):
-                        fg_color = irc_palette[int(match.group(1))][3]
+                        fg_color = irc_palette[int(match.group(1))]
                     if match.group(2):
-                        bg_color = irc_palette[int(match.group(2))][3]
+                        bg_color = irc_palette[int(match.group(2))]
                     continue
             if char == reset_escape:
                 index += 1
