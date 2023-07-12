@@ -2798,6 +2798,7 @@ class PaintApp(App[None]):
             self.canvas.refresh(layout=True)
             # awkward to do this in here as well as externally, but this should be updated with the new undo count
             self.saved_undo_count = len(self.undos)
+            self.update_palette_from_format_id(AnsiArtDocument.format_from_extension(file_path))
             return True
         except UnicodeDecodeError:
             self.message_box(_("Open"), file_path + "\n" + _("Paint cannot read this file.") + "\n" + _("Unexpected file format."), "ok")
@@ -2808,6 +2809,23 @@ class PaintApp(App[None]):
         except Exception as e:
             self.message_box(_("Open"), _("An unexpected error occurred while reading %1.", file_path), "ok", error=e)
         return False
+
+    def update_palette_from_format_id(self, format_id: str | None) -> None:
+        """Update the palette based on the file format.
+        
+        In the future, this should update from attributes set when loading the file,
+        such as whether it supports color, and if not, it could show pattern fills,
+        such as ░▒▓█... that's not a lot of patterns, and you could get those from the
+        character picker, but it might be nice to have them more accessible,
+        that or to make the character picker a dockable window.
+        """
+        global palette
+        if format_id == "IRC":
+            palette = irc_palette + [irc_palette[0]] * (len(palette) - len(irc_palette))
+            self.query_one(ColorsBox).update_palette()
+        elif format_id == "PLAINTEXT":
+            palette = ["#000000", "#ffffff"] + ["#ffffff"] * (len(palette) - 2)
+            self.query_one(ColorsBox).update_palette()
 
     async def save(self) -> bool:
         """Save the image to a file.
@@ -3226,6 +3244,9 @@ class PaintApp(App[None]):
                     self.canvas.image = self.image = new_image
                     self.canvas.refresh(layout=True)
                     self.file_path = file_path
+                    self.update_palette_from_format_id(AnsiArtDocument.format_from_extension(file_path))
+                    # Should this set self.saved_undo_count?
+                    # I guess it's probably always 0 at this point, right?
                     opened_callback()
                     self.recover_from_backup()
                 if self.is_document_modified():
