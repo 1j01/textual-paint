@@ -3441,7 +3441,7 @@ class PaintApp(App[None]):
             return
         global palette
         palette[:len(new_colors)] = new_colors
-        palette[len(new_colors):] = ["#000000"] * (len(palette) - len(new_colors))
+        palette[len(new_colors):] = [new_colors[0]] * (len(palette) - len(new_colors))
         self.query_one(ColorsBox).update_palette()
 
     def action_get_colors(self) -> None:
