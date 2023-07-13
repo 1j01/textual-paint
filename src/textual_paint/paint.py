@@ -3115,11 +3115,16 @@ class PaintApp(App[None]):
             os.remove(backup_file_path)
         except FileNotFoundError:
             pass
-        except Exception as e:
-            # e.g. PermissionError when running with
+        except PermissionError:
+            # This can happen when running with
             # `python -m src.textual_paint.paint /root/some_file_which_can_be_nonexistent`
             # (and then exiting)
-            self.message_box(_("Paint"), _("An unexpected error occurred while deleting %1.", backup_file_path), "ok", error=e)
+            # If we don't have permission to delete the backup file,
+            # then we probably didn't have permission to create it,
+            # so it's not a big deal if we can't delete it.
+            pass
+        except Exception as e:
+            self.message_box(_("Paint"), _("An unexpected error occurred while deleting the backup file %1.", backup_file_path), "ok", error=e)
 
     def discard_backup_and_exit(self) -> None:
         """Exit the program immediately, deleting the backup file."""
