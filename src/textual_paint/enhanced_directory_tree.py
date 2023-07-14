@@ -2,24 +2,76 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 from rich.text import TextType
-from textual.widgets import DirectoryTree
+from textual.reactive import var
+from textual.widgets import DirectoryTree, Tree
 from textual.widgets._tree import TreeNode
 from textual.widgets._directory_tree import DirEntry
 
 class EnhancedDirectoryTree(DirectoryTree):
+
+    node_highlighted_by_expand_to_path = var(False)
+    """Whether a NodeHighlighted event was triggered by expand_to_path.
+    
+    (An alternative would be to create a new message type wrapping `NodeHighlighted`,
+    which includes a flag.)
+    (Also, this could be a simple attribute, but I didn't want to make an `__init__`
+    method for this one thing.)
+    """
+
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         return [path for path in paths if not (path.name.startswith(".") or path.name.endswith("~") or path.name.startswith("~"))]
 
     def _go_to_node(self, node: TreeNode[DirEntry], callback: Callable[[], None]) -> None:
         """Scroll to the node, and select it."""
         def _go_to_node_now():
+
+            print("set flag")
+            self.node_highlighted_by_expand_to_path = True
             self.select_node(node)
+            # def clear_flag() -> None:
+            #     print("clear flag")
+            #     self.node_highlighted_by_expand_to_path = False
+            # self.call_later(clear_flag) # too early!
+            # self.set_timer(0.01, clear_flag) # unreliable
+            # self.call_after_refresh(clear_flag) # unreliable
+            # The above is unreliable because NodeHighlighted is
+            # sent by watch_cursor_line, so it may go:
+            # * set flag
+            # * (add clear_flag callback to queue)
+            # * watch_cursor_line
+            # * (adds NodeHighlighted to queue)
+            # * clear flag
+            # * on_tree_node_highlighted
+            # 
+            # So instead, listen for NodeHighlighted,
+            # and then clear the flag.
+
             region = self._get_label_region(node._line) # type: ignore
             assert region, "Node not found in tree"
             self.scroll_to_region(region, animate=False, top=True)
+
             callback()
         # Is there a way to avoid this delay?
         self.set_timer(0.01, _go_to_node_now)
+
+    def on_tree_node_highlighted(self, event: Tree.NodeHighlighted[DirEntry]) -> None:
+        """Called when a node is highlighted in the DirectoryTree.
+        
+        This handler is used to clear the flag set by expand_to_path.
+        See _go_to_node for more details.
+        """
+        print("EnhancedDirectoryTree.on_tree_node_highlighted (queue clearing flag)")
+        def clear_flag() -> None:
+            print("clear flag")
+            self.node_highlighted_by_expand_to_path = False
+        # Now that we've received the NodeHighlighted event,
+        # we just need to wait for subclasses/parent widgets to handle it,
+        # so this can be tighter the earliest-calling method I tried above.
+        # self.call_next(clear_flag) # too early!
+        # Even though it's the same event, bubbling, the `call_next`
+        # callback actually comes before the event finishes bubbling.
+        # self.call_later(clear_flag) # too early!
+        self.call_after_refresh(clear_flag) # finally reliable # type: ignore
 
     def _expand_matching_child(self, node: TreeNode[DirEntry], remaining_parts: tuple[str], callback: Callable[[], None]) -> None:
         """Hooks into DirectoryTree's add method, and expands the child node matching the next path part, recursively.

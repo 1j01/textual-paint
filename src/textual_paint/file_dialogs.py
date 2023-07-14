@@ -114,7 +114,17 @@ class FileDialogWindow(DialogWindow):
             assert event.node.parent.data
             self._directory_tree_selected_path = str(event.node.parent.data.path)
             name = os.path.basename(event.node.data.path)
-            if not self._expanding_directory_tree:
+            assert isinstance(event.control, EnhancedDirectoryTree)
+            print(
+                "self._expanding_directory_tree",
+                self._expanding_directory_tree,
+                "event.control.node_highlighted_by_expand_to_path",
+                event.control.node_highlighted_by_expand_to_path
+            )
+            # if not self._expanding_directory_tree:
+            if not event.control.node_highlighted_by_expand_to_path:
+                # TODO: handle NoMatches if dialog is opened and closed immediately
+                # such as by spamming Ctrl+O
                 self.query_one("FileDialogWindow .filename_input", Input).value = name
         else:
             self._directory_tree_selected_path = None
