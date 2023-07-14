@@ -3205,13 +3205,13 @@ class PaintApp(App[None]):
         # then it should show an error message (although it would anyways when trying to read the file).
         if self.file_path:
             current_file_stat = None
+            opened = False
             try:
                 current_file_stat = os.stat(self.file_path)
                 try:
                     file_to_be_opened_stat = os.stat(file_path)
                     if os.path.samestat(current_file_stat, file_to_be_opened_stat):
-                        # TODO: this callback shouldn't be in the try block
-                        opened_callback()
+                        opened = True
                         return
                 except FileNotFoundError:
                     self.message_box(_("Open"), file_path + "\n" + _("File not found.") + "\n" + _("Please verify that the correct path and file name are given."), "ok")
@@ -3224,7 +3224,11 @@ class PaintApp(App[None]):
             except Exception as e:
                 self.message_box(_("Open"), _("An unknown error occurred while accessing %1.", self.file_path), "ok", error=e)
                 return
-
+            # It's generally bad practice to invoke a callback within a try block,
+            # because it can lead to unexpected behavior if the callback throws an exception,
+            # such as the exception being silently swallowed, especially if some cases `pass`.
+            if opened:
+                opened_callback()
         try:
             if os.path.getsize(file_path) > MAX_FILE_SIZE:
                 self.message_box(_("Open"), _("The file is too large to open."), "ok")
