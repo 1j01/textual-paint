@@ -26,17 +26,24 @@ class FileDialogWindow(DialogWindow):
         **kwargs: Any,
     ) -> None:
         """Initialize the dialog window."""
+
         super().__init__(handle_button=self.handle_button, *children, **kwargs)
+
         self._starting_file_name: str = file_name
         self._selected_file_path: str | None = selected_file_path
         self._submit_label: str = submit_label
+
         self.handle_selected_file_path = handle_selected_file_path
         """Callback called when the user selects a file."""
+
         self._directory_tree_selected_path: str | None = None
         """Last highlighted item in the directory tree"""
+
         self._expanding_directory_tree: bool = False
         """Flag to prevent setting the filename input when initially expanding the directory tree"""
+
         self._auto_add_default_extension: str = auto_add_default_extension
+        """The default extension to add to the filename if it doesn't have one"""
 
     def handle_button(self, button: Button) -> None:
         """Called when a button is clicked or activated with the keyboard."""
@@ -100,6 +107,7 @@ class FileDialogWindow(DialogWindow):
         DirectoryTree gives FileSelected, but only for files, not folders.
         """
         assert event.node.data
+        
         if event.node.data.path.is_dir():
             self._directory_tree_selected_path = str(event.node.data.path)
         elif event.node.parent:
