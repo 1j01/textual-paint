@@ -3460,9 +3460,21 @@ class PaintApp(App[None]):
     def action_get_colors(self) -> None:
 
         def handle_selected_file_path(file_path: str) -> None:
-            with open(file_path, "r") as f:
-                self.load_palette(f.read())
-            window.close()
+            try:
+                with open(file_path, "r") as f:
+                    self.load_palette(f.read())
+            except UnicodeDecodeError:
+                self.message_box(_("Open"), file_path + "\n" + _("Paint cannot read this file.") + "\n" + _("Unexpected file format."), "ok")
+            except FileNotFoundError:
+                self.message_box(_("Open"), file_path + "\n" + _("File not found.") + "\n" + _("Please verify that the correct path and file name are given."), "ok")
+            except IsADirectoryError:
+                self.message_box(_("Open"), file_path + "\n" + _("Invalid file."), "ok")
+            except PermissionError:
+                self.message_box(_("Open"), file_path + "\n" + _("Access denied."), "ok")
+            except Exception as e:
+                self.message_box(_("Open"), _("An unexpected error occurred while reading %1.", file_path), "ok", error=e)
+            else:
+                window.close()
 
         self.close_windows("SaveAsDialogWindow, OpenDialogWindow")
         window = OpenDialogWindow(
