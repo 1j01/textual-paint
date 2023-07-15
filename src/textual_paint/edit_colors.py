@@ -57,7 +57,7 @@ class ColorGrid(Container):
             self.color_grid = color_grid
             self.index = index
 
-    color_list = var(list[str], init=False)
+    color_list: var[list[str]] = var(list[str], init=False)
     """The list of colors to display. NOT TO BE CONFUSED WITH `colors` defined by `Widget`."""
 
     def __init__(self, color_list: list[str], selected_color: str, **kwargs: Any) -> None:
@@ -337,9 +337,9 @@ class EditColorsDialogWindow(DialogWindow):
     def __init__(self, *children: Widget, title: str = _("Edit Colors"), selected_color: str|None, handle_selected_color: Callable[[str], None], **kwargs: Any) -> None:
         """Initialize the Edit Colors dialog."""
         super().__init__(handle_button=self.handle_button, *children, title=title, **kwargs)
-        self.hue_degrees = 0
-        self.sat_percent = 0
-        self.lum_percent = 0
+        self.hue_degrees = 0.0
+        self.sat_percent = 0.0
+        self.lum_percent = 0.0
         # self._initial_color = selected_color
         if selected_color:
             self._current_color = selected_color

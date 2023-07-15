@@ -92,7 +92,7 @@ def get(base_language_str: str, *interpolations: str) -> str:
 
 		return base_language_str
 
-	def interpolate(text: str, interpolations: tuple[str]):
+	def interpolate(text: str, interpolations: tuple[str, ...]):
 		for i in range(len(interpolations)):
 			text = text.replace(f"%{i + 1}", interpolations[i])
 		return text

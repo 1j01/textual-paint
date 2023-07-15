@@ -1303,8 +1303,8 @@ class AnsiArtDocument:
         if ansi_el is not None:
             if ansi_el.text is None:
                 return AnsiArtDocument(1, 1, default_bg, default_fg)
-            text = base64.b64decode(ansi_el.text).decode("utf-8")
-            return AnsiArtDocument.from_ansi(text, default_bg, default_fg)
+            ansi_text = base64.b64decode(ansi_el.text).decode("utf-8")
+            return AnsiArtDocument.from_ansi(ansi_text, default_bg, default_fg)
 
         def add_debug_marker(x: float, y: float, color: str) -> None:
             """Adds a circle to the SVG at the given position, for debugging."""
@@ -1779,7 +1779,7 @@ def is_inside_polygon(x: int, y: int, points: list[Offset]) -> bool:
         if y > min(p1y, p2y):
             if y <= max(p1y, p2y):
                 if x <= max(p1x, p2x):
-                    x_intersection = x  # Avoid "possibly unbound" type checker error
+                    x_intersection: float = x  # Avoid "possibly unbound" type checker error
                     # I don't know if this is right; should it flip `inside` in this case?
                     # Is this an actual case that can occur, where p1y == p2y AND p1x != p2x?
                     if p1y != p2y:
@@ -1939,7 +1939,7 @@ def flood_fill(document: AnsiArtDocument, x: int, y: int, fill_ch: str, fill_fg:
     # Simple translation of the "final, combined-scan-and-fill span filler"
     # pseudo-code from https://en.wikipedia.org/wiki/Flood_fill
     if not inside(x, y):
-        return
+        return None
     stack: list[tuple[int, int, int, int]] = [(x, x, y, 1), (x, x, y - 1, -1)]
     while stack:
         x1, x2, y, dy = stack.pop()
@@ -2595,7 +2595,7 @@ class PaintApp(App[None]):
                 points[1].x, points[1].y,
             )
         else:
-            gen = points
+            gen = iter(points)
         affected_region = Region()
         for x, y in gen:
             affected_region = affected_region.union(self.stamp_brush(x, y, affected_region))
@@ -4845,6 +4845,7 @@ Columns: {len(palette) // 2}
         # (The new action is allowed to shrink the region compared to the old one)
         if affected_region:
             if replace_action:
+                assert old_action is not None, "old_action should have been set if replace_action is True"
                 affected_region = affected_region.union(old_action.region)
             self.canvas.refresh_scaled_region(affected_region)
         
