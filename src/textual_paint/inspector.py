@@ -1273,7 +1273,7 @@ class Inspector(Container):
     picking = var(False)
     """Whether the user is picking a widget to inspect."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialise the inspector."""
 
         super().__init__()
