@@ -25,7 +25,7 @@ class EnhancedDirectoryTree(DirectoryTree):
         """Scroll to the node, and select it."""
         def _go_to_node_now():
 
-            print("set flag")
+            # print("set flag")
             self.node_highlighted_by_expand_to_path = True
             self.select_node(node)
             # def clear_flag() -> None:
@@ -60,9 +60,9 @@ class EnhancedDirectoryTree(DirectoryTree):
         This handler is used to clear the flag set by expand_to_path.
         See _go_to_node for more details.
         """
-        print("EnhancedDirectoryTree.on_tree_node_highlighted (queue clearing flag)")
+        # print("EnhancedDirectoryTree.on_tree_node_highlighted (queue clearing flag)")
         def clear_flag() -> None:
-            print("clear flag")
+            # print("clear flag")
             self.node_highlighted_by_expand_to_path = False
         # Now that we've received the NodeHighlighted event,
         # we just need to wait for subclasses/parent widgets to handle it,

@@ -39,9 +39,6 @@ class FileDialogWindow(DialogWindow):
         self._directory_tree_selected_path: str | None = None
         """Last highlighted item in the directory tree"""
 
-        self._expanding_directory_tree: bool = False
-        """Flag to prevent setting the filename input when initially expanding the directory tree"""
-
         self._auto_add_default_extension: str = auto_add_default_extension
         """The default extension to add to the filename if it doesn't have one"""
 
@@ -115,13 +112,7 @@ class FileDialogWindow(DialogWindow):
             self._directory_tree_selected_path = str(event.node.parent.data.path)
             name = os.path.basename(event.node.data.path)
             assert isinstance(event.control, EnhancedDirectoryTree)
-            print(
-                "self._expanding_directory_tree",
-                self._expanding_directory_tree,
-                "event.control.node_highlighted_by_expand_to_path",
-                event.control.node_highlighted_by_expand_to_path
-            )
-            # if not self._expanding_directory_tree:
+            # print("node_highlighted_by_expand_to_path", event.control.node_highlighted_by_expand_to_path)
             if not event.control.node_highlighted_by_expand_to_path:
                 # TODO: handle NoMatches if dialog is opened and closed immediately
                 # such as by spamming Ctrl+O
@@ -132,14 +123,8 @@ class FileDialogWindow(DialogWindow):
     def _expand_directory_tree(self) -> None:
         """Expand the directory tree to the target directory, either the folder of the open file or the current working directory."""
         tree = self.content.query_one(EnhancedDirectoryTree)
-        self._expanding_directory_tree = True
         target_dir = (self._selected_file_path or os.getcwd()).rstrip(os.path.sep)
-        # Tree expansion is asynchronous because it loads folder contents in a worker.
-        def done_expanding():
-            # In expand_to_path, once all the folders are expanded, it will select the target node.
-            # The _expanding_directory_tree flag is for avoiding responding to that automatic initial selection.
-            self._expanding_directory_tree = False
-        tree.expand_to_path(target_dir, done_expanding)
+        tree.expand_to_path(target_dir)
 
 class OpenDialogWindow(FileDialogWindow):
     """A dialog window that lets the user select a file to open.
