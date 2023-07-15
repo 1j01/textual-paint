@@ -99,8 +99,14 @@ def update_cli_help_on_readme():
         parser.formatter_class = old_formatter_class
         
         md = f.read()
-        start = readme_help_start.search(md).end()
-        end = readme_help_end.search(md, start).start()
+        start_match = readme_help_start.search(md)
+        if start_match is None:
+            raise Exception("Couldn't find help section in readme")
+        start = start_match.end()
+        end_match = readme_help_end.search(md, start)
+        if end_match is None:
+            raise Exception("Couldn't find end of help section in readme")
+        end = end_match.start()
         md = md[:start] + help_text + md[end:]
         f.seek(0)
         f.write(md)
@@ -4174,10 +4180,12 @@ Columns: {len(palette) // 2}
         # Just don't use emoji for it.
         icon = "📄[#ffff00]?[/]"
         title = icon + " " + title
+        def handle_button(button: Button) -> None:
+            window.close()
         window = DialogWindow(
             id="help_dialog",
             title=title,
-            handle_button=lambda button: window.close(),
+            handle_button=handle_button,
             allow_maximize=True,
             allow_minimize=True,
         )
@@ -4198,10 +4206,12 @@ Columns: {len(palette) // 2}
 [b]License:[/b] [link=https://github.com/1j01/textual-paint/blob/main/LICENSE.txt]MIT[/link]
 [b]Source Code:[/b] [link=https://github.com/1j01/textual-paint]github.com/1j01/textual-paint[/link]
 """)
+        def handle_button(button: Button) -> None:
+            window.close()
         window = MessageBox(
             id="about_paint_dialog",
             title=_("About Paint"),
-            handle_button=lambda button: window.close(),
+            handle_button=handle_button,
             icon_widget=get_paint_icon(),
             message=message,
         )

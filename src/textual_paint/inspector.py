@@ -749,6 +749,7 @@ class NodeInfo(Container):
             return False
         def trace_inline_style(rule: str) -> tuple[str, int] | Literal["EDITED_WITH_INSPECTOR"] | None:
             """Returns the location where a style is set, or None if it can't be found."""
+            assert dom_node is not None, "trace_inline_style should only be called when a node is selected"
             try:
                 source = inline_style_call_stacks[dom_node]
                 frame_infos = source[rule]
