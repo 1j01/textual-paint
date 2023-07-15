@@ -647,7 +647,7 @@ class MessageBox(DialogWindow):
         *children: Widget,
         message: Widget | str,
         button_types: str = "ok",
-        icon_widget: Widget | None, # not optional because I'm more likely to forget to pass it than to want no icon
+        icon_widget: Widget | None, # can be None but must be specified, because I'm more likely to forget to pass it than to want no icon
         handle_button: Callable[[Button], None],
         error: Exception | None = None,
         **kwargs: Any,
