@@ -72,17 +72,22 @@ def extract_textures(image_path: str):
             # Calculate the ordinal of the character
             ordinal = row * num_textures_x + col
             ordinal -= 2
-            
+
+            # getpixel returns different types depending on the image mode
+            assert texture.getbands() == ('P',), f'Expected palettized image, got {texture.getbands()}'
+            def at(x: int, y: int) -> bool:
+                fg_palette_index = 1
+                return texture.getpixel((x, y)) == fg_palette_index # type: ignore
+
             # Extract as half-size FIGlet font
             extracted_text_half = ""
             for y in range(0, texture_height, 2):
                 for x in range(0, texture_width, 2):
                     # Get the four pixels that make up a character
-                    fg_palette_index = 1
-                    aa = texture.getpixel((x, y)) == fg_palette_index
-                    ab = texture.getpixel((x, y + 1)) == fg_palette_index
-                    ba = texture.getpixel((x + 1, y)) == fg_palette_index
-                    bb = texture.getpixel((x + 1, y + 1)) == fg_palette_index
+                    aa = at(x, y)
+                    ab = at(x, y + 1)
+                    ba = at(x + 1, y)
+                    bb = at(x + 1, y + 1)
 
                     # Convert the pixel to a character
                     # char = block_char_lookup[(aa << 3) | (ab << 2) | (ba << 1) | bb]
@@ -100,15 +105,7 @@ def extract_textures(image_path: str):
             extracted_text_full = ""
             for y in range(texture_height):
                 for x in range(texture_width):
-                    # Get the pixel
-                    fg_palette_index = 1
-                    pixel = texture.getpixel((x, y)) == fg_palette_index
-
-                    # Convert the pixel to a character
-                    char = '█' if pixel else ' '
-
-                    # Add the character to the extracted text
-                    extracted_text_full += char
+                    extracted_text_full += '█' if at(x, y) else ' '
 
                 # Add a newline after each row
                 extracted_text_full += '\n'
