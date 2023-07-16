@@ -103,13 +103,15 @@ options:
   --theme {light,dark}  Theme to use, either "light" or "dark"
   --language {ar,cs,da,de,el,en,es,fi,fr,he,hu,it,ja,ko,nl,no,pl,pt,pt-br,ru,sk,sl,sv,tr,zh,zh-simplified}
                         Language to use
-  --ascii-only-icons    Use only ASCII characters for tool icons
+  --ascii-only-icons    Use only ASCII characters for tool icons, no emoji or
+                        other Unicode symbols
   --backup-folder FOLDER
                         Folder to save backups to. By default a backup is saved
                         alongside the edited file.
-  --inspect-layout      Inspect the layout with middle click, for development
+  --inspect-layout      Enables DOM inspector (F12) and middle click highlight,
+                        for development
   --clear-screen        Clear the screen before starting; useful for
-                        development, to avoid seeing fixed errors
+                        development, to avoid seeing outdated errors
   --restart-on-changes  Restart the app when the source code is changed, for
                         development
   --recode-samples      Open and save each file in samples/, for testing
