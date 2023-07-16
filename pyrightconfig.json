@@ -17,6 +17,7 @@
 	// reportUnknownMemberType caused numerous bogus errors,
 	// with Textual's generic App[ResultType] and Screen[ScreenResultType] classes.
 	"reportUnknownMemberType": false,
+	"reportUnnecessaryTypeIgnoreComment": "information",
 
 	// STRICT PROFILE
 	// As far as I know, there's no way to inherit from strict and then loosen any rules,
@@ -91,6 +92,6 @@
 	"reportPropertyTypeMismatch": "none",
 	"reportShadowedImports": "none",
 	"reportUninitializedInstanceVariable": "none",
-	"reportUnnecessaryTypeIgnoreComment": "none",
+	// "reportUnnecessaryTypeIgnoreComment": "none",
 	"reportUnusedCallResult": "none",
 }
