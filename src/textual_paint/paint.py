@@ -832,7 +832,9 @@ class AnsiArtDocument:
     def encode_to_format(self, format_id: str | None) -> bytes:
         """Encode the image into the given file format."""
         # print("Supported image formats for writing:", Image.SAVE.keys())
-        if format_id == "ANSI":
+        if format_id is None:
+            raise FormatWriteNotSupported(localized_message=_("Unknown file extension.") + "\n\n" + _("To save your changes, use a different filename."))
+        elif format_id == "ANSI":
             # This maybe shouldn't use UTF-8... but there's not a singular encoding for "ANSI art".
             return self.get_ansi().encode("utf-8")
         elif format_id == "IRC":
@@ -848,8 +850,6 @@ class AnsiArtDocument:
             return self.get_rich_console_markup().encode("utf-8")
         elif format_id in Image.SAVE and format_id not in SAVE_DISABLED_FORMATS:
             return self.encode_image_format(format_id)
-        elif format_id is None:
-            raise FormatWriteNotSupported(localized_message=_("Unknown file extension.") + "\n\n" + _("To save your changes, use a different filename."))
         else:
             raise FormatWriteNotSupported(localized_message=_("Cannot write files in %1 format.", format_id) + "\n\n" + _("To save your changes, use a different filename."))
  
