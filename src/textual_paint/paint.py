@@ -4050,7 +4050,7 @@ Columns: {len(palette) // 2}
             # DialogWindow has a special focus_next action that wraps within the dialog.
             # await self.run_action("focus_next", self.query_one(DialogWindow))
             # There may be multiple dialogs open, so we need to find the one that's focused.
-            node = self.focused
+            node: DOMNode | None = self.focused
             while node is not None:
                 if isinstance(node, DialogWindow):
                     # await self.run_action("focus_next", node)

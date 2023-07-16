@@ -2,7 +2,7 @@ from typing import Any, Callable
 from typing_extensions import Self
 
 from textual import events, on
-from textual.dom import NoScreen
+from textual.dom import DOMNode, NoScreen
 from textual.message import Message
 from textual.app import ComposeResult
 from textual.containers import Container
@@ -81,8 +81,8 @@ class Window(Container):
     ) -> None:
         """Initialize a window."""
         super().__init__(*children, **kwargs)
-        self.mouse_at_drag_start = None
-        self.offset_at_drag_start = None
+        self.mouse_at_drag_start: Offset | None = None
+        self.offset_at_drag_start: Offset | None = None
         self.title_bar = WindowTitleBar(title=title, allow_maximize=allow_maximize, allow_minimize=allow_minimize)
         self.content = Container(classes="window_content")
         self.maximized = False
@@ -108,7 +108,7 @@ class Window(Container):
         """Returns True if widget exists and is within .buttons."""
         if not widget:
             return False
-        node = widget
+        node: DOMNode | None = widget
         while node:
             if node.has_class("buttons"):
                 return True
@@ -654,6 +654,7 @@ class MessageBox(DialogWindow):
     ) -> None:
         """Initialize the message box."""
         super().__init__(*children, handle_button=handle_button, **kwargs)
+        self.message_widget: Widget
         if isinstance(message, str):
             self.message_widget = Static(message, markup=False)
         else:
