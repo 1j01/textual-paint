@@ -117,8 +117,8 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
     ## see http://blog.zx2c4.com/699 for a solution that might work
     elif desktop_env in ["kde3", "trinity"]:
         # From http://ubuntuforums.org/archive/index.php/t-803417.html
-        args = 'dcop kdesktop KBackgroundIface setWallpaper 0 "%s" 6' % file_loc
-        subprocess.Popen(args,shell=True)
+        args = ["dcop", "kdesktop", "KBackgroundIface", "setWallpaper", "0", file_loc, "6"]
+        subprocess.Popen(args)
     elif desktop_env=="xfce4":
         #From http://www.commandlinefu.com/commands/view/2055/change-wallpaper-for-xfce4-4.6.0
         if first_run:
@@ -173,12 +173,12 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
         args = ["bsetbg", "-full", file_loc]
         subprocess.Popen(args)
     elif desktop_env=="lxde":
-        args = "pcmanfm --set-wallpaper %s --wallpaper-mode=scaled" % file_loc
-        subprocess.Popen(args,shell=True)
+        args = ["pcmanfm", "--set-wallpaper", file_loc, "--wallpaper-mode=scaled"]
+        subprocess.Popen(args)
     elif desktop_env=="windowmaker":
         # From http://www.commandlinefu.com/commands/view/3857/set-wallpaper-on-windowmaker-in-one-line
-        args = "wmsetbg -s -u %s" % file_loc
-        subprocess.Popen(args,shell=True)
+        args = ["wmsetbg", "-s", "-u", file_loc]
+        subprocess.Popen(args)
     ## NOT TESTED BELOW - don't want to mess things up ##
     # elif desktop_env=="enlightenment": # I have not been able to make it work on e17. On e16 it would have been something in this direction
     #     args = "enlightenment_remote -desktop-bg-add 0 0 0 0 %s" % file_loc
