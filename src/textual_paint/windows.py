@@ -60,7 +60,7 @@ class Window(Container):
     class Closed(Message):
         """Message when the window is really closed."""
 
-    title = var([])
+    title = var("")
 
     BINDINGS = [
         # Binding("tab", "focus_next", "Focus Next", show=False),
