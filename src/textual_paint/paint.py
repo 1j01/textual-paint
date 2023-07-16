@@ -14,6 +14,7 @@ from random import randint, random
 from typing import Any, Coroutine, NamedTuple, Optional, Callable, Iterator
 
 import stransi
+from stransi.instruction import Instruction
 from rich.segment import Segment
 from rich.style import Style
 from rich.console import Console
@@ -1116,6 +1117,7 @@ class AnsiArtDocument:
         y = 0
         bg_color = default_bg
         fg_color = default_fg
+        instruction: Instruction[object] | str
         for instruction in ansi.instructions():
             if isinstance(instruction, str):
                 # Text and control characters other than escape sequences
