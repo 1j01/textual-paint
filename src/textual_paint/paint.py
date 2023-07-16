@@ -3646,7 +3646,7 @@ Columns: {len(palette) // 2}
             return
         # paste as selection
         pasted_image = AnsiArtDocument.from_text(text)
-        def do_the_paste():
+        def do_the_paste() -> None:
             self.stop_action_in_progress()
             # paste at top left corner of viewport
             x: int = max(0, min(self.image.width - 1, int(self.editing_area.scroll_x // self.magnification)))

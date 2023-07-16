@@ -118,7 +118,7 @@ Additional characters must use code tagged characters, which are not yet support
         hardBlank: str = "$",
         endMark: str = "@",
         caseInsensitive: bool = False,
-    ):
+    ) -> None:
         """Creates a new FIGletFontWriter.
 
         All parameters are optional, and can be set later.
@@ -190,7 +190,7 @@ Additional characters must use code tagged characters, which are not yet support
 
         self._validateOptions()
     
-    def _validateOptions(self):
+    def _validateOptions(self) -> None:
         """Called on init and before generating a font file.
         
         See also _fixFigChars() which actively fixes things.
@@ -292,7 +292,7 @@ Additional characters must use code tagged characters, which are not yet support
 
         return ' '.join(header)
 
-    def _fixFigChars(self):
+    def _fixFigChars(self) -> None:
         # Height must be constant for all FIGcharacters.
         # Width can vary, but must be consistent for all rows within a FIGcharacter.
         height = 0

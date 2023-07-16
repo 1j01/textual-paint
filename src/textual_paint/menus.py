@@ -27,7 +27,7 @@ class Menu(Container):
             self.description = description
             self.closed = closed
 
-    items = var([])
+    items: var[list['MenuItem|Separator']] = var([])
     focus_index = var(0)
 
     def __init__(self, items: list['MenuItem|Separator'], **kwargs: Any) -> None:
