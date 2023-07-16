@@ -1124,7 +1124,7 @@ class AnsiArtDocument:
         y = 0
         bg_color = default_bg
         fg_color = default_fg
-        instruction: Instruction[object] | str
+        instruction: Instruction[Any] | str
         for instruction in ansi.instructions():
             if isinstance(instruction, str):
                 # Text and control characters other than escape sequences
