@@ -2120,10 +2120,14 @@ class Canvas(Widget):
 
     def get_content_width(self, container: Size, viewport: Size) -> int:
         """Defines the intrinsic width of the widget."""
+        if self.image is None:
+            return 0 # shouldn't really happen
         return self.image.width * self.magnification
 
     def get_content_height(self, container: Size, viewport: Size, width: int) -> int:
         """Defines the intrinsic height of the widget."""
+        if self.image is None:
+            return 0 # shouldn't really happen
         return self.image.height * self.magnification
 
     def render_line(self, y: int) -> Strip:
