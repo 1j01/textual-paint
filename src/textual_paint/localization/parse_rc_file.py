@@ -35,7 +35,8 @@ def parse_rc_file(rc_file_text: str) -> list[str]:
         if norm_line == 'END':
             block_level -= 1
             if block_level == 0:
-                menu = dialog = dialog_id = None
+                menu = dialog = False
+                dialog_id = None
                 # stringtable = False
 
         if dialog and not block_level:
