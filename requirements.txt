@@ -9,3 +9,5 @@ rich==13.3.5
 stransi==0.3.0
 textual[dev]==0.27.0
 watchdog==3.0.0
+types-Pillow==10.0.0.1
+types-psutil==5.9.5.15
