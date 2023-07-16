@@ -33,7 +33,7 @@ from textual.widgets import Button, Static, Input, Header, RadioSet, RadioButton
 from textual.binding import Binding
 from textual.color import Color, ColorParseError
 from PIL import Image, UnidentifiedImageError
-from pyfiglet import Figlet, FigletFont
+from pyfiglet import Figlet, FigletFont  # type: ignore
 
 from .menus import MenuBar, Menu, MenuItem, Separator
 from .windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon, get_question_icon, get_paint_icon
@@ -2194,9 +2194,9 @@ class Canvas(Widget):
                 return min_index <= cell_index <= max_index
             assert isinstance(self.app, PaintApp)
             if (
-                (self.magnifier_preview_region and magnifier_preview_region.contains(x, y) and (not inner_magnifier_preview_region.contains(x, y))) or
-                (self.select_preview_region and select_preview_region.contains(x, y) and (not inner_select_preview_region.contains(x, y))) or
-                (sel and (not sel.textbox_mode) and (self.app.selection_drag_offset is None) and selection_region.contains(x, y) and (not inner_selection_region.contains(x, y))) or
+                (self.magnifier_preview_region and magnifier_preview_region.contains(x, y) and (not inner_magnifier_preview_region.contains(x, y))) or  # type: ignore
+                (self.select_preview_region and select_preview_region.contains(x, y) and (not inner_select_preview_region.contains(x, y))) or  # type: ignore
+                (sel and (not sel.textbox_mode) and (self.app.selection_drag_offset is None) and selection_region.contains(x, y) and (not inner_selection_region.contains(x, y))) or  # type: ignore
                 (sel and sel.textbox_mode and within_text_selection_highlight(sel))
             ):
                 # invert the colors
@@ -3611,7 +3611,7 @@ Columns: {len(palette) // 2}
             # TODO: avoid redundant encoding/decoding, if it's not too much trouble to make things bytes|str.
             text = content.decode("utf-8")
             # TODO: Copy as other formats. No Python libraries support this well yet.
-            import pyperclip
+            import pyperclip  # type: ignore
             pyperclip.copy(text)
         except Exception as e:
             self.message_box(_("Paint"), _("Failed to copy to the clipboard."), "ok", error=e)
@@ -3622,7 +3622,7 @@ Columns: {len(palette) // 2}
         """Paste the clipboard (ANSI art allowed), either as a selection, or into a textbox."""
         try:
             # TODO: paste other formats. No Python libraries support this well yet.
-            import pyperclip
+            import pyperclip  # type: ignore
             text: str = pyperclip.paste()
         except Exception as e:
             self.message_box(_("Paint"), _("Error getting the Clipboard Data!"), "ok", error=e)

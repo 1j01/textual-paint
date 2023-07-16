@@ -95,7 +95,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
             from gi.repository import Gio  # type: ignore
             SCHEMA = "org.gnome.desktop.background"
             KEY = "picture-uri"
-            gsettings = Gio.Settings.new(SCHEMA)
+            gsettings = Gio.Settings.new(SCHEMA)  # type: ignore
             gsettings.set_string(KEY, uri)
         except Exception:
             args = ["gsettings", "set", "org.gnome.desktop.background", "picture-uri", uri]
@@ -217,7 +217,7 @@ def get_config_dir(app_name: str):
         config_home = os.environ['APPDATA'] 
     else:
         try:
-            from xdg import BaseDirectory   
+            from xdg import BaseDirectory  # type: ignore
             config_home =  BaseDirectory.xdg_config_home
         except ImportError: # Most likely a Linux/Unix system anyway
             config_home =  os.path.join(get_home_dir(), ".config")
