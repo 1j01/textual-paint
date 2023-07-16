@@ -419,20 +419,20 @@ class CharInput(Input, inherit_bindings=False):
         """Overrides rendering to color the character, since Input doesn't seem to support the color style."""
         assert isinstance(self.app, PaintApp)
         # Textural style, repeating the character:
-        # This doesn't support a blinking cursor, and it doesn't extend all the way to the left for some reason.
+        # This doesn't support a blinking cursor, and it can't extend all the way
+        # to the edges, even when removing padding, due to the border, which takes up a cell on each side.
         # return Strip([Segment(self.value * self.size.width, Style(color=self.app.selected_fg_color, bgcolor=self.app.selected_bg_color))])
 
         # Single-character style, by filtering the Input's rendering:
-        # There's a LineFilter class that can be subclassed to do stuff like this, but I'm not sure why you'd want a class for it.
-        # Is it a typechecking thing? Does python not have good interfaces support?
-        # Anyways, this code is based on how that works, transforming the segments into a new list.
-        super_class_strip = super().render_line(y)
-        new_segments: list[Segment] = []
+        # TODO: avoid ._segments access, or at least figure out how to ignore the specific
+        # type checking error, so that I'm not going to miss if it's renamed/removed.
+        # strip.apply_style doesn't support post_style, so I can't use that...
+        # There's a LineFilter class that can be subclassed to do stuff like this;
+        # is that the best way to do it?
+        original_strip = super().render_line(y)
+        original_segments = original_strip._segments
         style_mod: Style = Style(color=self.app.selected_fg_color, bgcolor=self.app.selected_bg_color)
-        for text, style, _ in super_class_strip._segments:
-            assert isinstance(style, Style)
-            new_segments.append(Segment(text, style + style_mod, None))
-        return Strip(new_segments)
+        return Strip(Segment.apply_style(original_segments, post_style=style_mod))
 
     last_click_time = 0
     def on_click(self, event: events.Click) -> None:
