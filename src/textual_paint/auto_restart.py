@@ -68,7 +68,7 @@ class RestartHandler(PatternMatchingEventHandler):
             return
         print("Reloading due to FS change:", event.event_type, event.src_path)
         try:
-            _app.screen.styles.background = "red"  # type: ignore
+            _app.screen.styles.background = "red"
         except ScreenStackError:
             pass
         # The unsaved changes prompt seems to need call_from_thread,
@@ -78,11 +78,11 @@ class RestartHandler(PatternMatchingEventHandler):
         # However, when _app.action_reload is called from the key binding,
         # it seems to work fine with or without unsaved changes.
         if _app.is_document_modified():
-            _app.call_from_thread(_app.action_reload)  # type: ignore
+            _app.call_from_thread(_app.action_reload)
         else:
             restart_program()
         try:
-            _app.screen.styles.background = "yellow"  # type: ignore
+            _app.screen.styles.background = "yellow"
         except ScreenStackError:
             pass
 
@@ -108,5 +108,5 @@ def restart_on_changes(app: PaintApp):
         ],
         ignore_directories=True,
     )
-    observer.schedule(handler, path='.', recursive=True)  # type: ignore
+    observer.schedule(handler, path='.', recursive=True)
     observer.start()

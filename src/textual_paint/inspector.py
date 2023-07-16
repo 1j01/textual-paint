@@ -719,7 +719,7 @@ class NodeInfo(Container):
         # TODO: toggle rules
         # TODO: add new rules
 
-        stylesheet = dom_node.app.stylesheet # type: ignore
+        stylesheet = dom_node.app.stylesheet
         rule_sets = stylesheet.rules
         applicable_rule_sets: list[RuleSet] = []
         for rule_set in rule_sets:
@@ -1039,7 +1039,7 @@ class NodeInfo(Container):
     def _get_rule_at(self, x: int, y: int) -> str | None:
         """Return the rule (property name) at the given absolute position, or None."""
         try:
-            style = self.screen.get_style_at(x, y)  # type: ignore
+            style = self.screen.get_style_at(x, y)
         except NoWidget: # shouldn't really happen
             return None
         if "rule" in style.meta:
@@ -1049,14 +1049,14 @@ class NodeInfo(Container):
 
     def on_mouse_down(self, event: events.MouseDown) -> None:
         """Select a rule to edit."""
-        widget, _ = self.screen.get_widget_at(*event.screen_offset)  # type: ignore
+        widget, _ = self.screen.get_widget_at(*event.screen_offset)
         if widget is self._style_value_input:
             return
         self._apply_style_value()
         x, y = event.screen_offset
         rule = self._get_rule_at(x, y)
         if rule is not None:
-            meta = self.screen.get_style_at(*event.screen_offset).meta  # type: ignore
+            meta = self.screen.get_style_at(*event.screen_offset).meta
             assert "value" in meta, "Style meta has rule without value"
             assert "inline" in meta, "Style meta has rule without inline bool"
             if not meta["inline"]:
@@ -1174,7 +1174,7 @@ class ResizeHandle(Widget):
         self._start_mouse_position: Offset | None = None
         self._side: Literal["left", "right", "top", "bottom"] = side
         self._horizontal_resize = side in ("left", "right")
-        self.styles.dock = side # type: ignore
+        self.styles.dock = side
 
     def on_mouse_down(self, event: events.MouseDown) -> None:
         if self.disabled or self._resizing:
@@ -1318,7 +1318,7 @@ class Inspector(Container):
 
     def get_widget_under_mouse(self, screen_offset: Offset) -> Widget | None:
         """Get the widget under the mouse, ignoring the inspector's highlights and (optionally) the inspector panel."""
-        for widget, _ in self.screen.get_widgets_at(*screen_offset):  # type: ignore
+        for widget, _ in self.screen.get_widgets_at(*screen_offset):
             if widget.has_class("inspector_highlight") or (
                 self in widget.ancestors_with_self and not ALLOW_INSPECTING_INSPECTOR
             ):
@@ -1458,8 +1458,8 @@ class Inspector(Container):
         # Highlight the clipped region of the hovered widget.
         # TODO: Highlight the metrics of the hovered widget: padding, border, margin.
 
-        if "inspector_highlight" not in self.app.styles.layers: # type: ignore
-            self.app.styles.layers += ("inspector_highlight",) # type: ignore
+        if "inspector_highlight" not in self.app.styles.layers:
+            self.app.styles.layers += ("inspector_highlight",)
         
         if dom_node not in self._highlight_boxes:
             self._highlight_boxes[dom_node] = {}
@@ -1482,14 +1482,14 @@ class Inspector(Container):
             # box.styles.dock = "top" # "Literal['top']" is incompatible with "str | None"
             # box.styles.dock = cast(str, "top") # "str" is incompatible with "str | None"
             # box.styles.dock = cast(str | None, "top") # "str | None" is incompatible with "str | None"
-            box.styles.dock = "top" # type: ignore
-            self.app.mount(box) # type: ignore
+            box.styles.dock = "top"
+            self.app.mount(box)
             used_boxes.append(box)
 
         # show_box("region", dom_node.region, "blue")
         # show_box("scrollable_content_region", dom_node.scrollable_content_region, "red")
         try:
-            map_geometry = self.screen.find_widget(dom_node) # type: ignore
+            map_geometry = self.screen.find_widget(dom_node)
         except NoWidget:
             return
         # Show the hovered widget's region, as it extends OUTSIDE of the clip region

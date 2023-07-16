@@ -160,7 +160,7 @@ class MetaGlyphFont:
             fig.font = self.file_path  # may not be used
             fig.Font = fig_font  # this feels so wrong
             for char in self.covered_characters:
-                meta_glyph = fig.renderText(char)  # type: ignore
+                meta_glyph = fig.renderText(char)
                 self.glyphs[char] = meta_glyph.split("\n")
 
 covered_characters = R""" !"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~"""
