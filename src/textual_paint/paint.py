@@ -20,6 +20,7 @@ from rich.style import Style
 from rich.console import Console
 from rich.text import Text
 from textual import events, on
+from textual.filter import LineFilter
 from textual.message import Message
 from textual.app import App, ComposeResult
 from textual.containers import Container, Vertical, Horizontal
@@ -381,6 +382,17 @@ class CharInput(Input, inherit_bindings=False):
             self.char = char
             super().__init__()
 
+    class Recolor(LineFilter):
+        """Replaces foreground and background colors."""
+
+        def __init__(self, fg_color: Color, bg_color: Color) -> None:
+            self.style = Style(color=fg_color.rich_color, bgcolor=bg_color.rich_color)
+            super().__init__()
+
+        def apply(self, segments: list[Segment], background: Color) -> list[Segment]:
+            """Transform a list of segments."""
+            return list(Segment.apply_style(segments, post_style=self.style))
+
     def validate_value(self, value: str) -> str:
         """Limit the value to a single character."""
         return value[-1] if value else " "
@@ -424,15 +436,10 @@ class CharInput(Input, inherit_bindings=False):
         # return Strip([Segment(self.value * self.size.width, Style(color=self.app.selected_fg_color, bgcolor=self.app.selected_bg_color))])
 
         # Single-character style, by filtering the Input's rendering:
-        # TODO: avoid ._segments access, or at least figure out how to ignore the specific
-        # type checking error, so that I'm not going to miss if it's renamed/removed.
-        # strip.apply_style doesn't support post_style, so I can't use that...
-        # There's a LineFilter class that can be subclassed to do stuff like this;
-        # is that the best way to do it?
         original_strip = super().render_line(y)
-        original_segments = original_strip._segments
-        style_mod: Style = Style(color=self.app.selected_fg_color, bgcolor=self.app.selected_bg_color)
-        return Strip(Segment.apply_style(original_segments, post_style=style_mod))
+        fg_color = Color.parse(self.app.selected_fg_color)
+        bg_color = Color.parse(self.app.selected_bg_color)
+        return original_strip.apply_filter(self.Recolor(fg_color, bg_color), background=bg_color)
 
     last_click_time = 0
     def on_click(self, event: events.Click) -> None:
