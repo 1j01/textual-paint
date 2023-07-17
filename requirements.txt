@@ -1,13 +1,13 @@
 appscript==1.2.2; sys_platform == 'darwin'
 Pillow==9.5.0
-psutil==5.9.0
+# psutil==5.9.0 # for cleaning up open files when auto-restarting on changes in development; optional
 pyfiglet==0.8.post1
-# PyGObject==3.42.1
+# PyGObject==3.42.1 # gi.repository module, used for setting the wallpaper on gnome, unity, and cinnamon; optional, falls back to gsettings CLI
 pyperclip==1.8.2
-pyxdg==0.28
+pyxdg==0.28 # xdg module, used for wallpaper setting; optional, falls back to ~/.config
 rich==13.3.5
 stransi==0.3.0
 textual[dev]==0.27.0
-watchdog==3.0.0
-types-Pillow==10.0.0.1
-types-psutil==5.9.5.15
+watchdog==3.0.0 # for development, but currently required
+types-Pillow==10.0.0.1 # for development
+types-psutil==5.9.5.15 # for development

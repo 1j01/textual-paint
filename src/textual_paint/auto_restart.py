@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 import os
 import sys
-import psutil
 from textual.app import ScreenStackError
 
 from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
@@ -47,6 +46,7 @@ def restart_program():
         print("Error stopping file change observer:", e)
 
     try:
+        import psutil
         p = psutil.Process(os.getpid())
         for handler in p.open_files() + p.connections():
             try:
