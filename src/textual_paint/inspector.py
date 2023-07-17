@@ -934,12 +934,16 @@ class NodeInfo(Container):
                     binding.action,
                     binding.description,
                     check_mark if binding.show else "",
-                    (self.app.get_key_display(binding.key) or binding.key.upper()) if binding.key_display is None else binding.key_display,  # type: ignore
+                    (self.app.get_key_display(binding.key) or binding.key.upper()) if binding.key_display is None else binding.key_display,
                     check_mark if binding.priority else "",
                     ancestor.css_identifier_styled, # TODO: link to DOM node in tree; link to source code where binding is defined
                 ]
                 for (ancestor, binding) in nodes_and_bindings
-            ]
+            ]  # type: ignore
+            # Pyright v1.1.315 introduced `error: Argument of type "list[list[str]]" cannot be assigned to parameter "rows" of type "Iterable[Iterable[CellType@DataTable]]" in function "add_rows" (reportGeneralTypeIssues)`
+            # It doesn't seem to understand the specific type of key_bindings_data_table, even though it's annotated.
+            # A workaround might be to store the DataTable in an attribute in __init__.
+            # This bug may be related: https://github.com/microsoft/pyright/issues/5455
         )
 
         # For events, look for class properties that are subclasses of Message
