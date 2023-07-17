@@ -137,10 +137,10 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
             # Development version
             desktop_conf_file = os.path.join(get_config_dir("razor"),"desktop.conf") 
             if os.path.isfile(desktop_conf_file):
-                config_option = r"screens\1\desktops\1\wallpaper"
+                config_option = R"screens\1\desktops\1\wallpaper"
             else:
                 desktop_conf_file = os.path.join(get_home_dir(),".razor/desktop.conf")
-                config_option = r"desktops\1\wallpaper"
+                config_option = R"desktops\1\wallpaper"
             desktop_conf.read(os.path.join(desktop_conf_file))
             try:
                 if desktop_conf.has_option("razor",config_option): #only replacing a value
