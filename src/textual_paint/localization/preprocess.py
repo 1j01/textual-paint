@@ -86,7 +86,7 @@ for target_lang in target_langs:
 loaded_localizations("{target_lang}", {localizations_json});
 """
 
-    with open(f"{os.path.dirname(__file__)}/{target_lang}/localizations.js", "w", encoding="utf8") as f:
+    with open(f"{os.path.dirname(__file__)}/{target_lang}/localizations.js", "w", encoding="utf-8") as f:
         f.write(js)
 
 # file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "index.html"))
