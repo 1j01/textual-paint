@@ -191,8 +191,8 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
     elif desktop_env=="mac": #Not tested since I do not have a mac
         #From https://stackoverflow.com/questions/431205/how-can-i-programatically-change-the-background-in-mac-os-x
         try:
-            assert os.name == "mac"  # avoid 'Import "appscript" could not be resolved' on other platforms
-            from appscript import app, mactypes
+            # appscript is only installed for mac, ignore `Import "appscript" could not be resolved` for other platforms
+            from appscript import app, mactypes  # type: ignore
             app('Finder').desktop_picture.set(mactypes.File(file_loc))
         except ImportError:
             #import subprocess
