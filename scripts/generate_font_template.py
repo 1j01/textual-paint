@@ -97,11 +97,11 @@ def write_ansi_file(file: TextIO) -> None:
 # Generate and write to a file
 file_path = os.path.join(os.path.dirname(__file__), f'../samples/{box_inner_width}x{box_inner_height}_font_template.ans')
 file_path = os.path.abspath(file_path)
-with open(file_path, 'w') as file:
+with open(file_path, 'w', encoding='utf-8') as file:
     write_ansi_file(file)
 
 # Print the art to the terminal
-with open(file_path, 'r') as file:
+with open(file_path, 'r', encoding='utf-8') as file:
     print(file.read())
 
 # Print the path to the file, and resulting file size

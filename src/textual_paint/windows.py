@@ -576,7 +576,7 @@ get_warning_icon = lambda: Static("""
 # def get_question_icon() -> Static:
 #     global question_icon_ansi
 #     if not question_icon_ansi:
-#         with open("question_icon.ans", "r") as f:
+#         with open("question_icon.ans", "r", encoding="utf-8") as f:
 #             question_icon_ansi = f.read()
 #     return Static(question_icon_ansi, classes="question_icon message_box_icon")
 

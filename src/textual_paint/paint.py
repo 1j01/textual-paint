@@ -85,7 +85,7 @@ def update_cli_help_on_readme():
     readme_help_start = re.compile(r"```\n.*--help\n")
     readme_help_end = re.compile(r"```")
     readme_file_path = os.path.join(os.path.dirname(__file__), "../../README.md")
-    with open(readme_file_path, "r+") as f:
+    with open(readme_file_path, "r+", encoding="utf-8") as f:
         # By default, argparse uses the terminal width for formatting help text,
         # even when using format_help() to get a string.
         # The only way to override that is to override the formatter_class.
@@ -150,7 +150,7 @@ class MetaGlyphFont:
         # I could install the font, with FigletFont.installFonts,
         # maybe with some prefixed name, but I don't want to do that.
 
-        with open(self.file_path) as f:
+        with open(self.file_path, encoding="utf-8") as f:
             flf = f.read()
             fig_font = FigletFont()
             fig_font.data = flf
@@ -2746,7 +2746,7 @@ class PaintApp(App[None]):
                 if os.path.getsize(backup_file_path) > MAX_FILE_SIZE:
                     self.message_box(_("Open"), _("A backup file was found, but was not recovered.") + "\n" + _("The file is too large to open."), "ok")
                     return
-                with open(backup_file_path, "r") as f:
+                with open(backup_file_path, "r", encoding="utf-8") as f:
                     backup_content = f.read()
                     backup_image = AnsiArtDocument.from_text(backup_content)
                     self.backup_checked_for = backup_file_path
@@ -3326,7 +3326,7 @@ class PaintApp(App[None]):
                 if os.path.getsize(file_path) > MAX_FILE_SIZE:
                     self.message_box(_("Paste"), _("The file is too large to open."), "ok")
                     return
-                with open(file_path, "r") as f:
+                with open(file_path, "r", encoding="utf-8") as f:
                     # TODO: handle pasting image files
                     self.paste(f.read())
                 window.close()
@@ -3484,7 +3484,7 @@ class PaintApp(App[None]):
 
         def handle_selected_file_path(file_path: str) -> None:
             try:
-                with open(file_path, "r") as f:
+                with open(file_path, "r", encoding="utf-8") as f:
                     self.load_palette(f.read())
             except UnicodeDecodeError:
                 self.message_box(_("Open"), file_path + "\n" + _("Paint cannot read this file.") + "\n" + _("Unexpected file format."), "ok")
@@ -3564,7 +3564,7 @@ Columns: {len(palette) // 2}
             os.makedirs(dir, exist_ok=True)
             svg = self.image.get_svg()
             image_path = os.path.join(dir, "wallpaper.svg")
-            with open(image_path, "w") as f:
+            with open(image_path, "w", encoding="utf-8") as f:
                 f.write(svg)
             set_wallpaper(image_path)
         except Exception as e:
@@ -3916,7 +3916,7 @@ Columns: {len(palette) // 2}
             handle_button=handle_button,
         )
         try:
-            with open(os.path.join(os.path.dirname(__file__), "stretch_skew_icons.ans")) as f:
+            with open(os.path.join(os.path.dirname(__file__), "stretch_skew_icons.ans"), encoding="utf-8") as f:
                 icons_ansi = f.read()
                 icons_doc = AnsiArtDocument.from_ansi(icons_ansi)
                 icons_rich_markup = icons_doc.get_rich_console_markup()

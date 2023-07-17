@@ -65,11 +65,11 @@ height = 24
 # Generate and write the ANSI art to a file
 file_path = os.path.join(os.path.dirname(__file__), '../samples/gradient_test.ans')
 file_path = os.path.abspath(file_path)
-with open(file_path, 'w') as file:
+with open(file_path, 'w', encoding='utf-8') as file:
     generate_ansi_art(width, height, file)
 
 # Print the art to the terminal
-with open(file_path, 'r') as file:
+with open(file_path, 'r', encoding='utf-8') as file:
     print(file.read())
 
 # Print the path to the file, and resulting file size

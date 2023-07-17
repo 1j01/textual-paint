@@ -893,7 +893,8 @@ class NodeInfo(Container):
                 # parse the python file to find the line number of the widget definition
                 # could use `ast` module for robustness
                 # to avoid things like finding DEFAULT_CSS from the wrong widget
-                with open(path) as f:
+                # TODO: handle read/decode errors
+                with open(path, encoding="utf-8") as f:
                     lines = f.readlines()
                 for i, line in enumerate(lines):
                     if f"class {widget_name}" in line:

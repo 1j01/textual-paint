@@ -30,7 +30,7 @@ def load_language(language_code: str):
 		return
 	try:
 		file = os.path.join(localization_folder, language_code, "localizations.js")
-		with open(file, "r") as f:
+		with open(file, "r", encoding="utf-8") as f:
 			# find the JSON object
 			js = f.read()
 			start = js.find("{")
@@ -49,7 +49,7 @@ def load_language(language_code: str):
 if TRACK_UNTRANSLATED:
 	untranslated: set[str] = set()
 	try:
-		with open(untranslated_file, "r") as f:
+		with open(untranslated_file, "r", encoding="utf-8") as f:
 			untranslated = set(f.read().splitlines())
 	except FileNotFoundError:
 		pass
@@ -87,7 +87,7 @@ def get(base_language_str: str, *interpolations: str) -> str:
 			if base_language_str not in untranslated and current_language != base_language:
 				untranslated.add(base_language_str)
 				# append to untranslated strings file
-				with open(untranslated_file, "a") as f:
+				with open(untranslated_file, "a", encoding="utf-8") as f:
 					f.write(base_language_str + "\n")
 
 		return base_language_str

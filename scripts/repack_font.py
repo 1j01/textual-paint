@@ -167,9 +167,9 @@ full_size_flf_output_path = os.path.join(font_folder, 'NanoTiny_v14_4x4.flf')
 extracted_image, extracted_text_half, extracted_text_full = extract_textures(image_input_path)
 extracted_image.save(image_output_path)
 print(f'Wrote extracted textures to {image_output_path}')
-with open(full_size_flf_output_path, 'w') as f:
+with open(full_size_flf_output_path, 'w', encoding='utf-8') as f:
     f.write(extracted_text_full)
 print(f'Wrote FIGlet font {full_size_flf_output_path}')
-with open(half_size_flf_output_path, 'w') as f:
+with open(half_size_flf_output_path, 'w', encoding='utf-8') as f:
     f.write(extracted_text_half)
 print(f'Wrote FIGlet font {half_size_flf_output_path}')
