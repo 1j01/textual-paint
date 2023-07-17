@@ -213,7 +213,46 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
   - When dragging on the color field or luminosity slider, the cursor can be seen to jump back to earlier places where the mouse was, before settling at the current position. (This may only be visible when the program is running slowly, such while debugging. I haven't observed this on the canvas, so maybe it has something to do with the dialog being on a separate layer.)
   - When opening the Edit Colors dialog, it may immediately close, if the mouse lines up with the "OK" or "Cancel" buttons. (This doesn't seem to currently happen, but I haven't knowingly fixed it. A git bisect turned up a bogus commit, possibly due to reproducing the behavior being unreliable. It also seems like it might depend on the specific layout of the dialog, which changed during development, and maybe even the terminal size.)
 
-The program has only been tested on Linux. Issues on other platforms are as-yet _unknown_ :)
+## Compatibility
+
+Python 3.10 or later is required.
+
+### Linux
+
+Tested on Ubuntu 22, with GNOME Terminal, and VS Code's integrated terminal.
+
+GNOME Terminal works best, with crisp triangles used for icons in dialogs, emoji support, and true color support.
+
+### macOS
+
+Tested on OSX 10.14 (Mojave), with iTerm2, and VS Code's integrated terminal.
+
+iTerm2 mostly works, but two tool icons are missing (Free-Form Select and Fill With Color).
+They show as a square with a question mark in it, and may cause the rest of the row of characters to be misaligned, including the canvas.
+(I carefully picked the symbols to avoid this on Ubuntu, so I may need to do the same for macOS, conditioning on the `TERM_PROGRAM` environment variable.)
+
+In VS Code, only Free-Form Select shows as tofu (a missing character symbol), and there's no misalignment.
+
+The default Terminal app has the same problems as iTerm2, plus borders are not rendered nicely, giving it a sort of *frayed fabric* look, and it's limited to 256 colors.
+
+### Windows
+
+Textual Paint works with the new [Windows Terminal](https://learn.microsoft.com/windows/terminal/install), however, the Fill With Color tool icon is missing (shows as tofu), and the Pencil emoji causes misalignment of everything to the right of it, including the canvas.
+
+It will not work properly with the old Windows console, which lacks emoji/Unicode support and true color support.
+
+### VS Code
+
+Note that VS Code's integrated terminal tries to fix the contrast of text, including in the canvas, which is entirely inappropriate for an ANSI art editor, as it obscures the colors, and can indeed *harm* the contrast of the resulting document, by tricking you into thinking there's more contrast than there actually is.
+
+To disable this, you can add this to your settings.json:
+
+```json
+"terminal.integrated.minimumContrastRatio": 1
+```
+
+I ran into some issues with this, and had to set it to 1.1, but I'm not sure if that's necessary for everyone.
+
 
 ## Development
 
