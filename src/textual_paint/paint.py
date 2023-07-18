@@ -3589,7 +3589,10 @@ Columns: {len(palette) // 2}
             self.message_box(_("Paint"), _("Failed to set the wallpaper."), "ok", error=e)
     def get_screen_size(self) -> tuple[int, int]:
         """Get the screen size."""
-        return 1920, 1080 # TODO: get the actual screen size
+        # TODO: test DPI scaling; implement this without taking a screenshot
+        import PIL.ImageGrab
+        im = PIL.ImageGrab.grab()
+        return im.size
 
     def action_recent_file(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
