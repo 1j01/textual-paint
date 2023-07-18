@@ -11,6 +11,7 @@ import argparse
 import asyncio
 from enum import Enum
 from random import randint, random
+import sys
 from typing import Any, Coroutine, NamedTuple, Optional, Callable, Iterator
 from uuid import uuid4
 
@@ -3604,6 +3605,19 @@ Columns: {len(palette) // 2}
         """Get the screen size."""
         # TODO: test DPI scaling
         try:
+            # special macOS handling to avoid a Python rocket icon bouncing in the dock
+            # (with screeninfo module it bounced; with tkinter it didn't, but still it stayed there indefinitely)
+            if sys.platform == "darwin":
+                # from AppKit import NSScreen
+                # screen = NSScreen.mainScreen() # Shows rocket icon in dock...
+                # size = screen.frame().size.width, screen.frame().size.height
+                # return size
+
+                from Quartz import CGDisplayBounds
+                from Quartz import CGMainDisplayID
+                main_monitor = CGDisplayBounds(CGMainDisplayID())
+                return (int(main_monitor.size.width), int(main_monitor.size.height))
+
             # from screeninfo import get_monitors
             # largest_area = 0
             # largest_monitor = None

@@ -1,4 +1,5 @@
-appscript==1.2.2; sys_platform == 'darwin'
+appscript==1.2.2; sys_platform == 'darwin' # for setting the wallpaper on macOS; optional, falls back to osascript CLI
+pyobjc-framework-Quartz==9.2; sys_platform == 'darwin' # for getting the screen resolution on macOS; optional, falls back to 1920x1080
 Pillow==9.5.0
 # psutil==5.9.0 # for cleaning up open files when auto-restarting on changes in development; optional
 pyfiglet==0.8.post1

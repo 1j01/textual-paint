@@ -224,8 +224,6 @@ GNOME Terminal works best, with crisp triangles used for icons in dialogs, emoji
 
 ### macOS
 
-For **Set As Wallpaper**, it works better if you install tkinter, with `brew install python-tk`, so it can use your monitor's resolution. (This dependency could be removed in the future.)
-
 Tested on OSX 10.14 (Mojave), with iTerm2, and VS Code's integrated terminal.
 
 iTerm2 mostly works, but two tool icons are missing (Free-Form Select and Fill With Color).
