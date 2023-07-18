@@ -93,12 +93,20 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
         uri = "'file://%s'" % file_loc
         SCHEMA = "org.gnome.desktop.background"
         KEY = "picture-uri"
+        # Needed for Ubuntu 22 in dark mode
+        # Might be better to set only one or the other, depending on the current theme
+        # In the settings it will say "This background selection only applies to the dark style"
+        # even if it's set for both, arguably referring to the selection that you can make on that page.
+        KEY_DARK = "picture-uri-dark"
         try:
             from gi.repository import Gio  # type: ignore
             gsettings = Gio.Settings.new(SCHEMA)  # type: ignore
             gsettings.set_string(KEY, uri)
+            gsettings.set_string(KEY_DARK, uri)
         except Exception:
             args = ["gsettings", "set", SCHEMA, KEY, uri]
+            subprocess.Popen(args)
+            args = ["gsettings", "set", SCHEMA, KEY_DARK, uri]
             subprocess.Popen(args)
     elif desktop_env=="mate":
         try: # MATE >= 1.6
