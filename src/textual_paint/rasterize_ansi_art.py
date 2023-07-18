@@ -44,20 +44,25 @@ font_names = [
     "CourierNew",
     "LucidaConsole",
     "Monaco",
+    "Menlo",
+    "Andale Mono",
+    "Courier New",
 ]
 font = None
 for font_dir in font_dirs:
     path = Path(os.path.expandvars(os.path.expanduser(font_dir)))
     files = path.glob("**/*.ttf")
+    # files = list(files) # printing consumes the generator without this!
+    # print("path", path, "files", "\n".join(map(str, files)))
     for file in files:
-        # print(file.stem)
+        # print(f"stem {file.stem!r}", file.stem in font_names)
         if file.stem in font_names:
             font = ImageFont.truetype(str(file), size=16, layout_engine=ImageFont.LAYOUT_BASIC)
             break
     if font:
         break
 if not font:
-    print("Font not found, using default (built-in) font.")
+    print("Font not found, falling back to built-in font for rasterization.")
     font = ImageFont.load_default()
 
 ch_width: int
