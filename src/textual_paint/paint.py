@@ -3569,7 +3569,16 @@ Columns: {len(palette) // 2}
             # image_path = os.path.join(dir, "wallpaper.svg")
             # with open(image_path, "w", encoding="utf-8") as f:
             #     f.write(svg)
-            image_path = os.path.join(dir, "wallpaper.png")
+
+            # In order to reliably update the wallpaper,
+            # alternate between two file paths.
+            image_path = os.path.join(dir, "wallpaper_a.png")
+            if os.path.exists(image_path):
+                image_path = os.path.join(dir, "wallpaper_b.png")
+                if os.path.exists(image_path):
+                    os.remove(image_path)
+                    image_path = os.path.join(dir, "wallpaper_a.png")
+            
             screen_size = self.get_screen_size()
             im = rasterize(self.image)
             im_w, im_h = im.size
