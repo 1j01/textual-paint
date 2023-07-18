@@ -3618,7 +3618,9 @@ Columns: {len(palette) // 2}
             import tkinter
             root = tkinter.Tk()
             root.withdraw()
-            return root.winfo_screenwidth(), root.winfo_screenheight()
+            size = root.winfo_screenwidth(), root.winfo_screenheight()
+            root.destroy()
+            return size
         except Exception as e:
             print("Failed to get screen size:", e)
             return 1920, 1080
