@@ -41,6 +41,7 @@ from .windows import Window, DialogWindow, CharacterSelectorDialogWindow, Messag
 from .file_dialogs import SaveAsDialogWindow, OpenDialogWindow
 from .edit_colors import EditColorsDialogWindow
 from .localization.i18n import get as _, load_language, remove_hotkey
+from .rasterize_ansi_art import rasterize
 from .wallpaper import get_config_dir, set_wallpaper
 from .auto_restart import restart_on_changes, restart_program
 
@@ -3562,10 +3563,13 @@ Columns: {len(palette) // 2}
         try:
             dir = os.path.join(get_config_dir("textual-paint"), "wallpaper")
             os.makedirs(dir, exist_ok=True)
-            svg = self.image.get_svg()
-            image_path = os.path.join(dir, "wallpaper.svg")
-            with open(image_path, "w", encoding="utf-8") as f:
-                f.write(svg)
+            # svg = self.image.get_svg()
+            # image_path = os.path.join(dir, "wallpaper.svg")
+            # with open(image_path, "w", encoding="utf-8") as f:
+            #     f.write(svg)
+            image_path = os.path.join(dir, "wallpaper.png")
+            pil_image = rasterize(self.image)
+            pil_image.save(image_path)
             set_wallpaper(image_path)
         except Exception as e:
             self.message_box(_("Paint"), _("Failed to set the wallpaper."), "ok", error=e)
