@@ -197,7 +197,6 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 - Free-Form Select stamping/finalizing is incorrect when the selection is off-screen to the left or top.
 - Status bar description can be left blank when selecting a menu item. (I think the `Leave` event can come after closing, once the mouse moves.)
 - Menu items like Copy/Cut/Paste are not grayed out when inapplicable. Only unimplemented items are grayed out.
-- Set As Wallpaper (Tiled) acts the same as Set As Wallpaper (Centered).
 - ANSI files (.ans) are treated as UTF-8 when saving and loading, rather than CP437 or Windows-1252 or any other encodings. Unicode is nice and modern terminals support it, but it's not the standard for ANSI files. There isn't really a standard for ANSI files.
 - ANSI files are loaded with a white background. This may make sense as a default for text files, but ANSI files either draw a background or assume a black background, being designed for terminals.
 - Hitting Enter in View Bitmap mode exits the mode but may also trigger a menu item. Menu items ought to be disabled when hidden, and View Bitmap should prevent the key event from taking other actions if possible.

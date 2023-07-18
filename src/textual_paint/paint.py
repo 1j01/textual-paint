@@ -3555,10 +3555,12 @@ Columns: {len(palette) // 2}
         self.message_box(_("Paint"), "Not implemented.", "ok")
     
     def action_set_as_wallpaper_tiled(self) -> None:
-        """Set the image as the wallpaper."""
-        # TODO: Differentiate between tiled and centered.
-        self.action_set_as_wallpaper_centered()
+        """Tile the image as the wallpaper."""
+        self.set_as_wallpaper(tiled=True)
     def action_set_as_wallpaper_centered(self) -> None:
+        """Center the image as the wallpaper."""
+        self.set_as_wallpaper(tiled=False)
+    def set_as_wallpaper(self, tiled: bool) -> None:
         """Set the image as the wallpaper."""
         try:
             dir = os.path.join(get_config_dir("textual-paint"), "wallpaper")
@@ -3568,12 +3570,27 @@ Columns: {len(palette) // 2}
             # with open(image_path, "w", encoding="utf-8") as f:
             #     f.write(svg)
             image_path = os.path.join(dir, "wallpaper.png")
-            pil_image = rasterize(self.image)
-            pil_image.save(image_path)
+            screen_size = self.get_screen_size()
+            im = rasterize(self.image)
+            im_w, im_h = im.size
+            if tiled:
+                new_im = Image.new('RGBA', screen_size)
+                w, h = new_im.size
+                for i in range(0, w, im_w):
+                    for j in range(0, h, im_h):
+                        new_im.paste(im, (i, j))
+            else:
+                new_im = Image.new('RGBA', screen_size)
+                w, h = new_im.size
+                new_im.paste(im, (w//2 - im_w//2, h//2 - im_h//2))
+            new_im.save(image_path)
             set_wallpaper(image_path)
         except Exception as e:
             self.message_box(_("Paint"), _("Failed to set the wallpaper."), "ok", error=e)
-    
+    def get_screen_size(self) -> tuple[int, int]:
+        """Get the screen size."""
+        return 1920, 1080 # TODO: get the actual screen size
+
     def action_recent_file(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
 
