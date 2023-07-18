@@ -12,6 +12,7 @@ import asyncio
 from enum import Enum
 from random import randint, random
 from typing import Any, Coroutine, NamedTuple, Optional, Callable, Iterator
+from uuid import uuid4
 
 import stransi
 from stransi.instruction import Instruction
@@ -3571,14 +3572,17 @@ Columns: {len(palette) // 2}
             #     f.write(svg)
 
             # In order to reliably update the wallpaper,
-            # alternate between two file paths.
-            image_path = os.path.join(dir, "wallpaper_a.png")
-            if os.path.exists(image_path):
-                image_path = os.path.join(dir, "wallpaper_b.png")
-                if os.path.exists(image_path):
-                    os.remove(image_path)
-                    image_path = os.path.join(dir, "wallpaper_a.png")
-            
+            # change to a unique file path each time.
+            # Simply alternating between two file paths
+            # leads to re-using a cached image on Ubuntu 22.
+            image_path = os.path.join(dir, f"wallpaper_{uuid4()}.png")
+            # Clean up old files
+            keep_files = 5
+            files = os.listdir(dir)
+            files.sort(key=lambda f: os.path.getmtime(os.path.join(dir, f)))
+            for file in files[:-keep_files]:
+                os.remove(os.path.join(dir, file))
+
             screen_size = self.get_screen_size()
             im = rasterize(self.image)
             im_w, im_h = im.size
