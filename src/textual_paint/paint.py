@@ -21,7 +21,7 @@ from rich.segment import Segment
 from rich.style import Style
 from rich.console import Console
 from rich.text import Text
-from textual import events, on
+from textual import events, on, work
 from textual.filter import LineFilter
 from textual.message import Message
 from textual.app import App, ComposeResult
@@ -3562,6 +3562,8 @@ Columns: {len(palette) // 2}
     def action_set_as_wallpaper_centered(self) -> None:
         """Center the image as the wallpaper."""
         self.set_as_wallpaper(tiled=False)
+    # worker thread helps keep the UI responsive
+    @work(exclusive=True)
     def set_as_wallpaper(self, tiled: bool) -> None:
         """Set the image as the wallpaper."""
         try:
