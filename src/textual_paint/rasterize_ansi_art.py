@@ -31,7 +31,10 @@ font_dirs = [
     "/data/fonts",
 ]
 font_names = [
-    "NotoSansMono",
+    "NotoSansMono", # first because of broad Unicode coverage ("Noto" stands for "no tofu", i.e. replacement characters that look like blocks of tofu)
+    # The rest of this list is not very deliberately ordered.
+    "CascadiaMono", # Cascadia Code without ligatures; drawing cell by cell, ligatures won't apply anyways
+    "CascadiaCode",
     "DejaVuSansMono",
     "LiberationMono",
     "UbuntuMono",
@@ -41,12 +44,14 @@ font_names = [
     "SourceCodePro",
     "DroidSansMono",
     "Consolas",
+    "Consola",
     "CourierNew",
     "LucidaConsole",
     "Monaco",
     "Menlo",
     "Andale Mono",
     "Courier New",
+    "Cour",
 ]
 font = None
 for font_dir in font_dirs:
