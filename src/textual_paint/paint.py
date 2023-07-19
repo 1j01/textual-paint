@@ -3602,7 +3602,9 @@ Columns: {len(palette) // 2}
             new_im.save(image_path)
             set_wallpaper(image_path)
         except Exception as e:
-            self.message_box(_("Paint"), _("Failed to set the wallpaper."), "ok", error=e)
+            # self.message_box(_("Paint"), _("Failed to set the wallpaper."), "ok", error=e)
+            # Because this is running in a thread, we can't directly access the UI.
+            self.call_from_thread(self.message_box, _("Paint"), _("Failed to set the wallpaper."), "ok", error=e)
     def get_screen_size(self) -> tuple[int, int]:
         """Get the screen size."""
         # TODO: test DPI scaling
