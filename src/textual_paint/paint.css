@@ -21,6 +21,7 @@ Screen {
 }
 .view_bitmap #editing_area {
     background: #55aaaa; /* default Windows98 wallpaper theme color */
+    align: center middle;
 }
 
 

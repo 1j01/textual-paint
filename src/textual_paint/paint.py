@@ -2384,6 +2384,8 @@ class PaintApp(App[None]):
     """Saved zoomed-in magnification level."""
     show_grid = var(False)
     """Whether to show the grid. Only applies when zoomed in to 400% or more."""
+    old_scroll_offset = var(Offset(0, 0))
+    """The scroll offset before View Bitmap mode was entered."""
 
     undos: list[Action] = []
     """Past actions that can be undone"""
@@ -3891,10 +3893,19 @@ Columns: {len(palette) // 2}
         self.toggle_class("view_bitmap")
         if self.has_class("view_bitmap"):
             # entering View Bitmap mode
+            self.old_scroll_offset = self.editing_area.scroll_offset
             self.canvas.magnification = 1 # without setting self.magnification, so we can restore the canvas to the current setting
+            # Keep the left/top of the image in place in the viewport, when the image is larger than the viewport.
+            adjusted_x = self.editing_area.scroll_x // self.magnification
+            adjusted_y = self.editing_area.scroll_y // self.magnification
+            self.editing_area.scroll_to(adjusted_x, adjusted_y, animate=False)
         else:
             # exiting View Bitmap mode
             self.canvas.magnification = self.magnification
+            # This relies on the call_after_refresh in this method, for the magnification to affect the scrollable region.
+            # I doubt this is considered part of the API contract, so it may break in the future.
+            # Also, ideally we would update the screen in one go, without a flash of the wrong scroll position.
+            self.editing_area.scroll_to(*self.old_scroll_offset, animate=False)
 
     def action_flip_rotate(self) -> None:
         """Show dialog to flip or rotate the image."""
