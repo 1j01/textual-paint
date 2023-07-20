@@ -2191,18 +2191,17 @@ class Canvas(Widget):
                 ch = self.big_ch(ch, x % self.magnification, y % self.magnification)
                 if self.show_grid and self.magnification >= 4:
                     if x % self.magnification == 0 or y % self.magnification == 0:
-                        # bg = "#808080"...
+                        # Not setting `bg` here, because:
                         # Its actually useful to see the background color of the cell,
                         # as it lets you distinguish between a space " " and a full block "█".
-                        # Plus this makes the grid more subtle, although it looks a little weird
-                        # how the border line is inset a bit into the cell...
-                        fg = "#c0c0c0"
+                        # Plus this lets the grid be more subtle, visually taking up less than a cell.
+                        fg = "#c0c0c0" if (x + y) % 2 == 0 else "#808080"
                         if x % self.magnification == 0 and y % self.magnification == 0:
-                            ch = "┼"
+                            ch = "▛" # "┼"
                         elif x % self.magnification == 0:
-                            ch = "┆"
+                            ch = "▌" # "┆"
                         elif y % self.magnification == 0:
-                            ch = "┄"
+                            ch = "▀" # "┄"
             style = Style(color=fg, bgcolor=bg)
             assert style.color is not None
             assert style.bgcolor is not None
