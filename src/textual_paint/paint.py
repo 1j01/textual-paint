@@ -1992,6 +1992,7 @@ class Canvas(Widget):
     """The image document widget."""
 
     magnification = reactive(1, layout=True)
+    show_grid = reactive(False)
 
     # Is it kosher to include an event in a message?
     # Is it better (and possible) to bubble up the event, even though I'm capturing the mouse?
@@ -2188,6 +2189,13 @@ class Canvas(Widget):
                 ch = "?"
             if self.magnification > 1:
                 ch = self.big_ch(ch, x % self.magnification, y % self.magnification)
+                if self.show_grid and self.magnification >= 4:
+                    dark_gray = "#808080"
+                    light_gray = "#c0c0c0"
+                    if x % self.magnification == 0 or y % self.magnification == 0:
+                        bg = dark_gray
+                        fg = light_gray
+                        ch = " "
             style = Style(color=fg, bgcolor=bg)
             assert style.color is not None
             assert style.bgcolor is not None
@@ -2356,6 +2364,8 @@ class PaintApp(App[None]):
     """Current magnification level."""
     return_to_magnification = var(4)
     """Saved zoomed-in magnification level."""
+    show_grid = var(False)
+    """Whether to show the grid. Only applies when zoomed in to 400% or more."""
 
     undos: list[Action] = []
     """Past actions that can be undone"""
@@ -2470,6 +2480,10 @@ class PaintApp(App[None]):
         # TODO: keep the top left corner of the viewport in the same place
         # https://github.com/1j01/jspaint/blob/12a90c6bb9d36f495dc6a07114f9667c82ee5228/src/functions.js#L326-L351
         # This will matter more when large documents don't freeze up the program...
+
+    def watch_show_grid(self, show_grid: bool) -> None:
+        """Called when show_grid changes."""
+        self.canvas.show_grid = show_grid
 
     def stamp_brush(self, x: int, y: int, affected_region_base: Optional[Region] = None) -> Region:
         """Draws the current brush at the given coordinates, with special handling for different tools."""
@@ -3846,9 +3860,11 @@ Columns: {len(palette) // 2}
         self.mount(window)
         # TODO: avoid flash of incorrect ordering by doing this before rendering but after layout
         self.call_after_refresh(reorder_radio_buttons)
-    def action_show_grid(self) -> None:
-        self.message_box(_("Paint"), "Not implemented.", "ok")
-    def action_show_thumbnail(self) -> None:
+
+    def action_toggle_grid(self) -> None:
+        self.show_grid = not self.show_grid
+
+    def action_toggle_thumbnail(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
 
     def action_view_bitmap(self) -> None:
@@ -4366,8 +4382,8 @@ Columns: {len(palette) // 2}
                         MenuItem(_("&Large Size\tCtrl+PgDn"), self.action_large_size, 37671, description=_("Zooms the picture to 400%.")),
                         MenuItem(_("C&ustom..."), self.action_custom_zoom, 37672, description=_("Zooms the picture.")),
                         Separator(),
-                        MenuItem(_("Show &Grid\tCtrl+G"), self.action_show_grid, 37677, grayed=True, description=_("Shows or hides the grid.")),
-                        MenuItem(_("Show T&humbnail"), self.action_show_thumbnail, 37676, grayed=True, description=_("Shows or hides the thumbnail view of the picture.")),
+                        MenuItem(_("Show &Grid\tCtrl+G"), self.action_toggle_grid, 37677, description=_("Shows or hides the grid.")),
+                        MenuItem(_("Show T&humbnail"), self.action_toggle_thumbnail, 37676, grayed=True, description=_("Shows or hides the thumbnail view of the picture.")),
                     ])),
                     MenuItem(_("&View Bitmap\tCtrl+F"), self.action_view_bitmap, 37673, description=_("Displays the entire picture.")),
                 ])),
