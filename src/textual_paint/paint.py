@@ -2195,7 +2195,12 @@ class Canvas(Widget):
                     if x % self.magnification == 0 or y % self.magnification == 0:
                         bg = dark_gray
                         fg = light_gray
-                        ch = " "
+                        if x % self.magnification == 0 and y % self.magnification == 0:
+                            ch = "┼"
+                        elif x % self.magnification == 0:
+                            ch = "┆"
+                        elif y % self.magnification == 0:
+                            ch = "┄"
             style = Style(color=fg, bgcolor=bg)
             assert style.color is not None
             assert style.bgcolor is not None
