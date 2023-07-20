@@ -3654,7 +3654,7 @@ Columns: {len(palette) // 2}
             # self.message_box(_("Paint"), _("Failed to set the wallpaper."), "ok", error=e)
             # Because this is running in a thread, we can't directly access the UI.
             self.call_from_thread(self.message_box, _("Paint"), _("Failed to set the wallpaper."), "ok", error=e)
-    def get_screen_size(self) -> tuple[int, int]:
+    def get_screen_size(self) -> Size:
         """Get the screen size."""
         # TODO: test DPI scaling
         try:
@@ -3668,7 +3668,7 @@ Columns: {len(palette) // 2}
 
                 from Quartz import CGDisplayBounds, CGMainDisplayID
                 main_monitor = CGDisplayBounds(CGMainDisplayID())
-                return (int(main_monitor.size.width), int(main_monitor.size.height))
+                return Size(int(main_monitor.size.width), int(main_monitor.size.height))
 
             # from screeninfo import get_monitors
             # largest_area = 0
@@ -3684,12 +3684,12 @@ Columns: {len(palette) // 2}
             import tkinter
             root = tkinter.Tk()
             root.withdraw()
-            size = root.winfo_screenwidth(), root.winfo_screenheight()
+            size = Size(root.winfo_screenwidth(), root.winfo_screenheight())
             root.destroy()
             return size
         except Exception as e:
             print("Failed to get screen size:", e)
-            return 1920, 1080
+            return Size(1920, 1080)
 
     def action_recent_file(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
