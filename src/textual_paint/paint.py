@@ -3889,6 +3889,12 @@ Columns: {len(palette) // 2}
         """Shows the image in full-screen, without the UI."""
         self.cancel_preview()
         self.toggle_class("view_bitmap")
+        if self.has_class("view_bitmap"):
+            # entering View Bitmap mode
+            self.canvas.magnification = 1 # without setting self.magnification, so we can restore the canvas to the current setting
+        else:
+            # exiting View Bitmap mode
+            self.canvas.magnification = self.magnification
 
     def action_flip_rotate(self) -> None:
         """Show dialog to flip or rotate the image."""
@@ -5118,7 +5124,7 @@ Columns: {len(palette) // 2}
             return
 
         if self.has_class("view_bitmap"):
-            self.remove_class("view_bitmap")
+            self.call_later(self.action_view_bitmap)
             return
 
         if self.image.selection and not self.image.selection.textbox_mode:
@@ -5327,10 +5333,8 @@ Columns: {len(palette) // 2}
 
         # Exit View Bitmap mode if clicking anywhere
         if self.has_class("view_bitmap"):
-            def exit_view_bitmap_mode() -> None:
-                self.remove_class("view_bitmap")
             # Call later to avoid drawing on the canvas when exiting
-            self.call_later(exit_view_bitmap_mode)
+            self.call_later(self.action_view_bitmap)
 
         # Deselect if clicking outside the canvas
         if leaf_widget is self.editing_area:
