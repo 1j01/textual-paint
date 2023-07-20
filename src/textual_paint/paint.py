@@ -2271,6 +2271,18 @@ class Canvas(Widget):
                 return "█" if x < self.magnification // 2 else " "
             case "▐":
                 return "█" if x >= self.magnification // 2 else " "
+            case "◣":
+                diagonal = x - y
+                return "█" if diagonal < 0 else " " if diagonal > 0 else "◣"
+            case "◥":
+                diagonal = x - y
+                return "█" if diagonal > 0 else " " if diagonal < 0 else "◥"
+            case "◢":
+                diagonal = x + y + 1 - self.magnification
+                return "█" if diagonal > 0 else " " if diagonal < 0 else "◢"
+            case "◤":
+                diagonal = x + y + 1 - self.magnification
+                return "█" if diagonal < 0 else " " if diagonal > 0 else "◤"
             case _: pass
         # Fall back to showing the character in a single cell, approximately centered.
         if x == self.magnification // 2 and y == self.magnification // 2:
