@@ -2190,11 +2190,13 @@ class Canvas(Widget):
             if self.magnification > 1:
                 ch = self.big_ch(ch, x % self.magnification, y % self.magnification)
                 if self.show_grid and self.magnification >= 4:
-                    dark_gray = "#808080"
-                    light_gray = "#c0c0c0"
                     if x % self.magnification == 0 or y % self.magnification == 0:
-                        bg = dark_gray
-                        fg = light_gray
+                        # bg = "#808080"...
+                        # Its actually useful to see the background color of the cell,
+                        # as it lets you distinguish between a space " " and a full block "█".
+                        # Plus this makes the grid more subtle, although it looks a little weird
+                        # how the border line is inset a bit into the cell...
+                        fg = "#c0c0c0"
                         if x % self.magnification == 0 and y % self.magnification == 0:
                             ch = "┼"
                         elif x % self.magnification == 0:
