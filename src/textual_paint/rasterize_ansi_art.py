@@ -65,7 +65,7 @@ for font_dir in font_dirs:
     for file in files:
         # print(f"stem {file.stem!r}", normalize_font_name(file.stem) in font_names)
         if normalize_font_name(file.stem) in font_names:
-            font = ImageFont.truetype(str(file), size=16, layout_engine=ImageFont.LAYOUT_BASIC)
+            font = ImageFont.truetype(str(file), size=16, layout_engine=ImageFont.Layout.BASIC)
             break
     if font:
         break
