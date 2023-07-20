@@ -36,7 +36,7 @@ from textual.widgets import Button, Static, Input, Header, RadioSet, RadioButton
 from textual.binding import Binding
 from textual.color import Color, ColorParseError
 from PIL import Image, UnidentifiedImageError
-from textual.worker import get_current_worker
+from textual.worker import get_current_worker  # type: ignore
 from pyfiglet import Figlet, FigletFont  # type: ignore
 
 from .menus import MenuBar, Menu, MenuItem, Separator
