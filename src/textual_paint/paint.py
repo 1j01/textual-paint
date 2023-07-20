@@ -2197,11 +2197,11 @@ class Canvas(Widget):
                         # Plus this lets the grid be more subtle, visually taking up less than a cell.
                         fg = "#c0c0c0" if (x + y) % 2 == 0 else "#808080"
                         if x % self.magnification == 0 and y % self.magnification == 0:
-                            ch = "▛" # "┼"
+                            ch = "▛" # "┼" # (🭽 may render as wide)
                         elif x % self.magnification == 0:
-                            ch = "▌" # "┆"
+                            ch = "▌" # "┆" # (▏, not 🭰)
                         elif y % self.magnification == 0:
-                            ch = "▀" # "┄"
+                            ch = "▀" # "┄" # (▔, not 🭶)
             style = Style(color=fg, bgcolor=bg)
             assert style.color is not None
             assert style.bgcolor is not None
