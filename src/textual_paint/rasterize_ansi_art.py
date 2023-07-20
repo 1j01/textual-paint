@@ -70,7 +70,7 @@ for font_dir in font_dirs:
     if font:
         break
 if not font:
-    print("Font not found, falling back to built-in font for rasterization.")
+    print("Font not found, falling back to built-in font for ANSI art rasterization if Set As Wallpaper feature is used.")
     font = ImageFont.load_default()
 
 ch_width: int
