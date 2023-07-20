@@ -226,13 +226,9 @@ GNOME Terminal works best, with crisp triangles used for icons in dialogs, emoji
 
 Tested on OSX 10.14 (Mojave), with iTerm2, and VS Code's integrated terminal.
 
-iTerm2 mostly works, but two tool icons are missing (Free-Form Select and Fill With Color).
-They show as a square with a question mark in it, and may cause the rest of the row of characters to be misaligned, including the canvas.
-(I carefully picked the symbols to avoid this on Ubuntu, so I may need to do the same for macOS, conditioning on the `TERM_PROGRAM` environment variable.)
+In VS Code, Free-Form Select shows as tofu (a missing character symbol).
 
-In VS Code, only Free-Form Select shows as tofu (a missing character symbol), and there's no misalignment.
-
-The default Terminal app has the same problems as iTerm2, plus borders are not rendered nicely, giving it a sort of *frayed fabric* look, and it's limited to 256 colors.
+The default Terminal has missing characters, causing misalignment of everything to the right of them, plus borders are not rendered nicely, giving it a sort of *frayed fabric* look, and it's limited to 256 colors.
 
 ### Windows
 

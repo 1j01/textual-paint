@@ -241,25 +241,34 @@ class Tool(Enum):
                 Tool.rounded_rectangle: "(_)", # "(_)" ("(\x1B[53m_\x1B[55m)" doesn't work right, is there no overline tag?)
             }
             return enum_to_icon[self]
+        # Some glyphs cause misalignment of everything to the right of them, including the canvas,
+        # so alternative characters need to be chosen carefully for each platform.
         # "🫗" causes jutting out in Ubuntu terminal, "🪣" causes the opposite in VS Code terminal
         # VS Code sets TERM_PROGRAM to "vscode", so we can use that to detect it
-        if os.environ.get("TERM_PROGRAM") == "vscode":
-            # fill_icon = "🫗" # is also hard to see in the light theme
-            fill_icon = "🌊" # is a safe alternative
-            # fill_icon = "[on black]🫗 [/]" # no way to make this not look like a selection highlight
-            # "✏️" doesn't display in color in VS Code
-            pencil_icon = "🖍️" # or "🖊️", "🖋️"
-        else:
-            fill_icon = "🪣"
-            pencil_icon = "✏️"
+        TERM_PROGRAM = os.environ.get("TERM_PROGRAM")
+        if TERM_PROGRAM == "vscode":
+            if self == Tool.fill:
+                # return "🫗" # is also hard to see in the light theme
+                return "🌊" # is a safe alternative
+                # return "[on black]🫗 [/]" # no way to make this not look like a selection highlight
+            if self == Tool.pencil:
+                # "✏️" doesn't display in color in VS Code
+                return "🖍️" # or "🖊️", "🖋️"
+        elif TERM_PROGRAM == "iTerm.app":
+            # 🪣 (Fill With Color) and ⚝ (Free-Form Select) defaults are missing in iTerm2 on macOS 10.14 (Mojave)
+            # They show as a question mark in a box, and cause the rest of the row to be misaligned.
+            if self == Tool.fill:
+                return "🌊"
+            if self == Tool.free_form_select:
+                return "⢼⠮"
         return {
             Tool.free_form_select: "⚝",
             Tool.select: "⬚",
             Tool.eraser: "🧼",
-            Tool.fill: fill_icon,
+            Tool.fill: "🪣",
             Tool.pick_color: "💉",
             Tool.magnifier: "🔍",
-            Tool.pencil: pencil_icon,
+            Tool.pencil: "✏️",
             Tool.brush: "🖌️",
             Tool.airbrush: "💨",
             Tool.text: "Ａ",
