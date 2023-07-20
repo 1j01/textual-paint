@@ -2293,14 +2293,16 @@ class Canvas(Widget):
         if ch in " ░▒▓█":
             return ch
         match ch:
-            case "▄":
-                return "█" if y >= self.magnification // 2 else " "
-            case "▀":
-                return "█" if y < self.magnification // 2 else " "
-            case "▌":
-                return "█" if x < self.magnification // 2 else " "
-            case "▐":
-                return "█" if x >= self.magnification // 2 else " "
+            # These are now obsolete special cases of below fractional block character handling.
+            # case "▄":
+            #     return "█" if y >= self.magnification // 2 else " "
+            # case "▀":
+            #     return "█" if y < self.magnification // 2 else " "
+            # case "▌":
+            #     return "█" if x < self.magnification // 2 else " "
+            # case "▐":
+            #     return "█" if x >= self.magnification // 2 else " "
+            # Corner triangles
             case "◣":
                 diagonal = x - y
                 return "█" if diagonal < 0 else " " if diagonal > 0 else "◣"
@@ -2313,6 +2315,57 @@ class Canvas(Widget):
             case "◤":
                 diagonal = x + y + 1 - self.magnification
                 return "█" if diagonal < 0 else " " if diagonal > 0 else "◤"
+            # Fractional blocks
+            # These are at the end because `in` may be slow.
+            # Note: the order of the gradient strings is chosen so that
+            # the dividing line is at the top/left at index 0.
+            case ch if ch in "█▇▆▅▄▃▂▁":
+                gradient = "█▇▆▅▄▃▂▁ "
+                index = gradient.index(ch)
+                threshold_y = int(index / 8 * self.magnification)
+                if y == threshold_y:
+                    # Within the threshold cell, which is at y here,
+                    # use one of the fractional characters.
+                    # If you look at a 3/8ths character, to scale it up 2x,
+                    # you need a 6/8ths character. It simply scales with the magnification.
+                    # If you look at a 6/8ths character, to scale it up 2x,
+                    # you need a full block and a 4/8ths character, 4/8ths being the threshold cell here,
+                    # so it needs to wrap around, taking the remainder.
+                    return gradient[index * self.magnification % 8]
+                elif y > threshold_y:
+                    return "█"
+                else:
+                    return " "
+            case ch if ch in "▏▎▍▌▋▊▉█":
+                gradient = " ▏▎▍▌▋▊▉█"
+                index = gradient.index(ch)
+                threshold_x = int(index / 8 * self.magnification)
+                if x == threshold_x:
+                    return gradient[index * self.magnification % 8]
+                elif x < threshold_x:
+                    return "█"
+                else:
+                    return " "
+            case ch if ch in "▔🮂🮃▀🮄🮅🮆█":
+                gradient = " ▔🮂🮃▀🮄🮅🮆█"
+                index = gradient.index(ch)
+                threshold_y = int(index / 8 * self.magnification)
+                if y == threshold_y:
+                    return gradient[index * self.magnification % 8]
+                elif y < threshold_y:
+                    return "█"
+                else:
+                    return " "
+            case ch if ch in "█🮋🮊🮉▐🮈🮇▕":
+                gradient = "█🮋🮊🮉▐🮈🮇▕ "
+                index = gradient.index(ch)
+                threshold_x = int(index / 8 * self.magnification)
+                if x == threshold_x:
+                    return gradient[index * self.magnification % 8]
+                elif x > threshold_x:
+                    return "█"
+                else:
+                    return " "
             case _: pass
         # Fall back to showing the character in a single cell, approximately centered.
         if x == self.magnification // 2 and y == self.magnification // 2:
