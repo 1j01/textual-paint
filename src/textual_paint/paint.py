@@ -3666,8 +3666,7 @@ Columns: {len(palette) // 2}
                 # size = screen.frame().size.width, screen.frame().size.height
                 # return size
 
-                from Quartz import CGDisplayBounds
-                from Quartz import CGMainDisplayID
+                from Quartz import CGDisplayBounds, CGMainDisplayID
                 main_monitor = CGDisplayBounds(CGMainDisplayID())
                 return (int(main_monitor.size.width), int(main_monitor.size.height))
 
