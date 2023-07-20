@@ -36,6 +36,7 @@ from textual.widgets import Button, Static, Input, Header, RadioSet, RadioButton
 from textual.binding import Binding
 from textual.color import Color, ColorParseError
 from PIL import Image, UnidentifiedImageError
+from textual.worker import get_current_worker
 from pyfiglet import Figlet, FigletFont  # type: ignore
 
 from .menus import MenuBar, Menu, MenuItem, Separator
@@ -3600,6 +3601,8 @@ Columns: {len(palette) // 2}
                 w, h = new_im.size
                 new_im.paste(im, (w//2 - im_w//2, h//2 - im_h//2))
             new_im.save(image_path)
+            if get_current_worker().is_cancelled:
+                return # You'd have to be really fast with the menus to cancel it...
             set_wallpaper(image_path)
         except Exception as e:
             # self.message_box(_("Paint"), _("Failed to set the wallpaper."), "ok", error=e)
