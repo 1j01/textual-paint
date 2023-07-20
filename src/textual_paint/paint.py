@@ -3519,13 +3519,23 @@ class PaintApp(App[None]):
         self.query_one(ColorsBox).update_palette()
 
     def action_get_colors(self) -> None:
+        """Show a dialog to select a palette file to load."""
 
         def handle_selected_file_path(file_path: str) -> None:
             try:
                 with open(file_path, "r", encoding="utf-8") as f:
                     self.load_palette(f.read())
             except UnicodeDecodeError:
-                self.message_box(_("Open"), file_path + "\n" + _("Paint cannot read this file.") + "\n" + _("Unexpected file format."), "ok")
+                # Extra detail because PAL files are not yet supported,
+                # and would trigger this error if you try to open them.
+                self.message_box(
+                    _("Open"),
+                    file_path + "\n" +
+                        _("Paint cannot read this file.") + "\n" +
+                        _("Unexpected file format.") + "\n" +
+                        _("Only GIMP Palette files (*.gpl) are supported for now."),
+                    "ok"
+                )
             except FileNotFoundError:
                 self.message_box(_("Open"), file_path + "\n" + _("File not found.") + "\n" + _("Please verify that the correct path and file name are given."), "ok")
             except IsADirectoryError:
@@ -3546,6 +3556,8 @@ class PaintApp(App[None]):
         self.mount(window)
 
     def action_save_colors(self) -> None:
+        """Show a dialog to save the current palette to a file."""
+
         def handle_selected_file_path(file_path: str) -> None:
             color_lines: list[str] = []
             for color_str in palette:
