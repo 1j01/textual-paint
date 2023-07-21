@@ -234,13 +234,33 @@ The default Terminal has missing characters, causing misalignment of everything 
 
 Textual Paint works with the new [Windows Terminal](https://learn.microsoft.com/windows/terminal/install).
 
-Ctrl+V does not work to paste, but **Edit > Paste** does work.
-It may be possible to unbind Ctrl+V to fix this, see [this issue](https://github.com/microsoft/terminal/issues/11267).
+#### Pasting in Windows Terminal
+
+[<kbd>Ctrl</kbd>+<kbd>V</kbd> does not work](https://github.com/microsoft/terminal/issues/11267) to paste by default, but **Edit > Paste** does work.
+You can unbind <kbd>Ctrl</kbd>+<kbd>V</kbd> to fix this:
+- Open Windows Terminal's Settings (<kbd>Ctrl</kbd>+<kbd>,</kbd>)
+- Click "Open JSON file"
+- Disable the paste binding by adding `//` to the beginning of the lines:
+  ```json
+  // {
+  //     "command": "paste",
+  //     "keys": "ctrl+v"
+  // },
+  ```
+- Save the file, and the behavior should update immediately.
+
+Alternatively, you can use the Actions tab of the Settings UI to remove the binding for <kbd>Ctrl</kbd>+<kbd>V</kbd>.
+
+If you're wondering why *removing* the Paste binding fixes it, it's because Textual Paint needs to receive the literal <kbd>Ctrl</kbd>+<kbd>V</kbd> key presses in order to trigger its own Paste command.
+
+#### Powershell Problems
 
 Running in Powershell, you may run into a bug where the powershell prompt becomes active at the same time as the TUI.
 Moving the mouse will redraw parts of the TUI, and it becomes hard to click on things, but still possible.
 Commands can be entered, and the output will be interwoven with the TUI, including if you run a second instance of the program, in which case the two instances will vie for the screen.
 If this happens, I would recommend first messing around with it, since it's a fun glitch, then opening a new tab in Windows Terminal with the **Command Prompt profile**, available in the new tab dropdown menu.
+
+#### Windows Console
 
 Textual Paint will not work properly with the old Windows console (`conhost.exe`), which lacks emoji/Unicode support and true color support.
 This program is commonly thought of as the "Command Prompt", but the Command Prompt (`cmd.exe`) is actually a *shell* (like `bash`) that can run in either the old console or the new Windows Terminal, which are both *terminal emulators*.
