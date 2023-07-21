@@ -358,13 +358,6 @@ pyright  # type checking
 cspell-cli lint .  # spell checking
 ```
 
-### Update Dependencies
-
-```bash
-python -m pipreqs.pipreqs --ignore .history --force
-```
-
-
 ## License
 
 [MIT](LICENSE.txt)
