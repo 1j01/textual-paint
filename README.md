@@ -234,7 +234,10 @@ The default Terminal has missing characters, causing misalignment of everything 
 
 Textual Paint works with the new [Windows Terminal](https://learn.microsoft.com/windows/terminal/install), however, the Fill With Color tool icon is missing (shows as tofu), and the Pencil emoji causes misalignment of everything to the right of it, including the canvas.
 
-It will not work properly with the old Windows console, which lacks emoji/Unicode support and true color support.
+Ctrl+V does not work to paste, but **Edit > Paste** does work.
+It may be possible to unbind Ctrl+V to fix this, see [this issue](https://github.com/microsoft/terminal/issues/11267).
+
+Textual Paint will not work properly with the old Windows console (`conhost.exe`), which lacks emoji/Unicode support and true color support.
 
 ### VS Code
 
