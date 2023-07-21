@@ -212,8 +212,8 @@ class Tool(Enum):
         # - Pick Color: 🎨💉💅💧📌📍⤤𝀃🝯🍶
         # - Magnifier: 🔍🔎👀🔬🔭🧐🕵️‍♂️🕵️‍♀️
         # - Pencil: ✏️✎✍️🖎🖊️🖋️✒️🖆📝🖍️
-        # - Brush: 🖌️🖌👨‍🎨🧑‍🎨💅
-        # - Airbrush: 💨ᖜ╔🧴🥤🫠
+        # - Brush: 🖌👨‍🎨🧑‍🎨💅🧹🪮🪥🪒🪠ⵄ⑃ሐ⋔⋲ ▭/𝈸/⊏/⸦/⊂+⋹
+        # - Airbrush: ⛫💨дᖜ╔🧴🥤🫠
         # - Text: 🆎📝📄📃🔤📜AＡ
         # - Line: 📏📉📈⟍𝈏╲⧹\⧵∖
         # - Curve: ↪️🪝🌙〰️◡◠~∼≈∽∿〜〰﹋﹏≈≋～⁓
@@ -221,6 +221,7 @@ class Tool(Enum):
         # - Polygon: ▙𝗟𝙇﹄』𓊋⬣⬟🔶🔷🔸🔹🔺🔻△▲
         # - Ellipse: ⬭⭕🔴🟠🟡🟢🔵🟣🟤⚫⚪🫧
         # - Rounded Rectangle: ▢⬜⬛
+
         if ascii_only_icons:
             enum_to_icon = {
                 Tool.free_form_select: "<[u]^[/]7",  # "*" "<^>" "<[u]^[/]7"
@@ -261,6 +262,30 @@ class Tool(Enum):
                 return "🌊"
             if self == Tool.free_form_select:
                 return "⢼⠮"
+        elif os.environ.get("WT_SESSION"):
+            # The new Windows Terminal app sets WT_SESSION to a GUID.
+            # Caveats:
+            # - If you run `cmd` inside WT, this env var will be inherited.
+            # - If you run a GUI program that launches another terminal emulator, this env var will be inherited.
+            # - If you run via ssh, using Microsoft's official openssh server, WT_SESSION will not be set.
+            # - If you hold alt and right click in Windows Explorer, and say Open Powershell Here, WT_SESSION will not be set,
+            #   because powershell.exe is launched outside of the Terminal app, then later attached to it.
+            # Source: https://github.com/microsoft/terminal/issues/11057
+
+            # Windows Terminal has alignment problems with the default Pencil symbol "✏️"
+            # as well as alternatives "🖍️", "🖊️", "🖋️", "✍️", "✒️"
+            # "🖎" and "🖆" don't cause alignment issues, but don't show in color and are illegibly small.
+            if self == Tool.pencil:
+                # This looks more like it would represent the Text tool than the Pencil,
+                # so it's far from ideal, especially when there IS an actual pencil emoji...
+                return "📝"
+            # "🖌️" is causes misalignment (and is hard to distinguish from "✏️" at a glance)
+            # "🪮" shows as tofu
+            if self == Tool.brush:
+                return "🧹"
+            # "🪣" shows as tofu
+            if self == Tool.fill:
+                return "🌊"
         return {
             Tool.free_form_select: "⚝",
             Tool.select: "⬚",

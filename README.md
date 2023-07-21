@@ -232,7 +232,7 @@ The default Terminal has missing characters, causing misalignment of everything 
 
 ### Windows
 
-Textual Paint works with the new [Windows Terminal](https://learn.microsoft.com/windows/terminal/install), however, the Fill With Color tool icon is missing (shows as tofu), and the Pencil emoji causes misalignment of everything to the right of it, including the canvas.
+Textual Paint works with the new [Windows Terminal](https://learn.microsoft.com/windows/terminal/install).
 
 Ctrl+V does not work to paste, but **Edit > Paste** does work.
 It may be possible to unbind Ctrl+V to fix this, see [this issue](https://github.com/microsoft/terminal/issues/11267).
@@ -364,8 +364,8 @@ These are the symbols I've found so far:
 - Pick Color: 🎨💉💅💧📌📍⤤𝀃🝯🍶
 - Magnifier: 🔍🔎👀🔬🔭🧐🕵️‍♂️🕵️‍♀️
 - Pencil: ✏️✎✍️🖎🖊️🖋️✒️🖆📝🖍️
-- Brush: 🖌️🖌👨‍🎨🧑‍🎨💅
-- Airbrush: 💨ᖜ╔🧴🥤🫠
+- Brush: 🖌👨‍🎨🧑‍🎨💅🧹🪮🪥🪒🪠ⵄ⑃ሐ⋔⋲ ▭/𝈸/⊏/⸦/⊂+⋹
+- Airbrush: ⛫💨дᖜ╔🧴🥤🫠
 - Text: 🆎📝📄📃🔤📜AＡ
 - Line: 📏📉📈⟍𝈏╲⧹\⧵∖
 - Curve: ↪️🪝🌙〰️◡◠~∼≈∽∿〜〰﹋﹏≈≋～⁓
