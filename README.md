@@ -57,9 +57,9 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
   - [x] **Stretch/Skew**
   - [x] **Invert Colors**
   - [x] **Attributes** (resize canvas; in the future may change color/text modes, maybe text encoding)
-  - [x] **Clear Image**
   - [x] **Edit Colors**
-  - most other commands too!
+  - [x] **Set As Wallpaper** (tiled or centered)
+  - Every command is implemented, other than **Print** and **Send** (as fax / email), and a few toggles: **Draw Opaque** (pending tool options), **Show Thumbnail** (pending [sixel support in Textual](https://textual.textualize.io/roadmap/#widgets)), and **Text Toolbar** (which could show FIGlet fonts, but that would complicate the text area implementation, and could show bold/italic/underline, but that would complicate the document model. Both interesting, but not for a first release!)
 - [x] Color palette
 - [x] Efficient screen updates and undo/redo history, by tracking regions affected by each action
 	- You could totally use this program over SSH! Haha, this "what if" project could actually be useful. Of course, it should be mentioned that you can also run graphical programs over SSH, but this might be more responsive, or just fit your vibe better.
@@ -73,7 +73,9 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
 
 ## Usage
 
-<!-- ### Installation
+Python 3.10 or later is required. See [Compatibility](#compatibility) for details on terminals supported.
+
+### Installation
 
 ```bash
 pip install textual-paint
@@ -83,12 +85,12 @@ pip install textual-paint
 
 ```bash
 textual-paint
-``` -->
+```
 
 ### Command Line Options
 
 ```
-$ python3 paint.py --help
+$ textual-paint --help
 usage: textual-paint [options] [filename]
 
 Paint in the terminal.
@@ -183,25 +185,23 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 
 ## Known Issues
 
-- Undo/Redo doesn't work inside the Text tool's textbox. Ctrl+Z will delete the textbox. (Also note that the Text tool works differently from MS Paint; it will overwrite characters and the cursor can move freely, which makes it better for ASCII art, but worse for prose.)
+- Undo/Redo doesn't work inside the Text tool's textbox. <kbd>Ctrl</kbd>+<kbd>Z</kbd> will delete the textbox. (Also note that the Text tool works differently from MS Paint; it will overwrite characters and the cursor can move freely, which makes it better for ASCII art, but worse for prose.)
 - The Text tool's cursor doesn't blink.
 - The selection box border appears inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
-- Pick Color can't be cancelled (with Esc or by pressing both mouse buttons), since it samples the color continuously.
-- Pressing both mouse buttons stops the current tool, but doesn't undo the current action.
-- Due to limitations of the terminal, shortcuts using Shift or Alt might not work.
-- Menus are not keyboard navigable.
+- Pressing both mouse buttons stops the current tool, but doesn't undo the current action. Also Pick Color can't be cancelled (with <kbd>Esc</kbd> or by pressing both mouse buttons), since it samples the color continuously.
+- Due to limitations of the terminal, shortcuts using <kbd>Shift</kbd> or <kbd>Alt</kbd> might not work. Menus are not keyboard navigable, because I can't detect <kbd>Alt</kbd>+<kbd>F</kbd>, etc.
 - The Zoom submenu flickers as it opens, and may not always open in the right place.
 - The canvas flickers when zooming in with the Magnifier tool.
 - Some languages don't display correctly.
 - Large files can make the program very slow, as can magnifying the canvas. There is a 500 KB limit when opening files to prevent it from freezing.
 - Free-Form Select stamping/finalizing is incorrect when the selection is off-screen to the left or top.
-- Status bar description can be left blank when selecting a menu item. (I think the `Leave` event can come after closing, once the mouse moves.)
+- The status bar description can be left blank when selecting a menu item. (I think the `Leave` event can come after closing, once the mouse moves.)
 - Menu items like Copy/Cut/Paste are not grayed out when inapplicable. Only unimplemented items are grayed out.
 - ANSI files (.ans) are treated as UTF-8 when saving and loading, rather than CP437 or Windows-1252 or any other encodings. Unicode is nice and modern terminals support it, but it's not the standard for ANSI files. There isn't really a standard for ANSI files.
 - ANSI files are loaded with a white background. This may make sense as a default for text files, but ANSI files either draw a background or assume a black background, being designed for terminals.
-- Hitting Enter in View Bitmap mode exits the mode but may also trigger a menu item. Menu items ought to be disabled when hidden, and View Bitmap should prevent the key event from taking other actions if possible.
+- Hitting Enter in View Bitmap mode may trigger a menu item while exiting the mode. Menu items ought to be disabled when hidden, and View Bitmap should also prevent the key event from taking other actions if possible.
 - Airbrush is continuous in space instead of time. It should keep spraying while the mouse stays still.
-- Error messages may not show up when opening a file fails.
+- Error messages may not show up when opening a file fails. I'm not sure how to reproduce this, so if you run into this, do let me know.
 - Edit Colors dialog
   - Focus ring shows even while grid is not focused
   - Can show two cells as selected, instead of one across both grids
@@ -262,7 +262,7 @@ If this happens, I would recommend first messing around with it, since it's a fu
 
 #### Windows Console
 
-Textual Paint will not work properly with the old Windows console (`conhost.exe`), which lacks emoji/Unicode support and true color support.
+Textual Paint will **not** work properly with the old Windows console (`conhost.exe`), which lacks emoji/Unicode support and true color support.
 This program is commonly thought of as the "Command Prompt", but the Command Prompt (`cmd.exe`) is actually a *shell* (like `bash`) that can run in either the old console or the new Windows Terminal, which are both *terminal emulators*.
 
 ### VS Code
@@ -283,7 +283,11 @@ If this doesn't work, try increasing it to 1.1.
 Recommended: first, create a virtual environment:
 ```bash
 python -m venv .venv
+# The activate script is in different places on different systems:
+# Linux/macOS:
 source .venv/bin/activate
+# Windows:
+.venv\Scripts\activate
 ```
 
 Install Textual and other dependencies:
@@ -317,7 +321,7 @@ textual-paint
 
 `--inspect-layout` enables a DOM inspector accessible with F12, which I built. It also lets you apply a rainbow highlight and labels to all ancestors under the mouse with middle click, but this is mostly obsolete/redundant with the DOM inspector now. The labels affect the layout, so you can also hold Ctrl to only colorize, and you can remember how the colors correspond to the labels, to build a mental model of the layout.
 
-`--restart-on-changes` automatically restarts the program when any Python files change. This works by the program restarting itself directly. (Programs like `modd` or `nodemon` that run your program in a subprocess don't work well with Textual's escape sequences.)
+`--restart-on-changes` automatically restarts the program when any Python files change. This works by the program restarting itself directly. (Programs like `modd` or `nodemon` that run your program in a subprocess don't work well with a TUI's escape sequences.)
 
 There are also launch tasks configured for VS Code, so you can run the program from the Run and Debug panel.
 Note that it runs slower in VS Code's debugger.

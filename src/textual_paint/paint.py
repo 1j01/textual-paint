@@ -123,10 +123,6 @@ def update_cli_help_on_readme():
 # (Maybe a pre-commit hook would be ideal, if it's worth the complexity.)
 # update_cli_help_on_readme()
 
-# print("__name__:", __name__)
-# print("sys.argv:", sys.argv)
-# sys.exit()
-
 args = parser.parse_args()
 
 load_language(args.language)
@@ -2375,16 +2371,17 @@ class PaintApp(App[None]):
         # dev helper
         # f5 would be more traditional, but I need something not bound to anything
         # in the context of the terminal in VS Code, and not used by this app, like Ctrl+R, and detectable in the terminal.
-        # This isn't super important now that I have automatic reloading.
+        # This isn't as important now that I have automatic reloading,
+        # but I still use it regularly.
         Binding("f2", "reload", _("Reload")),
         # Temporary quick access to work on a specific dialog.
         # Can be used together with `--press f3` when using `textual run` to open the dialog at startup.
         # Would be better if all dialogs were accessible from the keyboard.
-        Binding("f3", "custom_zoom", _("Custom Zoom")),
+        # Binding("f3", "custom_zoom", _("Custom Zoom")),
         # Dev tool to inspect the widget tree.
         Binding("f12", "toggle_inspector", _("Toggle Inspector")),
         # Update screenshot on readme.
-        Binding("ctrl+j", "update_screenshot", _("Update Screenshot")),
+        # Binding("ctrl+j", "update_screenshot", _("Update Screenshot")),
     ]
 
     show_tools_box = var(True)
@@ -5426,13 +5423,10 @@ Columns: {len(palette) // 2}
                     widget.styles.border = ("round", Color.from_hsl(i / 10, 1, 0.5))
                     widget.border_title = widget.css_identifier_styled  # type: ignore
 
-# `textual run --dev paint.py` will search for a 
+# `textual run --dev src.textual_paint.paint` will search for a 
 # global variable named `app`, and fallback to
 # anything that is an instance of `App`, or
 # a subclass of `App`.
-# Creating the app and parsing arguments must not be within an if __name__ == "__main__" block,
-# since __name__ will be "<run_path>" when running with the textual CLI,
-# and it would create a new app instance, and all arguments would be ignored.
 app = PaintApp()
 
 # Passive arguments
