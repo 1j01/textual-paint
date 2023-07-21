@@ -5495,6 +5495,9 @@ if args.recode_samples:
             # Skip backup files in case some sample file is being edited.
             if file_path.name.endswith("~"):
                 continue
+            # Skip GIMP Palette files.
+            if file_path.name.endswith(".gpl"):
+                continue
             # Skip folders.
             if file_path.is_dir():
                 continue
