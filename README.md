@@ -275,7 +275,7 @@ To disable this, you can add this to your settings.json:
 "terminal.integrated.minimumContrastRatio": 1
 ```
 
-I ran into some issues with this, and had to set it to 1.1, but I'm not sure if that's necessary for everyone.
+If this doesn't work, try increasing it to 1.1.
 
 
 ## Development
