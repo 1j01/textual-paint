@@ -237,6 +237,11 @@ Textual Paint works with the new [Windows Terminal](https://learn.microsoft.com/
 Ctrl+V does not work to paste, but **Edit > Paste** does work.
 It may be possible to unbind Ctrl+V to fix this, see [this issue](https://github.com/microsoft/terminal/issues/11267).
 
+Running in Powershell, there seems to be a bug where the powershell prompt will be active at the same time as the TUI,
+and commands can be typed and run, and the output will be interwoven with the TUI.
+Running a second instance of Textual Paint even causes oscillation between both instances as they redraw the screen.
+I would recommend using Command Prompt (not the app, but the shell) inside Windows Terminal instead, available in the new tab dropdown menu.
+
 Textual Paint will not work properly with the old Windows console (`conhost.exe`), which lacks emoji/Unicode support and true color support.
 
 ### VS Code
