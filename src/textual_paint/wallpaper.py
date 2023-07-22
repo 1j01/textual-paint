@@ -82,7 +82,7 @@ def is_running(process: str) -> bool:
 def set_wallpaper(file_loc: str, first_run: bool = True):
     """Sets the wallpaper to the given file location."""
     # From https://stackoverflow.com/a/21213504/2624876
-    # I have not personally tested any of this.
+    # I have not personally tested most of this. -- @1j01
     # -----------------------------------------
 
     # Note: There are two common Linux desktop environments where
@@ -90,6 +90,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
     # command line: KDE, Enlightenment
     desktop_env = get_desktop_environment()
     if desktop_env in ["gnome", "unity", "cinnamon"]:
+        # Tested on Ubuntu 22 -- @1j01
         uri = "'file://%s'" % file_loc
         SCHEMA = "org.gnome.desktop.background"
         KEY = "picture-uri"
@@ -97,6 +98,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
         # Might be better to set only one or the other, depending on the current theme
         # In the settings it will say "This background selection only applies to the dark style"
         # even if it's set for both, arguably referring to the selection that you can make on that page.
+        # -- @1j01
         KEY_DARK = "picture-uri-dark"
         try:
             from gi.repository import Gio  # type: ignore
@@ -187,27 +189,27 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
         # From http://www.commandlinefu.com/commands/view/3857/set-wallpaper-on-windowmaker-in-one-line
         args = ["wmsetbg", "-s", "-u", file_loc]
         subprocess.Popen(args)
-    ## NOT TESTED BELOW - don't want to mess things up ##
     # elif desktop_env=="enlightenment": # I have not been able to make it work on e17. On e16 it would have been something in this direction
     #     args = "enlightenment_remote -desktop-bg-add 0 0 0 0 %s" % file_loc
     #     subprocess.Popen(args,shell=True)
-    elif desktop_env=="windows": #Not tested since I do not run this on Windows
+    elif desktop_env=="windows":
         #From https://stackoverflow.com/questions/1977694/change-desktop-background
+        # Tested on Windows 10. -- @1j01
         import ctypes
         SPI_SETDESKWALLPAPER = 20
         ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, file_loc, 0)  # type: ignore
-    elif desktop_env=="mac": #Not tested since I do not have a mac
+    elif desktop_env=="mac":
         #From https://stackoverflow.com/questions/431205/how-can-i-programatically-change-the-background-in-mac-os-x
         try:
+            # Tested on macOS 10.14.6 (Mojave) -- @1j01
             assert sys.platform == "darwin" # ignore `Import "appscript" could not be resolved` for other platforms
             from appscript import app, mactypes
             app('Finder').desktop_picture.set(mactypes.File(file_loc))
         except ImportError:
+            # Tested on macOS 10.14.6 (Mojave) -- @1j01
             #import subprocess
             SCRIPT = f"""/usr/bin/osascript<<END
-            tell application "Finder" to
-            set desktop picture to POSIX file "{file_loc}"
-            end tell
+            tell application "Finder" to set desktop picture to POSIX file "{file_loc}"
             END"""
             subprocess.Popen(SCRIPT, shell=True)
     else:
