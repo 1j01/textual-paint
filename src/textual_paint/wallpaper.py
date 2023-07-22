@@ -22,8 +22,8 @@ def get_desktop_environment() -> str:
         if desktop_session is not None: # easier to match if we doesn't have to deal with character cases
             desktop_session = desktop_session.lower()
             if desktop_session in [
-                "gnome","unity", "cinnamon", "mate", "xfce4", "lxde", "fluxbox", 
-                "blackbox", "openbox", "icewm", "jwm", "afterstep","trinity", "kde"
+                "gnome", "unity", "cinnamon", "mate", "xfce4", "lxde", "fluxbox", 
+                "blackbox", "openbox", "icewm", "jwm", "afterstep", "trinity", "kde"
             ]:
                 return desktop_session
             ## Special cases ##
@@ -64,9 +64,9 @@ def is_running(process: str) -> bool:
     # From http://www.bloggerpolis.com/2011/05/how-to-check-if-a-process-is-running-using-python/
     # and http://richarddingwall.name/2009/06/18/windows-equivalents-of-ps-and-kill-commands/
     try: # Linux/Unix
-        s = subprocess.Popen(["ps", "axw"],stdout=subprocess.PIPE)
+        s = subprocess.Popen(["ps", "axw"], stdout=subprocess.PIPE)
     except: # Windows
-        s = subprocess.Popen(["tasklist", "/v"],stdout=subprocess.PIPE)
+        s = subprocess.Popen(["tasklist", "/v"], stdout=subprocess.PIPE)
     assert s.stdout is not None
     for x in s.stdout:
         # if re.search(process, x):
@@ -114,11 +114,11 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
             subprocess.Popen(args)
         except Exception: # MATE < 1.6
             # From https://bugs.launchpad.net/variety/+bug/1033918
-            args = ["mateconftool-2","-t","string","--set","/desktop/mate/background/picture_filename", file_loc]
+            args = ["mateconftool-2", "-t", "string", "--set", "/desktop/mate/background/picture_filename", file_loc]
             subprocess.Popen(args)
     elif desktop_env == "gnome2": # Not tested
         # From https://bugs.launchpad.net/variety/+bug/1033918
-        args = ["gconftool-2","-t","string","--set","/desktop/gnome/background/picture_filename", file_loc]
+        args = ["gconftool-2", "-t", "string", "--set", "/desktop/gnome/background/picture_filename", file_loc]
         subprocess.Popen(args)
     ## KDE4 is difficult
     ## see http://blog.zx2c4.com/699 for a solution that might work
@@ -135,23 +135,23 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
             subprocess.Popen(args0)
             subprocess.Popen(args1)
             subprocess.Popen(args2)
-        args = ["xfdesktop","--reload"]
+        args = ["xfdesktop", "--reload"]
         subprocess.Popen(args)
     elif desktop_env == "razor-qt": # TODO: implement reload of desktop when possible
         if first_run:
             import configparser
             desktop_conf = configparser.ConfigParser()
             # Development version
-            desktop_conf_file = os.path.join(get_config_dir("razor"),"desktop.conf") 
+            desktop_conf_file = os.path.join(get_config_dir("razor"), "desktop.conf") 
             if os.path.isfile(desktop_conf_file):
                 config_option = R"screens\1\desktops\1\wallpaper"
             else:
-                desktop_conf_file = os.path.join(get_home_dir(),".razor/desktop.conf")
+                desktop_conf_file = os.path.join(get_home_dir(), ".razor/desktop.conf")
                 config_option = R"desktops\1\wallpaper"
             desktop_conf.read(os.path.join(desktop_conf_file))
             try:
-                if desktop_conf.has_option("razor",config_option): # only replacing a value
-                    desktop_conf.set("razor",config_option,file_loc)
+                if desktop_conf.has_option("razor", config_option): # only replacing a value
+                    desktop_conf.set("razor", config_option, file_loc)
                     with open(desktop_conf_file, "w", encoding="utf-8", errors="replace") as f:
                         desktop_conf.write(f)
             except Exception:
@@ -159,7 +159,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
         else:
             # TODO: reload desktop when possible
             pass 
-    elif desktop_env in ["fluxbox","jwm","openbox","afterstep"]:
+    elif desktop_env in ["fluxbox", "jwm", "openbox", "afterstep"]:
         # http://fluxbox-wiki.org/index.php/Howto_set_the_background
         # used fbsetbg on jwm too since I am too lazy to edit the XML configuration 
         # now where fbsetbg does the job excellent anyway. 
@@ -239,7 +239,7 @@ def get_config_dir(app_name: str):
             config_home =  BaseDirectory.xdg_config_home
         except ImportError: # Most likely a Linux/Unix system anyway
             config_home =  os.path.join(get_home_dir(), ".config")
-    config_dir = os.path.join(config_home,app_name)
+    config_dir = os.path.join(config_home, app_name)
     return config_dir
 
 def get_home_dir():
