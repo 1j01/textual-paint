@@ -31,10 +31,10 @@ def get_desktop_environment() -> str:
             # There is no guarantee that they will not do the same with the other desktop environments.
             elif "xfce" in desktop_session or desktop_session.startswith("xubuntu"):
                 return "xfce4"
-            elif desktop_session.startswith('ubuntustudio'):
-                return 'kde'
-            elif desktop_session.startswith('ubuntu'):
-                return 'gnome'     
+            elif desktop_session.startswith("ubuntustudio"):
+                return "kde"
+            elif desktop_session.startswith("ubuntu"):
+                return "gnome"     
             elif desktop_session.startswith("lubuntu"):
                 return "lxde" 
             elif desktop_session.startswith("kubuntu"): 
@@ -44,7 +44,7 @@ def get_desktop_environment() -> str:
             elif desktop_session.startswith("wmaker"): # e.g. wmaker-common
                 return "windowmaker"
         gnome_desktop_session_id = os.environ.get("GNOME_DESKTOP_SESSION_ID")
-        if os.environ.get('KDE_FULL_SESSION') == 'true':
+        if os.environ.get("KDE_FULL_SESSION") == "true":
             return "kde"
         elif gnome_desktop_session_id:
             if not "deprecated" in gnome_desktop_session_id:
@@ -201,7 +201,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
             # Tested on macOS 10.14.6 (Mojave) -- @1j01
             assert sys.platform == "darwin" # ignore `Import "appscript" could not be resolved` for other platforms
             from appscript import app, mactypes
-            app('Finder').desktop_picture.set(mactypes.File(file_loc))
+            app("Finder").desktop_picture.set(mactypes.File(file_loc))
         except ImportError:
             # Tested on macOS 10.14.6 (Mojave) -- @1j01
             # import subprocess
@@ -230,9 +230,9 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
 
 def get_config_dir(app_name: str):
     if "XDG_CONFIG_HOME" in os.environ:
-        config_home = os.environ['XDG_CONFIG_HOME'] 
+        config_home = os.environ["XDG_CONFIG_HOME"] 
     elif "APPDATA" in os.environ: # On Windows
-        config_home = os.environ['APPDATA'] 
+        config_home = os.environ["APPDATA"] 
     else:
         try:
             from xdg import BaseDirectory  # type: ignore
