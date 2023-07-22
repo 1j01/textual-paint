@@ -3,11 +3,6 @@ from pathlib import Path
 import sys
 import subprocess
 
-# There are too many desktop environment names and programs,
-# it would pollute the spellings list (unless I moved this file
-# to a folder and made a separate dictionary).
-# spell-checker:disable
-
 def get_desktop_environment() -> str:
     """
     Returns the name of the current desktop environment.
@@ -24,7 +19,7 @@ def get_desktop_environment() -> str:
         return "mac"
     else: #Most likely either a POSIX system or something not much common
         desktop_session = os.environ.get("DESKTOP_SESSION")
-        if desktop_session is not None: #easier to match if we doesn't have  to deal with caracter cases
+        if desktop_session is not None: # easier to match if we doesn't have to deal with character cases
             desktop_session = desktop_session.lower()
             if desktop_session in [
                 "gnome","unity", "cinnamon", "mate", "xfce4", "lxde", "fluxbox", 
@@ -232,7 +227,6 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
             sys.stderr.write("You can try manually to set your wallpaper to %s" % file_loc)
         return False
     return True
-# spell-checker:enable
 
 def get_config_dir(app_name: str):
     if "XDG_CONFIG_HOME" in os.environ:
