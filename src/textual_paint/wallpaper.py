@@ -107,7 +107,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
             subprocess.Popen(args)
             args = ["gsettings", "set", SCHEMA, KEY_DARK, uri]
             subprocess.Popen(args)
-    elif desktop_env=="mate":
+    elif desktop_env == "mate":
         try: # MATE >= 1.6
             # info from http://wiki.mate-desktop.org/docs:gsettings
             args = ["gsettings", "set", "org.mate.background", "picture-filename", file_loc]
@@ -116,7 +116,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
             # From https://bugs.launchpad.net/variety/+bug/1033918
             args = ["mateconftool-2","-t","string","--set","/desktop/mate/background/picture_filename", file_loc]
             subprocess.Popen(args)
-    elif desktop_env=="gnome2": # Not tested
+    elif desktop_env == "gnome2": # Not tested
         # From https://bugs.launchpad.net/variety/+bug/1033918
         args = ["gconftool-2","-t","string","--set","/desktop/gnome/background/picture_filename", file_loc]
         subprocess.Popen(args)
@@ -126,7 +126,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
         # From http://ubuntuforums.org/archive/index.php/t-803417.html
         args = ["dcop", "kdesktop", "KBackgroundIface", "setWallpaper", "0", file_loc, "6"]
         subprocess.Popen(args)
-    elif desktop_env=="xfce4":
+    elif desktop_env == "xfce4":
         # From http://www.commandlinefu.com/commands/view/2055/change-wallpaper-for-xfce4-4.6.0
         if first_run:
             args0 = ["xfconf-query", "-c", "xfce4-desktop", "-p", "/backdrop/screen0/monitor0/image-path", "-s", file_loc]
@@ -137,7 +137,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
             subprocess.Popen(args2)
         args = ["xfdesktop","--reload"]
         subprocess.Popen(args)
-    elif desktop_env=="razor-qt": # TODO: implement reload of desktop when possible
+    elif desktop_env == "razor-qt": # TODO: implement reload of desktop when possible
         if first_run:
             import configparser
             desktop_conf = configparser.ConfigParser()
@@ -171,31 +171,31 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
         except Exception:
             sys.stderr.write("ERROR: Failed to set wallpaper with fbsetbg!\n")
             sys.stderr.write("Please make sre that You have fbsetbg installed.\n")
-    elif desktop_env=="icewm":
+    elif desktop_env == "icewm":
         # command found at http://urukrama.wordpress.com/2007/12/05/desktop-backgrounds-in-window-managers/
         args = ["icewmbg", file_loc]
         subprocess.Popen(args)
-    elif desktop_env=="blackbox":
+    elif desktop_env == "blackbox":
         # command found at http://blackboxwm.sourceforge.net/BlackboxDocumentation/BlackboxBackground
         args = ["bsetbg", "-full", file_loc]
         subprocess.Popen(args)
-    elif desktop_env=="lxde":
+    elif desktop_env == "lxde":
         args = ["pcmanfm", "--set-wallpaper", file_loc, "--wallpaper-mode=scaled"]
         subprocess.Popen(args)
-    elif desktop_env=="windowmaker":
+    elif desktop_env == "windowmaker":
         # From http://www.commandlinefu.com/commands/view/3857/set-wallpaper-on-windowmaker-in-one-line
         args = ["wmsetbg", "-s", "-u", file_loc]
         subprocess.Popen(args)
-    # elif desktop_env=="enlightenment": # I have not been able to make it work on e17. On e16 it would have been something in this direction
+    # elif desktop_env == "enlightenment": # I have not been able to make it work on e17. On e16 it would have been something in this direction
     #     args = ["enlightenment_remote", "-desktop-bg-add", "0", "0", "0", "0", file_loc]
     #     subprocess.Popen(args)
-    elif desktop_env=="windows":
+    elif desktop_env == "windows":
         # From https://stackoverflow.com/questions/1977694/change-desktop-background
         # Tested on Windows 10. -- @1j01
         import ctypes
         SPI_SETDESKWALLPAPER = 20
         ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, file_loc, 0)  # type: ignore
-    elif desktop_env=="mac":
+    elif desktop_env == "mac":
         # From https://stackoverflow.com/questions/431205/how-can-i-programatically-change-the-background-in-mac-os-x
         try:
             # Tested on macOS 10.14.6 (Mojave) -- @1j01
