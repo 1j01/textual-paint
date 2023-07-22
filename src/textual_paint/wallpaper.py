@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import sys
 import subprocess
 
@@ -91,7 +92,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
     desktop_env = get_desktop_environment()
     if desktop_env in ["gnome", "unity", "cinnamon"]:
         # Tested on Ubuntu 22 -- @1j01
-        uri = "'file://%s'" % file_loc
+        uri = Path(file_loc).as_uri()
         SCHEMA = "org.gnome.desktop.background"
         KEY = "picture-uri"
         # Needed for Ubuntu 22 in dark mode
@@ -114,15 +115,15 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
     elif desktop_env=="mate":
         try: # MATE >= 1.6
             # info from http://wiki.mate-desktop.org/docs:gsettings
-            args = ["gsettings", "set", "org.mate.background", "picture-filename", "'%s'" % file_loc]
+            args = ["gsettings", "set", "org.mate.background", "picture-filename", file_loc]
             subprocess.Popen(args)
         except Exception: # MATE < 1.6
             # From https://bugs.launchpad.net/variety/+bug/1033918
-            args = ["mateconftool-2","-t","string","--set","/desktop/mate/background/picture_filename",'"%s"' %file_loc]
+            args = ["mateconftool-2","-t","string","--set","/desktop/mate/background/picture_filename", file_loc]
             subprocess.Popen(args)
     elif desktop_env=="gnome2": # Not tested
         # From https://bugs.launchpad.net/variety/+bug/1033918
-        args = ["gconftool-2","-t","string","--set","/desktop/gnome/background/picture_filename", '"%s"' %file_loc]
+        args = ["gconftool-2","-t","string","--set","/desktop/gnome/background/picture_filename", file_loc]
         subprocess.Popen(args)
     ## KDE4 is difficult
     ## see http://blog.zx2c4.com/699 for a solution that might work
