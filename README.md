@@ -6,7 +6,7 @@ MS Paint in your terminal.
 
 This is a TUI (Text User Interface) image editor, inspired by MS Paint, built with [Textual](https://textual.textualize.io/).
 
-<img src="screenshot.svg" alt="MS Paint like interface" />
+![MS Paint like interface](https://raw.githubusercontent.com/1j01/textual-paint/v0.1.0/screenshot.svg)
 
 ## Features
 
