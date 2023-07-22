@@ -2315,6 +2315,22 @@ class Canvas(Widget):
             case "◤":
                 diagonal = x + y + 1 - self.magnification
                 return "█" if diagonal < 0 else " " if diagonal > 0 else "◤"
+            case "╱":
+                diagonal = x + y + 1 - self.magnification
+                return "╱" if diagonal == 0 else " "
+            case "╲":
+                diagonal = x - y
+                return "╲" if diagonal == 0 else " "
+            case "╳":
+                diagonal_1 = x + y + 1 - self.magnification
+                diagonal_2 = x - y
+                return "╲" if diagonal_2 == 0 else "╱" if diagonal_1 == 0 else " "
+            case "/":
+                diagonal = x + y + 1 - self.magnification
+                return "/" if diagonal == 0 else " "
+            case "\\":
+                diagonal = x - y
+                return "\\" if diagonal == 0 else " "
             # Fractional blocks
             # These are at the end because `in` may be slow.
             # Note: the order of the gradient strings is chosen so that
