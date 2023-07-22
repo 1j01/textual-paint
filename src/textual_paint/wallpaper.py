@@ -11,7 +11,6 @@ def get_desktop_environment() -> str:
     # which takes from:
     # http://stackoverflow.com/questions/2035657/what-is-my-current-desktop-environment
     # and http://ubuntuforums.org/showthread.php?t=652320
-    # and http://ubuntuforums.org/showthread.php?t=652320
     # and http://ubuntuforums.org/showthread.php?t=1139057
     if sys.platform in ["win32", "cygwin"]:
         return "windows"
