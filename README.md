@@ -59,7 +59,7 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
   - [x] **Attributes** (resize canvas; in the future may change color/text modes, maybe text encoding)
   - [x] **Edit Colors**
   - [x] **Set As Wallpaper** (tiled or centered)
-  - Every command is implemented, other than **Print** and **Send** (as fax / email), and a few toggles: **Draw Opaque** (pending tool options), **Show Thumbnail** (pending [sixel support in Textual](https://textual.textualize.io/roadmap/#widgets)), and **Text Toolbar** (which could show FIGlet fonts, but that would complicate the text area implementation, and could show bold/italic/underline, but that would complicate the document model. Both interesting, but not for a first release!)
+  - Every command is implemented, other than printing options, and a few toggles: **Draw Opaque** (pending tool options), **Show Thumbnail** (pending [sixel support in Textual](https://textual.textualize.io/roadmap/#widgets)), and **Text Toolbar** (which could show FIGlet fonts, but that would complicate the text area implementation, and could show bold/italic/underline, but that would complicate the document model. Both interesting, but not for a first release!)
 - [x] Color palette
 - [x] Efficient screen updates and undo/redo history, by tracking regions affected by each action
 	- You could totally use this program over SSH! Haha, this "what if" project could actually be useful. Of course, it should be mentioned that you can also run graphical programs over SSH, but this might be more responsive, or just fit your vibe better.

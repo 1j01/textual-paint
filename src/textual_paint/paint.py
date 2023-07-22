@@ -3631,9 +3631,19 @@ Columns: {len(palette) // 2}
         self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_print(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
+
     def action_send(self) -> None:
-        self.message_box(_("Paint"), "Not implemented.", "ok")
-    
+        """Send the image as an email attachment."""
+        import subprocess
+        import tempfile
+        file_path = tempfile.mktemp(suffix=".svg")
+        svg = self.image.get_svg()
+        self.write_file_path(file_path, svg.encode("utf-8"), _("Send"))
+        body = _("Textual Paint image attached.")
+        subprocess.run(["xdg-email", "--utf8", "--attach", file_path, "--body", body, "Someone <test@example.com>"])
+        # Don't remove the file.
+        # Some e-mail applications require the file to remain present after xdg-email returns.
+
     def action_set_as_wallpaper_tiled(self) -> None:
         """Tile the image as the wallpaper."""
         self.set_as_wallpaper(tiled=True)
@@ -4425,7 +4435,7 @@ Columns: {len(palette) // 2}
                     MenuItem(_("Page Se&tup..."), self.action_page_setup, 57605, grayed=True, description=_("Changes the page layout.")),
                     MenuItem(_("&Print...\tCtrl+P"), self.action_print, 57607, grayed=True, description=_("Prints the active document and sets printing options.")),
                     Separator(),
-                    MenuItem(_("S&end..."), self.action_send, 37662, grayed=True, description=_("Sends a picture by using mail or fax.")),
+                    MenuItem(_("S&end..."), self.action_send, 37662, description=_("Sends a picture by using mail or fax.")),
                     Separator(),
                     MenuItem(_("Set As &Wallpaper (Tiled)"), self.action_set_as_wallpaper_tiled, 57677, description=_("Tiles this bitmap as the desktop wallpaper.")),
                     MenuItem(_("Set As Wa&llpaper (Centered)"), self.action_set_as_wallpaper_centered, 57675, description=_("Centers this bitmap as the desktop wallpaper.")),
