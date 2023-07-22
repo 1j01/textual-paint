@@ -106,6 +106,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
             gsettings.set_string(KEY, uri)
             gsettings.set_string(KEY_DARK, uri)
         except Exception:
+            # Fallback tested on Ubuntu 22 -- @1j01
             args = ["gsettings", "set", SCHEMA, KEY, uri]
             subprocess.Popen(args)
             args = ["gsettings", "set", SCHEMA, KEY_DARK, uri]
