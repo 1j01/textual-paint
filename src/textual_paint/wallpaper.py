@@ -208,10 +208,22 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
         except ImportError:
             # Tested on macOS 10.14.6 (Mojave) -- @1j01
             #import subprocess
-            SCRIPT = f"""/usr/bin/osascript<<END
-            tell application "Finder" to set desktop picture to POSIX file "{file_loc}"
-            END"""
-            subprocess.Popen(SCRIPT, shell=True)
+            # SCRIPT = f"""/usr/bin/osascript<<END
+            # tell application "Finder" to set desktop picture to POSIX file "{file_loc}"
+            # END"""
+            # subprocess.Popen(SCRIPT, shell=True)
+
+            # Safer version, avoiding string interpolation,
+            # to protect against command injection (both in the shell and in AppleScript):
+            OSASCRIPT = f"""
+            on run (clp)
+                if clp's length is not 1 then error "Incorrect Parameters"
+                local file_loc
+                set file_loc to clp's item 1
+                tell application "Finder" to set desktop picture to POSIX file file_loc
+            end run
+            """
+            subprocess.Popen(["osascript", "-e", OSASCRIPT, "--", file_loc])
     else:
         if first_run: #don't spam the user with the same message over and over again
             sys.stderr.write("Warning: Failed to set wallpaper. Your desktop environment is not supported.")
