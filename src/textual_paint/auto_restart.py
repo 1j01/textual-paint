@@ -7,9 +7,6 @@ import os
 import sys
 from textual.app import ScreenStackError
 
-from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
-from watchdog.observers import Observer
-
 if TYPE_CHECKING:
     from .paint import PaintApp
 
@@ -60,34 +57,38 @@ def restart_program():
     # os.execl(python, python, *sys.argv)
     os.execl(sys.executable, *sys.orig_argv)
 
-class RestartHandler(PatternMatchingEventHandler):
-    """A handler for file changes"""
-    def on_any_event(self, event: FileSystemEvent):
-        if event.event_type in (EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED):
-            # These seem like they'd just cause trouble... they're not changes, are they?
-            return
-        print("Reloading due to FS change:", event.event_type, event.src_path)
-        try:
-            _app.screen.styles.background = "red"
-        except ScreenStackError:
-            pass
-        # The unsaved changes prompt seems to need call_from_thread,
-        # or else it gets "no running event loop",
-        # whereas restart_program() (inside or outside action_reload) needs to NOT use it,
-        # or else nothing happens.
-        # However, when _app.action_reload is called from the key binding,
-        # it seems to work fine with or without unsaved changes.
-        if _app.is_document_modified():
-            _app.call_from_thread(_app.action_reload)
-        else:
-            restart_program()
-        try:
-            _app.screen.styles.background = "yellow"
-        except ScreenStackError:
-            pass
-
 def restart_on_changes(app: PaintApp):
     """Restarts the current program when a file is changed"""
+    
+    from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
+    from watchdog.observers import Observer
+
+    class RestartHandler(PatternMatchingEventHandler):
+        """A handler for file changes"""
+        def on_any_event(self, event: FileSystemEvent):
+            if event.event_type in (EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED):
+                # These seem like they'd just cause trouble... they're not changes, are they?
+                return
+            print("Reloading due to FS change:", event.event_type, event.src_path)
+            try:
+                _app.screen.styles.background = "red"
+            except ScreenStackError:
+                pass
+            # The unsaved changes prompt seems to need call_from_thread,
+            # or else it gets "no running event loop",
+            # whereas restart_program() (inside or outside action_reload) needs to NOT use it,
+            # or else nothing happens.
+            # However, when _app.action_reload is called from the key binding,
+            # it seems to work fine with or without unsaved changes.
+            if _app.is_document_modified():
+                _app.call_from_thread(_app.action_reload)
+            else:
+                restart_program()
+            try:
+                _app.screen.styles.background = "yellow"
+            except ScreenStackError:
+                pass
+
     global observer, _app
     _app = app
     observer = Observer()
