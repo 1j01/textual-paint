@@ -17,7 +17,7 @@ def get_desktop_environment() -> str:
         return "windows"
     elif sys.platform == "darwin":
         return "mac"
-    else: #Most likely either a POSIX system or something not much common
+    else: # Most likely either a POSIX system or something not much common
         desktop_session = os.environ.get("DESKTOP_SESSION")
         if desktop_session is not None: # easier to match if we doesn't have to deal with character cases
             desktop_session = desktop_session.lower()
@@ -49,7 +49,7 @@ def get_desktop_environment() -> str:
         elif gnome_desktop_session_id:
             if not "deprecated" in gnome_desktop_session_id:
                 return "gnome2"
-        #From http://ubuntuforums.org/showthread.php?t=652320
+        # From http://ubuntuforums.org/showthread.php?t=652320
         elif is_running("xfce-mcs-manage"):
             return "xfce4"
         elif is_running("ksmserver"):
@@ -61,11 +61,11 @@ def is_running(process: str) -> bool:
 
     Uses a basic text search, and so may have false positives.
     """
-    #From http://www.bloggerpolis.com/2011/05/how-to-check-if-a-process-is-running-using-python/
+    # From http://www.bloggerpolis.com/2011/05/how-to-check-if-a-process-is-running-using-python/
     # and http://richarddingwall.name/2009/06/18/windows-equivalents-of-ps-and-kill-commands/
-    try: #Linux/Unix
+    try: # Linux/Unix
         s = subprocess.Popen(["ps", "axw"],stdout=subprocess.PIPE)
-    except: #Windows
+    except: # Windows
         s = subprocess.Popen(["tasklist", "/v"],stdout=subprocess.PIPE)
     assert s.stdout is not None
     for x in s.stdout:
@@ -127,7 +127,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
         args = ["dcop", "kdesktop", "KBackgroundIface", "setWallpaper", "0", file_loc, "6"]
         subprocess.Popen(args)
     elif desktop_env=="xfce4":
-        #From http://www.commandlinefu.com/commands/view/2055/change-wallpaper-for-xfce4-4.6.0
+        # From http://www.commandlinefu.com/commands/view/2055/change-wallpaper-for-xfce4-4.6.0
         if first_run:
             args0 = ["xfconf-query", "-c", "xfce4-desktop", "-p", "/backdrop/screen0/monitor0/image-path", "-s", file_loc]
             args1 = ["xfconf-query", "-c", "xfce4-desktop", "-p", "/backdrop/screen0/monitor0/image-style", "-s", "3"]
@@ -137,7 +137,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
             subprocess.Popen(args2)
         args = ["xfdesktop","--reload"]
         subprocess.Popen(args)
-    elif desktop_env=="razor-qt": #TODO: implement reload of desktop when possible
+    elif desktop_env=="razor-qt": # TODO: implement reload of desktop when possible
         if first_run:
             import configparser
             desktop_conf = configparser.ConfigParser()
@@ -150,17 +150,17 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
                 config_option = R"desktops\1\wallpaper"
             desktop_conf.read(os.path.join(desktop_conf_file))
             try:
-                if desktop_conf.has_option("razor",config_option): #only replacing a value
+                if desktop_conf.has_option("razor",config_option): # only replacing a value
                     desktop_conf.set("razor",config_option,file_loc)
                     with open(desktop_conf_file, "w", encoding="utf-8", errors="replace") as f:
                         desktop_conf.write(f)
             except Exception:
                 pass
         else:
-            #TODO: reload desktop when possible
+            # TODO: reload desktop when possible
             pass 
     elif desktop_env in ["fluxbox","jwm","openbox","afterstep"]:
-        #http://fluxbox-wiki.org/index.php/Howto_set_the_background
+        # http://fluxbox-wiki.org/index.php/Howto_set_the_background
         # used fbsetbg on jwm too since I am too lazy to edit the XML configuration 
         # now where fbsetbg does the job excellent anyway. 
         # and I have not figured out how else it can be set on Openbox and AfterSTep
@@ -190,13 +190,13 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
     #     args = ["enlightenment_remote", "-desktop-bg-add", "0", "0", "0", "0", file_loc]
     #     subprocess.Popen(args)
     elif desktop_env=="windows":
-        #From https://stackoverflow.com/questions/1977694/change-desktop-background
+        # From https://stackoverflow.com/questions/1977694/change-desktop-background
         # Tested on Windows 10. -- @1j01
         import ctypes
         SPI_SETDESKWALLPAPER = 20
         ctypes.windll.user32.SystemParametersInfoW(SPI_SETDESKWALLPAPER, 0, file_loc, 0)  # type: ignore
     elif desktop_env=="mac":
-        #From https://stackoverflow.com/questions/431205/how-can-i-programatically-change-the-background-in-mac-os-x
+        # From https://stackoverflow.com/questions/431205/how-can-i-programatically-change-the-background-in-mac-os-x
         try:
             # Tested on macOS 10.14.6 (Mojave) -- @1j01
             assert sys.platform == "darwin" # ignore `Import "appscript" could not be resolved` for other platforms
@@ -204,7 +204,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
             app('Finder').desktop_picture.set(mactypes.File(file_loc))
         except ImportError:
             # Tested on macOS 10.14.6 (Mojave) -- @1j01
-            #import subprocess
+            # import subprocess
             # SCRIPT = f"""/usr/bin/osascript<<END
             # tell application "Finder" to set desktop picture to POSIX file "{file_loc}"
             # END"""
@@ -222,7 +222,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
             """
             subprocess.Popen(["osascript", "-e", OSASCRIPT, "--", file_loc])
     else:
-        if first_run: #don't spam the user with the same message over and over again
+        if first_run: # don't spam the user with the same message over and over again
             sys.stderr.write("Warning: Failed to set wallpaper. Your desktop environment is not supported.")
             sys.stderr.write("You can try manually to set your wallpaper to %s" % file_loc)
         return False
