@@ -190,8 +190,8 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
         args = ["wmsetbg", "-s", "-u", file_loc]
         subprocess.Popen(args)
     # elif desktop_env=="enlightenment": # I have not been able to make it work on e17. On e16 it would have been something in this direction
-    #     args = "enlightenment_remote -desktop-bg-add 0 0 0 0 %s" % file_loc
-    #     subprocess.Popen(args,shell=True)
+    #     args = ["enlightenment_remote", "-desktop-bg-add", "0", "0", "0", "0", file_loc]
+    #     subprocess.Popen(args)
     elif desktop_env=="windows":
         #From https://stackoverflow.com/questions/1977694/change-desktop-background
         # Tested on Windows 10. -- @1j01
