@@ -14,43 +14,21 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
   - [x] Fancy file dialogs
   - [x] Drag and drop files to open
   - [x] Warnings when overwriting an existing file, or closing with unsaved changes
-  - [x] Automatically saves a temporary `.ans~` backup file alongside the file you're editing, for recovery in case of a crash
+  - [x] Auto-saves a temporary `.ans~` backup file alongside the file you're editing, for crash recovery
   - [x] Edits ANSI art and raster images and more. See [File Formats](#file-formats)
-- Tools
-    - [x] Free-Form Select
-    - [x] Select
-    - [x] Eraser/Color Eraser
-    - [x] Fill With Color
-    - [x] Pick Color
-    - [x] Magnifier
-    - [x] Pencil
-    - [x] Brush
-    - [x] Airbrush
-    - [x] Text
-    - [x] Line
-    - [x] Curve
-    - [x] Rectangle
-    - [x] Polygon
-    - [x] Ellipse
-    - [x] Rounded Rectangle
-- Commands
-  - [x] **Undo** and **Repeat** (AKA redo)
-  - [x] **Cut**, **Copy**, **Paste**, **Clear Selection** (AKA delete), **Select All**
-  - [x] **Paste From** (insert file as selection), **Copy To** (save selection to file)
-  - [x] **Flip/Rotate**
-  - [x] **Stretch/Skew**
-  - [x] **Invert Colors**
-  - [x] **Attributes** (resize canvas; in the future may change color/text modes, maybe text encoding)
-  - [x] **Edit Colors**
-  - [x] **Set As Wallpaper** (tiled or centered)
-  - Every command is implemented, other than **Print** and **Send** (as fax / email), and a few toggles: **Draw Opaque** (pending tool options), **Show Thumbnail** (pending [sixel support in Textual](https://textual.textualize.io/roadmap/#widgets)), and **Text Toolbar** (which could show FIGlet fonts, but that would complicate the text area implementation, and could show bold/italic/underline, but that would complicate the document model. Both interesting, but not for a first release!)
+- [x] All tools from MS Paint: Free-Form Select, Select, Eraser/Color Eraser, Fill With Color, Pick Color, Magnifier, Pencil, Brush, Airbrush, Text, Line, Curve, Rectangle, Polygon, Ellipse, and Rounded Rectangle
 - [x] Color palette
 - [x] Efficient screen updates and undo/redo history, by tracking regions affected by each action
-	- You could totally use this program over SSH! Haha, this "what if" project could actually be useful. Of course, it should be mentioned that you can also run graphical programs over SSH, but this might be more responsive, or just fit your vibe better.
+- [x] You should be able to use this over SSH
 - [x] Brush previews
-- [x] Menu bar
 - [x] Status bar
+- [x] Menu bar
 - [x] Keyboard shortcuts
+- [x] Nearly every command from MS Paint is supported, including fun ones like:
+  - [x] Flip/Rotate
+  - [x] Stretch/Skew
+  - [x] Edit Colors
+  - [x] Set As Wallpaper (Tiled/Centered)
 - [x] Localization into 26 languages: Arabic, Czech, Danish, German, Greek, English, Spanish, Finnish, French, Hebrew, Hungarian, Italian, Japanese, Korean, Dutch, Norwegian, Polish, Portuguese, Brazilian Portuguese, Russian, Slovak, Slovenian, Swedish, Turkish, Chinese, Simplified Chinese
 - [x] Dark mode
 - [x] Zooming works with text, despite running in the terminal :)
