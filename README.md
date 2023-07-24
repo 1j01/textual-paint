@@ -363,10 +363,21 @@ Also, note that it might not work with your Git GUI of choice; you may need to u
 - `paint.py` can only be run as a module, not as a script. I just... I haven't had the heart to remove the shebang line.
 
 ### Linting
-  
+
 ```bash
-pyright  # type checking
-cspell-cli lint .  # spell checking
+# Spell checking
+# I use the VS Code extension "Code Spell Checker", and its associated CLI:
+cspell-cli lint .
+
+# Type checking
+# I use the "Python" and "Pylance" VS Code extensions, and the Pyright CLI:
+pyright  
+# It should give 0 errors at this version of Pyright:
+PYRIGHT_PYTHON_FORCE_VERSION=1.1.317 pyright
+# It gives 508 errors with the next version (the current latest) for some reason:
+PYRIGHT_PYTHON_FORCE_VERSION=1.1.318 pyright
+# I also tried mypy and fixed some errors it reported, but I'm not targeting zero errors with mypy.
+mypy src --no-namespace-packages --check-untyped-defs
 ```
 
 ## License
