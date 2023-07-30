@@ -10,7 +10,7 @@ from textual.app import ScreenStackError
 if TYPE_CHECKING:
     from .paint import PaintApp
 
-def restart_program():
+def restart_program() -> None:
     """Restarts the current program, after resetting terminal state, and cleaning up file objects and descriptors."""
 
     try:
@@ -57,7 +57,7 @@ def restart_program():
     # os.execl(python, python, *sys.argv)
     os.execl(sys.executable, *sys.orig_argv)
 
-def restart_on_changes(app: PaintApp):
+def restart_on_changes(app: PaintApp) -> None:
     """Restarts the current program when a file is changed"""
     
     from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
@@ -65,7 +65,7 @@ def restart_on_changes(app: PaintApp):
 
     class RestartHandler(PatternMatchingEventHandler):
         """A handler for file changes"""
-        def on_any_event(self, event: FileSystemEvent):
+        def on_any_event(self, event: FileSystemEvent) -> None:
             if event.event_type in (EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED):
                 # These seem like they'd just cause trouble... they're not changes, are they?
                 return

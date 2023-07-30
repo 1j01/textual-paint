@@ -227,7 +227,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
         return False
     return True
 
-def get_config_dir(app_name: str):
+def get_config_dir(app_name: str) -> str:
     if "XDG_CONFIG_HOME" in os.environ:
         config_home = os.environ["XDG_CONFIG_HOME"] 
     elif "APPDATA" in os.environ: # On Windows
@@ -235,11 +235,11 @@ def get_config_dir(app_name: str):
     else:
         try:
             from xdg import BaseDirectory  # type: ignore
-            config_home =  BaseDirectory.xdg_config_home
+            config_home = BaseDirectory.xdg_config_home
         except ImportError: # Most likely a Linux/Unix system anyway
-            config_home =  os.path.join(get_home_dir(), ".config")
+            config_home = os.path.join(get_home_dir(), ".config")
     config_dir = os.path.join(config_home, app_name)
     return config_dir
 
-def get_home_dir():
+def get_home_dir() -> str:
     return os.path.expanduser("~")
