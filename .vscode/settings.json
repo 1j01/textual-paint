@@ -12,10 +12,10 @@
         {"name": "rich", "depth": 5},
     ],
     // Textual CSS is not browser CSS.
-    // In the future it would be nice to have custom CSS data for the framework.
-    // (I tried this feature, but my proof-of-concept didn't work. Maybe an extension would work? Maybe I did something simple wrong?)
-    // https://github.com/microsoft/vscode-css-languageservice/blob/main/docs/customData.md#custom-data-for-css-language-service
-    "css.validate": false,
+    // Use the Textual Syntax Highlighter extension.
+    "files.associations": {
+        "*.css": "Textual CSS"
+    },
     // Prevent accidental editing of generated files and installed packages.
     // (You can always use File: Set Active Editor Writeable in Session if you need to.)
     "files.readonlyInclude": {
