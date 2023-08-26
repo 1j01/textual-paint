@@ -381,7 +381,7 @@ As it turns out, I didn't run into any significant roadblocks, so I ended up rec
 
 These are the symbols I've found so far:
 
-- Free-Form Select:  ✂️📐🆓🕸✨⚝⛤⛥⛦⛧🫥🇫/🇸◌⁛⁘ ⢼⠮
+- Free-Form Select:  ✂️📐🆓🕸✨⚝⛤⛥⛦⛧🫥🇫/🇸◌⁛⁘ ⢼⠮📿➰➿𓍼🪢𓍯
 - Select: ⬚▧🔲 ⣏⣹ ⛶
 - Eraser/Color Eraser: 🧼🧽🧹🚫👋🗑️▰▱
 - Fill With Color: 🌊💦💧🌈🎉🎊🪣🫗
