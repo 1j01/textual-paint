@@ -14,6 +14,7 @@ from random import randint, random
 import sys
 from typing import Any, Coroutine, NamedTuple, Optional, Callable, Iterator
 from uuid import uuid4
+from rich.cells import cell_len
 
 import stransi
 from stransi.instruction import Instruction
@@ -37,7 +38,9 @@ from textual.binding import Binding
 from textual.color import Color, ColorParseError
 from PIL import Image, UnidentifiedImageError
 from textual.worker import get_current_worker  # type: ignore
-from pyfiglet import Figlet, FigletFont  # type: ignore
+from pyfiglet import Figlet, FigletFont
+
+from textual_paint.cell_len import patch_cell_widths_table  # type: ignore
 
 from .menus import MenuBar, Menu, MenuItem, Separator
 from .windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon, get_question_icon, get_paint_icon
@@ -325,6 +328,19 @@ class Tool(Enum):
             Tool.rounded_rectangle: _("Rounded Rectangle"),
         }[self]
 
+
+
+def fix_tool_icon_cell_widths():
+    """Patch the cell length measurements table for tool icons, since it varies by terminal/locale/font.
+    
+    This should be called before the characters in question are ever measured with cell_len, to avoid caching the wrong values.
+    """
+    if ascii_only_icons:
+        return
+    for tool in Tool:
+        patch_cell_widths_table(tool.get_icon())
+
+fix_tool_icon_cell_widths()
 
 palette = [
     "rgb(0,0,0)",  # Black
