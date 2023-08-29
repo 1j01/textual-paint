@@ -208,7 +208,7 @@ class Tool(Enum):
         # - Pick Color: 🎨🌈💉💅💧🩸🎈📌📍🪛🪠🥍🩼🌡💄🎯𖡡⤤𝀃🝯⊸⚲𓋼🗡𓍊🍶🧪🍼🌂👁️‍🗨️🧿🍷⤵❣⚗ ⤆Ϸ ⟽þ ⇐ c⟾ /̥͚̥̥͚͚̊̊
         # - Magnifier: 🔍🔎👀🔬🔭🧐🕵️‍♂️🕵️‍♀️
         # - Pencil: ✏️✎✍️🖎🖊️🖋️✒️🖆📝🖍️🪶
-        # - Brush: 🖌👨‍🎨🧑‍🎨💅🧹🪮🪥🪒🪠ⵄ⑃ሐ⋔⋲ ▭⋹ 𝈸⋹ ⊏⋹ ⸦⋹ ⊂⋹
+        # - Brush: 🖌👨‍🎨🧑‍🎨💅🧹🪮🪥🪒🪠ⵄ⑃ሐ⋔⋲ ▭⋹ 𝈸⋹ ⊏⋹ ⸦⋹ ⊂⋹ ▬▤
         # - Airbrush: ⛫💨дᖜ💨╔💨🧴🥤🧃🧯🧨🍾🥫💈🫠🌬️🗯☄💭༄༺☁️🌪️🌫🌀🚿 ⪧𖤘 ᗒᗣ дᖜᗕ
         # - Text: 📝📄📃📜AＡ🅰️🆎🔤🔠𝐴
         # - Line: 📏📉📈＼⟍𝈏╲⧹\⧵∖
@@ -282,6 +282,27 @@ class Tool(Enum):
             # "🪣" shows as tofu
             if self == Tool.fill:
                 return "🌊"
+        elif os.environ.get("KITTY_WINDOW_ID"):
+            # Kitty terminal has alignment problems with the default Pencil symbol "✏️"
+            # as well as alternatives "🖍️", "🖊️", "🖋️", "✍️", "✒️"
+            # and Brush symbol "🖌️" and alternatives "🧹", "🪮"
+            # "🖎", "🖆", and "✎" don't cause alignment issues, but don't show in color and are illegibly small.
+            if self == Tool.pencil:
+                # Working for me: "🪶", and "📝", which may look more like a Text tool than a pencil tool,
+                # but at least has a pencil...
+                return "📝"
+            if self == Tool.brush:
+                # Working for me: "👨‍🎨", "💅", "🪥", "🪒", "🪠", "▭⋹" (basically any of the lame options)
+                # return "[tan]▬[/][#5c2121]⋹[/]"
+                return "[tan]▬[/]▤"
+            if self == Tool.text:
+                # The wide character "Ａ" isn't centered-looking? And is faint/small...
+                return "𝐴" # not centered, but closer to MS Paint's icon, with serifs
+            if self == Tool.curve:
+                # "～" appears tiny!
+                # "〜" looks good; should I use that for other platforms too?
+                # (It's funny, they look identical in my IDE (VS Code))
+                return "〜"
         return {
             Tool.free_form_select: "⚝",
             Tool.select: "⬚",

@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Stretch/Skew dialog's icons were missing from the package, and didn't show up in the dialog, in the release build.
+- Fixed misaligned rows of text in Kitty terminal due to Pencil and Brush tool emojis. The Text and Curve tool icons are also swapped out for options that look better in Kitty.
 
 ## [0.1.0] - 2023-07-24
 
