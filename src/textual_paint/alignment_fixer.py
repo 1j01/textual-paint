@@ -1,7 +1,7 @@
-"""Workaround for misalignment. Based on the Tooltip widget from Textual."""
+"""Workaround for misalignment."""
 
 from __future__ import annotations
-from textual.geometry import Offset
+from textual.geometry import Region, Size
 
 from textual.widgets import Static
 
@@ -9,23 +9,16 @@ from textual.widgets import Static
 class AlignmentFixer(Static):
     DEFAULT_CSS = """
     AlignmentFixer {
-        layer: alignment_fixer;
-        margin: 1 2;
-        /*padding: 1 2;*/
-        background: red;
-        width: auto;
-        height: auto;
-        constrain: inflect;
-        max-width: 40;
-        /*display: none;*/
-    }
-    AlignmentFixer.display {
         display: none;
-        /*display: block;*/
     }
     """
 
     def on_mount(self) -> None:
-        self._absolute_offset = Offset(1, 15)
-        self.set_interval(1.0, lambda: self.toggle_class("display"))
-        # self.display = True
+        self.set_interval(1.0, self.refresh_hax)
+
+    def refresh_hax(self) -> None:
+        # self.screen.refresh(Region.from_offset(self.app.mouse_position, Size(1, 1)))
+        # self.query(".tool_button").refresh()
+        self.query(".tool_button").set_styles("background: #ff0000;")
+        self.query(".tool_button").set_styles("width: 10;")
+        # self.query(".tool_button").set_styles("background:")
