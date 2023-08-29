@@ -47,6 +47,7 @@ from .localization.i18n import get as _, load_language, remove_hotkey
 from .rasterize_ansi_art import rasterize
 from .wallpaper import get_config_dir, set_wallpaper
 from .auto_restart import restart_on_changes, restart_program
+from .alignment_fixer import AlignmentFixer
 
 from .__init__ import __version__
 
@@ -242,62 +243,62 @@ class Tool(Enum):
         # so alternative characters need to be chosen carefully for each platform.
         # "🫗" causes jutting out in Ubuntu terminal, "🪣" causes the opposite in VS Code terminal
         # VS Code sets TERM_PROGRAM to "vscode", so we can use that to detect it
-        TERM_PROGRAM = os.environ.get("TERM_PROGRAM")
-        if TERM_PROGRAM == "vscode":
-            if self == Tool.fill:
-                # return "🫗" # is also hard to see in the light theme
-                return "🌊" # is a safe alternative
-                # return "[on black]🫗 [/]" # no way to make this not look like a selection highlight
-            if self == Tool.pencil:
-                # "✏️" doesn't display in color in VS Code
-                return "🖍️" # or "🖊️", "🖋️"
-        elif TERM_PROGRAM == "iTerm.app":
-            # 🪣 (Fill With Color) and ⚝ (Free-Form Select) defaults are missing in iTerm2 on macOS 10.14 (Mojave)
-            # They show as a question mark in a box, and cause the rest of the row to be misaligned.
-            if self == Tool.fill:
-                return "🌊"
-            if self == Tool.free_form_select:
-                return "⢼⠮"
-        elif os.environ.get("WT_SESSION"):
-            # The new Windows Terminal app sets WT_SESSION to a GUID.
-            # Caveats:
-            # - If you run `cmd` inside WT, this env var will be inherited.
-            # - If you run a GUI program that launches another terminal emulator, this env var will be inherited.
-            # - If you run via ssh, using Microsoft's official openssh server, WT_SESSION will not be set.
-            # - If you hold alt and right click in Windows Explorer, and say Open Powershell Here, WT_SESSION will not be set,
-            #   because powershell.exe is launched outside of the Terminal app, then later attached to it.
-            # Source: https://github.com/microsoft/terminal/issues/11057
+        # TERM_PROGRAM = os.environ.get("TERM_PROGRAM")
+        # if TERM_PROGRAM == "vscode":
+        #     if self == Tool.fill:
+        #         # return "🫗" # is also hard to see in the light theme
+        #         return "🌊" # is a safe alternative
+        #         # return "[on black]🫗 [/]" # no way to make this not look like a selection highlight
+        #     if self == Tool.pencil:
+        #         # "✏️" doesn't display in color in VS Code
+        #         return "🖍️" # or "🖊️", "🖋️"
+        # elif TERM_PROGRAM == "iTerm.app":
+        #     # 🪣 (Fill With Color) and ⚝ (Free-Form Select) defaults are missing in iTerm2 on macOS 10.14 (Mojave)
+        #     # They show as a question mark in a box, and cause the rest of the row to be misaligned.
+        #     if self == Tool.fill:
+        #         return "🌊"
+        #     if self == Tool.free_form_select:
+        #         return "⢼⠮"
+        # elif os.environ.get("WT_SESSION"):
+        #     # The new Windows Terminal app sets WT_SESSION to a GUID.
+        #     # Caveats:
+        #     # - If you run `cmd` inside WT, this env var will be inherited.
+        #     # - If you run a GUI program that launches another terminal emulator, this env var will be inherited.
+        #     # - If you run via ssh, using Microsoft's official openssh server, WT_SESSION will not be set.
+        #     # - If you hold alt and right click in Windows Explorer, and say Open Powershell Here, WT_SESSION will not be set,
+        #     #   because powershell.exe is launched outside of the Terminal app, then later attached to it.
+        #     # Source: https://github.com/microsoft/terminal/issues/11057
 
-            # Windows Terminal has alignment problems with the default Pencil symbol "✏️"
-            # as well as alternatives "🖍️", "🖊️", "🖋️", "✍️", "✒️"
-            # "🖎" and "🖆" don't cause alignment issues, but don't show in color and are illegibly small.
-            if self == Tool.pencil:
-                # This looks more like it would represent the Text tool than the Pencil,
-                # so it's far from ideal, especially when there IS an actual pencil emoji...
-                return "📝"
-            # "🖌️" is causes misalignment (and is hard to distinguish from "✏️" at a glance)
-            # "🪮" shows as tofu
-            if self == Tool.brush:
-                return "🧹"
-            # "🪣" shows as tofu
-            if self == Tool.fill:
-                return "🌊"
-        elif os.environ.get("KITTY_WINDOW_ID"):
-            # Kitty terminal has alignment problems with the default Pencil symbol "✏️"
-            # as well as alternatives "🖍️", "🖊️", "🖋️", "✍️", "✒️"
-            # and Brush symbol "🖌️" and alternatives "🧹", "🪮"
-            # "🖎", "🖆", and "✎" don't cause alignment issues, but don't show in color and are illegibly small.
-            if self == Tool.pencil:
-                # Working for me: "🪶", and "📝", which may look more like a Text tool than a pencil tool,
-                # but at least has a pencil...
-                return "📝"
-            if self == Tool.brush:
-                # Working for me: "👨‍🎨", "💅", "🪥", "🪒", "🪠", "▭⋹" (basically any of the lame options)
-                # return "[tan]▬[/][#5c2121]⋹[/]"
-                return "[tan]▬[/]▤"
-            if self == Tool.text:
-                # The wide character "Ａ" isn't centered-looking? And is faint/small...
-                return "𝐴" # not centered, but closer to MS Paint's icon, with serifs
+        #     # Windows Terminal has alignment problems with the default Pencil symbol "✏️"
+        #     # as well as alternatives "🖍️", "🖊️", "🖋️", "✍️", "✒️"
+        #     # "🖎" and "🖆" don't cause alignment issues, but don't show in color and are illegibly small.
+        #     if self == Tool.pencil:
+        #         # This looks more like it would represent the Text tool than the Pencil,
+        #         # so it's far from ideal, especially when there IS an actual pencil emoji...
+        #         return "📝"
+        #     # "🖌️" is causes misalignment (and is hard to distinguish from "✏️" at a glance)
+        #     # "🪮" shows as tofu
+        #     if self == Tool.brush:
+        #         return "🧹"
+        #     # "🪣" shows as tofu
+        #     if self == Tool.fill:
+        #         return "🌊"
+        # elif os.environ.get("KITTY_WINDOW_ID"):
+        #     # Kitty terminal has alignment problems with the default Pencil symbol "✏️"
+        #     # as well as alternatives "🖍️", "🖊️", "🖋️", "✍️", "✒️"
+        #     # and Brush symbol "🖌️" and alternatives "🧹", "🪮"
+        #     # "🖎", "🖆", and "✎" don't cause alignment issues, but don't show in color and are illegibly small.
+        #     if self == Tool.pencil:
+        #         # Working for me: "🪶", and "📝", which may look more like a Text tool than a pencil tool,
+        #         # but at least has a pencil...
+        #         return "📝"
+        #     if self == Tool.brush:
+        #         # Working for me: "👨‍🎨", "💅", "🪥", "🪒", "🪠", "▭⋹" (basically any of the lame options)
+        #         # return "[tan]▬[/][#5c2121]⋹[/]"
+        #         return "[tan]▬[/]▤"
+        #     if self == Tool.text:
+        #         # The wide character "Ａ" isn't centered-looking? And is faint/small...
+        #         return "𝐴" # not centered, but closer to MS Paint's icon, with serifs
         return {
             Tool.free_form_select: "⚝",
             Tool.select: "⬚",
@@ -4496,6 +4497,7 @@ Columns: {len(palette) // 2}
 
     def compose(self) -> ComposeResult:
         """Add our widgets."""
+        yield AlignmentFixer("Alignment Fixer")
         yield Header()
         with Container(id="paint"):
             # I'm not supporting hotkeys for the top level menus, because I can't detect Alt.
@@ -4584,6 +4586,7 @@ Columns: {len(palette) // 2}
                 Static(id="status_dimensions"),
                 id="status_bar",
             )
+        
         if not inspect_layout:
             return
         # importing the inspector adds instrumentation which can slow down startup
