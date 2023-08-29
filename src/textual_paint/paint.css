@@ -1,5 +1,5 @@
 Screen {
-    layers: window menu-popup;
+    layers: window menu-popup alignment_fixer;
     overflow: hidden;
 }
 

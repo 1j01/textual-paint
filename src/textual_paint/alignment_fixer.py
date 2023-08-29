@@ -9,7 +9,7 @@ from textual.widgets import Static
 class AlignmentFixer(Static):
     DEFAULT_CSS = """
     AlignmentFixer {
-        layer: _tooltips;
+        layer: alignment_fixer;
         margin: 1 2;
         /*padding: 1 2;*/
         background: red;
