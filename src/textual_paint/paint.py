@@ -4604,6 +4604,7 @@ Columns: {len(palette) // 2}
         self.canvas = self.query_one("#canvas", Canvas)
         self.canvas.image = self.image
         self.editing_area = self.query_one("#editing_area", Container)
+        self._disable_tooltips = True
 
     def pick_color(self, x: int, y: int) -> None:
         """Select a color from the image."""
