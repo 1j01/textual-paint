@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `--ascii-only-icons` now uses color, and has been otherwise tweaked to make tools easier to distinguish.
+
 ### Fixed
 
 - Stretch/Skew dialog's icons were missing from the package, and didn't show up in the dialog, in the release build.

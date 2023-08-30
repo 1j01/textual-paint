@@ -220,22 +220,22 @@ class Tool(Enum):
 
         if ascii_only_icons:
             enum_to_icon = {
-                Tool.free_form_select: "<[u]^[/]7",  # "*" "<^>" "<[u]^[/]7"
+                Tool.free_form_select: "'::.",  # "*" "<^>" "<[u]^[/]7" "'::." ".::." "<%>"
                 Tool.select: "::",  # "#" "::" ":_:" ":[u]:[/]:" ":[u]'[/]:"
-                Tool.eraser: "[u]/[/]7",  # "47" "27" "/_/" "[u]/[/]7"
-                Tool.fill: "[u i]H[/]?",  # "#?" "H?" "[u i]F[/]?"
-                Tool.pick_color: "[u i] P[/]",  # "[u].[/]" "[u i]\\P[/]"
-                Tool.magnifier: ",O",  # ",O" "o-" "O-" "o=" "O=" "Q"
-                Tool.pencil: "-==",  # "c==>" "==-"
-                Tool.brush: "E)=",  # "[u],h.[/u]" "[u],|.[/u]" "[u]h[/u]"
-                Tool.airbrush: "[u i]H[/]`<",  # "H`" "H`<" "[u i]H[/]`<" "[u i]6[/]<"
+                Tool.eraser: "[rgb(255,0,255)][u]/[/]7[/]",  # "47" "27" "/_/" "[u]/[/]7" "<%>"
+                Tool.fill: "[u i]H[/][blue][b]?[/][/]",  # "#?" "H?" "[u i]F[/]?"
+                Tool.pick_color: "[u i red] P[/]",  # "[u].[/]" "[u i]\\P[/]"
+                Tool.magnifier: ",[rgb(0,128,255)]O[/]",  # ",O" "o-" "O-" "o=" "O=" "Q"
+                Tool.pencil: "[rgb(255,0,255)]c[/][rgb(128,128,64)]==[/]-",  # "c==>" "==-" "-=="
+                Tool.brush: "E[rgb(128,128,64)])=[/]",  # "[u],h.[/u]" "[u],|.[/u]" "[u]h[/u]"
+                Tool.airbrush: "[u i]H[/][rgb(0,128,255)]<)[/]",  # "H`" "H`<" "[u i]H[/]`<" "[u i]6[/]<"
                 Tool.text: "A",  # "Abc"
                 Tool.line: "\\",
-                Tool.curve: "~",  # "~" "S" "s"
+                Tool.curve: "S",  # "~" "S" "s"
                 Tool.rectangle: "[_]",  # "[]" "[_]" ("[\x1B[53m_\x1B[55m]" doesn't work right, is there no overline tag?)
                 Tool.polygon: "[b]L[/b]",  # "L"
                 Tool.ellipse: "O",  # "()"
-                Tool.rounded_rectangle: "(_)", # "(_)" ("(\x1B[53m_\x1B[55m)" doesn't work right, is there no overline tag?)
+                Tool.rounded_rectangle: "{_}", # "(_)" "{_}" ("(\x1B[53m_\x1B[55m)" doesn't work right, is there no overline tag?)
             }
             return enum_to_icon[self]
         # Some glyphs cause misalignment of everything to the right of them, including the canvas,
