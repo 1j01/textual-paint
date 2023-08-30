@@ -40,7 +40,7 @@ from textual.worker import get_current_worker  # type: ignore
 from pyfiglet import Figlet, FigletFont  # type: ignore
 
 from .menus import MenuBar, Menu, MenuItem, Separator
-from .windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon, get_question_icon, get_paint_icon
+from .windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, WindowTitleBar, get_warning_icon, get_question_icon, get_paint_icon
 from .file_dialogs import SaveAsDialogWindow, OpenDialogWindow
 from .edit_colors import EditColorsDialogWindow
 from .localization.i18n import get as _, load_language, remove_hotkey
@@ -69,6 +69,7 @@ parser.add_argument('--version', action='version', version=f'%(prog)s {__version
 parser.add_argument('--theme', default='light', help='Theme to use, either "light" or "dark"', choices=['light', 'dark'])
 parser.add_argument('--language', default='en', help='Language to use', choices=['ar', 'cs', 'da', 'de', 'el', 'en', 'es', 'fi', 'fr', 'he', 'hu', 'it', 'ja', 'ko', 'nl', 'no', 'pl', 'pt', 'pt-br', 'ru', 'sk', 'sl', 'sv', 'tr', 'zh', 'zh-simplified'])
 parser.add_argument('--ascii-only-icons', action='store_true', help='Use only ASCII characters for tool icons, no emoji or other Unicode symbols')
+parser.add_argument('--ascii-only', action='store_true', help='Use only ASCII characters for the entire UI, for use in older terminals. Implies --ascii-only-icons')
 parser.add_argument('--backup-folder', default=None, metavar="FOLDER", help='Folder to save backups to. By default a backup is saved alongside the edited file.')
 
 # TODO: hide development options from help? there's quite a few of them now
@@ -5512,6 +5513,246 @@ Columns: {len(palette) // 2}
                 if not event.ctrl:
                     widget.styles.border = ("round", Color.from_hsl(i / 10, 1, 0.5))
                     widget.border_title = widget.css_identifier_styled  # type: ignore
+
+if args.ascii_only:
+    args.ascii_only_icons = True
+
+    from textual._border import BORDER_CHARS, BORDER_LOCATIONS
+
+    # replace all with ascii border style
+    for key in BORDER_CHARS:
+        BORDER_CHARS[key] = (
+            ("+", "-", "+"),
+            ("|", " ", "|"),
+            ("+", "-", "+"),
+        )
+
+    # BORDER_CHARS[""] = (
+    #     (" ", " ", " "),
+    #     (" ", " ", " "),
+    #     (" ", " ", " "),
+    # )
+    # # was originally: (
+    # #     (" ", " ", " "),
+    # #     (" ", " ", " "),
+    # #     (" ", " ", " "),
+    # # )
+
+    # BORDER_CHARS["ascii"] = (
+    #     ("+", "-", "+"),
+    #     ("|", " ", "|"),
+    #     ("+", "-", "+"),
+    # )
+    # # was originally: (
+    # #     ("+", "-", "+"),
+    # #     ("|", " ", "|"),
+    # #     ("+", "-", "+"),
+    # # )
+
+    # BORDER_CHARS["none"] = (
+    #     (" ", " ", " "),
+    #     (" ", " ", " "),
+    #     (" ", " ", " "),
+    # )
+    # # was originally: (
+    # #     (" ", " ", " "),
+    # #     (" ", " ", " "),
+    # #     (" ", " ", " "),
+    # # )
+
+    # BORDER_CHARS["hidden"] = (
+    #     (" ", " ", " "),
+    #     (" ", " ", " "),
+    #     (" ", " ", " "),
+    # )
+    # # was originally: (
+    # #     (" ", " ", " "),
+    # #     (" ", " ", " "),
+    # #     (" ", " ", " "),
+    # # )
+
+    # BORDER_CHARS["blank"] = (
+    #     (" ", " ", " "),
+    #     (" ", " ", " "),
+    #     (" ", " ", " "),
+    # )
+    # # was originally: (
+    # #     (" ", " ", " "),
+    # #     (" ", " ", " "),
+    # #     (" ", " ", " "),
+    # # )
+
+    BORDER_CHARS["round"] = (
+        (".", "-", "."),
+        ("|", " ", "|"),
+        ("'", "-", "'"),
+    )
+    # was originally: (
+    #     ("╭", "─", "╮"),
+    #     ("│", " ", "│"),
+    #     ("╰", "─", "╯"),
+    # )
+
+    # This is actually supported in old terminals, but it's not technically ASCII...
+    # BORDER_CHARS["solid"] = (
+    #     ("┌", "─", "┐"),
+    #     ("│", " ", "│"),
+    #     ("└", "─", "┘"),
+    # )
+    # # was originally: (
+    # #     ("┌", "─", "┐"),
+    # #     ("│", " ", "│"),
+    # #     ("└", "─", "┘"),
+    # # )
+
+    BORDER_CHARS["double"] = (
+        ("#", "=", "#"),
+        ("H", " ", "H"),
+        ("#", "=", "#"),
+    )
+    # was originally: (
+    #     ("╔", "═", "╗"),
+    #     ("║", " ", "║"),
+    #     ("╚", "═", "╝"),
+    # )
+
+    BORDER_CHARS["dashed"] = (
+        (":", '"', ":"),
+        (":", " ", ":"),
+        ("'", '"', "'"),
+    )
+    # was originally: (
+    #     ("┏", "╍", "┓"),
+    #     ("╏", " ", "╏"),
+    #     ("┗", "╍", "┛"),
+    # )
+
+    # BORDER_CHARS["heavy"] = (
+    #     ("┏", "━", "┓"),
+    #     ("┃", " ", "┃"),
+    #     ("┗", "━", "┛"),
+    # )
+    # # was originally: (
+    # #     ("┏", "━", "┓"),
+    # #     ("┃", " ", "┃"),
+    # #     ("┗", "━", "┛"),
+    # # )
+
+    # BORDER_CHARS["inner"] = (
+    #     ("▗", "▄", "▖"),
+    #     ("▐", " ", "▌"),
+    #     ("▝", "▀", "▘"),
+    # )
+    # # was originally: (
+    # #     ("▗", "▄", "▖"),
+    # #     ("▐", " ", "▌"),
+    # #     ("▝", "▀", "▘"),
+    # # )
+
+    # BORDER_CHARS["outer"] = (
+    #     ("▛", "▀", "▜"),
+    #     ("▌", " ", "▐"),
+    #     ("▙", "▄", "▟"),
+    # )
+    # # was originally: (
+    # #     ("▛", "▀", "▜"),
+    # #     ("▌", " ", "▐"),
+    # #     ("▙", "▄", "▟"),
+    # # )
+
+    # BORDER_CHARS["thick"] = (
+    #     ("█", "▀", "█"),
+    #     ("█", " ", "█"),
+    #     ("█", "▄", "█"),
+    # )
+    # # was originally: (
+    # #     ("█", "▀", "█"),
+    # #     ("█", " ", "█"),
+    # #     ("█", "▄", "█"),
+    # # )
+
+    BORDER_CHARS["hkey"] = (
+        (" ", " ", " "),
+        (" ", " ", " "),
+        ("_", "_", "_"),
+    )
+    # was originally: (
+    #     ("▔", "▔", "▔"),
+    #     (" ", " ", " "),
+    #     ("▁", "▁", "▁"),
+    # )
+
+    BORDER_CHARS["vkey"] = (
+        ("[", " ", "]"),
+        ("[", " ", "]"),
+        ("[", " ", "]"),
+    )
+    # was originally: (
+    #     ("▏", " ", "▕"),
+    #     ("▏", " ", "▕"),
+    #     ("▏", " ", "▕"),
+    # )
+
+    BORDER_CHARS["tall"] = (
+        ("[", " ", "]"),
+        ("[", " ", "]"),
+        ("[", "_", "]"),
+    )
+    # was originally: (
+    #     ("▊", "▔", "▎"),
+    #     ("▊", " ", "▎"),
+    #     ("▊", "▁", "▎"),
+    # )
+
+    # BORDER_CHARS["panel"] = (
+    #     ("▊", "█", "▎"),
+    #     ("▊", " ", "▎"),
+    #     ("▊", "▁", "▎"),
+    # )
+    # # was originally: (
+    # #     ("▊", "█", "▎"),
+    # #     ("▊", " ", "▎"),
+    # #     ("▊", "▁", "▎"),
+    # # )
+
+    BORDER_CHARS["wide"] = (
+        ("_", "_", "_"),
+        ("[", " ", "]"),
+        (" ", " ", " "),
+    )
+    # was originally: (
+    #     ("▁", "▁", "▁"),
+    #     ("▎", " ", "▊"),
+    #     ("▔", "▔", "▔"),
+    # )
+
+    # Prevent inverse colors
+    for key in BORDER_LOCATIONS:
+        BORDER_LOCATIONS[key] = tuple(
+            tuple(value % 2 for value in row)
+            for row in BORDER_LOCATIONS[key]
+        )
+    # Prevent imbalanced borders
+    zeros = (
+        (0, 0, 0),
+        (0, 0, 0),
+        (0, 0, 0),
+    )
+    BORDER_LOCATIONS["panel"] = zeros
+    BORDER_LOCATIONS["tall"] = zeros
+    BORDER_LOCATIONS["wide"] = (
+        (1, 1, 1),
+        (0, 1, 0),
+        (1, 1, 1),
+    )
+
+    # Adjust icons
+    WindowTitleBar.MINIMIZE_ICON = "_"  # was originally: "🗕"
+    WindowTitleBar.MAXIMIZE_ICON = "□"  # was originally: "🗖" # not technically ASCII; could use "^" or "[]"
+    WindowTitleBar.RESTORE_ICON = "□"  # was originally: "🗗" # not technically ASCII; could use "^" or "%" or "#"
+    WindowTitleBar.CLOSE_ICON = "X"  # was originally: "🗙"
+
+
 
 # `textual run --dev src.textual_paint.paint` will search for a 
 # global variable named `app`, and fallback to

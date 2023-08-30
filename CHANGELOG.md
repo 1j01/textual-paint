@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `--ascii-only-icons` now uses color, and has been otherwise tweaked to make tools easier to distinguish.
 
+### Added
+
+- Added `--ascii-only` option which affects the whole UI, not just tool icons as with `--ascii-only-icons`; this makes Textual Paint more usable in older terminals like Windows Console Host (`conhost.exe`), or XTerm.
+
 ### Fixed
 
 - Stretch/Skew dialog's icons were missing from the package, and didn't show up in the dialog, in the release build.

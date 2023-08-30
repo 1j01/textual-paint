@@ -18,6 +18,11 @@ from .localization.i18n import get as _
 class WindowTitleBar(Container):
     """A title bar widget."""
 
+    MINIMIZE_ICON = "🗕"
+    MAXIMIZE_ICON = "🗖"
+    RESTORE_ICON = "🗗"
+    CLOSE_ICON = "🗙"
+
     title = var("")
 
     def __init__(
@@ -37,13 +42,13 @@ class WindowTitleBar(Container):
         """Add our widgets."""
         yield Static(self.title, classes="window_title")
         if self.allow_minimize:
-            yield Button("🗕", classes="window_minimize")
+            yield Button(self.MINIMIZE_ICON, classes="window_minimize")
         if self.allow_maximize:
-            yield Button("🗖", classes="window_maximize")
-            restore_button = Button("🗗", classes="window_restore")
+            yield Button(self.MAXIMIZE_ICON, classes="window_maximize")
+            restore_button = Button(self.RESTORE_ICON, classes="window_restore")
             restore_button.display = False
             yield restore_button
-        yield Button("🗙", classes="window_close")
+        yield Button(self.CLOSE_ICON, classes="window_close")
 
 id_counter = 0
 class Window(Container):

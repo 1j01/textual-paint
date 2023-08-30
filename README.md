@@ -69,6 +69,8 @@ options:
                         Language to use
   --ascii-only-icons    Use only ASCII characters for tool icons, no emoji or
                         other Unicode symbols
+  --ascii-only          Use only ASCII characters for the entire UI, for use in
+                        older terminals. Implies --ascii-only-icons
   --backup-folder FOLDER
                         Folder to save backups to. By default a backup is saved
                         alongside the edited file.
