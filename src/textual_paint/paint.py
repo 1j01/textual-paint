@@ -4176,7 +4176,7 @@ Columns: {len(palette) // 2}
             handle_button=handle_button,
         )
         try:
-            file_name = "stretch_skew_icons_ascii.ans" if args.ascii_only_icons else "stretch_skew_icons.ans"
+            file_name = "stretch_skew_icons_full_ascii.ans" if args.ascii_only_icons else "stretch_skew_icons.ans"
             with open(os.path.join(os.path.dirname(__file__), file_name), encoding="utf-8") as f:
                 icons_ansi = f.read()
                 icons_doc = AnsiArtDocument.from_ansi(icons_ansi)
