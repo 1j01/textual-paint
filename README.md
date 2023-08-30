@@ -152,7 +152,7 @@ cat samples/ship.ans
 To view all the sample files, run:
 
 ```bash
-find samples -type f -exec file --mime-type {} \; | grep -v -e "image/png" -e "image/svg" | cut -d: -f1 | sort | xargs -I{} sh -c 'echo "File: {}"; cat "{}"; echo "\n-----------------------\n"'
+find samples -type f -exec file --mime-type {} \; | grep -v -e "image/png" -e "image/svg" | cut -d: -f1 | sort | xargs -I{} sh -c 'echo "File: {}"; cat "{}"; echo "\n-----------------------\n"' | less --RAW-CONTROL-CHARS
 ```
 <details>
 <summary>Command Explanation</summary>
@@ -166,9 +166,11 @@ Let's break down the command:
 
 4. `sort`: This sorts the file paths alphabetically.
 
-5. `xargs -I{} sh -c 'echo "File: {}"; cat "{}"; echo "\n-----------------------\n"'`: Finally, this executes the `sh -c` command for each file, echoing the filename, catting its content, and adding a separator line.
+5. `xargs -I{} sh -c 'echo "File: {}"; cat "{}"; echo "\n-----------------------\n"'`: This executes the `sh -c` command for each file, outputting the filename, followed by the file's content, followed by a separator line.
 
-This command will sort and display the content of all non-PNG files within the "samples" folder and its subdirectories. Remember to run this command in the directory where the "samples" folder is located.
+6. `less --RAW-CONTROL-CHARS`: This allows you to scroll through the output with Up/Down/PageUp/PageDown. The `--RAW-CONTROL-CHARS` option is needed for the ANSI art to be displayed correctly.
+
+This command will sort and display the content of all non-PNG/SVG files within the "samples" folder and its subdirectories. It must be run from the repository root folder.
 </details>
 
 To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja, you can install the [ansi-art-thumbnailer](https://github.com/1j01/ansi-art-thumbnailer) program I made to go along with this project.
