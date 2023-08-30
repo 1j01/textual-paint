@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - `--ascii-only-icons` now uses color, and has been otherwise tweaked to make tools easier to distinguish.
+- `--ascii-only-icons` now affects the icons in the Stretch/Skew dialog, not just tool icons.
 
 ### Added
 
