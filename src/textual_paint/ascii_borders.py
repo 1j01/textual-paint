@@ -7,11 +7,12 @@ def force_ascii_borders() -> None:
 
     # replace all with ascii border style
     for key in BORDER_CHARS:
-        BORDER_CHARS[key] = (
-            ("+", "-", "+"),
-            ("|", " ", "|"),
-            ("+", "-", "+"),
-        )
+        if key not in ("ascii", "none", "hidden", "blank", ""):
+            BORDER_CHARS[key] = (
+                ("+", "-", "+"),
+                ("|", " ", "|"),
+                ("+", "-", "+"),
+            )
 
     # BORDER_CHARS[""] = (
     #     (" ", " ", " "),
@@ -79,7 +80,7 @@ def force_ascii_borders() -> None:
     #     ("╰", "─", "╯"),
     # )
 
-    # This is actually supported in old terminals, but it's not technically ASCII...
+    # This is actually supported in at least some old terminals; it's part of CP437, but not ASCII.
     # BORDER_CHARS["solid"] = (
     #     ("┌", "─", "┐"),
     #     ("│", " ", "│"),
@@ -93,7 +94,7 @@ def force_ascii_borders() -> None:
 
     BORDER_CHARS["double"] = (
         ("#", "=", "#"),
-        ("H", " ", "H"),
+        ("#", " ", "#"),
         ("#", "=", "#"),
     )
     # was originally: (
@@ -113,49 +114,49 @@ def force_ascii_borders() -> None:
     #     ("┗", "╍", "┛"),
     # )
 
-    # BORDER_CHARS["heavy"] = (
+    BORDER_CHARS["heavy"] = (
+        ("#", "=", "#"),
+        ("#", " ", "#"),
+        ("#", "=", "#"),
+    )
+    # was originally: (
     #     ("┏", "━", "┓"),
     #     ("┃", " ", "┃"),
     #     ("┗", "━", "┛"),
     # )
-    # # was originally: (
-    # #     ("┏", "━", "┓"),
-    # #     ("┃", " ", "┃"),
-    # #     ("┗", "━", "┛"),
-    # # )
 
-    # BORDER_CHARS["inner"] = (
+    BORDER_CHARS["inner"] = (
+        (" ", " ", " "),
+        (" ", " ", " "),
+        (" ", " ", " "),
+    )
+    # was originally: (
     #     ("▗", "▄", "▖"),
     #     ("▐", " ", "▌"),
     #     ("▝", "▀", "▘"),
     # )
-    # # was originally: (
-    # #     ("▗", "▄", "▖"),
-    # #     ("▐", " ", "▌"),
-    # #     ("▝", "▀", "▘"),
-    # # )
 
-    # BORDER_CHARS["outer"] = (
+    BORDER_CHARS["outer"] = (
+        (" ", " ", " "),
+        (" ", " ", " "),
+        (" ", " ", " "),
+    )
+    # was originally: (
     #     ("▛", "▀", "▜"),
     #     ("▌", " ", "▐"),
     #     ("▙", "▄", "▟"),
     # )
-    # # was originally: (
-    # #     ("▛", "▀", "▜"),
-    # #     ("▌", " ", "▐"),
-    # #     ("▙", "▄", "▟"),
-    # # )
 
-    # BORDER_CHARS["thick"] = (
+    BORDER_CHARS["thick"] = (
+        (" ", " ", " "),
+        (" ", " ", " "),
+        (" ", " ", " "),
+    )
+    # was originally: (
     #     ("█", "▀", "█"),
     #     ("█", " ", "█"),
     #     ("█", "▄", "█"),
     # )
-    # # was originally: (
-    # #     ("█", "▀", "█"),
-    # #     ("█", " ", "█"),
-    # #     ("█", "▄", "█"),
-    # # )
 
     BORDER_CHARS["hkey"] = (
         (" ", " ", " "),
@@ -190,16 +191,16 @@ def force_ascii_borders() -> None:
     #     ("▊", "▁", "▎"),
     # )
 
-    # BORDER_CHARS["panel"] = (
+    BORDER_CHARS["panel"] = (
+        ("[", " ", "]"),
+        ("|", " ", "|"),
+        ("|", "_", "|"),
+    )
+    # was originally: (
     #     ("▊", "█", "▎"),
     #     ("▊", " ", "▎"),
     #     ("▊", "▁", "▎"),
     # )
-    # # was originally: (
-    # #     ("▊", "█", "▎"),
-    # #     ("▊", " ", "▎"),
-    # #     ("▊", "▁", "▎"),
-    # # )
 
     BORDER_CHARS["wide"] = (
         ("_", "_", "_"),
@@ -219,18 +220,27 @@ def force_ascii_borders() -> None:
             for row in BORDER_LOCATIONS[key]
         )
     # Prevent imbalanced borders
-    zeros = (
+    BORDER_LOCATIONS["tall"] = (
         (0, 0, 0),
         (0, 0, 0),
         (0, 0, 0),
     )
-    BORDER_LOCATIONS["panel"] = zeros
-    BORDER_LOCATIONS["tall"] = zeros
     BORDER_LOCATIONS["wide"] = (
         (1, 1, 1),
         (0, 1, 0),
         (1, 1, 1),
     )
+    BORDER_LOCATIONS["panel"] = (
+        (3, 3, 3), # invert colors
+        (0, 0, 0),
+        (0, 0, 0),
+    )
+    for key in ("thick", "inner", "outer"):
+        BORDER_LOCATIONS[key] = (
+            (3, 3, 3), # invert colors
+            (3, 0, 3), # invert colors except middle
+            (3, 3, 3), # invert colors
+        )
 
 
 if __name__ == "__main__":
