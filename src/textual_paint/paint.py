@@ -69,10 +69,6 @@ DEBUG_SVG_LOADING = False # writes debug.svg when flexible character grid loader
 # ICNS is disabled because it only supports a limited set of sizes.
 SAVE_DISABLED_FORMATS = ["JPEG", "ICNS"]
 
-# These can go away now that args are parsed up top
-ascii_only_icons = False
-inspect_layout = False
-
 # Command line arguments
 parser = argparse.ArgumentParser(description='Paint in the terminal.', usage='%(prog)s [options] [filename]', prog="textual-paint")
 parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
@@ -229,7 +225,7 @@ class Tool(Enum):
         # - Ellipse: ⬭⭕🔴🟠🟡🟢🔵🟣🟤⚫⚪🔘🫧🕳️🥚💫💊🛞
         # - Rounded Rectangle: ▢⬜⬛𓋰⌨️⏺️💳📺🧫
 
-        if ascii_only_icons:
+        if args.ascii_only_icons:
             enum_to_icon = {
                 Tool.free_form_select: "'::.",  # "*" "<^>" "<[u]^[/]7" "'::." ".::." "<%>"
                 Tool.select: "::",  # "#" "::" ":_:" ":[u]:[/]:" ":[u]'[/]:"
@@ -4264,7 +4260,7 @@ Columns: {len(palette) // 2}
         self.mount(window)
 
     def action_toggle_inspector(self) -> None:
-        if not inspect_layout:
+        if not args.inspect_layout:
             return
         # importing the inspector adds instrumentation which can slow down startup
         from .inspector import Inspector
@@ -4363,7 +4359,7 @@ Columns: {len(palette) // 2}
                 Static(id="status_dimensions"),
                 id="status_bar",
             )
-        if not inspect_layout:
+        if not args.inspect_layout:
             return
         # importing the inspector adds instrumentation which can slow down startup
         from .inspector import Inspector
@@ -5265,7 +5261,7 @@ Columns: {len(palette) // 2}
         # This is a dev helper to inspect the layout
         # by highlighting the elements under the mouse in different colors, and labeling them on their borders.
         # debug_highlight is a list of tuples of (element, original_color, original_border, original_border_title)
-        if not inspect_layout:
+        if not args.inspect_layout:
             return
         # Trigger only with middle mouse button.
         # This is before the reset, so you have to middle click on the root element to reset.
@@ -5311,10 +5307,6 @@ app = PaintApp()
 # (with the exception of making directories)
 
 app.dark = args.theme == "dark"
-if args.ascii_only_icons:
-    ascii_only_icons = True
-if args.inspect_layout:
-    inspect_layout = True
 
 if args.backup_folder:
     backup_folder = os.path.abspath(args.backup_folder)
