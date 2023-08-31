@@ -4221,6 +4221,11 @@ Columns: {len(palette) // 2}
         # Actually, I can make a yellow question mark!
         # Just don't use emoji for it.
         icon = "📄[#ffff00]?[/]"
+        # icon = "[#ffffff]🭌[/][#ffff00]?[/]" # also works nicely
+        if args.ascii_only_icons:
+            icon = "[#aaaaaa on #ffffff]=[/][#ffff00]?[/]"
+        # Honerable mentions: 🯄 ˀ̣
+
         title = icon + " " + title
         def handle_button(button: Button) -> None:
             window.close()
