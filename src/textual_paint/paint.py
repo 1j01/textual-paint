@@ -214,7 +214,7 @@ class Tool(Enum):
         # - Fill With Color: 🌊💦💧🩸🌈🎉🎊🪣🫗🚰⛽🍯 ꗃ﹆ ⬙﹅ 🪣﹅
         # - Pick Color: 🎨🌈💉💅💧🩸🎈📌📍🪛🪠🥍🩼🌡💄🎯𖡡⤤𝀃🝯⊸⚲𓋼🗡𓍊🍶🧪🍼🌂👁️‍🗨️🧿🍷⤵❣⚗ ⤆Ϸ ⟽þ ⇐ c⟾ /̥͚̥̥͚͚̊̊
         # - Magnifier: 🔍🔎👀🔬🔭🧐🕵️‍♂️🕵️‍♀️
-        # - Pencil: ✏️✎✍️🖎🖊️🖋️✒️🖆📝🖍️🪶
+        # - Pencil: ✏️✎✍️🖎🖊️🖋️✒️🖆📝🖍️🪶🪈🥖🥕▪
         # - Brush: 🖌👨‍🎨🧑‍🎨💅🧹🪮🪥🪒🪠ⵄ⑃ሐ⋔⋲ ▭⋹ 𝈸⋹ ⊏⋹ ⸦⋹ ⊂⋹ ▬▤
         # - Airbrush: ⛫💨дᖜ💨╔💨🧴🥤🧃🧯🧨🍾🥫💈🫠🌬️🗯☄💭༄༺☁️🌪️🌫🌀🚿 ⪧𖤘 ᗒᗣ дᖜᗕ
         # - Text: 📝📄📃📜AＡ🅰️🆎🔤🔠𝐴
@@ -291,11 +291,11 @@ class Tool(Enum):
                 return "🌊"
         elif os.environ.get("KITTY_WINDOW_ID"):
             # Kitty terminal has alignment problems with the default Pencil symbol "✏️"
-            # as well as alternatives "🖍️", "🖊️", "🖋️", "✍️", "✒️"
+            # as well as alternatives "🖍️", "🖊️", "🖋️", "✍️", "✒️", "🪈"
             # and Brush symbol "🖌️" and alternatives "🧹", "🪮"
             # "🖎", "🖆", and "✎" don't cause alignment issues, but don't show in color and are illegibly small.
             if self == Tool.pencil:
-                # Working for me: "🪶", and "📝", which may look more like a Text tool than a pencil tool,
+                # Working for me: "🪶", "🥖", "🥕", "▪", and "📝", the last one looking more like a Text tool than a Pencil tool,
                 # but at least has a pencil...
                 return "📝"
             if self == Tool.brush:
