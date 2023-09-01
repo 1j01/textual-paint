@@ -211,9 +211,13 @@ Python 3.10 or later is required.
 
 ### Linux
 
-Tested on Ubuntu 22, with GNOME Terminal, and VS Code's integrated terminal.
+Tested on Ubuntu 22, with GNOME Terminal, Kitty, XTerm, and VS Code's integrated terminal.
 
 GNOME Terminal works best, with crisp triangles used for icons in dialogs, emoji support, and true color support.
+
+Kitty works fine, supporting true color and emoji.
+
+XTerm supports true color, but not emoji. Run with `TERM=xterm-256color textual-paint --ascii-only` for XTerm compatibility.
 
 ### macOS
 
@@ -257,6 +261,8 @@ If this happens, I would recommend first messing around with it, since it's a fu
 
 Textual Paint will **not** work properly with the old Windows console (`conhost.exe`), which lacks emoji/Unicode support and true color support.
 This program is commonly thought of as the "Command Prompt", but the Command Prompt (`cmd.exe`) is actually a *shell* (like `bash`) that can run in either the old console or the new Windows Terminal, which are both *terminal emulators*.
+
+You can run with `--ascii-only` to limit the characters used in the UI to ASCII, but colors will still be limited and similar colors will appear confusingly identical.
 
 ### VS Code
 
