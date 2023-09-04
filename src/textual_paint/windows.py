@@ -19,10 +19,10 @@ from .args import args
 class WindowTitleBar(Container):
     """A title bar widget."""
 
-    MINIMIZE_ICON = "_" if args.ascii_only else "🗕"
-    MAXIMIZE_ICON = "□" if args.ascii_only else "🗖" # not technically ASCII; could use "^" or "[]"
-    RESTORE_ICON = "□" if args.ascii_only else "🗗" # not technically ASCII; could use "^" or "%" or "#"
-    CLOSE_ICON = "X" if args.ascii_only else "🗙"
+    MINIMIZE_ICON = "_" if args.ascii_only else "🗕" # "_", "-"
+    MAXIMIZE_ICON = "[]" if args.ascii_only else "🗖" # "+", "^", "[]", (non-ASCII) "□"
+    RESTORE_ICON = "\\[/]" if args.ascii_only else "🗗" # "+", "^", "%", "#", "-", "=", (needs escaping) "[/]"
+    CLOSE_ICON = "X" if args.ascii_only else "🗙" # "X", "x"
 
     title = var("")
 
