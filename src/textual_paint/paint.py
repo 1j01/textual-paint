@@ -5299,6 +5299,9 @@ Columns: {len(palette) // 2}
 if args.ascii_only:
     args.ascii_only_icons = True
 
+    import textual_paint.windows
+    textual_paint.windows.ascii_only = True
+
     from .ascii_borders import force_ascii_borders
     force_ascii_borders()
 

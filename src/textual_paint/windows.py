@@ -15,6 +15,9 @@ from textual.css.query import NoMatches
 
 from .localization.i18n import get as _
 
+ascii_only = False
+"""This is overwritten in paint.py when --ascii-only is passed."""
+
 class WindowTitleBar(Container):
     """A title bar widget."""
 
@@ -569,13 +572,35 @@ class CharacterSelectorDialogWindow(DialogWindow):
 # [#000000]🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃🮃[/]
 # """, classes="warning_icon message_box_icon")
 # Unicode solid version 6, smaller overall:
-get_warning_icon = lambda: Static("""
+warning_icon_markup_unicode = """
    [#000000]◢[#ffff00 on #000000]🭯[/]◣[/]
   [#000000]◢[#ffff00 on #000000]◢█◣[/]◣[/]
  [#000000]◢[#ffff00 on #000000]◢[#000000 on #ffff00] ⬮ [/]◣[/]◣[/]
 [#000000]◢[#ffff00 on #000000]◢[#000000 on #ffff00]  •  [/]◣[/]◣[/]
 [#000000]🮃🮃🮃🮃🮃🮃🮃🮃🮃[/]
-""", classes="warning_icon message_box_icon")
+"""
+# ASCII line art version 2, BG color edition:
+warning_icon_markup_ascii = """
+    [#000000]_[/]
+   [#000000 on #ffff00]/ \\\\[/]
+  [#000000 on #ffff00]/ | \\\\[/]
+ [#000000 on #ffff00]/  .  \\\\[/]
+[#000000 on #ffff00](_______)[/]
+"""
+# ASCII line art version 2, true line art edition:
+warning_icon_markup_ascii_dark_mode = """[#ffff00]
+    _
+   / \\
+  / | \\
+ /  .  \\
+(_______)
+[/]"""
+
+def get_warning_icon() -> Static:
+    markup = warning_icon_markup_ascii if ascii_only else warning_icon_markup_unicode
+    # TODO: Use warning_icon_markup_ascii_dark_mode for a less blocky looking outline in dark mode.
+    return Static(markup, classes="warning_icon message_box_icon")
+
 
 # question_icon_ansi = ""
 # def get_question_icon() -> Static:
