@@ -650,9 +650,23 @@ question_icon_console_markup = question_icon_console_markup.replace(" on rgb(128
 
 # also the shadow is normally gray, I just drew it black because I was using gray as the background
 question_icon_console_markup = question_icon_console_markup.replace("rgb(0,0,0)", "rgb(128,128,128)")
-# Underline "❩" to make it look like the question mark has a serif. Looks bad because it's a wide character.
+# I tried underlining "❩" to make it look like the question mark has a serif, but it looks bad because it's a wide character.
 # question_icon_console_markup = question_icon_console_markup.replace("❩", "[u]❩[/u]")
-get_question_icon = lambda: Static(question_icon_console_markup, classes="question_icon message_box_icon")
+
+question_icon_console_markup_ascii = """
+[rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)]_[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)]_[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)]_[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)]_[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)]_[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)] [/rgb(0,0,0) on rgb(128,128,128)]
+[rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(128,128,128)]/[rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)]\\\\[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(255,255,255)] [/rgb(0,0,0) on rgb(128,128,128)]
+[rgb(0,0,0) on rgb(255,255,255)]|[rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,255) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)]?[rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,255) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)]|[/rgb(0,0,0) on rgb(255,255,255)]
+[rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(128,128,128)]\\\\[rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)]_[rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)]_[rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)]_[rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)]_[rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)]/[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(255,255,255)] [/rgb(0,0,0) on rgb(128,128,128)]
+[rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(128,128,128)]\\\\[rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)]|[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on rgb(128,128,128)] [/rgb(0,0,0) on rgb(128,128,128)]
+"""
+# make background transparent
+question_icon_console_markup_ascii = question_icon_console_markup_ascii.replace(" on rgb(128,128,128)", "")
+
+def get_question_icon() -> Static:
+    markup = question_icon_console_markup_ascii if ascii_only else question_icon_console_markup
+    return Static(markup, classes="question_icon message_box_icon")
+
 
 # NOTE: I had to manually replace "\" with "\\\\" in the markup below.
 # One level of escaping because this is a string literal, and another level because
