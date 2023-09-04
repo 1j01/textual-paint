@@ -3952,7 +3952,7 @@ Columns: {len(palette) // 2}
             handle_button=handle_button,
         )
         try:
-            file_name = "stretch_skew_icons_full_ascii.ans" if args.ascii_only_icons else "stretch_skew_icons.ans"
+            file_name = "stretch_skew_icons_full_ascii.ans" if args.ascii_only else "stretch_skew_icons.ans"
             with open(os.path.join(os.path.dirname(__file__), file_name), encoding="utf-8") as f:
                 icons_ansi = f.read()
                 icons_doc = AnsiArtDocument.from_ansi(icons_ansi)
@@ -4230,9 +4230,9 @@ Columns: {len(palette) // 2}
         # Just don't use emoji for it.
         icon = "📄[#ffff00]?[/]"
         # icon = "[#ffffff]🭌[/][#ffff00]?[/]" # also works nicely
-        if args.ascii_only_icons:
+        if args.ascii_only:
             icon = "[#aaaaaa on #ffffff]=[/][#ffff00]?[/]"
-        # Honerable mentions: 🯄 ˀ̣
+        # Honorable mentions: 🯄 ˀ̣
 
         title = icon + " " + title
         def handle_button(button: Button) -> None:
