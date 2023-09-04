@@ -5244,6 +5244,8 @@ if args.ascii_only:
     from .ascii_borders import force_ascii_borders
     force_ascii_borders()
 
+    RadioButton.BUTTON_INNER = "*" # "*", "o", "O", "@"
+
 
 # `textual run --dev src.textual_paint.paint` will search for a 
 # global variable named `app`, and fallback to
