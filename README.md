@@ -229,7 +229,7 @@ GNOME Terminal works best, with crisp triangles used for icons in dialogs, emoji
 
 Kitty works fine, supporting true color and emoji.
 
-XTerm supports true color, but not emoji. Run with `TERM=xterm-256color textual-paint --ascii-only` for XTerm compatibility.
+XTerm supports true color, but not emoji. Run with `COLORTERM=truecolor textual-paint --ascii-only` for XTerm compatibility.
 
 ### macOS
 
