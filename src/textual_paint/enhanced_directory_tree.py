@@ -1,13 +1,26 @@
 from pathlib import Path
 from typing import Callable, Iterable
+from rich.style import Style
 
-from rich.text import TextType
+from rich.text import Text, TextType
 from textual.reactive import var
 from textual.widgets import DirectoryTree, Tree
-from textual.widgets._tree import TreeNode
+from textual.widgets._tree import TreeNode, TOGGLE_STYLE
 from textual.widgets._directory_tree import DirEntry
 
+from .args import args
+
+# Vague skeuomorphism
+# FILE_ICON = Text.from_markup("[#aaaaaa on #ffffff]=[/] " if args.ascii_only else "📄 ")
+# FOLDER_OPEN_ICON = Text.from_markup("[rgb(128,128,64)]L[/] " if args.ascii_only else "📂 ")
+# FOLDER_CLOSED_ICON = Text.from_markup("[rgb(128,128,64)]V[/] " if args.ascii_only else "📁 ")
+# Simple generic tree style
+FILE_ICON = Text.from_markup("" if args.ascii_only else "📄 ")
+FOLDER_OPEN_ICON = Text.from_markup("[blue]-[/] " if args.ascii_only else "📂 ")
+FOLDER_CLOSED_ICON = Text.from_markup("[blue]+[/] " if args.ascii_only else "📁 ")
+
 class EnhancedDirectoryTree(DirectoryTree):
+    """A DirectoryTree with auto-expansion, filtering of hidden files, and ASCII icon replacements."""
 
     node_highlighted_by_expand_to_path = var(False)
     """Whether a NodeHighlighted event was triggered by expand_to_path.
@@ -140,3 +153,44 @@ class EnhancedDirectoryTree(DirectoryTree):
             callback = lambda: None
         self._expand_matching_child(self.root, target_path.parts[1:], callback)
 
+    def render_label(
+        self, node: TreeNode[DirEntry], base_style: Style, style: Style
+    ) -> Text:
+        """Override label rendering to make icons dynamic for --ascii-only mode.
+
+        Args:
+            node: A tree node.
+            base_style: The base style of the widget.
+            style: The additional style for the label.
+
+        Returns:
+            A Rich Text object containing the label.
+        """
+        node_label = node._label.copy()
+        node_label.stylize(style)
+
+        if node._allow_expand:
+            prefix = (FOLDER_OPEN_ICON if node.is_expanded else FOLDER_CLOSED_ICON)
+            prefix.stylize_before(base_style + TOGGLE_STYLE)
+            node_label.stylize_before(
+                self.get_component_rich_style("directory-tree--folder", partial=True)
+            )
+        else:
+            prefix = FILE_ICON
+            prefix.stylize_before(base_style)
+            node_label.stylize_before(
+                self.get_component_rich_style("directory-tree--file", partial=True),
+            )
+            node_label.highlight_regex(
+                r"\..+$",
+                self.get_component_rich_style(
+                    "directory-tree--extension", partial=True
+                ),
+            )
+
+        if node_label.plain.startswith("."):
+            node_label.stylize_before(
+                self.get_component_rich_style("directory-tree--hidden")
+            )
+
+        return prefix + node_label
