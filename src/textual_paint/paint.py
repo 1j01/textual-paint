@@ -32,6 +32,7 @@ from textual.strip import Strip
 from textual.dom import DOMNode
 from textual.widget import Widget
 from textual.widgets import Button, Static, Input, Header, RadioSet, RadioButton
+from textual.widgets._header import HeaderIcon
 from textual.binding import Binding
 from textual.color import Color, ColorParseError
 from PIL import Image, UnidentifiedImageError
@@ -5245,6 +5246,11 @@ if args.ascii_only:
     force_ascii_borders()
 
     RadioButton.BUTTON_INNER = "*" # "*", "o", "O", "@"
+
+# HeaderIcon.icon = "[on white][blue]\\\\[/][red]|[/][yellow]/[/][/]"
+HeaderIcon.icon = "[black]..,[/]\n[blue]\\\\[/][on white][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[_][/]"
+# HeaderIcon.icon = "[black]..,[/]\n[blue]\\\\[/][on white][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[][on white] [/][/]"
+# HeaderIcon.icon = "[black]...[/]\n[on white][blue]\\\\[/][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[][on white] [/][/]"
 
 
 # `textual run --dev src.textual_paint.paint` will search for a 

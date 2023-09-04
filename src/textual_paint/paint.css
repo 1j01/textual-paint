@@ -3,6 +3,17 @@ Screen {
     overflow: hidden;
 }
 
+/* Show brush handles (middle row of 3x3 icon) when header is collapsed */
+/* :not() support would make this easier */
+Header HeaderIcon {
+    /* offset: 0 -1; causes it to be invisible (bug?) */
+    margin-top: -1;
+}
+Header.-tall HeaderIcon {
+    /* offset: 0 0; */
+    margin-top: 0;
+}
+
 #paint {
     layout: vertical;
 }
