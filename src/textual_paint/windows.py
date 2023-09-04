@@ -577,20 +577,36 @@ warning_icon_markup_unicode = """
 [#000000]◢[#ffff00 on #000000]◢[#000000 on #ffff00]  •  [/]◣[/]◣[/]
 [#000000]🮃🮃🮃🮃🮃🮃🮃🮃🮃[/]
 """
-# ASCII line art version 2, BG color edition:
+# ASCII line art version 2a, with BG color:
+# warning_icon_markup_ascii = """
+#     [#000000]_[/]
+#    [#000000 on #ffff00]/ \\\\[/]
+#   [#000000 on #ffff00]/ | \\\\[/]
+#  [#000000 on #ffff00]/  .  \\\\[/]
+# [#000000 on #ffff00](_______)[/]
+# """
+# # ASCII line art version 2b, only FG color:
+# warning_icon_markup_ascii_dark_mode = """[#ffff00]
+#     _
+#    / \\
+#   / | \\
+#  /  .  \\
+# (_______)
+# [/]"""
+# ASCII line art version 3a, with BG color:
 warning_icon_markup_ascii = """
     [#000000]_[/]
    [#000000 on #ffff00]/ \\\\[/]
-  [#000000 on #ffff00]/ | \\\\[/]
- [#000000 on #ffff00]/  .  \\\\[/]
+  [#000000 on #ffff00]/   \\\\[/]
+ [#000000 on #ffff00]/  [b]![/b]  \\\\[/]
 [#000000 on #ffff00](_______)[/]
 """
-# ASCII line art version 2, true line art edition:
+# ASCII line art version 3b, only FG color:
 warning_icon_markup_ascii_dark_mode = """[#ffff00]
     _
    / \\
-  / | \\
- /  .  \\
+  /   \\
+ /  [b]![/b]  \\
 (_______)
 [/]"""
 
@@ -660,6 +676,8 @@ question_icon_console_markup_ascii = """
 """
 # make background transparent
 question_icon_console_markup_ascii = question_icon_console_markup_ascii.replace(" on rgb(128,128,128)", "")
+# bold question mark
+question_icon_console_markup_ascii = question_icon_console_markup_ascii.replace("?", "[b]?[/b]")
 
 def get_question_icon() -> Static:
     markup = question_icon_console_markup_ascii if args.ascii_only else question_icon_console_markup
