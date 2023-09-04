@@ -14,9 +14,7 @@ from textual.containers import Container, Horizontal, Vertical
 from textual.css.query import NoMatches
 
 from .localization.i18n import get as _
-
-ascii_only = False
-"""This is overwritten in paint.py when --ascii-only is passed."""
+from .args import args
 
 class WindowTitleBar(Container):
     """A title bar widget."""
@@ -597,7 +595,7 @@ warning_icon_markup_ascii_dark_mode = """[#ffff00]
 [/]"""
 
 def get_warning_icon() -> Static:
-    markup = warning_icon_markup_ascii if ascii_only else warning_icon_markup_unicode
+    markup = warning_icon_markup_ascii if args.ascii_only else warning_icon_markup_unicode
     # TODO: Use warning_icon_markup_ascii_dark_mode for a less blocky looking outline in dark mode.
     return Static(markup, classes="warning_icon message_box_icon")
 
@@ -664,7 +662,7 @@ question_icon_console_markup_ascii = """
 question_icon_console_markup_ascii = question_icon_console_markup_ascii.replace(" on rgb(128,128,128)", "")
 
 def get_question_icon() -> Static:
-    markup = question_icon_console_markup_ascii if ascii_only else question_icon_console_markup
+    markup = question_icon_console_markup_ascii if args.ascii_only else question_icon_console_markup
     return Static(markup, classes="question_icon message_box_icon")
 
 
@@ -691,7 +689,7 @@ paint_icon_console_markup_ascii = """
 paint_icon_console_markup_ascii = paint_icon_console_markup_ascii.replace(" on rgb(255,0,255)", "")
 
 def get_paint_icon() -> Static:
-    markup = paint_icon_console_markup_ascii if ascii_only else paint_icon_console_markup
+    markup = paint_icon_console_markup_ascii if args.ascii_only else paint_icon_console_markup
     return Static(markup, classes="paint_icon message_box_icon")
 
 
