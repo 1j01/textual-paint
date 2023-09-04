@@ -5248,9 +5248,31 @@ if args.ascii_only:
     RadioButton.BUTTON_INNER = "*" # "*", "o", "O", "@"
 
 # HeaderIcon.icon = "[on white][blue]\\\\[/][red]|[/][yellow]/[/][/]"
-HeaderIcon.icon = "[black]..,[/]\n[blue]\\\\[/][on white][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[_][/]"
+# HeaderIcon.icon = "[black]..,[/]\n[blue]\\\\[/][on white][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[_][/]"
+# trying different geometries for the page going behind the cup of brushes:
 # HeaderIcon.icon = "[black]..,[/]\n[blue]\\\\[/][on white][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[][on white] [/][/]"
 # HeaderIcon.icon = "[black]...[/]\n[on white][blue]\\\\[/][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[][on white] [/][/]"
+# going back to the first option and adding shading to the cup:
+# HeaderIcon.icon = "[black]..,[/]\n[blue]\\\\[/][on white][red]|[/][yellow]/[/][/]\n[black on rgb(230,230,230)]\\[[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]][/]"
+# actually, place white behind it all
+# HeaderIcon.icon = "[black on white]..,\n[blue]\\\\[/][red]|[/][yellow]/[/]\n[black on rgb(230,230,230)]\\[[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]][/][/]"
+# and pad it a bit horizontally
+# HeaderIcon.icon = "[black on white] .., \n [blue]\\\\[/][red]|[/][yellow]/[/] \n [black on rgb(230,230,230)]\\[[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]][/] [/]"
+# well... if I'm doing that, I might as well add a page corner fold
+# HeaderIcon.icon = "[black on white] ..,[white on rgb(192,192,192)]\\\\[/]\n [blue]\\\\[/][red]|[/][yellow]/[/] \n [black on rgb(230,230,230)]\\[[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]][/] [/]"
+# remove left padding because left-pad is a security risk
+# HeaderIcon.icon = "[black on white]..,[white on rgb(192,192,192)]\\\\[/]\n[blue]\\\\[/][red]|[/][yellow]/[/] \n[black on rgb(230,230,230)]\\[[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]][/] [/]"
+# T it up, get that cup, yup! (this makes it look kind of like a crying face but other than that it's a pretty nice shape)
+# HeaderIcon.icon = "[black on white]..,[white on rgb(192,192,192)]\\\\[/]\n[blue]\\\\[/][red]|[/][yellow]/[/] \n[black on rgb(230,230,230)]T[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]T[/] [/]"
+# oh and make the white actually white (not dim white)
+# HeaderIcon.icon = "[rgb(0,0,0) on rgb(255,255,255)]..,[rgb(255,255,255) on rgb(192,192,192)]\\\\[/]\n[blue]\\\\[/][red]|[/][yellow]/[/] \n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
+# and remove the background from the page fold, to match the About Paint dialog's icon
+# HeaderIcon.icon = "[rgb(0,0,0) on rgb(255,255,255)]..,[/][rgb(255,255,255)]\\\\[/][rgb(0,0,0) on rgb(255,255,255)]\n[blue]\\\\[/][red]|[/][yellow]/[/] \n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
+# and add a shading under the page fold
+# HeaderIcon.icon = "[rgb(0,0,0) on rgb(255,255,255)]..,[/][rgb(255,255,255)]\\\\[/][rgb(0,0,0) on rgb(255,255,255)]\n[blue]\\\\[/][red]|[/][yellow]/[/][rgb(192,192,192)]~[/]\n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
+# unify the brush tops; the right-most one isn't a cell over like in the About Paint dialog's icon, to align with the slant of a comma
+HeaderIcon.icon = "[rgb(0,0,0) on rgb(255,255,255)]...[/][rgb(255,255,255)]\\\\[/][rgb(0,0,0) on rgb(255,255,255)]\n[blue]\\\\[/][red]|[/][yellow]/[/][rgb(192,192,192)]~[/]\n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
+# This got pretty out of hand. I should've done this in Textual Paint before letting it get this complex!
 
 
 # `textual run --dev src.textual_paint.paint` will search for a 
