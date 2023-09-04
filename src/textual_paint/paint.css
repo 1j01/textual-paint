@@ -3,15 +3,18 @@ Screen {
     overflow: hidden;
 }
 
-/* Show brush handles (middle row of 3-high icon) when header is collapsed */
 /* :not() support would make this easier */
 Header HeaderIcon {
+    /* Show brush handles (middle row of 3-high icon) when header is collapsed */
     /* offset: 0 -1; causes it to be invisible (bug?) */
     margin-top: -1;
+    /* cut off the "~" shadow of the page curl, since the page curl won't be visible */
+    width: 5;
 }
 Header.-tall HeaderIcon {
     /* offset: 0 0; */
     margin-top: 0;
+    width: auto;
 }
 
 #paint {

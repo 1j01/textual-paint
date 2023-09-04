@@ -5273,7 +5273,8 @@ if args.ascii_only:
 # unify the brush tops; the right-most one isn't a cell over like in the About Paint dialog's icon, to align with the slant of a comma
 HeaderIcon.icon = "[rgb(0,0,0) on rgb(255,255,255)]...[/][rgb(255,255,255)]\\\\[/][rgb(0,0,0) on rgb(255,255,255)]\n[blue]\\\\[/][red]|[/][yellow]/[/][rgb(192,192,192)]~[/]\n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
 # This got pretty out of hand. I should've done this in Textual Paint before letting it get this complex!
-
+# Prevent wrapping, for a CSS effect, cropping to hide the shading "~" of the page fold when the page fold isn't visible.
+HeaderIcon.icon = Text.from_markup(HeaderIcon.icon, overflow="crop")
 
 # `textual run --dev src.textual_paint.paint` will search for a 
 # global variable named `app`, and fallback to
