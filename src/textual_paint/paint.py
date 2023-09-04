@@ -553,11 +553,12 @@ class ColorsBox(Container):
         button, _ = self.app.get_widget_at(*event.screen_offset)
         if "color_button" in button.classes:
             assert isinstance(button, Button)
-            self.post_message(self.ColorSelected(self.color_by_button[button], event.ctrl))
+            secondary = event.ctrl or event.button == 3
+            self.post_message(self.ColorSelected(self.color_by_button[button], secondary))
             # Detect double click and open Edit Colors dialog.
             if event.time - self.last_click_time < 0.8 and button == self.last_click_button:
                 assert isinstance(self.app, PaintApp)
-                self.app.action_edit_colors(self.query(".color_button").nodes.index(button), event.ctrl)
+                self.app.action_edit_colors(self.query(".color_button").nodes.index(button), secondary)
             self.last_click_time = event.time
             self.last_click_button = button
 

@@ -148,7 +148,9 @@ Note that metadata is not preserved when opening and saving image files. This is
 You can draw with a character by clicking the selected color display area in the palette and then typing the character,
 or by double clicking the same area to pick a character from a list.
 
-You can set the text color by holding Ctrl while clicking a color in the palette, or while double clicking a color to open the Edit Colors dialog.
+You can set the text color by right clicking or holding <kbd>Ctrl</kbd> while clicking a color in the palette.
+Also, if you double right click or hold <kbd>Ctrl</kbd> while double clicking on a color to open the Edit Colors dialog,
+if will edit the text color when you click OK.
 
 You can display a saved ANSI file in the terminal with `cat`:
 
