@@ -152,6 +152,9 @@ You can set the text color by right clicking or holding <kbd>Ctrl</kbd> while cl
 Also, if you double right click or hold <kbd>Ctrl</kbd> while double clicking on a color to open the Edit Colors dialog,
 if will edit the text color when you click OK.
 
+You can swap the foreground and background colors by right clicking or holding <kbd>Ctrl</kbd> while clicking the current colors area.
+This is a great convenience, especially when using the Color Eraser tool, or when using custom colors that may be similar to each other.
+
 You can display a saved ANSI file in the terminal with `cat`:
 
 ```bash

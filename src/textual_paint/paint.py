@@ -504,10 +504,13 @@ class CharInput(Input, inherit_bindings=False):
         return original_strip.apply_filter(self.Recolor(fg_color, bg_color), background=bg_color)
 
     last_click_time = 0
-    def on_click(self, event: events.Click) -> None:
-        """Detect double click and open character selector dialog."""
+    def on_mouse_down(self, event: events.MouseDown) -> None:
+        """Detect double click and open character selector dialog, or swap colors on right click or Ctrl+click."""
+        assert isinstance(self.app, PaintApp)
+        if event.ctrl or event.button == 3: # right click
+            self.app.action_swap_colors()
+            return
         if event.time - self.last_click_time < 0.8:
-            assert isinstance(self.app, PaintApp)
             self.app.action_open_character_selector()
         self.last_click_time = event.time
 
@@ -3331,6 +3334,10 @@ class PaintApp(App[None]):
             title=_("Choose Character"),
         )
         self.mount(window)
+
+    def action_swap_colors(self) -> None:
+        """Swap the foreground and background colors."""
+        self.selected_bg_color, self.selected_fg_color = self.selected_fg_color, self.selected_bg_color
 
     def action_edit_colors(self, color_palette_index: int|None = None, as_foreground: bool = False) -> None:
         """Show dialog to edit colors."""
