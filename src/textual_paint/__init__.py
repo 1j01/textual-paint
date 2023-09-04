@@ -7,3 +7,10 @@ __maintainer__ = "Isaiah Odhner"
 __email__ = "isaiahodhner@gmail.com"
 __version__ = "0.1.0"
 __license__ = "MIT"
+
+# Set version string when in a git repository
+# to distinguish production from development versions.
+from os.path import exists, dirname
+from subprocess import check_output
+if exists(dirname(__file__) + "/../../.git"):
+    __version__ = "development " + check_output(["git", "describe", "--tags"]).strip().decode()
