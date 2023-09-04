@@ -3638,6 +3638,10 @@ Columns: {len(palette) // 2}
             # logo_icon = "[#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # good
             # logo_icon = "[#000000][b]≈[/][/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # trying to add the trailing flag effect
             logo_icon = "[#000000]⣿[/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # ah, that's brilliant! that worked way better than I expected
+            if args.ascii_only:
+                # logo_icon = "[#000000]::[/][#0000ff on #ff0000]~[/][#00aa00 on #ffff00]~[/]" # not very convincing
+                # logo_icon = "[#000000]::[/][#ff0000 on #0000ff]x[/][#ffff00 on #00aa00]x[/]"
+                logo_icon = "[#000000]::[/][#ff0000 on #0000ff]m[/][#ffff00 on #00aa00]m[/]" # probably the most balanced top/bottom split character (i.e. most dense while occupying only the top or only the bottom)
 
             title = logo_icon + " " + _("Paint")
             self.message_box(title, message, "yes/no/cancel", handle_button, icon_widget=get_question_icon())
