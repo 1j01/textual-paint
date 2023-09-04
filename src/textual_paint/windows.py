@@ -668,11 +668,6 @@ def get_question_icon() -> Static:
     return Static(markup, classes="question_icon message_box_icon")
 
 
-# NOTE: I had to manually replace "\" with "\\\\" in the markup below.
-# One level of escaping because this is a string literal, and another level because
-# Text.markup fails to escape backslashes:
-# https://github.com/Textualize/rich/issues/2993
-# ...although now I've replaced it with 🙽 in the text art.
 paint_icon_console_markup = """
 [rgb(0,0,0) on rgb(255,0,255)]⡀[rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,0,255)].[rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)],[rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(192,192,192) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)]🮈[rgb(255,255,255) on rgb(255,0,255)][/rgb(192,192,192) on rgb(255,255,255)]◣[/rgb(255,255,255) on rgb(255,0,255)]
 [rgb(0,0,255) on rgb(255,0,255)]🙽[rgb(255,0,0) on rgb(255,255,255)][/rgb(0,0,255) on rgb(255,0,255)]┃[rgb(255,255,0) on rgb(255,255,255)][/rgb(255,0,0) on rgb(255,255,255)]🙼[rgb(0,0,0) on rgb(255,255,255)][/rgb(255,255,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(192,192,192) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)]░[/rgb(192,192,192) on rgb(255,255,255)]
@@ -681,7 +676,24 @@ paint_icon_console_markup = """
 """
 # make fuchsia transparent
 paint_icon_console_markup = paint_icon_console_markup.replace(" on rgb(255,0,255)", "")
-get_paint_icon = lambda: Static(paint_icon_console_markup, classes="paint_icon message_box_icon")
+
+# NOTE: I had to manually replace "\" with "\\\\" in the markup below.
+# One level of escaping because this is a string literal, and another level because
+# Text.markup fails to escape backslashes:
+# https://github.com/Textualize/rich/issues/2993
+paint_icon_console_markup_ascii = """
+[rgb(0,0,0) on rgb(255,0,255)].[#000000 on #ffffff][/rgb(0,0,0) on rgb(255,0,255)] [rgb(0,0,0) on rgb(255,255,255)][/#000000 on #ffffff].[#000000 on #ffffff][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/#000000 on #ffffff] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)],[rgb(255,255,255) on rgb(255,0,255)][/rgb(0,0,0) on rgb(255,255,255)]\\\\[/rgb(255,255,255) on rgb(255,0,255)]
+[rgb(0,0,255) on rgb(255,0,255)]\\\\[#000000 on #ffffff][/rgb(0,0,255) on rgb(255,0,255)] [rgb(255,0,0) on rgb(255,255,255)][/#000000 on #ffffff]|[#000000 on #ffffff][/rgb(255,0,0) on rgb(255,255,255)] [rgb(255,255,0) on rgb(255,255,255)][/#000000 on #ffffff]/[rgb(0,0,0) on rgb(255,255,255)][/rgb(255,255,0) on rgb(255,255,255)] [rgb(192,192,192) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)]~[/rgb(192,192,192) on rgb(255,255,255)]
+[rgb(0,0,0) on #e6e6e6][[rgb(0,0,0) on rgb(220,220,220)][/rgb(0,0,0) on #e6e6e6]_[rgb(0,0,0) on rgb(220,220,220)][/rgb(0,0,0) on rgb(220,220,220)]_[rgb(0,0,0) on #aaaaaa][/rgb(0,0,0) on rgb(220,220,220)]_[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on #aaaaaa]][rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [/rgb(0,0,0) on rgb(255,255,255)]
+[rgb(192,192,192) on rgb(255,0,255)] [rgb(0,0,0) on #e6e6e6][/rgb(192,192,192) on rgb(255,0,255)][[rgb(0,0,0) on #aaaaaa][/rgb(0,0,0) on #e6e6e6]_[rgb(0,0,0) on rgb(128,128,128)][/rgb(0,0,0) on #aaaaaa]][rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(128,128,128)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [rgb(0,0,0) on rgb(255,255,255)][/rgb(0,0,0) on rgb(255,255,255)] [/rgb(0,0,0) on rgb(255,255,255)]
+"""
+# make fuchsia transparent
+paint_icon_console_markup_ascii = paint_icon_console_markup_ascii.replace(" on rgb(255,0,255)", "")
+
+def get_paint_icon() -> Static:
+    markup = paint_icon_console_markup_ascii if ascii_only else paint_icon_console_markup
+    return Static(markup, classes="paint_icon message_box_icon")
+
 
 class MessageBox(DialogWindow):
     """A simple dialog window that displays a message, a group of buttons, and an optional icon."""
