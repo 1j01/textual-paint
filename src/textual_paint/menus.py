@@ -10,6 +10,7 @@ from textual.dom import NoScreen
 from rich.text import Text
 
 from .localization.i18n import markup_hotkey, get_hotkey, get_direction
+from .args import args
 
 def to_snake_case(name: str) -> str:
     name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
@@ -169,8 +170,9 @@ class Menu(Container):
                     # and has to be idempotent.
                     # Basically I should rewrite this whole thing.
                     # I'd like to try using the built-in ListView widget for menus.
-                    if not item.label.plain.endswith("▶"):
-                        item.label = item.label.markup + "\t        ▶"
+                    arrow = ">" if args.ascii_only else "▶"
+                    if not item.label.plain.endswith(arrow):
+                        item.label = item.label.markup + "\t        " + arrow
         # Split on tab character and align the shortcuts
         for item in self.items:
             if isinstance(item, MenuItem):
@@ -245,7 +247,7 @@ class MenuItem(Button):
         self.post_message(Menu.StatusInfo(None))
 
 
-mid_line = "─" * 100
+mid_line = ("-" if args.ascii_only else "─") * 100
 class Separator(Static):
     """A menu separator widget."""
 

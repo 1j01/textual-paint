@@ -16,6 +16,7 @@ from textual.containers import Container
 
 from .localization.i18n import get as _
 from .windows import DialogWindow
+from .args import args
 
 
 # https://github.com/kouzhudong/win2k/blob/ce6323f76d5cd7d136b74427dad8f94ee4c389d2/trunk/private/shell/win16/comdlg/color.c#L38-L43
@@ -191,7 +192,7 @@ class LuminosityRamp(Widget):
 
     def render_line(self, y: int) -> Strip:
         """Render a line of the widget."""
-        marker = "◀" # ◀ (bigger/clearer) or 🢐 (closer shape but smaller)
+        marker = "<" if args.ascii_only else "◀" # ◀ (bigger/clearer) or 🢐 (closer shape but smaller)
         # lum = y / self.size.height # bottom isn't quite white
         lum = 1 - y / (self.size.height - 1)
         color = Color.from_hsl(self.hue, self.saturation, lum)
@@ -248,7 +249,7 @@ class ColorField(Widget):
     def render_line(self, y: int) -> Strip:
         """Render a line of the widget."""
         segments: list[Segment] = []
-        crosshair = "✜" # Options: ┼+✜✛⊹✚╋╬⁘⁛⌖⯐ or
+        crosshair = "+" if args.ascii_only else "✜" # Options: ┼+✜✛⊹✚╋╬⁘⁛⌖⯐ or
         #  ╻
         # ╺ ╸
         #  ╹
