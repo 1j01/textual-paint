@@ -49,7 +49,7 @@ from .graphics_primitives import (
     flood_fill,
 )
 from .menus import MenuBar, Menu, MenuItem, Separator
-from .windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, WindowTitleBar, get_warning_icon, get_question_icon, get_paint_icon
+from .windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon, get_question_icon, get_paint_icon
 from .file_dialogs import SaveAsDialogWindow, OpenDialogWindow
 from .edit_colors import EditColorsDialogWindow
 from .localization.i18n import get as _, load_language, remove_hotkey
@@ -5239,13 +5239,6 @@ if args.ascii_only:
 
     from .ascii_borders import force_ascii_borders
     force_ascii_borders()
-
-    # Adjust icons
-    WindowTitleBar.MINIMIZE_ICON = "_"  # was originally: "🗕"
-    WindowTitleBar.MAXIMIZE_ICON = "□"  # was originally: "🗖" # not technically ASCII; could use "^" or "[]"
-    WindowTitleBar.RESTORE_ICON = "□"  # was originally: "🗗" # not technically ASCII; could use "^" or "%" or "#"
-    WindowTitleBar.CLOSE_ICON = "X"  # was originally: "🗙"
-
 
 
 # `textual run --dev src.textual_paint.paint` will search for a 
