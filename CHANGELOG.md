@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `--ascii-only-icons` now uses color, and has been otherwise tweaked to make tools easier to distinguish.
 - `--ascii-only-icons` now affects the icons in the Stretch/Skew dialog, and the Help window icon, not just tool icons.
+- It is now recommended to install using `pipx` instead of `pip`; to switch to `pipx`, run `pip uninstall textual-paint && pipx install textual-paint`.
 
 ### Added
 

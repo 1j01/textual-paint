@@ -39,6 +39,13 @@ Python 3.10 or later is required. See [Compatibility](#compatibility) for detail
 
 ### Installation
 
+Use `pipx` to install globally, without installing dependencies globally:
+```bash
+pip install --upgrade pipx  # or in Arch Linux, sudo pacman -S python-pipx
+pipx install textual-paint
+```
+
+Alternatively, you can install using `pip`:
 ```bash
 pip install textual-paint
 ```
