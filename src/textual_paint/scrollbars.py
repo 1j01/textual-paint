@@ -1,5 +1,5 @@
 
-from math import ceil
+from math import ceil, floor
 from rich.color import Color
 from rich.segment import Segment, Segments
 from rich.style import Style
@@ -33,7 +33,7 @@ class ASCIIScrollBarRender(ScrollBarRender):
         foreground_meta = {"@mouse.up": "release", "@mouse.down": "grab"}
         if window_size and size and virtual_size and size != virtual_size:
             bar_ratio = virtual_size / size
-            thumb_size = max(1, window_size / bar_ratio)
+            thumb_size = floor(max(1, window_size / bar_ratio))
 
             position_ratio = position / (virtual_size - window_size)
             position = (size - thumb_size) * position_ratio
