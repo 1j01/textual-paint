@@ -46,7 +46,7 @@ def extract_textures(image_path: str):
 
     # Create a new image to store the extracted textures
     extracted_image = Image.new('RGB', (num_textures_x * texture_width, num_textures_y * texture_height))
-    
+
     half_size_meta_glyphs: dict[int, str] = {}
     full_size_meta_glyphs: dict[int, str] = {}
 
@@ -98,9 +98,9 @@ def extract_textures(image_path: str):
 
                 # Add a newline after each row
                 extracted_text_half += '\n'
-            
+
             half_size_meta_glyphs[ordinal] = extracted_text_half
-            
+
             # Extract as full-size FIGlet font
             extracted_text_full = ""
             for y in range(texture_height):
@@ -109,9 +109,9 @@ def extract_textures(image_path: str):
 
                 # Add a newline after each row
                 extracted_text_full += '\n'
-            
+
             full_size_meta_glyphs[ordinal] = extracted_text_full
-    
+
     for figChars in [half_size_meta_glyphs, full_size_meta_glyphs]:
         # Fill in the space characters with hard blanks
         # figChars[32] = figChars[32].replace(' ', '$')
@@ -123,7 +123,7 @@ def extract_textures(image_path: str):
         # although it won't look pretty having the dollar signs scattered in the font file.
         for ordinal in figChars:
             figChars[ordinal] = '\n'.join([row.rstrip() + '$' for row in figChars[ordinal].split('\n')])
-    
+
     shared_comment_lines = [
         "by Isaiah Odhner",
         "",

@@ -24,7 +24,7 @@ class EnhancedDirectoryTree(DirectoryTree):
 
     node_highlighted_by_expand_to_path = var(False)
     """Whether a NodeHighlighted event was triggered by expand_to_path.
-    
+
     (An alternative would be to create a new message type wrapping `NodeHighlighted`,
     which includes a flag.)
     (Also, this could be a simple attribute, but I didn't want to make an `__init__`
@@ -55,7 +55,7 @@ class EnhancedDirectoryTree(DirectoryTree):
             # * (adds NodeHighlighted to queue)
             # * clear flag
             # * on_tree_node_highlighted
-            # 
+            #
             # So instead, listen for NodeHighlighted,
             # and then clear the flag.
 
@@ -69,7 +69,7 @@ class EnhancedDirectoryTree(DirectoryTree):
 
     def on_tree_node_highlighted(self, event: Tree.NodeHighlighted[DirEntry]) -> None:
         """Called when a node is highlighted in the DirectoryTree.
-        
+
         This handler is used to clear the flag set by expand_to_path.
         See _go_to_node for more details.
         """
@@ -88,7 +88,7 @@ class EnhancedDirectoryTree(DirectoryTree):
 
     def _expand_matching_child(self, node: TreeNode[DirEntry], remaining_parts: tuple[str], callback: Callable[[], None]) -> None:
         """Hooks into DirectoryTree's add method, and expands the child node matching the next path part, recursively.
-        
+
         Once the last part of the path is reached, it scrolls to and selects the node.
         """
         # print("_expand_matching_child", node, remaining_parts)

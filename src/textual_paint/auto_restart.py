@@ -59,7 +59,7 @@ def restart_program() -> None:
 
 def restart_on_changes(app: PaintApp) -> None:
     """Restarts the current program when a file is changed"""
-    
+
     from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
     from watchdog.observers import Observer
 

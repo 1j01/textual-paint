@@ -54,7 +54,7 @@ def generate_ansi_art(width: int, height: int, file: TextIO) -> None:
 
             # Write the colored glyph to the file
             file.write(color + GLYPHS[glyph_index])
-        
+
         # Reset the color at the end of each row and add a newline character
         file.write(RESET + '\n')
 

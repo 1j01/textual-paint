@@ -46,7 +46,7 @@ def update_cli_help_on_readme():
         parser.formatter_class = lambda prog: argparse.HelpFormatter(prog, width=width)
         help_text = parser.format_help()
         parser.formatter_class = old_formatter_class
-        
+
         md = f.read()
         start_match = readme_help_start.search(md)
         if start_match is None:

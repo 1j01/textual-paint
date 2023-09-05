@@ -14,7 +14,7 @@ from .enhanced_directory_tree import EnhancedDirectoryTree
 
 class FileDialogWindow(DialogWindow):
     """A dialog window that lets the user select a file."""
-    
+
     def __init__(
         self,
         *children: Widget,
@@ -99,12 +99,12 @@ class FileDialogWindow(DialogWindow):
     def on_tree_node_highlighted(self, event: Tree.NodeHighlighted[DirEntry]) -> None:
         """
         Called when a file/folder is selected in the DirectoryTree.
-        
+
         This message comes from Tree.
         DirectoryTree gives FileSelected, but only for files, not folders.
         """
         assert event.node.data
-        
+
         if event.node.data.path.is_dir():
             self._directory_tree_selected_path = str(event.node.data.path)
         elif event.node.parent:
@@ -128,7 +128,7 @@ class FileDialogWindow(DialogWindow):
 
 class OpenDialogWindow(FileDialogWindow):
     """A dialog window that lets the user select a file to open.
-    
+
     `handle_selected_file_path` is called when the user clicks the Open button,
     and the window is NOT closed in that case.
     """
@@ -152,7 +152,7 @@ class OpenDialogWindow(FileDialogWindow):
 
 class SaveAsDialogWindow(FileDialogWindow):
     """A dialog window that lets the user select a file to save to.
-    
+
     `handle_selected_file_path` is called when the user clicks the Save button,
     and the window is NOT closed in that case.
     """

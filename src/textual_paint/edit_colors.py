@@ -50,7 +50,7 @@ class ColorGrid(Container):
 
     class Changed(Message):
         """A message that is sent when the selected color changes."""
-        
+
         def __init__(self, color: str, color_grid: "ColorGrid", index: int) -> None:
             """Initialize the message."""
             super().__init__()
@@ -68,7 +68,7 @@ class ColorGrid(Container):
         self._color_by_button: dict[Button, str] = {}
         self.color_list = color_list  # This immediately calls `watch_color_list`.
         self.can_focus = True
-    
+
     def on_mount(self) -> None:
         """Called when the window is mounted."""
         found_match = False
@@ -107,7 +107,7 @@ class ColorGrid(Container):
             self._navigate_absolute(len(self.color_list) - 1)
         elif event.key in ("space", "enter"):
             self._select_focused_color()
-    
+
     def _select_focused_color(self) -> None:
         try:
             focused = self.query_one(".focused", Button)
@@ -119,7 +119,7 @@ class ColorGrid(Container):
         self.selected_color = self._color_by_button[focused]
         index = list(self._color_by_button.keys()).index(focused)
         self.post_message(self.Changed(self.selected_color, self, index))
-    
+
     def _navigate_relative(self, delta: int) -> None:
         """Navigate to a color relative to the currently focused color."""
         try:
@@ -144,7 +144,7 @@ class ColorGrid(Container):
         for button in self._color_by_button:
             button.remove_class("focused")
         target_button.add_class("focused")
-        
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked or activated with the keyboard."""
         self.selected_color = self._color_by_button[event.button]
@@ -207,7 +207,7 @@ class LuminosityRamp(Widget):
         self._update_color(event.y)
         self._mouse_down = True
         self.capture_mouse()
-    
+
     def on_mouse_up(self, event: events.MouseUp) -> None:
         """Called when the mouse is released."""
         self.release_mouse()
@@ -217,7 +217,7 @@ class LuminosityRamp(Widget):
         """Called when the mouse is moved."""
         if self._mouse_down:
             self._update_color(event.y)
-    
+
     def _update_color(self, y: int) -> None:
         """Update the color based on the given y coordinate."""
         self.luminosity = max(0, min(1, 1 - y / (self.size.height - 1)))
@@ -268,7 +268,7 @@ class ColorField(Widget):
         self._update_color(event.offset)
         self._mouse_down = True
         self.capture_mouse()
-    
+
     def on_mouse_up(self, event: events.MouseUp) -> None:
         """Called when the mouse is released."""
         self.release_mouse()
@@ -278,7 +278,7 @@ class ColorField(Widget):
         """Called when the mouse is moved."""
         if self._mouse_down:
             self._update_color(event.offset)
-    
+
     def _update_color(self, offset: Offset) -> None:
         """Update the color based on the given offset."""
         x, y = offset
@@ -310,7 +310,7 @@ class IntegerInput(Input):
         self.min = min
         self.max = max
         self.last_valid_int = 0
-    
+
     def _track_valid_int(self, value: str) -> int:
         try:
             value_as_int = int(value)
@@ -348,7 +348,7 @@ class EditColorsDialogWindow(DialogWindow):
         self._inputs_by_letter: dict[str, IntegerInput] = {}
         self._custom_colors_index = 0
         self.handle_selected_color = handle_selected_color
-    
+
     def handle_button(self, button: Button) -> None:
         """Called when a button is clicked or activated with the keyboard."""
         if button.has_class("cancel"):

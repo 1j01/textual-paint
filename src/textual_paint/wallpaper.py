@@ -21,7 +21,7 @@ def get_desktop_environment() -> str:
         if desktop_session is not None: # easier to match if we doesn't have to deal with character cases
             desktop_session = desktop_session.lower()
             if desktop_session in [
-                "gnome", "unity", "cinnamon", "mate", "xfce4", "lxde", "fluxbox", 
+                "gnome", "unity", "cinnamon", "mate", "xfce4", "lxde", "fluxbox",
                 "blackbox", "openbox", "icewm", "jwm", "afterstep", "trinity", "kde"
             ]:
                 return desktop_session
@@ -33,11 +33,11 @@ def get_desktop_environment() -> str:
             elif desktop_session.startswith("ubuntustudio"):
                 return "kde"
             elif desktop_session.startswith("ubuntu"):
-                return "gnome"     
+                return "gnome"
             elif desktop_session.startswith("lubuntu"):
-                return "lxde" 
-            elif desktop_session.startswith("kubuntu"): 
-                return "kde" 
+                return "lxde"
+            elif desktop_session.startswith("kubuntu"):
+                return "kde"
             elif desktop_session.startswith("razor"): # e.g. razorkwin
                 return "razor-qt"
             elif desktop_session.startswith("wmaker"): # e.g. wmaker-common
@@ -141,7 +141,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
             import configparser
             desktop_conf = configparser.ConfigParser()
             # Development version
-            desktop_conf_file = os.path.join(get_config_dir("razor"), "desktop.conf") 
+            desktop_conf_file = os.path.join(get_config_dir("razor"), "desktop.conf")
             if os.path.isfile(desktop_conf_file):
                 config_option = R"screens\1\desktops\1\wallpaper"
             else:
@@ -157,11 +157,11 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
                 pass
         else:
             # TODO: reload desktop when possible
-            pass 
+            pass
     elif desktop_env in ["fluxbox", "jwm", "openbox", "afterstep"]:
         # http://fluxbox-wiki.org/index.php/Howto_set_the_background
-        # used fbsetbg on jwm too since I am too lazy to edit the XML configuration 
-        # now where fbsetbg does the job excellent anyway. 
+        # used fbsetbg on jwm too since I am too lazy to edit the XML configuration
+        # now where fbsetbg does the job excellent anyway.
         # and I have not figured out how else it can be set on Openbox and AfterSTep
         # but fbsetbg works excellent here too.
         try:
@@ -229,9 +229,9 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
 
 def get_config_dir(app_name: str) -> str:
     if "XDG_CONFIG_HOME" in os.environ:
-        config_home = os.environ["XDG_CONFIG_HOME"] 
+        config_home = os.environ["XDG_CONFIG_HOME"]
     elif "APPDATA" in os.environ: # On Windows
-        config_home = os.environ["APPDATA"] 
+        config_home = os.environ["APPDATA"]
     else:
         try:
             from xdg import BaseDirectory  # type: ignore

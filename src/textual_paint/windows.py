@@ -157,7 +157,7 @@ class Window(Container):
 
     def constrain_to_screen(self) -> None:
         """Constrain window to screen, so that the title bar is always visible.
-        
+
         This method must take into account the fact that the window is centered with `align: center middle;`
         TODO: Call this on screen resize.
         """
@@ -203,7 +203,7 @@ class Window(Container):
     def on_focus(self, event: events.Focus) -> None:
         """Called when the window is focused."""
         self.focus()
-    
+
     def focus(self, scroll_visible: bool = True) -> Self:
         """Focus the window. Note that scroll_visible may scroll a descendant into view, but never the window into view within the screen."""
         # Focus last focused widget if re-focusing

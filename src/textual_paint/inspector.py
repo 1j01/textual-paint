@@ -152,7 +152,7 @@ def subtract_multiple_regions(base: Region, negations: Iterable[Region]) -> list
 class DOMTree(Tree[DOMNode]):
     """A widget that displays the widget hierarchy."""
     # TODO: live update
-    
+
     class Hovered(Message, bubble=True):
         """Posted when a node in the tree is hovered with the mouse or highlighted with the keyboard.
 
@@ -277,7 +277,7 @@ class DOMTree(Tree[DOMNode]):
             self.post_message(self.Hovered(self, node, node.data))
         else:
             self.post_message(self.Hovered(self, None, None))
-    
+
     def on_leave(self, event: events.Leave) -> None:
         """Handle the mouse leaving the tree."""
         self.hover_line = -1
@@ -343,7 +343,7 @@ class PropertiesTree(Tree[object]):
 
         self._already_loaded: dict[TreeNode[object], set[str]] = {}
         """A mapping of tree nodes to the keys that have already been loaded.
-        
+
         This allows the tree to be collapsed and expanded without duplicating nodes.
         It's also used for lazy-loading nodes when clicking the ellipsis in long lists...
         """
@@ -403,11 +403,11 @@ class PropertiesTree(Tree[object]):
             "a_frame": inspect.currentframe(),
             "a_traceback": traceback.extract_stack(),
         }
-    
+
     @property
     def AAA_test_property_that_raises_exception(self) -> str:
         """This property raises an exception when accessed.
-        
+
         Navigate to this node in the DOM Tree and look in the Properties Panel to see the error message.
         """
         raise Exception("EMIT: Error Message Itself Test")
@@ -420,7 +420,7 @@ class PropertiesTree(Tree[object]):
 
     def _populate_node(self, node: TreeNode[object], load_more: bool = False) -> None:
         """Populate a node with its children, or some of them.
-        
+
         If load_more is True (ellipsis node clicked), load more children.
         Otherwise just load an initial batch.
         If the node is collapsed and re-expanded, no new nodes should be added.
@@ -442,7 +442,7 @@ class PropertiesTree(Tree[object]):
 
         ellipsis_node: TreeNode[object] | None = None
         """Node to show more properties when clicked."""
-        
+
         only_counting = False
         """Flag set when we've reached the limit and aren't adding any more nodes."""
 
@@ -477,7 +477,7 @@ class PropertiesTree(Tree[object]):
             iterator = map(with_no_error, enumerate(data))  # type: ignore
         else:
             iterator = safe_dir_items(data)  # type: ignore
-        
+
         self._num_keys_accessed[node] = 0
         for key, value, exception in iterator:
             count += 1
@@ -600,7 +600,7 @@ class NodeInfo(Container):
 
     class StaticWithLinkSupport(Static):
         """Static text that supports DOM node links and file opening links.
-        
+
         This class exists because actions can't target an arbitrary parent.
         The only supported namespaces are `screen` and `app`.
         So action_select_node has to be defined directly on the widget that
@@ -620,7 +620,7 @@ class NodeInfo(Container):
             if dom_node is None:
                 return
             self.post_message(NodeInfo.FollowLinkToNode(dom_node))
-        
+
         def action_open_file(self, path: str, line_number: int | None = None, column_number: int | None = None) -> None:
             """Open a file."""
             # print("action_open_file", path, line_number, column_number)
@@ -726,7 +726,7 @@ class NodeInfo(Container):
             selector_set = rule_set.selector_set
             if match(selector_set, dom_node):
                 applicable_rule_sets.append(rule_set)
-        
+
         to_ignore = [
             ("inspector.py", "set_rule"), # inspector's instrumentation
             ("styles.py", "set_rule"),
@@ -769,7 +769,7 @@ class NodeInfo(Container):
             if frame_info.filename.endswith("inspector.py") and frame_info.function == "_apply_style_value":
                 return "EDITED_WITH_INSPECTOR"
             return (frame_info.filename, frame_info.lineno)
-        
+
         def format_location_info(location: tuple[str, int | None] | Literal["EDITED_WITH_INSPECTOR"] | None) -> Text:
             """Shows a link to open the the source code where a style is set."""
             if location is None:
@@ -788,7 +788,7 @@ class NodeInfo(Container):
         # css_lines = dom_node.styles.inline.css_lines
         # But we need to associate the snake_cased/hyphenated/shorthand CSS property names,
         # in order to provide links to the source code.
-        
+
         def format_style_line(rule: str, styles: Styles, rules: RulesMap, inline: bool) -> Text:
             """Formats a single CSS line for display, with a link to open the source code."""
             # TODO: probably refactor arguments to take simpler data (!important flag bool etc....)
@@ -826,7 +826,7 @@ class NodeInfo(Container):
             # Note: rules[rule] won't be a Color for border-left etc. even if it SHOWS as just a color.
             # if isinstance(value, Color):
             #     value_text = Text.styled(value_str, Style(bgcolor=value.rich_color, color=value.get_contrast_text().rich_color))
-            
+
             # This is a bit specific, but it handles border values that are a border style followed by a color
             # (as well as plain colors).
             if " " in value_str:
@@ -872,7 +872,7 @@ class NodeInfo(Container):
                 "}",
             )
         inline_style_text = format_styles_block(dom_node.styles.inline, Text.styled("inline styles", "italic"), None)
-        
+
         def format_rule_set(rule_set: RuleSet) -> Text:
             """Formats a CSS rule set for display, with a link to open the source code."""
             path: str | None = None
@@ -916,11 +916,11 @@ class NodeInfo(Container):
         # key_bindings_static.update("\n".join(map(repr, dom_node.BINDINGS)) or "(None defined with BINDINGS)")
         # highlighter = ReprHighlighter()
         # key_bindings_static.update(Text("\n").join(map(lambda binding: highlighter(repr(binding)), dom_node.BINDINGS)) or "(None defined with BINDINGS)")
-        
+
         # sources = [dom_node]
         sources = dom_node.ancestors_with_self
         nodes_and_bindings = [
-            (ancestor, binding) 
+            (ancestor, binding)
             for ancestor in sources
             for binding in ancestor._bindings.keys.values() # keys as in keybindings
         ]
@@ -1016,7 +1016,7 @@ class NodeInfo(Container):
                 usage_info = Text("\n\n").join(usages)
             else:
                 usage_info = Text(f"No listeners found for {' or '.join(handler_names)}")
-            
+
             def_location = format_object_location_info(message_class)
             qualname = message_class.__qualname__
             doc = inspect.getdoc(message_class) or '(No docstring)'
@@ -1070,7 +1070,7 @@ class NodeInfo(Container):
             input_parent.mount(self._style_value_input) # before setting value
             input_parent.mount(self._style_value_error)
             self._style_value_input.display = True
-            
+
             # Find leftmost and rightmost positions of the rule
             while x > 0 and self._get_rule_at(x - 1, y) == rule:
                 x -= 1
@@ -1121,12 +1121,12 @@ class NodeInfo(Container):
         # Tip: `merge` rather than `set_rule` allows a little trick of adding a new rule with
         # "<old rule value>; <new rule>: <new rule value>"
         # which is useful as a stopgap until there's a proper way to add new rules.
-        
+
         # Prevent "(edited)" if the rule is unchanged.
         for rule in self.dom_node._inline_styles.get_rules():
             if new_styles.get_rule(rule) == self.dom_node._inline_styles.get_rule(rule):
                 new_styles.clear_rule(rule)
-        
+
         self.dom_node._inline_styles.merge(new_styles)
         self.dom_node.refresh(layout=True)
         self.watch_dom_node(self.dom_node) # refresh the inspector
@@ -1139,7 +1139,7 @@ class NodeInfo(Container):
 
 class ResizeHandle(Widget):
     """A handle for resizing a panel.
-    
+
     This should be a child of the panel.
     Therefore, one of the sides of the divide needs to be a container.
     It will be positioned on the edge of the panel according to the `side` parameter.
@@ -1425,7 +1425,7 @@ class Inspector(Container):
             # Only widgets have a region, App (the root) doesn't.
             self.reset_highlight()
             return
-        
+
         # Rainbow highlight of ancestors.
         """
         if dom_node and dom_node is not self.screen:
@@ -1465,7 +1465,7 @@ class Inspector(Container):
 
         if "inspector_highlight" not in self.app.styles.layers:
             self.app.styles.layers += ("inspector_highlight",)
-        
+
         if dom_node not in self._highlight_boxes:
             self._highlight_boxes[dom_node] = {}
         used_boxes: list[Container] = []

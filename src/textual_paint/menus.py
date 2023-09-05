@@ -88,7 +88,7 @@ class Menu(Container):
                         item.press()
                         break
 
-    
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked or activated with the keyboard."""
 
@@ -181,7 +181,7 @@ class Menu(Container):
                 plain_parts = item.label.plain.split("\t")
                 if len(markup_parts) > 1:
                     item.label = markup_parts[0] + " " * (max_width - len(plain_parts[0])) + markup_parts[1]
-    
+
     def close(self):
         for item in self.items:
             if item.submenu:
@@ -189,7 +189,7 @@ class Menu(Container):
         if not isinstance(self, MenuBar):
             self.display = False
         self.post_message(Menu.StatusInfo(None, closed=True))
-    
+
     def any_menus_open(self) -> bool:
         for item in self.items:
             if item.submenu and item.submenu.display:
@@ -233,7 +233,7 @@ class MenuItem(Button):
             self.id = "rc_" + str(id)
         else:
             self.id = "menu_item_" + to_snake_case(name)
-    
+
     def on_enter(self, event: events.Enter) -> None:
         if isinstance(self.parent_menu, MenuBar):
             # The message is only reset to the default help text on close, so don't change it while no menu is open.

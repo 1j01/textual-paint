@@ -29,7 +29,7 @@ from enum import Enum
 
 class FIGletFontWriter:
     """Used to write FIGlet fonts.
-    
+
     createFigFileData() returns a string that can be written to a .flf file.
 
     It can automatically fix some common problems with FIGlet fonts, such as
@@ -52,7 +52,7 @@ class FIGletFontWriter:
 
     charOrder: list[int] = [ii for ii in range(32, 127)] + [196, 214, 220, 228, 246, 252, 223]
     R"""Character codes that are required to be in any FIGlet font.
-    
+
     Printable portion of the ASCII character set:
 32 (blank/space) 64 @             96  `
 33 !             65 A             97  a
@@ -144,55 +144,55 @@ Additional characters must use code tagged characters, which are not yet support
 
         self.figChars: dict[int, str] = figChars
         """Dictionary that maps character codes to FIGcharacter strings."""
-        
+
         self.height = height
         """Height of a FIGcharacter, in sub-characters."""
-        
+
         self.baseline = baseline
         """Distance from the top of the FIGcharacter to the baseline. If not specified, defaults to height."""
-        
+
         self.maxLength = maxLength
         """Maximum length of a line INCLUDING two endMark characters."""
-        
+
         self.commentLines: list[str] = commentLines
         """List of comment lines to be included in the header. It's recommended to include at least the name of the font and the name of the author."""
-        
+
         self.rightToLeft = rightToLeft
         """Indicates RTL writing direction (or LTR if False)."""
-        
+
         self.codeTagCount = codeTagCount
         """Number of extra FIGcharacters included in the font (in addition to the required 102 untagged characters). Outputting tagged characters is not yet supported."""
-        
+
         self.hardBlank = hardBlank
         """Character rendered as a space which can prevent smushing."""
-        
+
         self.endMark = endMark
         """Denotes the end of a line. Two of these characters in a row denotes the end of a FIGcharacter."""
-        
+
         self.horizontalLayout = horizontalLayout
         """Defines how FIGcharacters are spaced horizontally."""
-        
+
         self.verticalLayout = verticalLayout
         """Defines how FIGcharacters are spaced vertically."""
-        
+
         self.hRule = [False] * 7
         """Horizontal Smushing Rules, 1-6 (0 is not used, so that indices correspond with the names of the parameters).
-        
+
         horizontalLayout must be Layout.CONTROLLED_SMUSHING for these to take effect."""
-        
+
         self.vRule = [False] * 6
         """Vertical Smushing Rules, 1-5 (0 is not used, so that indices correspond with the names of the parameters).
-        
+
         verticalLayout must be Layout.CONTROLLED_SMUSHING for these to take effect."""
-        
+
         self.caseInsensitive = caseInsensitive
         """Makes lowercase same as uppercase. Note that this is one-way overwrite. It doesn't check if a character already exists, and it won't fill in uppercase using lowercase."""
 
         self._validateOptions()
-    
+
     def _validateOptions(self) -> None:
         """Called on init and before generating a font file.
-        
+
         See also _fixFigChars() which actively fixes things.
         """
         # Check enums

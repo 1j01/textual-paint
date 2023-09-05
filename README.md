@@ -382,7 +382,7 @@ cspell-cli lint .
 
 # Type checking
 # I use the "Python" and "Pylance" VS Code extensions, and the Pyright CLI:
-pyright  
+pyright
 # It should give 0 errors at this version of Pyright:
 PYRIGHT_PYTHON_FORCE_VERSION=1.1.317 pyright
 # It gives 508 errors with the next version (the current latest) for some reason:

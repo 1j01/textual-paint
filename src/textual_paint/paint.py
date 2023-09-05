@@ -88,7 +88,7 @@ class MetaGlyphFont:
         self.covered_characters = covered_characters
         """The characters supported by this font."""
         self.load()
-    
+
     def load(self):
         """Load the font from the .flf FIGlet font file."""
         # fig = Figlet(font=self.file_path) # gives FontNotFound error!
@@ -270,7 +270,7 @@ class Tool(Enum):
 
     def get_name(self) -> str:
         """Get the localized name for this tool.
-        
+
         Not to be confused with tool.name, which is an identifier.
         """
         return {
@@ -367,7 +367,7 @@ class ToolsBox(Container):
             button.tooltip = tool.get_name()
             self.tool_by_button[button] = tool
             yield button
-    
+
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """Called when a button is clicked."""
 
@@ -376,7 +376,7 @@ class ToolsBox(Container):
 
 class CharInput(Input, inherit_bindings=False):
     """Widget for entering a single character."""
-    
+
     class CharSelected(Message):
         """Message sent when a character is selected."""
         def __init__(self, char: str) -> None:
@@ -397,7 +397,7 @@ class CharInput(Input, inherit_bindings=False):
     def validate_value(self, value: str) -> str:
         """Limit the value to a single character."""
         return value[-1] if value else " "
-    
+
     # Previously this used watch_value,
     # and had a bug where the character would oscillate between multiple values
     # due to a feedback loop between watch_value and on_char_input_char_selected.
@@ -423,7 +423,7 @@ class CharInput(Input, inherit_bindings=False):
     def validate_cursor_position(self, cursor_position: int) -> int:
         """Force the cursor position to 0 so that it's over the character."""
         return 0
-    
+
     def insert_text_at_cursor(self, text: str) -> None:
         """Override to limit the value to a single character."""
         self.value = text[-1] if text else " "
@@ -538,7 +538,7 @@ class Selection:
         """Copy the image data from the document into the selection."""
         self.contained_image = AnsiArtDocument(self.region.width, self.region.height)
         self.contained_image.copy_region(source=document, source_region=self.region)
-    
+
     def copy_to_document(self, document: 'AnsiArtDocument') -> None:
         """Draw the selection onto the document."""
         if not self.contained_image:
@@ -810,7 +810,7 @@ class AnsiArtDocument:
     @staticmethod
     def format_from_extension(file_path: str) -> str | None:
         """Get the format ID from the file extension of the given path.
-        
+
         Most format IDs are similar to the extension, e.g. 'PNG' for '.png',
         but some are different, e.g. 'JPEG2000' for '.jp2'.
         """
@@ -865,7 +865,7 @@ class AnsiArtDocument:
             return self.encode_image_format(format_id)
         else:
             raise FormatWriteNotSupported(localized_message=_("Cannot write files in %1 format.", format_id) + "\n\n" + _("To save your changes, use a different filename."))
- 
+
     def encode_image_format(self, pil_format_id: str) -> bytes:
         """Encode the document as an image file."""
         size = (self.width, self.height)
@@ -956,12 +956,12 @@ class AnsiArtDocument:
     def get_rich_console_markup(self) -> str:
         """Get the Rich API markup representation of the document."""
         return self.get_renderable().markup
-    
+
     def get_html(self) -> str:
         """Get the HTML representation of the document."""
         console = self.get_console()
         return console.export_html(inline_styles=True, code_format=CUSTOM_CONSOLE_HTML_FORMAT)
-    
+
     def get_svg(self) -> str:
         """Get the SVG representation of the document."""
         console = self.get_console()
@@ -972,7 +972,7 @@ class AnsiArtDocument:
         # unless I escaped all the braces, but that would be ugly! So I'm just using a different syntax.)
         # `html.escape` leaves control codes, which blows up ET.fromstring, so use base64 instead.
         return svg.replace("%ANSI_GOES_HERE%", base64.b64encode(self.get_ansi().encode("utf-8")).decode("utf-8"))
-    
+
     def get_renderable(self) -> Text:
         """Get a Rich renderable for the document."""
         joiner = Text("\n")
@@ -1260,7 +1260,7 @@ class AnsiArtDocument:
                 document.bg[y].append(default_bg)
                 document.fg[y].append(default_fg)
         return document
-    
+
     @staticmethod
     def from_text(text: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
         """Creates a document from the given text, detecting if it uses ANSI control codes or not."""
@@ -1272,7 +1272,7 @@ class AnsiArtDocument:
     @staticmethod
     def from_image_format(content: bytes) -> 'AnsiArtDocument':
         """Creates a document from the given bytes, detecting the file format.
-        
+
         Raises UnidentifiedImageError if the format is not detected.
         """
         image = Image.open(io.BytesIO(content))
@@ -1288,7 +1288,7 @@ class AnsiArtDocument:
     @staticmethod
     def from_svg(svg: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
         """Creates a document from an SVG containing a character grid with rects for cell backgrounds.
-        
+
         - If the SVG contains a special <ansi> element, this is used instead of anything else.
         Otherwise it falls back to flexible grid detection:
         - rect elements can be in any order.
@@ -1355,11 +1355,11 @@ class AnsiArtDocument:
         def rewrite_property(match: re.Match[str]) -> str:
             property_name = match.group(1)
             property_value = match.group(2)
-            
+
             if property_name in property_map:
                 rewritten_name = property_map[property_name]
                 return f"{rewritten_name}: {property_value}"
-            
+
             return match.group(0)  # Return the original match if no rewrite is needed
 
         for style_element in root.findall(".//{http://www.w3.org/2000/svg}style"):
@@ -1660,7 +1660,7 @@ class AnsiArtDocument:
             except IndexError:
                 print("Warning: text element is out of bounds: " + ET.tostring(text, encoding="unicode"))
                 continue
-        
+
         # For debugging, write the SVG with the ignored rects outlined, and coordinate markers added.
         if DEBUG_SVG_LOADING:
             ET.ElementTree(root).write("debug.svg", encoding="unicode")
@@ -1670,7 +1670,7 @@ class AnsiArtDocument:
     @staticmethod
     def decode_based_on_file_extension(content: bytes, file_path: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
         """Creates a document from the given bytes, detecting the file format.
-        
+
         Raises FormatReadNotSupported if the file format is not supported for reading. Some are write-only.
         Raises UnicodeDecodeError, which can be a very long message, so make sure to handle it!
         Raises UnidentifiedImageError if the format is not detected.
@@ -1706,7 +1706,7 @@ class Action:
 
     TODO: In the future it would be more efficient to use a mask for the region update,
     to store only modified pixels, and use RLE compression on the mask and image data.
-    
+
     NOTE: Not to be confused with Textual's `class Action(Event)`, or the type of law suit.
     Indeed, Textual's actions are used significantly in this application, with action_* methods,
     but this class is not related. Perhaps I should rename this class to UndoOp, or HistoryOperation.
@@ -1720,7 +1720,7 @@ class Action:
         """The region of the document that was modified."""
         self.is_full_update = False
         """Indicates that this action resizes the document, and thus should not be undone with a region update.
-        
+
         That is, unless in the future region updates support a mask and work in tandem with resizes.
         """
         self.sub_image_before: AnsiArtDocument|None = None
@@ -1775,7 +1775,7 @@ class Canvas(Widget):
             self.button = mouse_down_event.button
             self.ctrl = mouse_down_event.ctrl
             super().__init__()
-    
+
     class ToolUpdate(Message):
         """Message when dragging on the canvas."""
 
@@ -1837,7 +1837,7 @@ class Canvas(Widget):
         self.pointer_active = True
         self.which_button = event.button
         self.capture_mouse(True)
-    
+
     def fix_mouse_event(self, event: events.MouseEvent) -> None:
         """Work around inconsistent widget-relative mouse coordinates by calculating from screen coordinates."""
         # Hack to fix mouse coordinates, not needed for mouse down,
@@ -1884,7 +1884,7 @@ class Canvas(Widget):
         self.fix_mouse_event(event)
         event.x //= self.magnification
         event.y //= self.magnification
-        
+
         if self.pointer_active:
             self.post_message(self.ToolStop(event))
         self.pointer_active = False
@@ -1993,7 +1993,7 @@ class Canvas(Widget):
                 style = Style(color=inverse_color, bgcolor=inverse_bgcolor)
             segments.append(Segment(ch, style))
         return Strip(segments, self.size.width)
-    
+
     def refresh_scaled_region(self, region: Region) -> None:
         """Refresh a region of the widget, scaled by the magnification."""
         if self.magnification == 1:
@@ -2006,7 +2006,7 @@ class Canvas(Widget):
             (region.width + 2) * self.magnification,
             (region.height + 2) * self.magnification,
         ))
-    
+
     def watch_magnification(self) -> None:
         """Called when magnification changes."""
         self.active_meta_glyph_font = largest_font_that_fits(self.magnification, self.magnification)
@@ -2210,7 +2210,7 @@ class PaintApp(App[None]):
     """The document being edited. Contains the selection, if any."""
     image_initialized = False
     """Whether the image is ready. This flag exists to avoid type checking woes if I were to allow image to be None."""
-    
+
     magnification = var(1)
     """Current magnification level."""
     return_to_magnification = var(4)
@@ -2236,12 +2236,12 @@ class PaintApp(App[None]):
     """The folder to save a temporary backup file to. If None, will save alongside the file being edited."""
     backup_checked_for: Optional[str] = None
     """The file path last checked for a backup save.
-    
+
     This is tracked to prevent discarding Untitled.ans~ when loading a document on startup.
     Indicates that the file path either was loaded (recovered) or was not found.
     Not set when failing to load a backup, since the file maybe shouldn't be discarded in that case.
     """
-    
+
     mouse_gesture_cancelled = False
     """For Undo/Redo, to interrupt the current action"""
     mouse_at_start: Offset = Offset(0, 0)
@@ -2262,7 +2262,7 @@ class PaintApp(App[None]):
     """Used for Polygon tool to detect double-click"""
     color_eraser_mode: bool = False
     """Used for Eraser/Color Eraser tool, when using the right mouse button"""
-    
+
     background_tasks: set[asyncio.Task[None]] = set()
     """Stores references to Task objects so they don't get garbage collected."""
 
@@ -2278,7 +2278,7 @@ class PaintApp(App[None]):
     def watch_show_tools_box(self, show_tools_box: bool) -> None:
         """Called when show_tools_box changes."""
         self.query_one("#tools_box", ToolsBox).display = show_tools_box
-    
+
     def watch_show_colors_box(self, show_colors_box: bool) -> None:
         """Called when show_colors_box changes."""
         self.query_one("#colors_box", ColorsBox).display = show_colors_box
@@ -2359,7 +2359,7 @@ class PaintApp(App[None]):
             return affected_region_base.union(affected_region)
         else:
             return affected_region
-    
+
     def stamp_char(self, x: int, y: int) -> None:
         """Modifies the cell at the given coordinates, with special handling for different tools."""
         if x >= self.image.width or y >= self.image.height or x < 0 or y < 0:
@@ -2417,7 +2417,7 @@ class PaintApp(App[None]):
             self.image.ch[y][x] = char
             self.image.bg[y][x] = bg_color
             self.image.fg[y][x] = fg_color
-    
+
     def erase_region(self, region: Region, mask: Optional[list[list[bool]]] = None) -> None:
         """Clears the given region."""
         # Time to go undercover as an eraser. 🥸
@@ -2498,7 +2498,7 @@ class PaintApp(App[None]):
 
         if self.selected_tool not in [Tool.polygon, Tool.curve]:
             return
-    
+
         if self.selected_tool == Tool.polygon and len(self.tool_points) < 3:
             return
         if self.selected_tool == Tool.curve and len(self.tool_points) < 2:
@@ -2513,7 +2513,7 @@ class PaintApp(App[None]):
             affected_region = self.draw_current_polygon()
         else:
             affected_region = self.draw_current_curve()
-        
+
         action.region = affected_region
         action.region = action.region.intersection(Region(0, 0, self.image.width, self.image.height))
         action.update(self.image_at_start)
@@ -2666,7 +2666,7 @@ class PaintApp(App[None]):
             return True
         except PermissionError:
             self.message_box(dialog_title, _("Access denied."), "ok")
-        except FileNotFoundError: 
+        except FileNotFoundError:
             self.message_box(dialog_title, _("%1 contains an invalid path.", file_path), "ok")
         except OSError as e:
             self.message_box(dialog_title, _("Failed to save document."), "ok", error=e)
@@ -2676,7 +2676,7 @@ class PaintApp(App[None]):
 
     def reload_after_save(self, content: bytes, file_path: str) -> bool:
         """Reload the document from saved content, to show information loss from the file format.
-        
+
         Unlike `open_from_file_path`, this method:
         - doesn't short circuit when the file path matches the current file path, crucially
         - skips backup management (discarding or checking for a backup)
@@ -2705,7 +2705,7 @@ class PaintApp(App[None]):
 
     def update_palette_from_format_id(self, format_id: str | None) -> None:
         """Update the palette based on the file format.
-        
+
         In the future, this should update from attributes set when loading the file,
         such as whether it supports color, and if not, it could show pattern fills,
         such as ░▒▓█... that's not a lot of patterns, and you could get those from the
@@ -2722,7 +2722,7 @@ class PaintApp(App[None]):
 
     async def save(self) -> bool:
         """Save the image to a file.
-        
+
         Note that this method will never return if the user cancels the Save As dialog.
         """
         self.stop_action_in_progress()
@@ -2751,7 +2751,7 @@ class PaintApp(App[None]):
             await self.save_as()
             # If the user cancels the Save As dialog, we'll never get here.
             return True
-    
+
     def action_save_as(self) -> None:
         """Show the save as dialog, without waiting for it to close."""
         # Action must not await the dialog closing,
@@ -2767,7 +2767,7 @@ class PaintApp(App[None]):
         # You could make a selection while the dialog is open, for example.
         self.stop_action_in_progress()
         self.close_windows("SaveAsDialogWindow, OpenDialogWindow")
-        
+
         saved_future: asyncio.Future[None] = asyncio.Future()
 
         def handle_selected_file_path(file_path: str) -> None:
@@ -2860,7 +2860,7 @@ class PaintApp(App[None]):
                 self.confirm_overwrite(file_path, on_save_confirmed)
             else:
                 on_save_confirmed()
-        
+
         window = SaveAsDialogWindow(
             title=_("Copy To"),
             handle_selected_file_path=handle_selected_file_path,
@@ -2944,7 +2944,7 @@ class PaintApp(App[None]):
 
     def confirm_information_loss(self, format_id: str | None, callback: Callable[[bool], None]) -> None:
         """Confirms discarding information when saving as a particular format. Callback variant. Never calls back if unconfirmed.
-        
+
         The callback argument is whether there's information loss AND the file is openable.
         This is used to determine whether the file should be reloaded to show the information loss.
         It can't be reloaded if it's not openable.
@@ -3020,14 +3020,14 @@ class PaintApp(App[None]):
         """Exit the program immediately, deleting the backup file."""
         self.discard_backup()
         self.exit()
-    
+
     def action_exit(self) -> None:
         """Exit the program, prompting to save changes if necessary."""
         if self.is_document_modified():
             self.prompt_save_changes(self.file_path or _("Untitled"), self.discard_backup_and_exit)
         else:
             self.discard_backup_and_exit()
-    
+
     def action_reload(self) -> None:
         """Reload the program, prompting to save changes if necessary."""
         # restart_program() calls discard_backup()
@@ -3057,7 +3057,7 @@ class PaintApp(App[None]):
             icon_widget = get_warning_icon()
 
         # self.close_windows("#message_box")
-        
+
         self.bell()
 
         def handle_button(button: Button) -> None:
@@ -3128,7 +3128,7 @@ class PaintApp(App[None]):
                 def go_ahead():
                     # Note: exceptions handled outside of this function (UnicodeDecodeError, UnidentifiedImageError, FormatReadNotSupported)
                     new_image = AnsiArtDocument.decode_based_on_file_extension(content, file_path)
-                    
+
                     # action_new handles discarding the backup, and recovering from Untitled.ans~, by default
                     # but we need to 1. handle the case where the backup is the file to be opened,
                     # and 2. recover from <file to be opened>.ans~ instead of Untitled.ans~
@@ -3146,7 +3146,7 @@ class PaintApp(App[None]):
                         print("Error comparing files:", e)
                     if not opening_backup:
                         self.discard_backup()
-                    
+
                     self.action_new(force=True, manage_backup=False)
                     self.canvas.image = self.image = new_image
                     self.canvas.refresh(layout=True)
@@ -3226,7 +3226,7 @@ class PaintApp(App[None]):
 
     def action_new(self, *, force: bool = False, manage_backup: bool = True) -> None:
         """Create a new image, discarding the backup file for the old file path, and undos/redos.
-        
+
         This method is used as part of opening files as well,
         in which case force=True and recover=False,
         because prompting and recovering are handled outside.
@@ -3259,7 +3259,7 @@ class PaintApp(App[None]):
 
         if manage_backup:
             self.recover_from_backup()
-    
+
     def action_open_character_selector(self) -> None:
         """Show dialog to select a character."""
         self.close_windows("#character_selector_dialog")
@@ -3439,7 +3439,7 @@ Columns: {len(palette) // 2}
         self.message_box(_("Paint"), "Not implemented.", "ok")
     def action_send(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
-    
+
     def action_set_as_wallpaper_tiled(self) -> None:
         """Tile the image as the wallpaper."""
         self.set_as_wallpaper(tiled=True)
@@ -3538,7 +3538,7 @@ Columns: {len(palette) // 2}
 
     def get_selected_content(self, file_path: str|None = None) -> bytes | None:
         """Returns the content of the selection, or underlying the selection if it hasn't been cut out yet.
-        
+
         For a textbox, returns the selected text within the textbox. May include ANSI escape sequences, either way.
 
         Raises FormatWriteNotSupported if the file_path implies a format that can't be encoded.
@@ -3663,18 +3663,18 @@ Columns: {len(palette) // 2}
             self.image.selection = Selection(Region(0, 0, self.image.width, self.image.height))
             self.canvas.refresh()
             self.selected_tool = Tool.select
-    
+
     def action_text_toolbar(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
-    
+
     def action_normal_size(self) -> None:
         """Zoom to 1x."""
         self.magnification = 1
-    
+
     def action_large_size(self) -> None:
         """Zoom to 4x."""
         self.magnification = 4
-    
+
     def action_custom_zoom(self) -> None:
         """Show dialog to set zoom level."""
         self.close_windows("#zoom_dialog")
@@ -3850,7 +3850,7 @@ Columns: {len(palette) // 2}
                 self.image.fg[self.image.height - y - 1][x] = source.fg[y][x]
                 self.image.bg[self.image.height - y - 1][x] = source.bg[y][x]
         self.canvas.refresh()
-    
+
     def action_rotate_by_angle(self, angle: int) -> None:
         """Rotate the image by the given angle, one of 90, 180, or 270."""
         action = Action(_("Rotate by angle"), Region(0, 0, self.image.width, self.image.height))
@@ -3863,7 +3863,7 @@ Columns: {len(palette) // 2}
 
         if angle != 180:
             self.image.resize(self.image.height, self.image.width)
-        
+
         for y in range(self.image.height):
             for x in range(self.image.width):
                 if angle == 90:
@@ -4072,8 +4072,8 @@ Columns: {len(palette) // 2}
             self.add_action(action)
 
             self.image.invert()
-            self.canvas.refresh()        
-    
+            self.canvas.refresh()
+
     def resize_document(self, width: int, height: int) -> None:
         """Resize the document, creating an undo state, and refresh the canvas."""
         self.cancel_preview()
@@ -4087,7 +4087,7 @@ Columns: {len(palette) // 2}
         self.add_action(action)
 
         self.image.resize(width, height, default_bg=self.selected_bg_color, default_fg=self.selected_fg_color)
-        
+
         self.canvas.refresh(layout=True)
 
     def action_attributes(self) -> None:
@@ -4131,7 +4131,7 @@ Columns: {len(palette) // 2}
             )
         )
         self.mount(window)
-    
+
     def action_clear_image(self) -> None:
         """Clear the image, creating an undo state."""
         # This could be simplified to use erase_region, but that would be marginally slower.
@@ -4155,7 +4155,7 @@ Columns: {len(palette) // 2}
     def action_draw_opaque(self) -> None:
         """Toggles opaque/transparent selection mode."""
         self.message_box(_("Paint"), "Not implemented.", "ok")
-    
+
     def action_help_topics(self) -> None:
         """Show the Help Topics dialog."""
         self.close_windows("#help_dialog")
@@ -4193,7 +4193,7 @@ Columns: {len(palette) // 2}
         window.content.mount(Container(Static(help_text, markup=False),  classes="help_text_container"))
         window.content.mount(Button(_("OK"), classes="ok submit"))
         self.mount(window)
-    
+
     def action_about_paint(self) -> None:
         """Show the About Paint dialog."""
         self.close_windows("#about_paint_dialog")
@@ -4349,7 +4349,7 @@ Columns: {len(palette) // 2}
 
     def magnifier_click(self, x: int, y: int) -> None:
         """Zooms in or out on the image."""
-        
+
         prev_magnification = self.magnification
         prospective_magnification = self.get_prospective_magnification()
 
@@ -4386,7 +4386,7 @@ Columns: {len(palette) // 2}
 
     def extract_to_selection(self, erase_underlying: bool = True) -> None:
         """Extracts image data underlying the selection from the document into the selection.
-        
+
         This creates an undo state with the current tool's name, which should be Select or Free-Form Select.
         """
         sel = self.image.selection
@@ -4497,7 +4497,7 @@ Columns: {len(palette) // 2}
         self.image_at_start.copy_region(self.image)
         action = Action(self.selected_tool.get_name())
         self.add_action(action)
-        
+
         affected_region = None
         if self.selected_tool == Tool.pencil or self.selected_tool == Tool.brush:
             affected_region = self.stamp_brush(event.x, event.y)
@@ -4531,7 +4531,7 @@ Columns: {len(palette) // 2}
             region = self.canvas.select_preview_region
             self.canvas.select_preview_region = None
             self.canvas.refresh_scaled_region(region)
-        
+
         # To avoid saving with a tool preview as part of the image data,
         # or interrupting the user's flow by canceling the preview occasionally to auto-save a backup,
         # we postpone auto-saving the backup until the image is clean of any previews.
@@ -4642,12 +4642,12 @@ Columns: {len(palette) // 2}
         """Merges the selection into the image, or deletes it if meld is False."""
         if not self.image.selection:
             return
-        
+
         if self.image.selection.textbox_mode:
             # The Text tool creates an undo state only when you switch tools
             # or click outside the textbox, melding the textbox into the image.
             # If you're deleting the textbox, an undo state doesn't need to be created.
-            
+
             # If you haven't typed anything into the textbox yet, it should be deleted
             # to make it easier to start over in positioning the textbox.
             # If you have typed something, it should be melded into the image,
@@ -4708,7 +4708,7 @@ Columns: {len(palette) // 2}
 
     def on_canvas_tool_update(self, event: Canvas.ToolUpdate) -> None:
         """Called when the user is drawing on the canvas.
-        
+
         Several tools do a preview of sorts here, even though it's not the ToolPreviewUpdate event.
         TODO: rename these events to describe when they occur, ascribe less semantics to them.
         """
@@ -4741,7 +4741,7 @@ Columns: {len(palette) // 2}
 
         if self.selected_tool in [Tool.fill, Tool.magnifier]:
             return
-        
+
         if self.selected_tool in [Tool.select, Tool.free_form_select, Tool.text]:
             sel = self.image.selection
             if self.selecting_text:
@@ -4797,7 +4797,7 @@ Columns: {len(palette) // 2}
             old_action.undo(self.image)
             action = Action(self.selected_tool.get_name(), affected_region)
             self.undos.append(action)
-        
+
         if self.selected_tool in [Tool.pencil, Tool.brush, Tool.eraser, Tool.airbrush]:
             for x, y in bresenham_walk(self.mouse_previous.x, self.mouse_previous.y, event.x, event.y):
                 affected_region = self.stamp_brush(x, y, affected_region)
@@ -4841,7 +4841,7 @@ Columns: {len(palette) // 2}
                 affected_region = self.stamp_brush(x, y, affected_region)
         else:
             raise NotImplementedError
-        
+
         # Update action region and image data
         if action.region and affected_region:
             action.region = action.region.union(affected_region)
@@ -4858,7 +4858,7 @@ Columns: {len(palette) // 2}
                 assert old_action is not None, "old_action should have been set if replace_action is True"
                 affected_region = affected_region.union(old_action.region)
             self.canvas.refresh_scaled_region(affected_region)
-        
+
         self.mouse_previous = Offset(event.x, event.y)
 
     def on_canvas_tool_stop(self, event: Canvas.ToolStop) -> None:
@@ -4885,7 +4885,7 @@ Columns: {len(palette) // 2}
             # Done selecting text
             self.selecting_text = False
             return
-        
+
         assert self.mouse_at_start is not None, "mouse_at_start should be set on mouse down"
         # Note that self.mouse_at_start is not set to None on mouse up,
         # so it can't be used to check if the mouse is down.
@@ -4927,7 +4927,7 @@ Columns: {len(palette) // 2}
                 self.make_preview(self.draw_current_curve)
         elif self.selected_tool == Tool.polygon:
             # Maybe finish drawing a polygon
-            
+
             # Check if the distance between the first and last point is small enough,
             # or if the user double-clicked.
             close_gap_threshold_cells = 2
@@ -5106,7 +5106,7 @@ Columns: {len(palette) // 2}
         # Detect file drop
         def _extract_filepaths(text: str) -> list[str]:
             """Extracts escaped filepaths from text.
-            
+
             Taken from https://github.com/agmmnn/textual-filedrop/blob/55a288df65d1397b959d55ef429e5282a0bb21ff/textual_filedrop/_filedrop.py#L17-L36
             """
             split_filepaths = []
@@ -5128,7 +5128,7 @@ Columns: {len(palette) // 2}
                 #         for file in files:
                 #             filepaths.append(os.path.join(root, file))
             return filepaths
-        
+
         try:
             filepaths = _extract_filepaths(event.text)
             if filepaths:
@@ -5137,7 +5137,7 @@ Columns: {len(palette) // 2}
                 return
         except ValueError:
             pass
-        
+
         # Text pasting is only supported with Ctrl+V or Edit > Paste, handled separately.
         return
 
@@ -5162,7 +5162,7 @@ Columns: {len(palette) // 2}
         self.selected_tool = event.tool
         if self.selected_tool not in [Tool.magnifier, Tool.pick_color]:
             self.return_to_tool = self.selected_tool
-    
+
     def on_char_input_char_selected(self, event: CharInput.CharSelected) -> None:
         """Called when a character is entered in the character input."""
         self.selected_char = event.char
@@ -5280,7 +5280,7 @@ HeaderIcon.icon = "[rgb(0,0,0) on rgb(255,255,255)]...[/][rgb(255,255,255)]\\\\[
 # Prevent wrapping, for a CSS effect, cropping to hide the shading "~" of the page fold when the page fold isn't visible.
 HeaderIcon.icon = Text.from_markup(HeaderIcon.icon, overflow="crop")
 
-# `textual run --dev src.textual_paint.paint` will search for a 
+# `textual run --dev src.textual_paint.paint` will search for a
 # global variable named `app`, and fallback to
 # anything that is an instance of `App`, or
 # a subclass of `App`.

@@ -86,7 +86,7 @@ def write_ansi_file(file: TextIO) -> None:
                 write(BOX_VERTICAL)
                 write(f'\u001b[{start_y + k + 1};{start_x + box_outer_width - 1}H')
                 write(BOX_VERTICAL)
-            
+
             # Write the character in the center of the box
             # write(f'\u001b[{start_y + box_inner_height // 2 + 1};{start_x + box_inner_width // 2 - 1}H')
             # write(character)
