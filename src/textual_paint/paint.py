@@ -5249,6 +5249,9 @@ if args.ascii_only:
     force_ascii_borders()
 
     RadioButton.BUTTON_INNER = "*" # "*", "o", "O", "@"
+    # Defined on internal superclass ToggleButton
+    RadioButton.BUTTON_LEFT = "["
+    RadioButton.BUTTON_RIGHT = "]"
 
 # header_icon_markup = "[on white][blue]\\\\[/][red]|[/][yellow]/[/][/]"
 # header_icon_markup = "[black]..,[/]\n[blue]\\\\[/][on white][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[_][/]"
