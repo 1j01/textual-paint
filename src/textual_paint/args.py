@@ -15,15 +15,16 @@ parser.add_argument('--ascii-only', action='store_true', help='Use only ASCII ch
 parser.add_argument('--backup-folder', default=None, metavar="FOLDER", help='Folder to save backups to. By default a backup is saved alongside the edited file.')
 
 # TODO: hide development options from help? there's quite a few of them now
-parser.add_argument('--inspect-layout', action='store_true', help='Enables DOM inspector (F12) and middle click highlight, for development')
-# This flag is for development, because it's very confusing
-# to see the error message from the previous run,
+dev_options = parser.add_argument_group('development options')
+dev_options.add_argument('--inspect-layout', action='store_true', help='Enables DOM inspector (F12) and middle click highlight')
+# This flag is important for my sanity during development,
+# because it's very confusing to see an error message from the previous run,
 # when a problem is actually solved.
 # There are enough ACTUAL "that should have worked!!" moments to deal with.
 # I really don't want false ones mixed in. You want to reward your brain for finding good solutions, after all.
-parser.add_argument('--clear-screen', action='store_true', help='Clear the screen before starting; useful for development, to avoid seeing outdated errors')
-parser.add_argument('--restart-on-changes', action='store_true', help='Restart the app when the source code is changed, for development')
-parser.add_argument('--recode-samples', action='store_true', help='Open and save each file in samples/, for testing')
+dev_options.add_argument('--clear-screen', action='store_true', help='Clear the screen before starting, to avoid seeing outdated errors')
+dev_options.add_argument('--restart-on-changes', action='store_true', help='Restart the app when the source code is changed')
+dev_options.add_argument('--recode-samples', action='store_true', help='Open and save each file in samples/, for testing')
 
 parser.add_argument('filename', nargs='?', default=None, help='Path to a file to open. File will be created if it doesn\'t exist.')
 

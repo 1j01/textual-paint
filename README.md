@@ -81,12 +81,12 @@ options:
   --backup-folder FOLDER
                         Folder to save backups to. By default a backup is saved
                         alongside the edited file.
-  --inspect-layout      Enables DOM inspector (F12) and middle click highlight,
-                        for development
-  --clear-screen        Clear the screen before starting; useful for
-                        development, to avoid seeing outdated errors
-  --restart-on-changes  Restart the app when the source code is changed, for
-                        development
+
+development options:
+  --inspect-layout      Enables DOM inspector (F12) and middle click highlight
+  --clear-screen        Clear the screen before starting, to avoid seeing
+                        outdated errors
+  --restart-on-changes  Restart the app when the source code is changed
   --recode-samples      Open and save each file in samples/, for testing
 ```
 
