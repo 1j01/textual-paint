@@ -7,14 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+I am now recommending to install using `pipx` instead of `pip`.
+To switch to `pipx`, run `pip uninstall textual-paint && pipx install textual-paint`.
+
 ### Changed
 
 - `--ascii-only-icons` now uses color, and has been otherwise tweaked to make tools easier to distinguish.
-- It is now recommended to install using `pipx` instead of `pip`; to switch to `pipx`, run `pip uninstall textual-paint && pipx install textual-paint`.
+- The useless circle icon in the top left of the screen is now a cute ASCII art Paint icon. If you click to expand the header, you can see the full thing, but by default just the colorful brushes are visible.
 
 ### Added
 
-- Added `--ascii-only` option which affects the whole UI, not just tool icons as with `--ascii-only-icons`; this makes Textual Paint more usable in older terminals like Windows Console Host (`conhost.exe`), or XTerm.
+- Added `--ascii-only` option which affects the whole UI, not just tool icons as with `--ascii-only-icons`. This makes Textual Paint more usable in older terminals like Windows Console Host (`conhost.exe`), or XTerm.
 - Right click can now be used as an alternative to Ctrl+click to pick a foreground color from the palette. In XTerm, Ctrl opens a context menu, so this is the only way in XTerm. It's also more convenient.
   - Note: Left click in MS Paint selects the foreground (primary) color, whereas in Textual Paint it selects the background color, which is, strangely, essentially the primary color, since you draw with a space character by default. It may be worth changing the default character to a full block character (█), and swapping these mouse button mappings, to bring it in line with MS Paint. This would also allow drawing "pixels" and saving as a plain text file without it all becoming blank when color information is discarded.
   - Side note: I was previously saving right click for a possible future UI where the foreground and background selections both have a foreground, background, and glyph, with the three components being analogous to a single color in MS Paint. I haven't explored that idea yet. It's likely too complicated conceptually, but it would allow more granular color replacement with the Color Eraser tool (if that's even desirable), and quicker access to two different glyphs.
@@ -24,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Stretch/Skew dialog's icons were missing from the package, and didn't show up in the dialog, in the release build.
-- Fixed misaligned rows of text in Kitty terminal due to Pencil and Brush tool emojis. The Text and Curve tool icons are also swapped out for options that look better in Kitty.
+- Fixed misaligned rows of text in Kitty terminal due to Pencil and Brush tool emojis (now swapped with alternatives, as with several other terminals). The Text and Curve tool icons are also swapped out for options that look better in Kitty (on my computer, at least).
 
 ## [0.1.0] - 2023-07-24
 
