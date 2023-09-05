@@ -28,6 +28,7 @@ from textual.containers import Container, Vertical, Horizontal
 from textual.geometry import Offset, Region, Size
 from textual.css._style_properties import BorderDefinition
 from textual.reactive import var, reactive
+from textual.scrollbar import ScrollBar, ScrollBarRender
 from textual.strip import Strip
 from textual.dom import DOMNode
 from textual.widget import Widget
@@ -51,6 +52,7 @@ from .graphics_primitives import (
 )
 from .menus import MenuBar, Menu, MenuItem, Separator
 from .windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon, get_question_icon, get_paint_icon
+from .scrollbars import ASCIIScrollBarRender
 from .file_dialogs import SaveAsDialogWindow, OpenDialogWindow
 from .edit_colors import EditColorsDialogWindow
 from .localization.i18n import get as _, load_language, remove_hotkey
@@ -5252,6 +5254,9 @@ if args.ascii_only:
     # Defined on internal superclass ToggleButton
     RadioButton.BUTTON_LEFT = "["
     RadioButton.BUTTON_RIGHT = "]"
+
+    ScrollBar.renderer = ASCIIScrollBarRender
+
 
 # header_icon_markup = "[on white][blue]\\\\[/][red]|[/][yellow]/[/][/]"
 # header_icon_markup = "[black]..,[/]\n[blue]\\\\[/][on white][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[_][/]"
