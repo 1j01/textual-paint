@@ -7,7 +7,7 @@ from textual.scrollbar import ScrollBarRender
 
 
 class ASCIIScrollBarRender(ScrollBarRender):
-    """A scrollbar renderer that uses ASCII characters."""
+    """A scrollbar renderer that uses only ASCII space characters."""
     @classmethod
     def render_bar(
         cls,
@@ -20,19 +20,9 @@ class ASCIIScrollBarRender(ScrollBarRender):
         back_color: Color = Color.parse("#555555"),
         bar_color: Color = Color.parse("bright_magenta"),
     ) -> Segments:
-        if vertical:
-            # bars = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", " "]
-            # bars = ["_", "=", "#", " "]
-            bars = [" "]
-        else:
-            # bars = ["▉", "▊", "▋", "▌", "▍", "▎", "▏", " "]
-            # bars = ["#", " "]
-            bars = [" "]
 
         back = back_color
         bar = bar_color
-
-        len_bars = len(bars)
 
         width_thickness = thickness if vertical else 1
 
@@ -48,11 +38,8 @@ class ASCIIScrollBarRender(ScrollBarRender):
             position_ratio = position / (virtual_size - window_size)
             position = (size - thumb_size) * position_ratio
 
-            start = int(position * len_bars)
-            end = start + ceil(thumb_size * len_bars)
-
-            start_index, start_bar = divmod(max(0, start), len_bars)
-            end_index, end_bar = divmod(max(0, end), len_bars)
+            start_index = max(0, int(position))
+            end_index = max(0, start_index + ceil(thumb_size))
 
             upper = {"@mouse.up": "scroll_up"}
             lower = {"@mouse.up": "scroll_down"}
@@ -67,25 +54,6 @@ class ASCIIScrollBarRender(ScrollBarRender):
                 _Segment(blank, _Style(bgcolor=bar, meta=foreground_meta))
             ] * (end_index - start_index)
 
-            # Apply the smaller bar characters to head and tail of scrollbar for more "granularity"
-            if start_index < len(segments):
-                bar_character = bars[len_bars - 1 - start_bar]
-                if bar_character != " ":
-                    segments[start_index] = _Segment(
-                        bar_character * width_thickness,
-                        _Style(bgcolor=back, color=bar, meta=foreground_meta)
-                        if vertical
-                        else _Style(bgcolor=bar, color=back, meta=foreground_meta),
-                    )
-            if end_index < len(segments):
-                bar_character = bars[len_bars - 1 - end_bar]
-                if bar_character != " ":
-                    segments[end_index] = _Segment(
-                        bar_character * width_thickness,
-                        _Style(bgcolor=bar, color=back, meta=foreground_meta)
-                        if vertical
-                        else _Style(bgcolor=back, color=bar, meta=foreground_meta),
-                    )
         else:
             style = _Style(bgcolor=back)
             segments = [_Segment(blank, style=style)] * int(size)
