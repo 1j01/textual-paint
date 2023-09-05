@@ -12,5 +12,7 @@ __license__ = "MIT"
 # to distinguish production from development versions.
 from os.path import exists, dirname
 from subprocess import check_output
-if exists(dirname(__file__) + "/../../.git"):
+DEVELOPMENT = exists(dirname(__file__) + "/../../.git")
+"""Whether running from a Git repository."""
+if DEVELOPMENT:
     __version__ = "development " + check_output(["git", "describe", "--tags"], cwd=dirname(__file__)).strip().decode()

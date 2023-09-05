@@ -4,7 +4,7 @@ import argparse
 import os
 import re
 
-from .__init__ import __version__
+from .__init__ import __version__, DEVELOPMENT
 
 parser = argparse.ArgumentParser(description='Paint in the terminal.', usage='%(prog)s [options] [filename]', prog="textual-paint")
 parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
@@ -60,11 +60,13 @@ def update_cli_help_on_readme():
         f.seek(0)
         f.write(md)
         f.truncate()
-# Manually disabled for release.
-# TODO: disable for release builds, while keeping it automatic during development.
-# (I could make this another dev flag, but I like the idea of it being automatic.)
-# (Maybe a pre-commit hook would be ideal, if it's worth the complexity.)
-# update_cli_help_on_readme()
+
+if DEVELOPMENT:
+    # A pre-commit hook might technically be best for this,
+    # but I doubt it's worth the complexity.
+    # I'm usually running with --restart-on-changes anyways,
+    # while working on the project.
+    update_cli_help_on_readme()
 
 args = parser.parse_args()
 """Parsed command line arguments."""
