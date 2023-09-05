@@ -211,7 +211,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
 
             # Safer version, avoiding string interpolation,
             # to protect against command injection (both in the shell and in AppleScript):
-            OSASCRIPT = f"""
+            OSASCRIPT = """
             on run (clp)
                 if clp's length is not 1 then error "Incorrect Parameters"
                 local file_loc
@@ -223,7 +223,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
     else:
         if first_run: # don't spam the user with the same message over and over again
             sys.stderr.write("Warning: Failed to set wallpaper. Your desktop environment is not supported.")
-            sys.stderr.write("You can try manually to set your wallpaper to %s" % file_loc)
+            sys.stderr.write(f"You can try manually to set your wallpaper to {file_loc}")
         return False
     return True
 
