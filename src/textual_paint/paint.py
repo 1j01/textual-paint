@@ -3638,11 +3638,13 @@ Columns: {len(palette) // 2}
             # logo_icon = "[blue on red]▀[/][green on yellow]▀[/]" # this gives dim colors
             # logo_icon = "[#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # good
             # logo_icon = "[#000000][b]≈[/][/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # trying to add the trailing flag effect
-            logo_icon = "[#000000]⣿[/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # ah, that's brilliant! that worked way better than I expected
+            # logo_icon = "[#000000]⣿[/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # ah, that's brilliant! that worked way better than I expected
+            logo_icon = "[not bold][#000000]⣿[/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/][/]" # prevent bold on dots
             if args.ascii_only:
                 # logo_icon = "[#000000]::[/][#0000ff on #ff0000]~[/][#00aa00 on #ffff00]~[/]" # not very convincing
                 # logo_icon = "[#000000]::[/][#ff0000 on #0000ff]x[/][#ffff00 on #00aa00]x[/]"
-                logo_icon = "[#000000]::[/][#ff0000 on #0000ff]m[/][#ffff00 on #00aa00]m[/]" # probably the most balanced top/bottom split character (i.e. most dense while occupying only the top or only the bottom)
+                # logo_icon = "[#000000]::[/][#ff0000 on #0000ff]m[/][#ffff00 on #00aa00]m[/]" # probably the most balanced top/bottom split character (i.e. most dense while occupying only the top or only the bottom)
+                logo_icon = "[#000000 not bold]::[/][bold #ff0000 on #0000ff]m[/][bold #ffff00 on #00aa00]m[/]" # prevent bold on dots, but definitely not the m's, it's better if they bleed into a blob
 
             title = logo_icon + " " + _("Paint")
             self.message_box(title, message, "yes/no/cancel", handle_button, icon_widget=get_question_icon())
