@@ -166,10 +166,10 @@ class EnhancedDirectoryTree(DirectoryTree):
         Returns:
             A Rich Text object containing the label.
         """
-        node_label = node._label.copy()
+        node_label = node._label.copy()  # type: ignore
         node_label.stylize(style)
 
-        if node._allow_expand:
+        if node._allow_expand:  # type: ignore
             prefix = (FOLDER_OPEN_ICON if node.is_expanded else FOLDER_CLOSED_ICON)
             prefix.stylize_before(base_style + TOGGLE_STYLE)
             node_label.stylize_before(
