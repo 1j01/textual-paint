@@ -1,3 +1,4 @@
+"""Color palette data for Textual Paint."""
 
 DEFAULT_PALETTE = [
     "rgb(0,0,0)",  # Black

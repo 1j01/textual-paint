@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+"""Textual Paint is a detailed MS Paint clone that runs in the terminal."""
+
 import math
 import os
 from pathlib import Path
@@ -68,6 +70,8 @@ load_language(args.language)
 
 
 class MetaGlyphFont:
+    """A font where each character is drawn with sub-characters."""
+
     def __init__(self, file_path: str, width: int, height: int, covered_characters: str):
         self.file_path = file_path
         """The path to the font file."""
@@ -2519,6 +2523,7 @@ Columns: {len(palette) // 2}
         self.call_after_refresh(reorder_radio_buttons)
 
     def action_toggle_grid(self) -> None:
+        """Toggle the grid setting. Note that it's only shown at 4x zoom or higher."""
         self.show_grid = not self.show_grid
 
     def action_toggle_thumbnail(self) -> None:
@@ -3001,6 +3006,7 @@ Columns: {len(palette) // 2}
         self.mount(window)
 
     def action_toggle_inspector(self) -> None:
+        """Toggle the DOM inspector."""
         if not args.inspect_layout:
             return
         # importing the inspector adds instrumentation which can slow down startup

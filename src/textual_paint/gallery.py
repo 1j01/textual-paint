@@ -187,6 +187,7 @@ class GalleryApp(App[None]):
         restart_program()
 
     def action_toggle_inspector(self) -> None:
+        """Toggle the DOM inspector."""
         if not args.inspect_layout:
             return
         # importing the inspector adds instrumentation which can slow down startup
