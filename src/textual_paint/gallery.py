@@ -44,12 +44,15 @@ class GalleryItem(Vertical):
 class GalleryApp(App[None]):
     """ANSI art gallery TUI"""
 
-    TITLE = f"ANSI art gallery v{__version__}"
+    TITLE = "ANSI art gallery"
 
     CSS_PATH = "gallery.css"
 
     BINDINGS = [
-        Binding("ctrl+q", "exit", _("Quit")),
+        Binding("ctrl+q", "exit", _("Quit"), priority=True),
+        Binding("ctrl+d", "toggle_dark", _("Toggle Dark Mode")),
+        Binding("left", "previous", _("Previous"), priority=True),
+        Binding("right", "next", _("Next"), priority=True),
         # dev helper
         # f5 would be more traditional, but I need something not bound to anything
         # in the context of the terminal in VS Code, and not used by this app, like Ctrl+R, and detectable in the terminal.
@@ -105,6 +108,29 @@ class GalleryApp(App[None]):
                 image = AnsiArtDocument.from_ansi(f.read())
             
             self.scroll.mount(GalleryItem(image, caption=filename))
+
+    def _scroll_to_adjacent_item(self, delta_index: int = 0) -> None:
+        """Scroll to the next/previous item."""
+        # try:
+        #     index = self.scroll.children.index(self.app.focused)
+        # except ValueError:
+        #     return
+        widget, _ = self.app.get_widget_at(self.screen.region.width // 2, self.screen.region.height // 2)
+        while widget is not None and not isinstance(widget, GalleryItem):
+            widget = widget.parent
+        if widget is None:
+            index = 0
+        else:
+            index = self.scroll.children.index(widget)
+        self.scroll.children[index + delta_index].focus()
+
+    def action_next(self) -> None:
+        """Scroll to the next item."""
+        self._scroll_to_adjacent_item(1)
+
+    def action_previous(self) -> None:
+        """Scroll to the previous item."""
+        self._scroll_to_adjacent_item(-1)
 
     def action_reload(self) -> None:
         """Reload the program."""
