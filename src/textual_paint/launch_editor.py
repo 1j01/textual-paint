@@ -13,10 +13,10 @@ Ported to Python using ChatGPT.
 """
 
 import os
-import shlex
-import subprocess
 import platform
 import re
+import shlex
+import subprocess
 import sys
 from typing import Any, TypeGuard
 

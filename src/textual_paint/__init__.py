@@ -10,9 +10,12 @@ __license__ = "MIT"
 
 # Set version string when in a git repository
 # to distinguish production from development versions.
-from os.path import exists, dirname
+
+from os.path import dirname, exists
 from subprocess import check_output
+
 DEVELOPMENT = exists(dirname(__file__) + "/../../.git")
 """Whether running from a Git repository."""
+
 if DEVELOPMENT:
     __version__ = "development " + check_output(["git", "describe", "--tags"], cwd=dirname(__file__)).strip().decode()

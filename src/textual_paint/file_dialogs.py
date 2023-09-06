@@ -1,16 +1,15 @@
 import os
 from typing import Any, Callable
 
-from textual.containers import Container
+from textual.containers import Container, Horizontal
 from textual.widget import Widget
-from textual.widgets import Button, Input, Tree, Label
-from textual.containers import Horizontal
+from textual.widgets import Button, Input, Label, Tree
 from textual.widgets._directory_tree import DirEntry
-from textual.containers import Container
 
+from .enhanced_directory_tree import EnhancedDirectoryTree
 from .localization.i18n import get as _
 from .windows import DialogWindow
-from .enhanced_directory_tree import EnhancedDirectoryTree
+
 
 class FileDialogWindow(DialogWindow):
     """A dialog window that lets the user select a file."""

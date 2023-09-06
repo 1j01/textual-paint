@@ -12,8 +12,8 @@ from textual.containers import HorizontalScroll, ScrollableContainer
 from textual.widgets import Footer, Header, Static
 
 from .__init__ import __version__
-from .auto_restart import restart_on_changes, restart_program
 from .ansi_art_document import AnsiArtDocument
+from .auto_restart import restart_on_changes, restart_program
 
 parser = argparse.ArgumentParser(description='ANSI art gallery', usage='%(prog)s [folder]', prog="python -m src.textual_paint.gallery")
 parser.add_argument('folder', nargs='?', default=None, help='Path to a folder containing ANSI art.')

@@ -27,6 +27,7 @@ SOFTWARE.
 
 from enum import Enum
 
+
 class FIGletFontWriter:
     """Used to write FIGlet fonts.
 

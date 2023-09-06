@@ -1,7 +1,8 @@
 import os
-from pathlib import Path
-import sys
 import subprocess
+import sys
+from pathlib import Path
+
 
 def get_desktop_environment() -> str:
     """

@@ -2,6 +2,7 @@
 
 from textual._border import BORDER_CHARS, BORDER_LOCATIONS
 
+
 def force_ascii_borders() -> None:
     """Force all borders to use ASCII characters."""
 

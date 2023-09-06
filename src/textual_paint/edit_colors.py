@@ -3,21 +3,19 @@ from typing import Any, Callable
 from rich.segment import Segment
 from rich.style import Style
 from textual import events
+from textual.color import Color as Color
 from textual.containers import Container, Horizontal, Vertical
 from textual.css.query import NoMatches
 from textual.geometry import Offset
 from textual.message import Message
 from textual.reactive import reactive, var
 from textual.strip import Strip
-from textual.color import Color as Color
 from textual.widget import Widget
 from textual.widgets import Button, Input, Label
-from textual.containers import Container
 
+from .args import args
 from .localization.i18n import get as _
 from .windows import DialogWindow
-from .args import args
-
 
 # https://github.com/kouzhudong/win2k/blob/ce6323f76d5cd7d136b74427dad8f94ee4c389d2/trunk/private/shell/win16/comdlg/color.c#L38-L43
 # These are a fallback in case colors are not received from some driver.

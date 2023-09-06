@@ -1,12 +1,12 @@
 from pathlib import Path
 from typing import Callable, Iterable
-from rich.style import Style
 
+from rich.style import Style
 from rich.text import Text, TextType
 from textual.reactive import var
 from textual.widgets import DirectoryTree, Tree
-from textual.widgets._tree import TreeNode, TOGGLE_STYLE
 from textual.widgets._directory_tree import DirEntry
+from textual.widgets._tree import TOGGLE_STYLE, TreeNode
 
 from .args import args
 

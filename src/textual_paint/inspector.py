@@ -31,13 +31,14 @@ SOFTWARE.
 import asyncio
 import inspect
 import os
-from typing import Any, Iterable, Literal, NamedTuple, Optional, Type, TypeGuard
+from typing import (Any, Iterable, Literal, NamedTuple, Optional, Type,
+                    TypeGuard)
 
+from rich.highlighter import ReprHighlighter
 from rich.markup import escape
 from rich.segment import Segment
 from rich.style import Style
 from rich.text import Text
-from rich.highlighter import ReprHighlighter
 from textual import events
 from textual.app import ComposeResult
 from textual.color import Color, ColorParseError
@@ -55,11 +56,14 @@ from textual.message import Message
 from textual.reactive import var
 from textual.strip import Strip
 from textual.widget import Widget
-from textual.widgets import Button, DataTable, Input, Static, TabPane, TabbedContent, Tree
+from textual.widgets import (Button, DataTable, Input, Static, TabbedContent,
+                             TabPane, Tree)
 from textual.widgets.tree import TreeNode
-# from textual.css._style_properties import BorderDefinition
 
 from .launch_editor import launch_editor
+
+# from textual.css._style_properties import BorderDefinition
+
 
 # Instrument style setting in order to link to the source code where inline styles are set.
 # TODO: make optional for performance
@@ -367,9 +371,9 @@ class PropertiesTree(Tree[object]):
     @property
     def AAA_deal_with_it(self) -> dict[str, Any]:
         """This property gives a grab bag of different types to test the tree."""
+        import traceback
         from enum import Enum
         from typing import NamedTuple
-        import traceback
         return {
             "a_string": "DEAL WITH IT 😎",
             "an_int": 42,

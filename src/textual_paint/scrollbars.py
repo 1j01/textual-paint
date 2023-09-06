@@ -1,5 +1,6 @@
 
 from math import ceil, floor
+
 from rich.color import Color
 from rich.segment import Segment, Segments
 from rich.style import Style

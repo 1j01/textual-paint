@@ -2,65 +2,64 @@
 
 """Textual Paint is a detailed MS Paint clone that runs in the terminal."""
 
+import asyncio
 import math
 import os
-from pathlib import Path
 import re
 import shlex
-import asyncio
-from enum import Enum
-from random import random
 import sys
-from typing import Any, Coroutine, Optional, Callable, Iterator
+from enum import Enum
+from pathlib import Path
+from random import random
+from typing import Any, Callable, Coroutine, Iterator, Optional
 from uuid import uuid4
 
+from PIL import Image, UnidentifiedImageError
+from pyfiglet import Figlet, FigletFont  # type: ignore
 from rich.segment import Segment
 from rich.style import Style
 from rich.text import Text
 from textual import events, on, work
-from textual.filter import LineFilter
-from textual.message import Message
 from textual.app import App, ComposeResult
-from textual.containers import Container, Vertical, Horizontal
-from textual.geometry import Offset, Region, Size
-from textual.css._style_properties import BorderDefinition
-from textual.reactive import var, reactive
-from textual.scrollbar import ScrollBar
-from textual.strip import Strip
-from textual.dom import DOMNode
-from textual.widget import Widget
-from textual.widgets import Button, Static, Input, Header, RadioSet, RadioButton
-from textual.widgets._header import HeaderIcon
 from textual.binding import Binding
 from textual.color import Color
-from PIL import Image, UnidentifiedImageError
+from textual.containers import Container, Horizontal, Vertical
+from textual.css._style_properties import BorderDefinition
+from textual.dom import DOMNode
+from textual.filter import LineFilter
+from textual.geometry import Offset, Region, Size
+from textual.message import Message
+from textual.reactive import reactive, var
+from textual.scrollbar import ScrollBar
+from textual.strip import Strip
+from textual.widget import Widget
+from textual.widgets import (Button, Header, Input, RadioButton, RadioSet,
+                             Static)
+from textual.widgets._header import HeaderIcon
 from textual.worker import get_current_worker  # type: ignore
-from pyfiglet import Figlet, FigletFont  # type: ignore
-
-from .palette_data import DEFAULT_PALETTE, IRC_PALETTE
-from .ansi_art_document import AnsiArtDocument, FormatReadNotSupported, FormatWriteNotSupported, Selection, SAVE_DISABLED_FORMATS
-from .graphics_primitives import (
-    bresenham_walk,
-    polygon_walk,
-    polyline_walk,
-    is_inside_polygon,
-    bezier_curve_walk,
-    quadratic_curve_walk,
-    midpoint_ellipse,
-    flood_fill,
-)
-from .menus import MenuBar, Menu, MenuItem, Separator
-from .windows import Window, DialogWindow, CharacterSelectorDialogWindow, MessageBox, get_warning_icon, get_question_icon, get_paint_icon
-from .scrollbars import ASCIIScrollBarRender
-from .file_dialogs import SaveAsDialogWindow, OpenDialogWindow
-from .edit_colors import EditColorsDialogWindow
-from .localization.i18n import get as _, load_language, remove_hotkey
-from .rasterize_ansi_art import rasterize
-from .wallpaper import get_config_dir, set_wallpaper
-from .auto_restart import restart_on_changes, restart_program
-from .args import args, get_help_text
 
 from .__init__ import __version__
+from .ansi_art_document import (SAVE_DISABLED_FORMATS, AnsiArtDocument,
+                                FormatReadNotSupported,
+                                FormatWriteNotSupported, Selection)
+from .args import args, get_help_text
+from .auto_restart import restart_on_changes, restart_program
+from .edit_colors import EditColorsDialogWindow
+from .file_dialogs import OpenDialogWindow, SaveAsDialogWindow
+from .graphics_primitives import (bezier_curve_walk, bresenham_walk,
+                                  flood_fill, is_inside_polygon,
+                                  midpoint_ellipse, polygon_walk,
+                                  polyline_walk, quadratic_curve_walk)
+from .localization.i18n import get as _
+from .localization.i18n import load_language, remove_hotkey
+from .menus import Menu, MenuBar, MenuItem, Separator
+from .palette_data import DEFAULT_PALETTE, IRC_PALETTE
+from .rasterize_ansi_art import rasterize
+from .scrollbars import ASCIIScrollBarRender
+from .wallpaper import get_config_dir, set_wallpaper
+from .windows import (CharacterSelectorDialogWindow, DialogWindow, MessageBox,
+                      Window, get_paint_icon, get_question_icon,
+                      get_warning_icon)
 
 MAX_FILE_SIZE = 500000 # 500 KB
 

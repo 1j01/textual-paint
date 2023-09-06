@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 import os
 import sys
+from typing import TYPE_CHECKING
+
 from textual.app import ScreenStackError
 
 if TYPE_CHECKING:
-    from .paint import PaintApp
     from .gallery import GalleryApp
+    from .paint import PaintApp
 
 def restart_program() -> None:
     """Restarts the current program, after resetting terminal state, and cleaning up file objects and descriptors."""
@@ -62,7 +63,8 @@ def restart_program() -> None:
 def restart_on_changes(app: PaintApp|GalleryApp) -> None:
     """Restarts the current program when a file is changed"""
 
-    from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
+    from watchdog.events import (EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED,
+                                 FileSystemEvent, PatternMatchingEventHandler)
     from watchdog.observers import Observer
 
     class RestartHandler(PatternMatchingEventHandler):
