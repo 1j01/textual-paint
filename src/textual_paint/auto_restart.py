@@ -9,6 +9,7 @@ from textual.app import ScreenStackError
 
 if TYPE_CHECKING:
     from .paint import PaintApp
+    from .gallery import GalleryApp
 
 def restart_program() -> None:
     """Restarts the current program, after resetting terminal state, and cleaning up file objects and descriptors."""
@@ -57,7 +58,7 @@ def restart_program() -> None:
     # os.execl(python, python, *sys.argv)
     os.execl(sys.executable, *sys.orig_argv)
 
-def restart_on_changes(app: PaintApp) -> None:
+def restart_on_changes(app: PaintApp|GalleryApp) -> None:
     """Restarts the current program when a file is changed"""
 
     from watchdog.events import PatternMatchingEventHandler, FileSystemEvent, EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED
@@ -80,7 +81,7 @@ def restart_on_changes(app: PaintApp) -> None:
             # or else nothing happens.
             # However, when _app.action_reload is called from the key binding,
             # it seems to work fine with or without unsaved changes.
-            if _app.is_document_modified():
+            if isinstance(_app, PaintApp) and _app.is_document_modified():
                 _app.call_from_thread(_app.action_reload)
             else:
                 restart_program()
