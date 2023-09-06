@@ -2,6 +2,7 @@
 
 import argparse
 import os
+from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
@@ -89,21 +90,29 @@ class GalleryApp(App[None]):
 
     def _load(self) -> None:
         """Load the folder specified on the command line."""
-        folder = args.folder
-        if folder is None:
-            folder = os.path.join(os.path.dirname(__file__), "../../samples")
-        if not os.path.isdir(folder):
-            raise Exception(f"Folder not found: {folder}")
+        if args.folder is None:
+            gallery_folder = Path(os.path.dirname(__file__), "../../samples")
+        else:
+            gallery_folder = Path(args.folder)
 
-        for filename in os.listdir(folder):
-            if not filename.endswith(".ans"):
-                continue
-            path = os.path.join(folder, filename)
+        if not gallery_folder.exists():
+            self.exit(None, f"Folder not found: {gallery_folder}")
+
+        if not gallery_folder.is_dir():
+            self.exit(None, f"Not a folder: {gallery_folder}")
+
+        glob = "**/*.ans"
+        # glob = "**/*.{ans,txt}" # doesn't work with pathlib
+
+        for path in gallery_folder.rglob(glob):
             # with open(path, "r", encoding="cp437") as f:
             with open(path, "r", encoding="utf8") as f:
                 image = AnsiArtDocument.from_ansi(f.read())
             
-            self.scroll.mount(GalleryItem(image, caption=filename))
+            self.scroll.mount(GalleryItem(image, caption=path.name))
+        
+        if len(self.scroll.children) == 0:
+            self.exit(None, f"No ANSI art ({glob}) found in folder: {gallery_folder}")
 
     def _scroll_to_adjacent_item(self, delta_index: int = 0) -> None:
         """Scroll to the next/previous item."""
