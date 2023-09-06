@@ -5,7 +5,7 @@ import os
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import HorizontalScroll, Vertical
+from textual.containers import HorizontalScroll, ScrollableContainer
 from textual.widgets import Footer, Header, Static
 
 from .__init__ import __version__
@@ -25,7 +25,7 @@ def _(text: str) -> str:
     """Placeholder for localization function."""
     return text
 
-class GalleryItem(Vertical):
+class GalleryItem(ScrollableContainer):
     """An image with a caption."""
 
     def __init__(self, image: AnsiArtDocument, caption: str):
