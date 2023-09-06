@@ -51,8 +51,10 @@ class GalleryApp(App[None]):
     BINDINGS = [
         Binding("ctrl+q", "quit", _("Quit"), priority=True),
         Binding("ctrl+d", "toggle_dark", _("Toggle Dark Mode")),
-        Binding("left", "previous", _("Previous"), priority=True),
-        Binding("right", "next", _("Next"), priority=True),
+        Binding("pageup,left", "previous", _("Previous"), priority=True),
+        Binding("pagedown,right", "next", _("Next"), priority=True),
+        Binding("home", "scroll_to_start", _("First"), priority=True, show=False),
+        Binding("end", "scroll_to_end", _("Last"), priority=True, show=False),
         # dev helper
         # f5 would be more traditional, but I need something not bound to anything
         # in the context of the terminal in VS Code, and not used by this app, like Ctrl+R, and detectable in the terminal.
@@ -116,7 +118,11 @@ class GalleryApp(App[None]):
             index = 0
         else:
             index = self.scroll.children.index(widget)
-        self.scroll.children[index + delta_index].focus()
+        index += delta_index
+        index = max(0, min(index, len(self.scroll.children) - 1))
+        target = self.scroll.children[index]
+        target.focus()
+        self.scroll.scroll_to_widget(target)
 
     def action_next(self) -> None:
         """Scroll to the next item."""
@@ -125,6 +131,14 @@ class GalleryApp(App[None]):
     def action_previous(self) -> None:
         """Scroll to the previous item."""
         self._scroll_to_adjacent_item(-1)
+
+    def action_scroll_to_start(self) -> None:
+        """Scroll to the first item."""
+        self.scroll.scroll_to_widget(self.scroll.children[0])
+
+    def action_scroll_to_end(self) -> None:
+        """Scroll to the last item."""
+        self.scroll.scroll_to_widget(self.scroll.children[-1])
 
     def action_reload(self) -> None:
         """Reload the program."""
