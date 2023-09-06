@@ -51,8 +51,8 @@ class GalleryApp(App[None]):
     BINDINGS = [
         Binding("ctrl+q", "quit", _("Quit"), priority=True),
         Binding("ctrl+d", "toggle_dark", _("Toggle Dark Mode")),
-        Binding("pageup,left", "previous", _("Previous"), priority=True),
-        Binding("pagedown,right", "next", _("Next"), priority=True),
+        Binding("left,pageup", "previous", _("Previous"), priority=True),
+        Binding("right,pagedown", "next", _("Next"), priority=True),
         Binding("home", "scroll_to_start", _("First"), priority=True, show=False),
         Binding("end", "scroll_to_end", _("Last"), priority=True, show=False),
         # dev helper
