@@ -11,6 +11,7 @@ GalleryItem {
     align: center middle;
 }
 .caption {
+    dock: bottom;
     text-align: center;
     background: blue;
     color: yellow;
