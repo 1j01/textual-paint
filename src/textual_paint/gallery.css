@@ -1,18 +1,15 @@
 GalleryItem {
     layout: vertical;
     width: 100%;
-    content-align: center middle;
     align: center middle;
 }
 
 .image {
-    height: auto;
     width: auto;
-    align: center middle;
+    height: auto;
 }
+
 .caption {
     dock: bottom;
     text-align: center;
-    # background: blue;
-    # color: yellow;
 }
