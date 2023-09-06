@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Made radio buttons rounder in `--ascii-only` mode, using parentheses instead of square brackets.
+
 ## [0.2.0] - 2023-09-05
 
 I am now recommending to install using `pipx` instead of `pip`.

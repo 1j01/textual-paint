@@ -5252,8 +5252,8 @@ if args.ascii_only:
 
     RadioButton.BUTTON_INNER = "*" # "*", "o", "O", "@"
     # Defined on internal superclass ToggleButton
-    RadioButton.BUTTON_LEFT = "["
-    RadioButton.BUTTON_RIGHT = "]"
+    RadioButton.BUTTON_LEFT = "("
+    RadioButton.BUTTON_RIGHT = ")"
 
     ScrollBar.renderer = ASCIIScrollBarRender
 
