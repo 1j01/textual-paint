@@ -13,6 +13,6 @@ GalleryItem {
 .caption {
     dock: bottom;
     text-align: center;
-    background: blue;
-    color: yellow;
+    # background: blue;
+    # color: yellow;
 }
