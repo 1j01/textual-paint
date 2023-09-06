@@ -164,7 +164,7 @@ You can display a saved ANSI file in the terminal with `cat`:
 cat samples/ship.ans
 ```
 
-To view all the sample files, run:
+To browse the sample art, run:
 
 ```bash
 python -m src.textual_paint.gallery

@@ -92,8 +92,10 @@ class GalleryApp(App[None]):
 
     def _load(self) -> None:
         """Load the folder specified on the command line."""
+        hide_old_versions = False
         if args.folder is None:
             gallery_folder = Path(os.path.dirname(__file__), "../../samples").resolve()
+            hide_old_versions = True
         else:
             gallery_folder = Path(args.folder)
 
@@ -131,6 +133,27 @@ class GalleryApp(App[None]):
             for match in matches_and_path[0]
         ])
         paths = [path for _, path in sorted_parts_and_paths]
+
+        if hide_old_versions:
+            # Hide any paths that are not the latest version of a file,
+            # for files matching some_identifier_vX.Y_optional_comment.ext
+            latest_versions: dict[str, tuple[float, Path]] = {}
+            for path in paths:
+                version_match = re.match(r"(.+)_v(\d+(?:\.\d+)?)", path.stem)
+                if version_match:
+                    id = version_match.group(1)
+                    version = float(version_match.group(2))
+                    if id in latest_versions:
+                        if version > latest_versions[id][0]:
+                            latest_versions[id] = version, path
+                    else:
+                        latest_versions[id] = version, path
+                else:
+                    latest_versions[str(path)] = -1, path
+            paths = [path for _, path in latest_versions.values()]
+
+            # Hide some uninteresting files
+            paths = [path for path in paths if not re.match("0x0|1x1|2x2|4x4_font_template|gradient_test|pipe_strip_mega|cp437_as_utf8|galaxies_v1", path.name)]
 
         # Debugging
         # self.exit(None, "\n".join(str(path) for path in paths))
