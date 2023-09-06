@@ -91,7 +91,7 @@ class GalleryApp(App[None]):
     def _load(self) -> None:
         """Load the folder specified on the command line."""
         if args.folder is None:
-            gallery_folder = Path(os.path.dirname(__file__), "../../samples")
+            gallery_folder = Path(os.path.dirname(__file__), "../../samples").resolve()
         else:
             gallery_folder = Path(args.folder)
 
