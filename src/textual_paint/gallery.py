@@ -49,7 +49,7 @@ class GalleryApp(App[None]):
     CSS_PATH = "gallery.css"
 
     BINDINGS = [
-        Binding("ctrl+q", "exit", _("Quit"), priority=True),
+        Binding("ctrl+q", "quit", _("Quit"), priority=True),
         Binding("ctrl+d", "toggle_dark", _("Toggle Dark Mode")),
         Binding("left", "previous", _("Previous"), priority=True),
         Binding("right", "next", _("Next"), priority=True),
