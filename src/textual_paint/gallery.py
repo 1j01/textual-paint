@@ -61,8 +61,8 @@ class GalleryApp(App[None]):
         # dev helper
         # f5 would be more traditional, but I need something not bound to anything
         # in the context of the terminal in VS Code, and not used by this app, like Ctrl+R, and detectable in the terminal.
-        # This shouldn't be important now that I have automatic reloading,
-        # but I still use it regularly, since restart_program isn't working!
+        # This isn't that important since I have automatic reloading,
+        # but it still comes in handy sometimes.
         Binding("f2", "reload", _("Reload"), show=False),
         # Dev tool to inspect the widget tree.
         Binding("f12", "toggle_inspector", _("Toggle Inspector"), show=False),

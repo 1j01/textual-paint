@@ -82,7 +82,7 @@ def restart_on_changes(app: PaintApp|GalleryApp) -> None:
             # or else nothing happens.
             # However, when _app.action_reload is called from the key binding,
             # it seems to work fine with or without unsaved changes.
-            if isinstance(_app, PaintApp) and _app.is_document_modified():
+            if hasattr(app, "is_document_modified") and _app.is_document_modified():  # type: ignore
                 _app.call_from_thread(_app.action_reload)
             else:
                 restart_program()
