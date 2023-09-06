@@ -2,4 +2,16 @@ GalleryItem {
     layout: vertical;
     width: 100%;
     content-align: center middle;
+    align: center middle;
+}
+
+.image {
+    height: 1fr;
+    width: auto;
+    align: center middle;
+}
+.caption {
+    text-align: center;
+    background: blue;
+    color: yellow;
 }

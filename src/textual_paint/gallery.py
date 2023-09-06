@@ -38,8 +38,8 @@ class GalleryItem(Vertical):
         """Add widgets to the layout."""
         text = self.image.get_renderable()
         text.no_wrap = True
-        yield Static(text)
-        yield Static(self.caption)
+        yield Static(text, classes="image")
+        yield Static(self.caption, classes="caption")
 
 class GalleryApp(App[None]):
     """ANSI art gallery TUI"""
