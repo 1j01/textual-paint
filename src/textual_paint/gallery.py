@@ -56,17 +56,11 @@ class GalleryApp(App[None]):
         # dev helper
         # f5 would be more traditional, but I need something not bound to anything
         # in the context of the terminal in VS Code, and not used by this app, like Ctrl+R, and detectable in the terminal.
-        # This isn't as important now that I have automatic reloading,
-        # but I still use it regularly.
-        Binding("f2", "reload", _("Reload")),
-        # Temporary quick access to work on a specific dialog.
-        # Can be used together with `--press f3` when using `textual run` to open the dialog at startup.
-        # Would be better if all dialogs were accessible from the keyboard.
-        # Binding("f3", "custom_zoom", _("Custom Zoom")),
+        # This shouldn't be important now that I have automatic reloading,
+        # but I still use it regularly, since restart_program isn't working!
+        Binding("f2", "reload", _("Reload"), show=False),
         # Dev tool to inspect the widget tree.
-        Binding("f12", "toggle_inspector", _("Toggle Inspector")),
-        # Update screenshot on readme.
-        # Binding("ctrl+j", "update_screenshot", _("Update Screenshot")),
+        Binding("f12", "toggle_inspector", _("Toggle Inspector"), show=False),
     ]
 
     def compose(self) -> ComposeResult:
