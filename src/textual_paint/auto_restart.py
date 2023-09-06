@@ -14,10 +14,11 @@ if TYPE_CHECKING:
 def restart_program() -> None:
     """Restarts the current program, after resetting terminal state, and cleaning up file objects and descriptors."""
 
-    try:
-        _app.discard_backup()
-    except Exception as e:
-        print("Error discarding backup:", e)
+    if hasattr(_app, "discard_backup"):
+        try:
+            _app.discard_backup()  # type: ignore
+        except Exception as e:
+            print("Error discarding backup:", e)
 
     try:
         _app.exit()
