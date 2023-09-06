@@ -167,27 +167,8 @@ cat samples/ship.ans
 To view all the sample files, run:
 
 ```bash
-find samples -type f -exec file --mime-type {} \; | grep -v -e "image/png" -e "image/svg" | cut -d: -f1 | sort | xargs -I{} sh -c 'echo "File: {}"; cat "{}"; echo "\n-----------------------\n"' | less --RAW-CONTROL-CHARS
+python -m src.textual_paint.gallery
 ```
-<details>
-<summary>Command Explanation</summary>
-Let's break down the command:
-
-1. `find samples -type f -exec file --mime-type {} \;`: This part uses the `find` command to locate all files (`-type f`) within the "samples" folder and its subdirectories. For each file, it executes the `file --mime-type` command to determine the file's MIME type. This outputs a line like "samples/ship.ans: text/plain".
-
-2. `grep -v -e "image/png" -e "image/svg"`: This filters out any lines containing the MIME types "image/png" or "image/svg", effectively excluding PNG and SVG files. `-v` means "invert the match", so it will only output lines that don't match the given patterns.
-
-3. `cut -d: -f1`: This extracts only the file paths from the output of the `file` command, removing the MIME type information.
-
-4. `sort`: This sorts the file paths alphabetically.
-
-5. `xargs -I{} sh -c 'echo "File: {}"; cat "{}"; echo "\n-----------------------\n"'`: This executes the `sh -c` command for each file, outputting the filename, followed by the file's content, followed by a separator line.
-
-6. `less --RAW-CONTROL-CHARS`: This allows you to scroll through the output with Up/Down/PageUp/PageDown. The `--RAW-CONTROL-CHARS` option is needed for the ANSI art to be displayed correctly.
-
-This command will sort and display the content of all non-PNG/SVG files within the "samples" folder and its subdirectories. It must be run from the repository root folder.
-</details>
-<br>
 
 To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja, you can install the [ansi-art-thumbnailer](https://github.com/1j01/ansi-art-thumbnailer) program I made to go along with this project.
 
