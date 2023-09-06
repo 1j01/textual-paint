@@ -118,6 +118,9 @@ The rest match MS Paint's keyboard shortcuts:
 
 ### File Formats
 
+<!-- PyPI doesn't generate linkable headings -->
+<a id="file-formats"></a>
+
 Many file formats are supported, including ANSI art, raster images, SVG and HTML.
 
 To choose a file format when saving, type its file extension. For example, to save a PNG, add `.png` to the end of the filename. The default is `.ans`.
@@ -153,7 +156,7 @@ Also, if you double right click or hold <kbd>Ctrl</kbd> while double clicking on
 if will edit the text color when you click OK.
 
 You can swap the foreground and background colors by right clicking or holding <kbd>Ctrl</kbd> while clicking the current colors area.
-This is a great convenience, especially when using the Color Eraser tool, or when using custom colors that may be similar to each other.
+This is a great convenience, especially when using the Color Eraser tool, or when using custom colors that may be hard to distinguish.
 
 You can display a saved ANSI file in the terminal with `cat`:
 
@@ -184,6 +187,7 @@ Let's break down the command:
 
 This command will sort and display the content of all non-PNG/SVG files within the "samples" folder and its subdirectories. It must be run from the repository root folder.
 </details>
+<br>
 
 To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja, you can install the [ansi-art-thumbnailer](https://github.com/1j01/ansi-art-thumbnailer) program I made to go along with this project.
 
@@ -195,7 +199,7 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 - The selection box border appears inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
 - Pressing both mouse buttons stops the current tool, but doesn't undo the current action. Also Pick Color can't be cancelled (with <kbd>Esc</kbd> or by pressing both mouse buttons), since it samples the color continuously.
 - Due to limitations of the terminal, shortcuts using <kbd>Shift</kbd> or <kbd>Alt</kbd> might not work. Menus are not keyboard navigable, because I can't detect <kbd>Alt</kbd>+<kbd>F</kbd>, etc.
-- The Zoom submenu flickers as it opens, and may not always open in the right place.
+- The Zoom submenu flickers as it opens, and may not always open in the right place. (Fixed?)
 - The canvas flickers when zooming in with the Magnifier tool.
 - Some languages don't display correctly.
 - Large files can make the program very slow, as can magnifying the canvas. There is a 500 KB limit when opening files to prevent it from freezing.
@@ -218,6 +222,9 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
   - When opening the Edit Colors dialog, it may immediately close, if the mouse lines up with the "OK" or "Cancel" buttons. (This doesn't seem to currently happen, but I haven't knowingly fixed it. A git bisect turned up a bogus commit, possibly due to reproducing the behavior being unreliable. It also seems like it might depend on the specific layout of the dialog, which changed during development, and maybe even the terminal size.)
 
 ## Compatibility
+
+<!-- PyPI doesn't generate linkable headings -->
+<a id="compatibility"></a>
 
 Python 3.10 or later is required.
 
@@ -291,7 +298,7 @@ If this doesn't work, try increasing it to 1.1.
 
 ## Development
 
-Recommended: first, create a virtual environment:
+First, create a virtual environment, and activate it:
 ```bash
 python -m venv .venv
 # The activate script is in different places on different systems:
@@ -393,8 +400,11 @@ mypy src --no-namespace-packages --check-untyped-defs
 
 ## License
 
-[MIT](LICENSE.txt)
+[MIT](https://github.com/1j01/textual-paint/blob/main/LICENSE.txt)
 
+## News
+
+For a history of changes to the project, see the [changelog](https://github.com/1j01/textual-paint/blob/main/CHANGELOG.md).
 
 ## Unicode Symbols and Emojis for Paint Tools
 

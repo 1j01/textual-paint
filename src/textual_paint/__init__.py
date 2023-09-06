@@ -5,7 +5,7 @@ __copyright__ = "Copyright Isaiah Odhner"
 __credits__ = ["Isaiah Odhner"]
 __maintainer__ = "Isaiah Odhner"
 __email__ = "isaiahodhner@gmail.com"
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 __license__ = "MIT"
 
 # Set version string when in a git repository
