@@ -155,6 +155,10 @@ class GalleryApp(App[None]):
             # Hide some uninteresting files
             paths = [path for path in paths if not re.match("0x0|1x1|2x2|4x4_font_template|gradient_test|pipe_strip_mega|cp437_as_utf8|galaxies_v1", path.name)]
 
+        if len(paths) == 0:
+            self.exit(None, f"No ANSI art ({', '.join(f'*{ext}' for ext in exts)}) found in folder: {gallery_folder}")
+            return
+
         # Debugging
         # self.exit(None, "\n".join(str(path) for path in paths))
         # return
@@ -166,10 +170,6 @@ class GalleryApp(App[None]):
             
             self.scroll.mount(GalleryItem(image, caption=path.name))
         
-        if len(self.scroll.children) == 0:
-            self.exit(None, f"No ANSI art ({', '.join(f'*{ext}' for ext in exts)}) found in folder: {gallery_folder}")
-            return
-
     def _scroll_to_adjacent_item(self, delta_index: int = 0) -> None:
         """Scroll to the next/previous item."""
         # try:
