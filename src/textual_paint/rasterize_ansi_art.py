@@ -1,3 +1,4 @@
+"""Rasterize ANSI art documents as PIL images."""
 
 import os
 from pathlib import Path
@@ -53,6 +54,7 @@ font_names = [
     "Cour",
 ]
 def normalize_font_name(name: str) -> str:
+    """Normalize a font name to lowercase and remove spaces, dashes, and underscores."""
     return name.lower().replace(" ", "").replace("-", "").replace("_", "")
 font_names = [normalize_font_name(name) for name in font_names]
 
@@ -80,6 +82,7 @@ assert isinstance(ch_width, int), "ch_width is not an int, but a " + str(type(ch
 assert isinstance(ch_height, int), "ch_height is not an int, but a " + str(type(ch_height))  # type: ignore
 
 def rasterize(doc: 'AnsiArtDocument') -> Image.Image:
+    """Render an ANSI art document as a PIL image."""
     # make PIL image
     img = Image.new('RGB', (doc.width * ch_width, doc.height * ch_height), color='black')
     draw = ImageDraw.Draw(img)

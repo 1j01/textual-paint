@@ -1,3 +1,4 @@
+"""Alternative scrollbar rendering for --ascii-only mode."""
 
 from math import ceil, floor
 

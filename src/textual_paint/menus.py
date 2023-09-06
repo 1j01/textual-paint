@@ -1,3 +1,5 @@
+"""Menu bar and menu widgets."""
+
 import re
 from typing import Any, Callable
 
@@ -14,6 +16,7 @@ from .localization.i18n import get_direction, get_hotkey, markup_hotkey
 
 
 def to_snake_case(name: str) -> str:
+    """Convert a name to snake_case, for use as an ID."""
     name = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
     name = re.sub('__([A-Z])', r'_\1', name)
     name = re.sub('([a-z0-9])([A-Z])', r'\1_\2', name)
@@ -113,6 +116,7 @@ class Menu(Container):
                     event.button.submenu.open(self, event.button)
 
     def open(self, parent_menu: 'Menu', parent_menu_item: 'MenuItem') -> None:
+        """Open the menu, and associate it with a parent menu and menu item."""
         self.display = True
         if len(self.items) > 0:
             self.items[0].focus()
@@ -184,6 +188,7 @@ class Menu(Container):
                     item.label = markup_parts[0] + " " * (max_width - len(plain_parts[0])) + markup_parts[1]
 
     def close(self):
+        """Close the menu."""
         for item in self.items:
             if item.submenu:
                 item.submenu.close()
@@ -192,6 +197,7 @@ class Menu(Container):
         self.post_message(Menu.StatusInfo(None, closed=True))
 
     def any_menus_open(self) -> bool:
+        """Returns whether any submenus are open."""
         for item in self.items:
             if item.submenu and item.submenu.display:
                 return True
@@ -236,12 +242,14 @@ class MenuItem(Button):
             self.id = "menu_item_" + to_snake_case(name)
 
     def on_enter(self, event: events.Enter) -> None:
+        """Called when the mouse enters the menu item."""
         if isinstance(self.parent_menu, MenuBar):
             # The message is only reset to the default help text on close, so don't change it while no menu is open.
             # (The top level menus don't have descriptions anyway.)
             return
         self.post_message(Menu.StatusInfo(self.description))
     def on_leave(self, event: events.Leave) -> None:
+        """Called when the mouse leaves the menu item."""
         if isinstance(self.parent_menu, MenuBar):
             # The message is only reset to the default help text on close, so don't clear it while no menu is open.
             return

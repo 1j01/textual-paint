@@ -1,3 +1,5 @@
+"""Edit Colors dialog."""
+
 from typing import Any, Callable
 
 from rich.segment import Segment

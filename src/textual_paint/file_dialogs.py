@@ -1,3 +1,5 @@
+"""Open and Save dialogs."""
+
 import os
 from typing import Any, Callable
 

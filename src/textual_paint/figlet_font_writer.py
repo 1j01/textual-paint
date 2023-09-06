@@ -1,3 +1,4 @@
+"""Used to write FIGlet font (.flf) files."""
 
 __author__ = "Patrick Gillespie"
 __maintainer__ = "Isaiah Odhner"

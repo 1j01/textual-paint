@@ -1,3 +1,4 @@
+"""Drawing utilities for use with the AnsiArtDocument class."""
 
 from typing import TYPE_CHECKING, Iterator
 

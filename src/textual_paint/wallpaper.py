@@ -1,3 +1,5 @@
+"""Set the desktop wallpaper."""
+
 import os
 import subprocess
 import sys
@@ -229,6 +231,7 @@ def set_wallpaper(file_loc: str, first_run: bool = True):
     return True
 
 def get_config_dir(app_name: str) -> str:
+    """Returns the configuration directory for the given application name."""
     if "XDG_CONFIG_HOME" in os.environ:
         config_home = os.environ["XDG_CONFIG_HOME"]
     elif "APPDATA" in os.environ: # On Windows
@@ -243,4 +246,5 @@ def get_config_dir(app_name: str) -> str:
     return config_dir
 
 def get_home_dir() -> str:
+    """Returns the home directory of the current user."""
     return os.path.expanduser("~")

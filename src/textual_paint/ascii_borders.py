@@ -252,6 +252,7 @@ if __name__ == "__main__":
     from textual.widgets import Label
 
     class AllBordersApp(App[None]):
+        """Demo app for ASCII borders. Based on https://textual.textualize.io/styles/border/#all-border-types"""
 
         CSS = """
         #ascii {

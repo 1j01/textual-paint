@@ -1,3 +1,5 @@
+"""Windowing system, and some specific windows."""
+
 from typing import Any, Callable, ClassVar
 
 from textual import events, on

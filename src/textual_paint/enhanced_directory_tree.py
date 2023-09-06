@@ -1,3 +1,5 @@
+"""Enhances Textual's DirectoryTree with auto-expansion, filtering of hidden files, and ASCII icon replacements."""
+
 from pathlib import Path
 from typing import Callable, Iterable
 
