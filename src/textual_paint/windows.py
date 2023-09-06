@@ -51,7 +51,6 @@ class WindowTitleBar(Container):
             yield restore_button
         yield Button(self.CLOSE_ICON, classes="window_close")
 
-id_counter = 0
 class Window(Container):
     """A draggable window widget."""
 
@@ -77,6 +76,8 @@ class Window(Container):
         ("left,up", "focus_previous_button", "Focus Previous Button"),
     ]
 
+    id_counter: ClassVar[int] = 0
+
     def __init__(
         self,
         *children: Widget,
@@ -98,9 +99,8 @@ class Window(Container):
         self.last_focused_descendant: Widget | None = None
         if not self.id:
             # ID is needed for focus cycling
-            global id_counter
-            self.id = f"window_auto_id_{id_counter}"
-            id_counter += 1
+            self.id = f"window_auto_id_{Window.id_counter}"
+            Window.id_counter += 1
 
     def action_focus_next(self) -> None:
         """Override action to focus the next widget only within the window."""
