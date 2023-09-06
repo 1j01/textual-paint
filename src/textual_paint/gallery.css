@@ -6,7 +6,7 @@ GalleryItem {
 }
 
 .image {
-    height: 1fr;
+    height: auto;
     width: auto;
     align: center middle;
 }
