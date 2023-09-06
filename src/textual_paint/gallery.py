@@ -109,6 +109,8 @@ class GalleryApp(App[None]):
         exts = (".ans", ".txt")
 
         paths = gallery_folder.rglob("**/*")
+        paths = [path for path in paths if path.is_file() and path.suffix in exts]
+
         # First sort by whole path
         paths = sorted(paths, key=lambda path: locale.strxfrm(str(path)))
         # Then (higher priority) sort by version number (vX.Y) numerically where present
@@ -135,8 +137,6 @@ class GalleryApp(App[None]):
         # return
 
         for path in paths:
-            if path.suffix not in exts:
-                continue
             # with open(path, "r", encoding="cp437") as f:
             with open(path, "r", encoding="utf8") as f:
                 image = AnsiArtDocument.from_ansi(f.read())
