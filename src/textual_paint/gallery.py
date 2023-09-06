@@ -8,7 +8,8 @@ from pathlib import Path
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
-from textual.containers import HorizontalScroll, ScrollableContainer
+from textual.containers import Container, ScrollableContainer
+from textual.reactive import Reactive, var
 from textual.widgets import Footer, Header, Static
 
 from .__init__ import __version__
@@ -31,6 +32,8 @@ def _(text: str) -> str:
 class GalleryItem(ScrollableContainer):
     """An image with a caption."""
 
+    position: Reactive[float] = var(0)
+
     def __init__(self, image: AnsiArtDocument, caption: str):
         """Initialise the gallery item."""
         super().__init__()
@@ -43,6 +46,10 @@ class GalleryItem(ScrollableContainer):
         text.no_wrap = True
         yield Static(text, classes="image")
         yield Static(self.caption, classes="caption")
+
+    def watch_position(self, value: float) -> None:
+        """Called when `position` is changed."""
+        self.styles.offset = (round(self.app.size.width * value), 0)
 
 class GalleryApp(App[None]):
     """ANSI art gallery TUI"""
@@ -68,12 +75,14 @@ class GalleryApp(App[None]):
         Binding("f12", "toggle_inspector", _("Toggle Inspector"), show=False),
     ]
 
+    path_index: Reactive[int] = var(0)
+
     def compose(self) -> ComposeResult:
         """Add widgets to the layout."""
         yield Header(show_clock=True)
 
-        self.scroll = HorizontalScroll()
-        yield self.scroll
+        self.container = Container()
+        yield self.container
 
         yield Footer()
 
@@ -163,47 +172,66 @@ class GalleryApp(App[None]):
         # self.exit(None, "\n".join(str(path) for path in paths))
         # return
 
-        for path in paths:
-            # with open(path, "r", encoding="cp437") as f:
-            with open(path, "r", encoding="utf8") as f:
-                image = AnsiArtDocument.from_ansi(f.read())
-            
-            self.scroll.mount(GalleryItem(image, caption=path.name))
-        
-    def _scroll_to_adjacent_item(self, delta_index: int = 0) -> None:
-        """Scroll to the next/previous item."""
-        # try:
-        #     index = self.scroll.children.index(self.app.focused)
-        # except ValueError:
-        #     return
-        widget, _ = self.app.get_widget_at(self.screen.region.width // 2, self.screen.region.height // 2)
-        while widget is not None and not isinstance(widget, GalleryItem):
-            widget = widget.parent
-        if widget is None:
-            index = 0
-        else:
-            index = self.scroll.children.index(widget)
-        index += delta_index
-        index = max(0, min(index, len(self.scroll.children) - 1))
-        target = self.scroll.children[index]
-        target.focus()
-        self.scroll.scroll_to_widget(target)
+        self.paths = paths
+        self.path_to_gallery_item: dict[Path, GalleryItem] = {}
+        self.path_index = 0
+        self._load_upcoming_images()
+
+    def _load_upcoming_images(self) -> None:
+        """Load current and upcoming images."""
+        range_start = max(self.path_index - 2, 0)
+        range_end = min(self.path_index + 2, len(self.paths))
+
+        for path in self.paths[range_start:range_end]:
+            if path not in self.path_to_gallery_item:
+                self._load_image(path)
+
+    def _load_image(self, path: Path) -> None:
+        # with open(path, "r", encoding="cp437") as f:
+        with open(path, "r", encoding="utf8") as f:
+            image = AnsiArtDocument.from_ansi(f.read())
+
+        gallery_item = GalleryItem(image, caption=path.name)
+        self.container.mount(gallery_item)
+        item_index = self.paths.index(path)
+        # print(path, item_index, self.path_index)
+        # gallery_item.styles.opacity = 1.0 if item_index == self.path_index else 0.0
+        gallery_item.position = 0 if item_index == self.path_index else (-1 if item_index < self.path_index else 1)
+        self.path_to_gallery_item[path] = gallery_item
+
+    def validate_path_index(self, path_index: int) -> int:
+        """Ensure the index is within range."""
+        return max(0, min(path_index, len(self.paths) - 1))
+
+    def watch_path_index(self, current_index: int) -> None:
+        """Called when the path index is changed."""
+        self._load_upcoming_images()
+        for item_index, (path, gallery_item) in enumerate(self.path_to_gallery_item.items()):
+            # gallery_item.set_class(item_index < current_index, "previous")
+            # gallery_item.set_class(item_index == current_index, "current")
+            # gallery_item.set_class(item_index > current_index, "next")
+
+            # opacity = 1.0 if item_index == current_index else 0.0
+            # gallery_item.styles.animate("opacity", value=opacity, final_value=opacity, duration=0.5)
+            position = 0 if item_index == current_index else (-1 if item_index < current_index else 1)
+            gallery_item.animate("position", value=position, final_value=position, duration=0.3)
+            # gallery_item.position = position
 
     def action_next(self) -> None:
         """Scroll to the next item."""
-        self._scroll_to_adjacent_item(1)
+        self.path_index += 1
 
     def action_previous(self) -> None:
         """Scroll to the previous item."""
-        self._scroll_to_adjacent_item(-1)
+        self.path_index -= 1
 
     def action_scroll_to_start(self) -> None:
         """Scroll to the first item."""
-        self.scroll.scroll_to_widget(self.scroll.children[0])
+        self.path_index = 0
 
     def action_scroll_to_end(self) -> None:
         """Scroll to the last item."""
-        self.scroll.scroll_to_widget(self.scroll.children[-1])
+        self.path_index = len(self.paths) - 1
 
     def action_reload(self) -> None:
         """Reload the program."""
