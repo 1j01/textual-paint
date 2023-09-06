@@ -101,10 +101,11 @@ class GalleryApp(App[None]):
         if not gallery_folder.is_dir():
             self.exit(None, f"Not a folder: {gallery_folder}")
 
-        glob = "**/*.ans"
-        # glob = "**/*.{ans,txt}" # doesn't work with pathlib
+        exts = (".ans", ".txt")
 
-        for path in gallery_folder.rglob(glob):
+        for path in gallery_folder.rglob("**/*"):
+            if path.suffix not in exts:
+                continue
             # with open(path, "r", encoding="cp437") as f:
             with open(path, "r", encoding="utf8") as f:
                 image = AnsiArtDocument.from_ansi(f.read())
@@ -112,7 +113,7 @@ class GalleryApp(App[None]):
             self.scroll.mount(GalleryItem(image, caption=path.name))
         
         if len(self.scroll.children) == 0:
-            self.exit(None, f"No ANSI art ({glob}) found in folder: {gallery_folder}")
+            self.exit(None, f"No ANSI art ({', '.join(f'*{ext}' for ext in exts)}) found in folder: {gallery_folder}")
 
     def _scroll_to_adjacent_item(self, delta_index: int = 0) -> None:
         """Scroll to the next/previous item."""
