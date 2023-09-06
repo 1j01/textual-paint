@@ -9,6 +9,6 @@ pyxdg==0.28 # xdg module, used for wallpaper setting; optional, falls back to ~/
 rich==13.3.5
 stransi==0.3.0
 textual[dev]==0.27.0
-watchdog==3.0.0 # for development, but currently required
+watchdog==3.0.0 # for development; optional (only used when --restart-on-changes is passed)
 types-Pillow==10.0.0.1 # for development
 types-psutil==5.9.5.15 # for development
