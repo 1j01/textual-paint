@@ -1,7 +1,9 @@
 """ANSI art gallery TUI"""
 
 import argparse
+import locale
 import os
+import re
 from pathlib import Path
 
 from textual.app import App, ComposeResult
@@ -103,7 +105,32 @@ class GalleryApp(App[None]):
 
         exts = (".ans", ".txt")
 
-        for path in gallery_folder.rglob("**/*"):
+        paths = gallery_folder.rglob("**/*")
+        # First sort by whole path
+        paths = sorted(paths, key=lambda path: locale.strxfrm(str(path)))
+        # Then (higher priority) sort by version number (vX.Y) numerically where present
+        # Actually, it might be simpler to handle any numbers in the filename, using Decorate-Sort-Undecorate.
+        # Well, I can do it mostly, but for comparing "v1" and "v1.1", I need to consider the version number as a group.
+        # For two-number version strings, I could consider it as a float, but for three-number version strings, a tuple should work.
+        # I don't have any three-number version strings in the filenames of my ANSI art samples, but TODO: generalize this.
+        matches_and_paths = [(re.findall(r"(\d*(?:\.\d+)?)(\D*)", path.name), path) for path in paths]
+        sorted_parts_and_paths = sorted(matches_and_paths, key=lambda matches_and_path: [
+            [
+                # If ints or strings are conditionally omitted, it leads to int vs str comparison errors.
+                # *([float(match[0])] if match[0] else []),
+                # *([locale.strxfrm(match[1])] if match[1] else []),
+                # So just keep it as an alternating list of floats and strings. Simpler, and safer.
+                float(match[0]) if match[0] else float("inf"),
+                locale.strxfrm(match[1]),
+            ]
+            for match in matches_and_path[0]
+        ])
+        paths = [path for _, path in sorted_parts_and_paths]
+
+        # Debugging
+        # self.exit(None, "\n".join(str(path) for path in paths))
+
+        for path in paths:
             if path.suffix not in exts:
                 continue
             # with open(path, "r", encoding="cp437") as f:
