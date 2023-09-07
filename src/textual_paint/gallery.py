@@ -13,9 +13,9 @@ from textual.containers import Container, ScrollableContainer
 from textual.reactive import Reactive, var
 from textual.widgets import Footer, Header, Static
 
-from .__init__ import __version__
-from .ansi_art_document import AnsiArtDocument
-from .auto_restart import restart_on_changes, restart_program
+from textual_paint.__init__ import __version__
+from textual_paint.ansi_art_document import AnsiArtDocument
+from textual_paint.auto_restart import restart_on_changes, restart_program
 
 parser = argparse.ArgumentParser(description='ANSI art gallery', usage='%(prog)s [path]', prog="python -m src.textual_paint.gallery")
 parser.add_argument('path', nargs='?', default=None, help='Path to a folder containing ANSI art, or an ANSI file.')
@@ -98,7 +98,7 @@ class GalleryApp(App[None]):
         if not args.inspect_layout:
             return
         # importing the inspector adds instrumentation which can slow down startup
-        from .inspector import Inspector
+        from textual_paint.inspector import Inspector
         inspector = Inspector()
         inspector.display = False
         yield inspector
@@ -263,7 +263,7 @@ class GalleryApp(App[None]):
         if not args.inspect_layout:
             return
         # importing the inspector adds instrumentation which can slow down startup
-        from .inspector import Inspector
+        from textual_paint.inspector import Inspector
         inspector = self.query_one(Inspector)
         inspector.display = not inspector.display
         if not inspector.display:

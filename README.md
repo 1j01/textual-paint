@@ -357,10 +357,6 @@ Also, note that it might not work with your Git GUI of choice; you may need to u
 
 - Make sure to run the program from the root directory of the repository.
 
-> `ImportError: attempted relative import with no known parent package`
-
-- `paint.py` can only be run as a module, not as a script. I just... I haven't had the heart to remove the shebang line.
-
 ### Linting
 
 ```bash

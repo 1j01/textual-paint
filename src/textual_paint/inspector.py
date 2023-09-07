@@ -60,7 +60,7 @@ from textual.widgets import (Button, DataTable, Input, Static, TabbedContent,
                              TabPane, Tree)
 from textual.widgets.tree import TreeNode
 
-from .launch_editor import launch_editor
+from textual_paint.launch_editor import launch_editor
 
 # from textual.css._style_properties import BorderDefinition
 

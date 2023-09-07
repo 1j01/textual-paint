@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING
 from textual.app import ScreenStackError
 
 if TYPE_CHECKING:
-    from .gallery import GalleryApp
-    from .paint import PaintApp
+    from textual_paint.gallery import GalleryApp
+    from textual_paint.paint import PaintApp
 
 def restart_program() -> None:
     """Restarts the current program, after resetting terminal state, and cleaning up file objects and descriptors."""

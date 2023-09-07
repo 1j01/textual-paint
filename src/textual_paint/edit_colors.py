@@ -15,9 +15,9 @@ from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import Button, Input, Label
 
-from .args import args
-from .localization.i18n import get as _
-from .windows import DialogWindow
+from textual_paint.args import args
+from textual_paint.localization.i18n import get as _
+from textual_paint.windows import DialogWindow
 
 # https://github.com/kouzhudong/win2k/blob/ce6323f76d5cd7d136b74427dad8f94ee4c389d2/trunk/private/shell/win16/comdlg/color.c#L38-L43
 # These are a fallback in case colors are not received from some driver.

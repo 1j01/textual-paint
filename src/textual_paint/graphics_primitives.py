@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Iterator
 from textual.geometry import Offset, Region
 
 if TYPE_CHECKING:
-    from .paint import AnsiArtDocument
+    from textual_paint.paint import AnsiArtDocument
 
 
 def bresenham_walk(x0: int, y0: int, x1: int, y1: int) -> Iterator[tuple[int, int]]:

@@ -38,26 +38,26 @@ from textual.widgets import (Button, Header, Input, RadioButton, RadioSet,
 from textual.widgets._header import HeaderIcon
 from textual.worker import get_current_worker  # type: ignore
 
-from .__init__ import __version__
-from .ansi_art_document import (SAVE_DISABLED_FORMATS, AnsiArtDocument,
+from textual_paint.__init__ import __version__
+from textual_paint.ansi_art_document import (SAVE_DISABLED_FORMATS, AnsiArtDocument,
                                 FormatReadNotSupported,
                                 FormatWriteNotSupported, Selection)
-from .args import args, get_help_text
-from .auto_restart import restart_on_changes, restart_program
-from .edit_colors import EditColorsDialogWindow
-from .file_dialogs import OpenDialogWindow, SaveAsDialogWindow
-from .graphics_primitives import (bezier_curve_walk, bresenham_walk,
+from textual_paint.args import args, get_help_text
+from textual_paint.auto_restart import restart_on_changes, restart_program
+from textual_paint.edit_colors import EditColorsDialogWindow
+from textual_paint.file_dialogs import OpenDialogWindow, SaveAsDialogWindow
+from textual_paint.graphics_primitives import (bezier_curve_walk, bresenham_walk,
                                   flood_fill, is_inside_polygon,
                                   midpoint_ellipse, polygon_walk,
                                   polyline_walk, quadratic_curve_walk)
-from .localization.i18n import get as _
-from .localization.i18n import load_language, remove_hotkey
-from .menus import Menu, MenuBar, MenuItem, Separator
-from .palette_data import DEFAULT_PALETTE, IRC_PALETTE
-from .rasterize_ansi_art import rasterize
-from .scrollbars import ASCIIScrollBarRender
-from .wallpaper import get_config_dir, set_wallpaper
-from .windows import (CharacterSelectorDialogWindow, DialogWindow, MessageBox,
+from textual_paint.localization.i18n import get as _
+from textual_paint.localization.i18n import load_language, remove_hotkey
+from textual_paint.menus import Menu, MenuBar, MenuItem, Separator
+from textual_paint.palette_data import DEFAULT_PALETTE, IRC_PALETTE
+from textual_paint.rasterize_ansi_art import rasterize
+from textual_paint.scrollbars import ASCIIScrollBarRender
+from textual_paint.wallpaper import get_config_dir, set_wallpaper
+from textual_paint.windows import (CharacterSelectorDialogWindow, DialogWindow, MessageBox,
                       Window, get_paint_icon, get_question_icon,
                       get_warning_icon)
 
@@ -3009,7 +3009,7 @@ Columns: {len(palette) // 2}
         if not args.inspect_layout:
             return
         # importing the inspector adds instrumentation which can slow down startup
-        from .inspector import Inspector
+        from textual_paint.inspector import Inspector
         inspector = self.query_one(Inspector)
         inspector.display = not inspector.display
         if not inspector.display:
@@ -3108,7 +3108,7 @@ Columns: {len(palette) // 2}
         if not args.inspect_layout:
             return
         # importing the inspector adds instrumentation which can slow down startup
-        from .inspector import Inspector
+        from textual_paint.inspector import Inspector
         inspector = Inspector()
         inspector.display = False
         yield inspector
@@ -4033,7 +4033,7 @@ Columns: {len(palette) // 2}
 if args.ascii_only:
     args.ascii_only_icons = True
 
-    from .ascii_borders import force_ascii_borders
+    from textual_paint.ascii_borders import force_ascii_borders
     force_ascii_borders()
 
     RadioButton.BUTTON_INNER = "*" # "*", "o", "O", "@"

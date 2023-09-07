@@ -14,8 +14,8 @@ from textual.widget import Widget
 from textual.widgets import Button, DataTable, Static
 from typing_extensions import Self
 
-from .args import args
-from .localization.i18n import get as _
+from textual_paint.args import args
+from textual_paint.localization.i18n import get as _
 
 
 class WindowTitleBar(Container):

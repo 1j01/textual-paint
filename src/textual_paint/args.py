@@ -4,7 +4,7 @@ import argparse
 import os
 import re
 
-from .__init__ import DEVELOPMENT, __version__
+from textual_paint.__init__ import DEVELOPMENT, __version__
 
 parser = argparse.ArgumentParser(description='Paint in the terminal.', usage='%(prog)s [options] [filename]', prog="textual-paint")
 parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')

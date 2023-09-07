@@ -8,9 +8,9 @@ from textual.widget import Widget
 from textual.widgets import Button, Input, Label, Tree
 from textual.widgets._directory_tree import DirEntry
 
-from .enhanced_directory_tree import EnhancedDirectoryTree
-from .localization.i18n import get as _
-from .windows import DialogWindow
+from textual_paint.enhanced_directory_tree import EnhancedDirectoryTree
+from textual_paint.localization.i18n import get as _
+from textual_paint.windows import DialogWindow
 
 
 class FileDialogWindow(DialogWindow):

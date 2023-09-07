@@ -11,8 +11,8 @@ from textual.message import Message
 from textual.reactive import var
 from textual.widgets import Button, Static
 
-from .args import args
-from .localization.i18n import get_direction, get_hotkey, markup_hotkey
+from textual_paint.args import args
+from textual_paint.localization.i18n import get_direction, get_hotkey, markup_hotkey
 
 
 def to_snake_case(name: str) -> str:
