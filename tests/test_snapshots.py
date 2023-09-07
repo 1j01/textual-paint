@@ -10,7 +10,7 @@ GALLERY = APPS_DIR / "gallery.py"
 def test_paint_app(snap_compare):
     assert snap_compare(PAINT)
 
-def test_paint_stretch_skew(snap_compare):
+def test_paint_stretch_skew_dialog(snap_compare):
     assert snap_compare(PAINT, press=["ctrl+w"])
 
 def test_paint_flip_rotate_dialog(snap_compare):
