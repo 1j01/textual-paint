@@ -16,8 +16,8 @@ from .__init__ import __version__
 from .ansi_art_document import AnsiArtDocument
 from .auto_restart import restart_on_changes, restart_program
 
-parser = argparse.ArgumentParser(description='ANSI art gallery', usage='%(prog)s [folder]', prog="python -m src.textual_paint.gallery")
-parser.add_argument('folder', nargs='?', default=None, help='Path to a folder containing ANSI art.')
+parser = argparse.ArgumentParser(description='ANSI art gallery', usage='%(prog)s [path]', prog="python -m src.textual_paint.gallery")
+parser.add_argument('path', nargs='?', default=None, help='Path to a folder containing ANSI art, or an ANSI file.')
 parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
 parser.add_argument('--no-animation', action='store_true', help='Disable transition effects')
 
@@ -79,6 +79,12 @@ class GalleryApp(App[None]):
 
     path_index: Reactive[int] = var(0)
 
+    def __init__(self) -> None:
+        """Initialise the app."""
+        super().__init__()
+        self.paths: list[Path] = []
+        self.path_to_gallery_item: dict[Path, GalleryItem] = {}
+
     def compose(self) -> ComposeResult:
         """Add widgets to the layout."""
         yield Header(show_clock=True)
@@ -104,20 +110,21 @@ class GalleryApp(App[None]):
     def _load(self) -> None:
         """Load the folder specified on the command line."""
         hide_old_versions = False
-        if args.folder is None:
+        if args.path is None:
             gallery_folder = Path(os.path.dirname(__file__), "../../samples").resolve()
             hide_old_versions = True
         else:
-            gallery_folder = Path(args.folder)
+            gallery_folder = Path(args.path)
 
         if not gallery_folder.exists():
-            self.exit(None, f"Folder not found: {gallery_folder}")
+            self.exit(None, f"Folder or file not found: {gallery_folder}")
             return
 
-        if not gallery_folder.is_dir():
-            # TODO: allow showing a specific file, and load whatever folder it's in
-            self.exit(None, f"Not a folder: {gallery_folder}")
-            return
+        file_to_show = None
+        if gallery_folder.is_file():
+            # allow showing a specific file, and load whatever folder it's in
+            file_to_show = gallery_folder
+            gallery_folder = gallery_folder.parent
 
         exts = (".ans", ".txt")
 
@@ -166,17 +173,27 @@ class GalleryApp(App[None]):
             # Hide some uninteresting files
             paths = [path for path in paths if not re.match("0x0|1x1|2x2|4x4_font_template|gradient_test|pipe_strip_mega|cp437_as_utf8|galaxies_v1", path.name)]
 
+        exts_str = ', '.join(f'*{ext}' for ext in exts)
+        if file_to_show:
+            try:
+                index_to_show = [*map(str, paths)].index(str(file_to_show))
+            except ValueError:
+                self.exit(None, f"Not an ANSI art file ({exts_str}): {file_to_show}")
+                return
+        else:
+            index_to_show = 0
+
         if len(paths) == 0:
-            self.exit(None, f"No ANSI art ({', '.join(f'*{ext}' for ext in exts)}) found in folder: {gallery_folder}")
+            self.exit(None, f"No ANSI art ({exts_str}) found in folder: {gallery_folder}")
             return
 
         # Debugging
-        # self.exit(None, "\n".join(str(path) for path in paths))
+        # self.exit(None, "\n".join(str(path) for path in paths) + f"\n\nindex_to_show: {index_to_show}\ntotal: {len(paths)}")
         # return
 
         self.paths = paths
-        self.path_to_gallery_item: dict[Path, GalleryItem] = {}
-        self.path_index = 0
+        self.path_to_gallery_item = {}
+        self.path_index = index_to_show
         self._load_upcoming_images()
 
     def _load_upcoming_images(self) -> None:
