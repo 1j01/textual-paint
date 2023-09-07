@@ -217,6 +217,7 @@ class GalleryApp(App[None]):
         item_index = self.paths.index(path)
         # gallery_item.styles.opacity = 1.0 if item_index == self.path_index else 0.0
         gallery_item.position = 0 if item_index == self.path_index else (-1 if item_index < self.path_index else 1)
+        gallery_item.display = item_index == self.path_index
         self.gallery_item_by_path[path] = gallery_item
 
     def validate_path_index(self, path_index: int) -> int:
@@ -233,8 +234,12 @@ class GalleryApp(App[None]):
             position = 0 if item_index == current_index else (-1 if item_index < current_index else 1)
             if args.no_animation:
                 gallery_item.position = position
+                gallery_item.display = item_index == current_index
             else:
-                gallery_item.animate("position", value=position, final_value=position, duration=0.3)
+                gallery_item.display = gallery_item.display or (item_index in (current_index - 1, current_index, current_index + 1))
+                def _animation_complete() -> None:
+                    gallery_item.display = item_index == current_index
+                gallery_item.animate("position", value=position, final_value=position, duration=0.3, on_complete=_animation_complete)
 
         self.sub_title = f"{current_index + 1}/{len(self.paths)}"
 
