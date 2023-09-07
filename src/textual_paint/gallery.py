@@ -5,6 +5,7 @@ import locale
 import os
 import re
 from pathlib import Path
+from rich.text import Text
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
@@ -117,7 +118,7 @@ class GalleryApp(App[None]):
             gallery_folder = Path(args.path)
 
         if not gallery_folder.exists():
-            self.exit(None, f"Folder or file not found: {gallery_folder}")
+            self.exit(None, Text(f"Folder or file not found: {gallery_folder}"))
             return
 
         file_to_show = None
@@ -178,17 +179,17 @@ class GalleryApp(App[None]):
             try:
                 index_to_show = [*map(str, paths)].index(str(file_to_show))
             except ValueError:
-                self.exit(None, f"Not an ANSI art file ({exts_str}): {file_to_show}")
+                self.exit(None, Text(f"Not an ANSI art file ({exts_str}): {file_to_show}"))
                 return
         else:
             index_to_show = 0
 
         if len(paths) == 0:
-            self.exit(None, f"No ANSI art ({exts_str}) found in folder: {gallery_folder}")
+            self.exit(None, Text(f"No ANSI art ({exts_str}) found in folder: {gallery_folder}"))
             return
 
         # Debugging
-        # self.exit(None, "\n".join(str(path) for path in paths) + f"\n\nindex_to_show: {index_to_show}\ntotal: {len(paths)}")
+        # self.exit(None, Text("\n".join(str(path) for path in paths) + f"\n\nindex_to_show: {index_to_show}\ntotal: {len(paths)}"))
         # return
 
         self.paths = paths
