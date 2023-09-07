@@ -18,6 +18,8 @@ from .auto_restart import restart_on_changes, restart_program
 
 parser = argparse.ArgumentParser(description='ANSI art gallery', usage='%(prog)s [folder]', prog="python -m src.textual_paint.gallery")
 parser.add_argument('folder', nargs='?', default=None, help='Path to a folder containing ANSI art.')
+parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
+parser.add_argument('--no-animation', action='store_true', help='Disable transition effects')
 
 dev_options = parser.add_argument_group('development options')
 dev_options.add_argument('--inspect-layout', action='store_true', help='Enables DOM inspector (F12) and middle click highlight')
@@ -214,8 +216,10 @@ class GalleryApp(App[None]):
             # opacity = 1.0 if item_index == current_index else 0.0
             # gallery_item.styles.animate("opacity", value=opacity, final_value=opacity, duration=0.5)
             position = 0 if item_index == current_index else (-1 if item_index < current_index else 1)
-            gallery_item.animate("position", value=position, final_value=position, duration=0.3)
-            # gallery_item.position = position
+            if args.no_animation:
+                gallery_item.position = position
+            else:
+                gallery_item.animate("position", value=position, final_value=position, duration=0.3)
 
     def action_next(self) -> None:
         """Scroll to the next item."""
