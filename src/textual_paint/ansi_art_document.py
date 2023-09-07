@@ -19,9 +19,8 @@ from textual.geometry import Offset, Region
 
 from textual_paint.export_templates import (CUSTOM_CONSOLE_HTML_FORMAT,
                                             CUSTOM_CONSOLE_SVG_FORMAT)
-from textual_paint.palette_data import IRC_PALETTE
-
 from textual_paint.localization.i18n import get as _
+from textual_paint.palette_data import IRC_PALETTE
 
 DEBUG_REGION_UPDATES = False
 

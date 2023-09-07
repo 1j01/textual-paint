@@ -3,6 +3,7 @@
 
 import re
 
+
 def parse_rc_file(rc_file_text: str) -> list[str]:
     """
     Parses a Windows RC file and returns a list of strings.

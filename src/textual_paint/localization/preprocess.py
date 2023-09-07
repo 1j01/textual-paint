@@ -1,11 +1,10 @@
-import os
-import re
 import glob
 import json
-from typing import Generator, Any
+import os
+import re
+from typing import Any, Generator
 
 from .parse_rc_file import parse_rc_file
-
 
 base_lang: str = "en"
 available_langs: list[str] = [dir for dir in os.listdir(os.path.dirname(__file__)) if re.match(r"^\w+(-\w+)?$", dir)]
