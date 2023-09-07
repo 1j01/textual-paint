@@ -123,6 +123,7 @@
 		"pyperclip",
 		"pypixelart",
 		"pyright",
+		"pytest",
 		"pyxdg",
 		"qualname",
 		"rasterization",
