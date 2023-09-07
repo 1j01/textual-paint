@@ -72,6 +72,7 @@ if DEVELOPMENT:
     # while working on the project.
     update_cli_help_on_readme()
 
+# args = parser.parse_args(os.environ.get("PYTEST_TEXTUAL_PAINT_ARGS", "").split(" ")) if PYTEST else parser.parse_args()
 args = parser.parse_args([]) if PYTEST else parser.parse_args()
 """Parsed command line arguments."""
 
