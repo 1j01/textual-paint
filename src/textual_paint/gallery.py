@@ -83,7 +83,7 @@ class GalleryApp(App[None]):
         """Initialise the app."""
         super().__init__()
         self.paths: list[Path] = []
-        self.path_to_gallery_item: dict[Path, GalleryItem] = {}
+        self.gallery_item_by_path: dict[Path, GalleryItem] = {}
 
     def compose(self) -> ComposeResult:
         """Add widgets to the layout."""
@@ -192,7 +192,7 @@ class GalleryApp(App[None]):
         # return
 
         self.paths = paths
-        self.path_to_gallery_item = {}
+        self.gallery_item_by_path = {}
         self.path_index = index_to_show
         self._load_upcoming_images()
 
@@ -202,7 +202,7 @@ class GalleryApp(App[None]):
         range_end = min(self.path_index + 2, len(self.paths))
 
         for path in self.paths[range_start:range_end]:
-            if path not in self.path_to_gallery_item:
+            if path not in self.gallery_item_by_path:
                 self._load_image(path)
 
     def _load_image(self, path: Path) -> None:
@@ -216,7 +216,7 @@ class GalleryApp(App[None]):
         # print(path, item_index, self.path_index)
         # gallery_item.styles.opacity = 1.0 if item_index == self.path_index else 0.0
         gallery_item.position = 0 if item_index == self.path_index else (-1 if item_index < self.path_index else 1)
-        self.path_to_gallery_item[path] = gallery_item
+        self.gallery_item_by_path[path] = gallery_item
 
     def validate_path_index(self, path_index: int) -> int:
         """Ensure the index is within range."""
@@ -225,7 +225,7 @@ class GalleryApp(App[None]):
     def watch_path_index(self, current_index: int) -> None:
         """Called when the path index is changed."""
         self._load_upcoming_images()
-        for item_index, (path, gallery_item) in enumerate(self.path_to_gallery_item.items()):
+        for item_index, (path, gallery_item) in enumerate(self.gallery_item_by_path.items()):
             # gallery_item.set_class(item_index < current_index, "previous")
             # gallery_item.set_class(item_index == current_index, "current")
             # gallery_item.set_class(item_index > current_index, "next")
