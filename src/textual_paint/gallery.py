@@ -221,6 +221,8 @@ class GalleryApp(App[None]):
             else:
                 gallery_item.animate("position", value=position, final_value=position, duration=0.3)
 
+        self.sub_title = f"{current_index + 1}/{len(self.paths)}"
+
     def action_next(self) -> None:
         """Scroll to the next item."""
         self.path_index += 1
