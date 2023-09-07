@@ -226,7 +226,8 @@ class GalleryApp(App[None]):
     def watch_path_index(self, current_index: int) -> None:
         """Called when the path index is changed."""
         self._load_upcoming_images()
-        for item_index, (path, gallery_item) in enumerate(self.gallery_item_by_path.items()):
+        for path, gallery_item in self.gallery_item_by_path.items():
+            item_index = self.paths.index(path)
             # gallery_item.set_class(item_index < current_index, "previous")
             # gallery_item.set_class(item_index == current_index, "current")
             # gallery_item.set_class(item_index > current_index, "next")
