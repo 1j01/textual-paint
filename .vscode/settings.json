@@ -16,6 +16,8 @@
     "files.associations": {
         "*.css": "Textual CSS"
     },
+    // pytest
+    "python.testing.pytestEnabled": true,
     // Prevent accidental editing of generated files and installed packages.
     // (You can always use File: Set Active Editor Writeable in Session if you need to.)
     "files.readonlyInclude": {
