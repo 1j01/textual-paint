@@ -238,6 +238,7 @@ class GalleryApp(App[None]):
             else:
                 gallery_item.display = gallery_item.display or (item_index in (current_index - 1, current_index, current_index + 1))
                 def _animation_complete() -> None:
+                    # HMMMM, might need a closure to capture gallery_item and item_index
                     gallery_item.display = item_index == current_index
                 gallery_item.animate("position", value=position, final_value=position, duration=0.3, on_complete=_animation_complete)
 
