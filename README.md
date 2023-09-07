@@ -88,8 +88,6 @@ development options:
                         outdated errors
   --restart-on-changes  Restart the app when the source code is changed
   --recode-samples      Open and save each file in samples/, for testing
-  --snapshot-update     KLUDGE: IGNORE THIS ARGUMENT INTENDED FOR pytest-
-                        textual-snapshot
 ```
 
 ### Keyboard Shortcuts

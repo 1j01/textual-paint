@@ -3,8 +3,11 @@
 import argparse
 import os
 import re
+import sys
 
 from textual_paint.__init__ import DEVELOPMENT, __version__
+
+PYTEST = "pytest" in sys.modules
 
 parser = argparse.ArgumentParser(description='Paint in the terminal.', usage='%(prog)s [options] [filename]', prog="textual-paint")
 parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
@@ -25,8 +28,6 @@ dev_options.add_argument('--inspect-layout', action='store_true', help='Enables 
 dev_options.add_argument('--clear-screen', action='store_true', help='Clear the screen before starting, to avoid seeing outdated errors')
 dev_options.add_argument('--restart-on-changes', action='store_true', help='Restart the app when the source code is changed')
 dev_options.add_argument('--recode-samples', action='store_true', help='Open and save each file in samples/, for testing')
-# TODO: don't parse arguments when running tests!
-dev_options.add_argument('--snapshot-update', action='store_true', help='KLUDGE: IGNORE THIS ARGUMENT INTENDED FOR pytest-textual-snapshot')
 
 parser.add_argument('filename', nargs='?', default=None, help='Path to a file to open. File will be created if it doesn\'t exist.')
 
@@ -71,7 +72,7 @@ if DEVELOPMENT:
     # while working on the project.
     update_cli_help_on_readme()
 
-args = parser.parse_args()
+args = parser.parse_args([]) if PYTEST else parser.parse_args()
 """Parsed command line arguments."""
 
 def get_help_text() -> str:
