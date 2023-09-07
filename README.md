@@ -359,7 +359,7 @@ Also, note that it might not work with your Git GUI of choice; you may need to u
 
 - Make sure to run the program from the root directory of the repository.
 
-### Linting
+### Quality Assurance
 
 ```bash
 # Spell checking
@@ -375,6 +375,12 @@ PYRIGHT_PYTHON_FORCE_VERSION=1.1.317 pyright
 PYRIGHT_PYTHON_FORCE_VERSION=1.1.318 pyright
 # I also tried mypy and fixed some errors it reported, but I'm not targeting zero errors with mypy.
 mypy src --no-namespace-packages --check-untyped-defs
+
+# Visual Regression Testing
+# I use pytest-textual-snapshot, which is a pytest plugin for comparing SVG screenshots of Textual apps over time.
+pytest
+# To accept differences, update the baseline with:
+pytest --snapshot-update
 ```
 
 ## License
