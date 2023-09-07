@@ -32,7 +32,7 @@ def _(text: str) -> str:
     """Placeholder for localization function."""
     return text
 
-class GalleryItem(ScrollableContainer):
+class GalleryItem(Container):
     """An image with a caption."""
 
     position: Reactive[float] = var(0)
@@ -47,7 +47,7 @@ class GalleryItem(ScrollableContainer):
         """Add widgets to the layout."""
         text = self.image.get_renderable()
         text.no_wrap = True
-        yield Static(text, classes="image")
+        yield ScrollableContainer(Static(text, classes="image"), classes="image_container")
         yield Static(self.caption, classes="caption")
 
     def watch_position(self, value: float) -> None:

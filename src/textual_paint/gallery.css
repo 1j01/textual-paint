@@ -1,8 +1,11 @@
 GalleryItem {
     layout: vertical;
     width: 100%;
-    align: center middle;
     dock: top;
+}
+
+.image_container {
+    align: center middle;
 }
 
 .image {
