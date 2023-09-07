@@ -88,7 +88,7 @@ class GalleryApp(App[None]):
 
     def compose(self) -> ComposeResult:
         """Add widgets to the layout."""
-        yield Header(show_clock=True)
+        yield Header()
 
         self.container = Container()
         yield self.container
