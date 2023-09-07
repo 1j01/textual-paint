@@ -207,6 +207,7 @@ class GalleryApp(App[None]):
                 self._load_image(path)
 
     def _load_image(self, path: Path) -> None:
+        """Load a file and create a gallery item for it."""
         # with open(path, "r", encoding="cp437") as f:
         with open(path, "r", encoding="utf8") as f:
             image = AnsiArtDocument.from_ansi(f.read())
@@ -214,7 +215,6 @@ class GalleryApp(App[None]):
         gallery_item = GalleryItem(image, caption=path.name)
         self.container.mount(gallery_item)
         item_index = self.paths.index(path)
-        # print(path, item_index, self.path_index)
         # gallery_item.styles.opacity = 1.0 if item_index == self.path_index else 0.0
         gallery_item.position = 0 if item_index == self.path_index else (-1 if item_index < self.path_index else 1)
         self.gallery_item_by_path[path] = gallery_item
@@ -228,10 +228,6 @@ class GalleryApp(App[None]):
         self._load_upcoming_images()
         for path, gallery_item in self.gallery_item_by_path.items():
             item_index = self.paths.index(path)
-            # gallery_item.set_class(item_index < current_index, "previous")
-            # gallery_item.set_class(item_index == current_index, "current")
-            # gallery_item.set_class(item_index > current_index, "next")
-
             # opacity = 1.0 if item_index == current_index else 0.0
             # gallery_item.styles.animate("opacity", value=opacity, final_value=opacity, duration=0.5)
             position = 0 if item_index == current_index else (-1 if item_index < current_index else 1)
