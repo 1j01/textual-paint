@@ -25,6 +25,8 @@ dev_options.add_argument('--inspect-layout', action='store_true', help='Enables 
 dev_options.add_argument('--clear-screen', action='store_true', help='Clear the screen before starting, to avoid seeing outdated errors')
 dev_options.add_argument('--restart-on-changes', action='store_true', help='Restart the app when the source code is changed')
 dev_options.add_argument('--recode-samples', action='store_true', help='Open and save each file in samples/, for testing')
+# TODO: don't parse arguments when running tests!
+dev_options.add_argument('--snapshot-update', action='store_true', help='KLUDGE: IGNORE THIS ARGUMENT INTENDED FOR pytest-textual-snapshot')
 
 parser.add_argument('filename', nargs='?', default=None, help='Path to a file to open. File will be created if it doesn\'t exist.')
 
