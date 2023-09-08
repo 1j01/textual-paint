@@ -30,7 +30,6 @@ from textual.filter import LineFilter
 from textual.geometry import Offset, Region, Size
 from textual.message import Message
 from textual.reactive import reactive, var
-from textual.scrollbar import ScrollBar
 from textual.strip import Strip
 from textual.widget import Widget
 from textual.widgets import (Button, Header, Input, RadioButton, RadioSet,
@@ -60,7 +59,6 @@ from textual_paint.localization.i18n import load_language, remove_hotkey
 from textual_paint.menus import Menu, MenuBar, MenuItem, Separator
 from textual_paint.palette_data import DEFAULT_PALETTE, IRC_PALETTE
 from textual_paint.rasterize_ansi_art import rasterize
-from textual_paint.scrollbars import ASCIIScrollBarRender
 from textual_paint.wallpaper import get_config_dir, set_wallpaper
 from textual_paint.windows import (CharacterSelectorDialogWindow, DialogWindow,
                                    MessageBox, Window, get_paint_icon,

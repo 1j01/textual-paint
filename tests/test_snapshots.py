@@ -1,6 +1,4 @@
-import os
 from pathlib import Path
-from typing import Literal
 
 import pytest
 
@@ -11,17 +9,6 @@ GALLERY = APPS_DIR / "gallery.py"
 
 LARGER = (81, 38)
 """Large enough to show the entire paint app."""
-
-# def each_theme(func):
-#     @pytest.mark.parametrize("theme", ["light", "dark"])
-#     @pytest.mark.parametrize("ui_charset", ["unicode", "ascii"])
-#     def wrapper(*args, theme: Literal["light", "dark"], ui_charset: Literal["unicode", "ascii"], **kwargs):
-#         os.environ["PYTEST_TEXTUAL_PAINT_ARGS"] = f"--theme {theme}" + (" --ascii-only" if ui_charset == "ascii" else "")
-#         try:
-#             func(*args, **kwargs)
-#         finally:
-#             del os.environ["PYTEST_TEXTUAL_PAINT_ARGS"]
-#     return wrapper
 
 
 @pytest.fixture(params=[
