@@ -27,8 +27,8 @@ LARGER = (81, 38)
 @pytest.fixture(params=[
     {"theme": "light", "ascii_only": False},
     {"theme": "dark", "ascii_only": False},
-    # {"theme": "light", "ascii_only": True},
-    # {"theme": "dark", "ascii_only": True},
+    {"theme": "light", "ascii_only": True},
+    {"theme": "dark", "ascii_only": True},
 ], ids=lambda param: f"{param['theme']}_{'ascii' if param['ascii_only'] else 'unicode'}")
 def each_theme(request):
     """Fixture to set the PYTEST_TEXTUAL_PAINT_ARGS environment variable."""
