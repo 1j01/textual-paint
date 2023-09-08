@@ -172,13 +172,13 @@ class EnhancedDirectoryTree(DirectoryTree):
         node_label.stylize(style)
 
         if node._allow_expand:  # type: ignore
-            prefix = (FOLDER_OPEN_ICON if node.is_expanded else FOLDER_CLOSED_ICON)
+            prefix = (FOLDER_OPEN_ICON if node.is_expanded else FOLDER_CLOSED_ICON).copy()
             prefix.stylize_before(base_style + TOGGLE_STYLE)
             node_label.stylize_before(
                 self.get_component_rich_style("directory-tree--folder", partial=True)
             )
         else:
-            prefix = FILE_ICON
+            prefix = FILE_ICON.copy()
             prefix.stylize_before(base_style)
             node_label.stylize_before(
                 self.get_component_rich_style("directory-tree--file", partial=True),
