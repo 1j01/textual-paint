@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pytest
+from textual.widgets import Input
 
 # These paths are treated as relative to this file.
 APPS_DIR = Path("../src/textual_paint")
@@ -10,6 +11,8 @@ GALLERY = APPS_DIR / "gallery.py"
 LARGER = (81, 38)
 """Large enough to show the entire paint app."""
 
+# Prevent flaky tests due to cursor blinking
+Input.cursor_blink = False
 
 @pytest.fixture(params=[
     {"theme": "light", "ascii_only": False},
