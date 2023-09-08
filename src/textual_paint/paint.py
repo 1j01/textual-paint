@@ -957,6 +957,7 @@ class PaintApp(App[None]):
         Binding("ctrl+pagedown", "large_size", _("Large Size")),
         # action_toggle_dark is built in to App
         Binding("ctrl+d", "toggle_dark", _("Toggle Dark Mode")),
+        Binding("ctrl+backslash", "toggle_ascii_only", _("Toggle ASCII Mode")),
         Binding("escape", "cancel", _("Cancel")),
         Binding("f1", "help_topics", _("Help Topics")),
         # dev helper
@@ -2534,6 +2535,15 @@ Columns: {len(palette) // 2}
 
     def action_toggle_thumbnail(self) -> None:
         self.message_box(_("Paint"), "Not implemented.", "ok")
+
+    def action_toggle_ascii_only(self) -> None:
+        """Toggle --ascii-only mode."""
+        global args
+        # from textual_paint.args import args
+        args.ascii_only = not args.ascii_only
+        args.ascii_only_icons = args.ascii_only
+        set_ascii_only_mode(args.ascii_only)
+        self.query("*").refresh()
 
     def action_view_bitmap(self) -> None:
         """Shows the image in full-screen, without the UI."""
