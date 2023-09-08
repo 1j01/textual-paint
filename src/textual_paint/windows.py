@@ -21,10 +21,16 @@ from textual_paint.localization.i18n import get as _
 class WindowTitleBar(Container):
     """A title bar widget."""
 
-    MINIMIZE_ICON = "_" if args.ascii_only else "🗕" # "_", "-"
-    MAXIMIZE_ICON = "[]" if args.ascii_only else "🗖" # "+", "^", "[]", (non-ASCII) "□"
-    RESTORE_ICON = "\\[/]" if args.ascii_only else "🗗" # "+", "^", "%", "#", "-", "=", (needs escaping) "[/]"
-    CLOSE_ICON = "X" if args.ascii_only else "🗙" # "X", "x"
+    # --ascii-only replacements are now handled in ascii_borders.py (which should be renamed.)
+    # MINIMIZE_ICON = "_" if args.ascii_only else "🗕" # "_", "-"
+    # MAXIMIZE_ICON = "[]" if args.ascii_only else "🗖" # "+", "^", "[]", (non-ASCII) "□"
+    # RESTORE_ICON = "\\[/]" if args.ascii_only else "🗗" # "+", "^", "%", "#", "-", "=", (needs escaping) "[/]"
+    # CLOSE_ICON = "X" if args.ascii_only else "🗙" # "X", "x"
+
+    MINIMIZE_ICON = "🗕"
+    MAXIMIZE_ICON = "🗖"
+    RESTORE_ICON = "🗗"
+    CLOSE_ICON = "🗙"
 
     title = var("")
 

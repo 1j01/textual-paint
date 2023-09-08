@@ -45,6 +45,7 @@ from textual_paint.ansi_art_document import (SAVE_DISABLED_FORMATS,
                                              FormatWriteNotSupported,
                                              Selection)
 from textual_paint.args import args, get_help_text
+from textual_paint.ascii_borders import set_ascii_only_mode
 from textual_paint.auto_restart import restart_on_changes, restart_program
 from textual_paint.edit_colors import EditColorsDialogWindow
 from textual_paint.file_dialogs import OpenDialogWindow, SaveAsDialogWindow
@@ -163,7 +164,7 @@ class Tool(Enum):
         # - Ellipse: ⬭⭕🔴🟠🟡🟢🔵🟣🟤⚫⚪🔘🫧🕳️🥚💫💊🛞
         # - Rounded Rectangle: ▢⬜⬛𓋰⌨️⏺️💳📺🧫
 
-        if args.ascii_only_icons:
+        if args.ascii_only or args.ascii_only_icons:
             enum_to_icon = {
                 Tool.free_form_select: "'::.",  # "*" "<^>" "<[u]^[/]7" "'::." ".::." "<%>"
                 Tool.select: "::",  # "#" "::" ":_:" ":[u]:[/]:" ":[u]'[/]:"
@@ -1057,6 +1058,10 @@ class PaintApp(App[None]):
     """Stores references to Task objects so they don't get garbage collected."""
 
     TITLE = _("Paint")
+
+    def __init__(self, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        set_ascii_only_mode(args.ascii_only)
 
     def watch_file_path(self, file_path: Optional[str]) -> None:
         """Called when file_path changes."""
@@ -4033,19 +4038,6 @@ Columns: {len(palette) // 2}
                 if not event.ctrl:
                     widget.styles.border = ("round", Color.from_hsl(i / 10, 1, 0.5))
                     widget.border_title = widget.css_identifier_styled  # type: ignore
-
-if args.ascii_only:
-    args.ascii_only_icons = True
-
-    from textual_paint.ascii_borders import force_ascii_borders
-    force_ascii_borders()
-
-    RadioButton.BUTTON_INNER = "*" # "*", "o", "O", "@"
-    # Defined on internal superclass ToggleButton
-    RadioButton.BUTTON_LEFT = "("
-    RadioButton.BUTTON_RIGHT = ")"
-
-    ScrollBar.renderer = ASCIIScrollBarRender
 
 
 # header_icon_markup = "[on white][blue]\\\\[/][red]|[/][yellow]/[/][/]"

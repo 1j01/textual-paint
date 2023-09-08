@@ -10,16 +10,26 @@ from textual.widgets import DirectoryTree, Tree
 from textual.widgets._directory_tree import DirEntry
 from textual.widgets._tree import TOGGLE_STYLE, TreeNode
 
-from textual_paint.args import args
+# from textual_paint.args import args
+from textual_paint.ascii_borders import replace
 
 # Vague skeuomorphism
 # FILE_ICON = Text.from_markup("[#aaaaaa on #ffffff]=[/] " if args.ascii_only else "📄 ")
 # FOLDER_OPEN_ICON = Text.from_markup("[rgb(128,128,64)]L[/] " if args.ascii_only else "📂 ")
 # FOLDER_CLOSED_ICON = Text.from_markup("[rgb(128,128,64)]V[/] " if args.ascii_only else "📁 ")
 # Simple generic tree style
-FILE_ICON = Text.from_markup("" if args.ascii_only else "📄 ")
-FOLDER_OPEN_ICON = Text.from_markup("[blue]-[/] " if args.ascii_only else "📂 ")
-FOLDER_CLOSED_ICON = Text.from_markup("[blue]+[/] " if args.ascii_only else "📁 ")
+# FILE_ICON = Text.from_markup("" if args.ascii_only else "📄 ")
+# FOLDER_OPEN_ICON = Text.from_markup("[blue]-[/] " if args.ascii_only else "📂 ")
+# FOLDER_CLOSED_ICON = Text.from_markup("[blue]+[/] " if args.ascii_only else "📁 ")
+
+# Simple generic tree style + new way of handling --ascii-only mode
+FILE_ICON = Text("📄 ")
+FOLDER_OPEN_ICON = Text("📂 ")
+FOLDER_CLOSED_ICON = Text("📁 ")
+icons = locals()
+replace(icons, "FILE_ICON", Text.from_markup(""))
+replace(icons, "FOLDER_OPEN_ICON", Text.from_markup("[blue]-[/] "))
+replace(icons, "FOLDER_CLOSED_ICON", Text.from_markup("[blue]+[/] "))
 
 class EnhancedDirectoryTree(DirectoryTree):
     """A DirectoryTree with auto-expansion, filtering of hidden files, and ASCII icon replacements."""
