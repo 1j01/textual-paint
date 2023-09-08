@@ -1,7 +1,10 @@
 from pathlib import Path
 
 import pytest
+from textual.pilot import Pilot
 from textual.widgets import Input
+
+from textual_paint import paint
 
 # These paths are treated as relative to this file.
 APPS_DIR = Path("../src/textual_paint")
@@ -10,9 +13,12 @@ GALLERY = APPS_DIR / "gallery.py"
 
 LARGER = (81, 38)
 """Large enough to show the entire paint app."""
+LARGEST = (107, 42)
+"""Large enough to show the Edit Colors dialog, which is a bit oversized."""
 
-# Prevent flaky tests due to cursor blinking
+# Prevent flaky tests due to timing issues.
 Input.cursor_blink = False
+paint.DOUBLE_CLICK_TIME = 2.0
 
 @pytest.fixture(params=[
     {"theme": "light", "ascii_only": False},
@@ -60,6 +66,27 @@ def test_paint_view_bitmap(snap_compare):
 
 def test_paint_invert_and_exit(snap_compare, each_theme):
     assert snap_compare(PAINT, press=["ctrl+i", "ctrl+q"])
+
+def test_swap_selected_colors(snap_compare):
+    async def swap_selected_colors(pilot: Pilot):
+        await pilot.click("CharInput", control=True)
+
+    assert snap_compare(PAINT, run_before=swap_selected_colors)
+
+def test_paint_character_picker_dialog(snap_compare, each_theme):
+    async def open_character_picker(pilot: Pilot):
+        await pilot.click("CharInput")
+        await pilot.click("CharInput")
+
+    assert snap_compare(PAINT, run_before=open_character_picker, terminal_size=LARGER)
+
+def test_paint_edit_colors_dialog(snap_compare, each_theme):
+    async def open_edit_colors(pilot: Pilot):
+        pilot.app.query("ColorsBox Button")[0].id = "a_color_button"
+        await pilot.click("#a_color_button")
+        await pilot.click("#a_color_button")
+
+    assert snap_compare(PAINT, run_before=open_edit_colors, terminal_size=LARGEST)
 
 def test_gallery_app(snap_compare):
     assert snap_compare(GALLERY)

@@ -66,6 +66,8 @@ from textual_paint.windows import (CharacterSelectorDialogWindow, DialogWindow,
 
 MAX_FILE_SIZE = 500000 # 500 KB
 
+DOUBLE_CLICK_TIME = 0.8 # seconds; overridden in tests to avoid flakiness
+
 # Most arguments are handled at the end of the file,
 # but it may be important to do this one early.
 load_language(args.language)
@@ -397,7 +399,7 @@ class CharInput(Input, inherit_bindings=False):
         if event.ctrl or event.button == 3: # right click
             self.app.action_swap_colors()
             return
-        if event.time - self.last_click_time < 0.8:
+        if event.time - self.last_click_time < DOUBLE_CLICK_TIME:
             self.app.action_open_character_selector()
         self.last_click_time = event.time
 
@@ -446,7 +448,7 @@ class ColorsBox(Container):
             secondary = event.ctrl or event.button == 3
             self.post_message(self.ColorSelected(self.color_by_button[button], secondary))
             # Detect double click and open Edit Colors dialog.
-            if event.time - self.last_click_time < 0.8 and button == self.last_click_button:
+            if event.time - self.last_click_time < DOUBLE_CLICK_TIME and button == self.last_click_button:
                 assert isinstance(self.app, PaintApp)
                 self.app.action_edit_colors(self.query(".color_button").nodes.index(button), secondary)
             self.last_click_time = event.time
