@@ -44,7 +44,7 @@ from textual_paint.ansi_art_document import (SAVE_DISABLED_FORMATS,
                                              FormatWriteNotSupported,
                                              Selection)
 from textual_paint.args import args, get_help_text
-from textual_paint.ascii_borders import set_ascii_only_mode
+from textual_paint.ascii_mode import set_ascii_only_mode
 from textual_paint.auto_restart import restart_on_changes, restart_program
 from textual_paint.edit_colors import EditColorsDialogWindow
 from textual_paint.file_dialogs import OpenDialogWindow, SaveAsDialogWindow

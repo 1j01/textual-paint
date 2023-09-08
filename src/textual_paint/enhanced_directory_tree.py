@@ -11,7 +11,7 @@ from textual.widgets._directory_tree import DirEntry
 from textual.widgets._tree import TOGGLE_STYLE, TreeNode
 
 # from textual_paint.args import args
-from textual_paint.ascii_borders import replace
+from textual_paint.ascii_mode import replace
 
 # Vague skeuomorphism
 # FILE_ICON = Text.from_markup("[#aaaaaa on #ffffff]=[/] " if args.ascii_only else "📄 ")
