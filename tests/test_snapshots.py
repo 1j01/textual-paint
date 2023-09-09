@@ -5,7 +5,10 @@ import pytest
 from textual.pilot import Pilot
 from textual.widgets import Input
 
-from textual_paint.paint import PaintApp
+if TYPE_CHECKING:
+    # When tests are run, paint.py is re-evaluated,
+    # leading to a different class of the same name at runtime.
+    from textual_paint.paint import PaintApp
 
 
 class SnapCompareType(Protocol):
