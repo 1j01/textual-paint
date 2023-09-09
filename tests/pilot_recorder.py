@@ -2,6 +2,7 @@ import os
 from textual.css.query import NoMatches, TooManyMatches
 from textual.dom import DOMNode
 from textual.events import Event, Key, MouseDown, MouseMove, MouseUp
+from textual.geometry import Offset
 from textual.screen import Screen
 from textual_paint.paint import PaintApp
 
@@ -18,7 +19,7 @@ def unique_file(path: str) -> str:
 
 OUTPUT_FILE = unique_file("tests/test_paint_something.py")
 
-steps: list[tuple[Event, str, int|None]] = []
+steps: list[tuple[Event, Offset, str, int|None]] = []
 
 def get_selector(target: DOMNode) -> tuple[str, int|None]:
     """Return a selector that can be used to find the widget."""
@@ -52,8 +53,13 @@ original_on_event = PaintApp.on_event
 async def on_event(self: PaintApp, event: Event) -> None:
     await original_on_event(self, event)
     if isinstance(event, (MouseDown, MouseMove, MouseUp)):
-        widget, _ = self.get_widget_at(event.x, event.y)
-        steps.append((event, *get_selector(widget)))
+        widget, _ = self.get_widget_at(*event.screen_offset)
+        offset = event.screen_offset - widget.region.offset
+        steps.append((event, offset, *get_selector(widget)))
+        # This doesn't hold:
+        # assert event.x == event.screen_x - widget.region.x, f"event.x ({event.x}) should be event.screen_x ({event.screen_x}) - widget ({widget!r}).region.x ({widget.region.x})"
+        # assert event.y == event.screen_y - widget.region.y, f"event.y ({event.y}) should be event.screen_y ({event.screen_y}) - widget ({widget!r}).region.y ({widget.region.y})"
+        # I think the offset == screen_offset once it's bubbled up to the app?
     elif isinstance(event, Key):
         if event.key == "ctrl+z":
             steps.pop()
@@ -71,7 +77,7 @@ def replay() -> None:
     app.on_event = on_event.__get__(app)
     async def replay_steps() -> None:
         assert app is not None, "app should be set by now"
-        for event, selector, index in steps:
+        for event, offset, selector, index in steps:
             await app.on_event(event)
     app.call_later(replay_steps)
     app.run() # blocking
@@ -83,14 +89,14 @@ def save_replay() -> None:
     assert app is not None, "app should be set by now"
     helpers_code = ""
     steps_code = ""
-    for event, selector, index in steps:
+    for event, offset, selector, index in steps:
         if isinstance(event, MouseDown):
             if index is None:
-                steps_code += f"await pilot.click({selector!r}, offset=Offset({event.x}, {event.y}))\n"
+                steps_code += f"await pilot.click({selector!r}, offset=Offset({offset.x}, {offset.y}))\n"
             else:
                 steps_code += f"widget = pilot.app.query({selector!r})[{index!r}]\n"
-                # steps_code += f"await pilot.click(widget, offset=Offset({event.x}, {event.y}))\n" # would be nice
-                steps_code += f"await pilot.click(offset=Offset({event.x}, {event.y}) + widget.region.offset)\n"
+                # can't pass a widget to pilot.click, only a selector, or None
+                steps_code += f"await pilot.click(offset=Offset({offset.x}, {offset.y}) + widget.region.offset)\n"
 
 
     script = f"""\
