@@ -130,6 +130,15 @@ def test_paint_custom_zoom_dialog(snap_compare, each_theme):
 
     assert snap_compare(PAINT, run_before=show_custom_zoom)
 
+def test_paint_about_paint_dialog(snap_compare, each_theme):
+    async def show_about_paint(pilot: Pilot[None]):
+        if TYPE_CHECKING:
+            # Will be a different class at runtime, per test, due to re-evaluating the module.
+            assert isinstance(pilot.app, paint.PaintApp)
+        pilot.app.action_about_paint()
+
+    assert snap_compare(PAINT, run_before=show_about_paint)
+
 def test_gallery_app(snap_compare):
     assert snap_compare(GALLERY)
 
