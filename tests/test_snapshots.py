@@ -5,7 +5,7 @@ import pytest
 from textual.pilot import Pilot
 from textual.widgets import Input
 
-from textual_paint import paint
+from textual_paint.paint import PaintApp
 
 
 class SnapCompareType(Protocol):
@@ -113,7 +113,7 @@ def test_paint_expand_canvas_dialog(snap_compare: SnapCompareType, each_theme: N
     async def paste_large_content(pilot: Pilot[None]):
         if TYPE_CHECKING:
             # Will be a different class at runtime, per test, due to re-evaluating the module.
-            assert isinstance(pilot.app, paint.PaintApp)
+            assert isinstance(pilot.app, PaintApp)
         pilot.app.paste("a" * 1000)
 
     assert snap_compare(PAINT, run_before=paste_large_content, terminal_size=LARGER)
@@ -122,7 +122,7 @@ def test_paint_error_dialog(snap_compare: SnapCompareType, each_theme: None):
     async def show_error(pilot: Pilot[None]):
         if TYPE_CHECKING:
             # Will be a different class at runtime, per test, due to re-evaluating the module.
-            assert isinstance(pilot.app, paint.PaintApp)
+            assert isinstance(pilot.app, PaintApp)
         pilot.app.message_box("EMIT", "Error Message Itself Test", "ok", error=Exception("Error Message Itself Test"))
         assert pilot.app.query_one("MessageBox")
         await pilot.pause(1.0)
@@ -137,7 +137,7 @@ def test_paint_custom_zoom_dialog(snap_compare: SnapCompareType, each_theme: Non
     async def show_custom_zoom(pilot: Pilot[None]):
         if TYPE_CHECKING:
             # Will be a different class at runtime, per test, due to re-evaluating the module.
-            assert isinstance(pilot.app, paint.PaintApp)
+            assert isinstance(pilot.app, PaintApp)
         pilot.app.action_custom_zoom()
 
     assert snap_compare(PAINT, run_before=show_custom_zoom)
@@ -146,7 +146,7 @@ def test_paint_about_paint_dialog(snap_compare: SnapCompareType, each_theme: Non
     async def show_about_paint(pilot: Pilot[None]):
         if TYPE_CHECKING:
             # Will be a different class at runtime, per test, due to re-evaluating the module.
-            assert isinstance(pilot.app, paint.PaintApp)
+            assert isinstance(pilot.app, PaintApp)
         pilot.app.action_about_paint()
 
     assert snap_compare(PAINT, run_before=show_about_paint)
