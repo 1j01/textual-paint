@@ -12,7 +12,7 @@ PAINT = APPS_DIR / "paint.py"
 GALLERY = APPS_DIR / "gallery.py"
 
 LARGER = (81, 38)
-"""Large enough to show the entire paint app."""
+"""Large enough to show the Textual Paint app's main UI and most dialogs comfortably."""
 LARGEST = (107, 42)
 """Large enough to show the Edit Colors dialog, which is a bit oversized."""
 
@@ -95,6 +95,12 @@ def test_paint_edit_colors_dialog(snap_compare, each_theme):
         assert pilot.app.query_one("EditColorsDialogWindow")
 
     assert snap_compare(PAINT, run_before=open_edit_colors, terminal_size=LARGEST)
+
+def test_paint_expand_canvas_dialog(snap_compare, each_theme):
+    async def paste_large_content(pilot: Pilot[None]):
+        pilot.app.paste("a" * 1000)
+
+    assert snap_compare(PAINT, run_before=paste_large_content, terminal_size=LARGER)
 
 def test_gallery_app(snap_compare):
     assert snap_compare(GALLERY)
