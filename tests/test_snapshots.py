@@ -28,7 +28,7 @@ Input.cursor_blink = False  # type: ignore
     {"theme": "dark", "ascii_only": True},
 ], ids=lambda param: f"{param['theme']}_{'ascii' if param['ascii_only'] else 'unicode'}")
 def each_theme(request):
-    """Fixture to set the PYTEST_TEXTUAL_PAINT_ARGS environment variable."""
+    """Fixture to test each combination of UI styles."""
     theme = request.param.get("theme")
     ascii_only = request.param.get("ascii_only")
     # os.environ["PYTEST_TEXTUAL_PAINT_ARGS"] = f"--theme {theme}" + (" --ascii-only" if ascii_only else "")
