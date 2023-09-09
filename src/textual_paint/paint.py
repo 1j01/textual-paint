@@ -37,7 +37,7 @@ from textual.widgets import (Button, Header, Input, RadioButton, RadioSet,
 from textual.widgets._header import HeaderIcon
 from textual.worker import get_current_worker  # type: ignore
 
-from textual_paint.__init__ import __version__
+from textual_paint.__init__ import PYTEST, __version__
 from textual_paint.ansi_art_document import (SAVE_DISABLED_FORMATS,
                                              AnsiArtDocument,
                                              FormatReadNotSupported,
@@ -1405,6 +1405,13 @@ class PaintApp(App[None]):
 
     def recover_from_backup(self) -> None:
         """Recover from the backup file, if it exists."""
+        if PYTEST:
+            # It might be nice to test the backup system,
+            # but for now it's interfering with snapshot tests.
+            # I could also do something fancier, like set the --backup-folder flag in tests,
+            # and empty the folder after each test.
+            print("Skipping recover_from_backup in pytest")
+            return
         backup_file_path = self.get_backup_file_path()
         print("Checking for backup at:", backup_file_path, "...it exists" if os.path.exists(backup_file_path) else "...it does not exist")
         if os.path.exists(backup_file_path):
