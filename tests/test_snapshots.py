@@ -74,17 +74,25 @@ def test_swap_selected_colors(snap_compare):
     assert snap_compare(PAINT, run_before=swap_selected_colors)
 
 def test_paint_character_picker_dialog(snap_compare, each_theme):
-    async def open_character_picker(pilot: Pilot):
+    async def open_character_picker(pilot: Pilot[None]):
+        # app.dark = True caused it to fail to open the dialog in the dark theme,
+        # due to `self.call_later(self.refresh_css)` in `watch_dark` in `App`
+        # (verified by replacing `app.dark = args.theme == "dark"` with `app.call_later(app.refresh_css)`)
+        # Adding a delay works around this.
+        await pilot.pause(1.0)
         await pilot.click("CharInput")
         await pilot.click("CharInput")
+        assert pilot.app.query_one("CharacterSelectorDialogWindow")
 
     assert snap_compare(PAINT, run_before=open_character_picker, terminal_size=LARGER)
 
 def test_paint_edit_colors_dialog(snap_compare, each_theme):
-    async def open_edit_colors(pilot: Pilot):
+    async def open_edit_colors(pilot: Pilot[None]):
+        await pilot.pause(1.0) # see comment in test_paint_character_picker_dialog
         pilot.app.query("ColorsBox Button")[0].id = "a_color_button"
         await pilot.click("#a_color_button")
         await pilot.click("#a_color_button")
+        assert pilot.app.query_one("EditColorsDialogWindow")
 
     assert snap_compare(PAINT, run_before=open_edit_colors, terminal_size=LARGEST)
 
