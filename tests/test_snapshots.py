@@ -17,8 +17,8 @@ LARGEST = (107, 42)
 """Large enough to show the Edit Colors dialog, which is a bit oversized."""
 
 # Prevent flaky tests due to timing issues.
-Input.cursor_blink = False
-paint.DOUBLE_CLICK_TIME = 2.0
+Input.cursor_blink = False  # type: ignore
+paint.DOUBLE_CLICK_TIME = 20.0  # seconds; ridiculously high
 
 @pytest.fixture(params=[
     {"theme": "light", "ascii_only": False},
