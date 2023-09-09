@@ -18,6 +18,9 @@ def unique_file(path: str) -> str:
 
     return path
 
+def indent(text: str, spaces: int) -> str:
+    return "\n".join(" " * spaces + line for line in text.splitlines())
+
 OUTPUT_FILE = unique_file("tests/test_paint_something.py")
 
 steps: list[tuple[Event, Offset, str, int|None]] = []
@@ -66,15 +69,16 @@ async def on_event(self: PaintApp, event: Event) -> None:
 app: PaintApp | None = None
 next_after_exit: Callable[[], None] | None = None
 
-async def async_exec(code: str) -> object:
-    # Make an async function with the code and `exec` it
-    exec(
-        f"async def async_exec_code(): " +
-        "".join(f"\n {line}" for line in code.splitlines()),
-    )
+async def async_exec(code: str, **kwargs: object) -> object:
+    # This dict will be used for passing variables to the `exec`ed code
+    # as well as retrieving the function defined by the code.
+    scope = kwargs
 
-    # Get `async_exec_code` from local variables, call it and return the result
-    return await locals()['async_exec_code']()
+    # Make an async function with the code and `exec` it
+    exec(f"async def async_exec_code():\n{indent(code, 4)}", scope)
+
+    # Get `async_exec_code` from the scope, call it and return the result
+    return await scope['async_exec_code']()
 
 async def replay_steps() -> None:
     global app
@@ -85,7 +89,7 @@ async def replay_steps() -> None:
         return
     pilot = Pilot(app)
     # await pilot._wait_for_screen()
-    # await async_exec(get_replay_code())
+    await async_exec(get_replay_code(), pilot=pilot, Offset=Offset)
 
 def run() -> None:
     global app, next_after_exit
@@ -104,9 +108,6 @@ def run() -> None:
         app.exit()
     else:
         startup_and_replay()
-
-def indent(text: str, spaces: int) -> str:
-    return "\n".join(" " * spaces + line for line in text.splitlines())
 
 
 def get_replay_code() -> str:
