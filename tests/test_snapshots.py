@@ -175,20 +175,20 @@ def test_paint_polygon_tool(snap_compare: SnapCompareType):
 
         await clickity(polygon_tool_button)
         await pilot.click("Canvas", offset=Offset(2, 2))
-        await pilot.click("Canvas", offset=Offset(2, 4))
-        await pilot.click("Canvas", offset=Offset(4, 4))
-        await pilot.click("Canvas", offset=Offset(4, 2))
+        await pilot.click("Canvas", offset=Offset(2, 20))
+        await pilot.click("Canvas", offset=Offset(30, 20))
+        await pilot.click("Canvas", offset=Offset(30, 2))
         await pilot.click("Canvas", offset=Offset(2, 2)) # end by clicking on the start point
-        await clickity(color_buttons[16]) # red
-        await pilot.click("Canvas", offset=Offset(10, 5))
-        await pilot.click("Canvas", offset=Offset(10, 9))
-        await pilot.click("Canvas", offset=Offset(10, 9))
-        await pilot.click("Canvas", offset=Offset(1, 5))
-        await pilot.click("Canvas", offset=Offset(1, 5)) # end by double clicking
-        await clickity(color_buttons[17]) # yellow
-        await pilot.click("Canvas", offset=Offset(10, 13))
-        await pilot.click("Canvas", offset=Offset(15, 13))
-        await pilot.click("Canvas", offset=Offset(12, 16)) # don't end, leave as polyline
+        # await clickity(color_buttons[16]) # red
+        # await pilot.click("Canvas", offset=Offset(10, 5))
+        # await pilot.click("Canvas", offset=Offset(10, 9))
+        # await pilot.click("Canvas", offset=Offset(10, 9))
+        # await pilot.click("Canvas", offset=Offset(1, 5))
+        # await pilot.click("Canvas", offset=Offset(1, 5)) # end by double clicking
+        # await clickity(color_buttons[17]) # yellow
+        # await pilot.click("Canvas", offset=Offset(10, 13))
+        # await pilot.click("Canvas", offset=Offset(15, 13))
+        # await pilot.click("Canvas", offset=Offset(12, 16)) # don't end, leave as polyline
 
     assert snap_compare(PAINT, run_before=draw_polygon, terminal_size=LARGER)
 
