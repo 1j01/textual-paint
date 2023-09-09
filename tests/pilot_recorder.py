@@ -81,14 +81,17 @@ async def replay_steps() -> None:
     assert app is not None, "app should be set by now"
     # for event, offset, selector, index in steps:
     #     ...
+    if not steps:
+        return
     pilot = Pilot(app)
-    await pilot._wait_for_screen()
-    await async_exec(get_replay_code())
+    # await pilot._wait_for_screen()
+    # await async_exec(get_replay_code())
 
 def run() -> None:
     global app, next_after_exit
     def startup_and_replay() -> None:
         global app, next_after_exit
+        next_after_exit = None # important to allowing you to exit; don't keep launching the app
         app = PaintApp()
         app.on_event = on_event.__get__(app)
         
