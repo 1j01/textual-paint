@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import pytest
 from textual.pilot import Pilot
@@ -18,7 +19,7 @@ LARGEST = (107, 42)
 
 # Prevent flaky tests due to timing issues.
 Input.cursor_blink = False  # type: ignore
-paint.DOUBLE_CLICK_TIME = 20.0  # seconds; ridiculously high
+# paint.DOUBLE_CLICK_TIME = 20.0  # seconds; ridiculously high; probably ineffective since paint.py is re-evaluated for each test
 
 @pytest.fixture(params=[
     {"theme": "light", "ascii_only": False},
@@ -98,9 +99,26 @@ def test_paint_edit_colors_dialog(snap_compare, each_theme):
 
 def test_paint_expand_canvas_dialog(snap_compare, each_theme):
     async def paste_large_content(pilot: Pilot[None]):
+        if TYPE_CHECKING:
+            # Will be a different class at runtime, per test, due to re-evaluating the module.
+            assert isinstance(pilot.app, paint.PaintApp)
         pilot.app.paste("a" * 1000)
 
     assert snap_compare(PAINT, run_before=paste_large_content, terminal_size=LARGER)
+
+def test_paint_error_dialog(snap_compare, each_theme):
+    async def show_error(pilot: Pilot[None]):
+        if TYPE_CHECKING:
+            # Will be a different class at runtime, per test, due to re-evaluating the module.
+            assert isinstance(pilot.app, paint.PaintApp)
+        pilot.app.message_box("EMIT", "Error Message Itself Test", "ok", error=Exception("Error Message Itself Test"))
+        assert pilot.app.query_one("MessageBox")
+        await pilot.pause(1.0)
+        assert pilot.app.query_one("MessageBox .details_button")
+        # pilot.app.query_one("MessageBox .details_button", Button).press()
+        await pilot.click("MessageBox .details_button")
+
+    assert snap_compare(PAINT, run_before=show_error)
 
 def test_gallery_app(snap_compare):
     assert snap_compare(GALLERY)
