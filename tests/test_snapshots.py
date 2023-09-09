@@ -117,6 +117,7 @@ def test_paint_error_dialog(snap_compare, each_theme):
         assert pilot.app.query_one("MessageBox .details_button")
         # pilot.app.query_one("MessageBox .details_button", Button).press()
         await pilot.click("MessageBox .details_button")
+        await pilot.pause(0.5) # avoid pressed state
 
     assert snap_compare(PAINT, run_before=show_error)
 
