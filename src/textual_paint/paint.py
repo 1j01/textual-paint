@@ -3746,8 +3746,12 @@ Columns: {len(palette) // 2}
             )
             double_clicked = (
                 time_since_last_click < double_click_threshold_seconds and
+                # Distance from second click press to release
                 abs(self.mouse_at_start.x - event.x) <= double_click_threshold_cells and
-                abs(self.mouse_at_start.y - event.y) <= double_click_threshold_cells
+                abs(self.mouse_at_start.y - event.y) <= double_click_threshold_cells and
+                # Distance between first and second clicks
+                abs(self.tool_points[-1].x - event.x) <= double_click_threshold_cells and
+                abs(self.tool_points[-1].y - event.y) <= double_click_threshold_cells
             )
             if enough_points and (closed_gap or double_clicked):
                 self.finalize_polygon_or_curve()
