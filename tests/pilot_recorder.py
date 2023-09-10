@@ -16,6 +16,7 @@ from textual_paint.paint import PaintApp
 
 
 def unique_file(path: str) -> str:
+    """Return a path that doesn't exist yet, by appending a number to the filename."""
     filename, extension = os.path.splitext(path)
     counter = 1
 
@@ -26,9 +27,11 @@ def unique_file(path: str) -> str:
     return path
 
 def indent(text: str, spaces: int) -> str:
+    """Return the text indented by the given number of spaces (including the first line)."""
     return "\n".join(" " * spaces + line for line in text.splitlines())
 
 async def async_exec(code: str, **kwargs: object) -> object:
+    """Execute the given code in an async function and return the result. Keyword arguments are made available as variables."""
     # This dict will be used for passing variables to the `exec`ed code
     # as well as retrieving the function defined by the code.
     scope = kwargs
@@ -69,6 +72,7 @@ def get_selector(target: DOMNode) -> tuple[str, int|None]:
 original_on_event = PaintApp.on_event
 
 class PilotRecorder():
+    """Record (and undo and replay) interactions with an app, and save as a test."""
     def __init__(self) -> None:
         self.app: PaintApp | None = None
         self.steps: list[tuple[Event, Offset, str, int|None]] = []
@@ -84,11 +88,12 @@ class PilotRecorder():
             #   I don't claim to understand the forwarding scheme, but ignoring either
             #   the forwarded or the un-forwarded events seems workable.
             if not event._forwarded:
-                recorder.record_event(event)
+                recorder.handle_event(event)
             await original_on_event(self, event)
         self.app_on_event = on_event
 
-    def record_event(self, event: Event) -> None:
+    def handle_event(self, event: Event) -> None:
+        """Record the event as a step, or handle certain key presses as commands."""
         assert self.app is not None, "app should be set if we're recording an event from it"
         # Handling any event means including it in the undo stack right now.
         # Don't want to undo a single mouse-move, especially when it doesn't do anything yet.
@@ -118,10 +123,12 @@ class PilotRecorder():
                 self.steps_changed()
 
     def steps_changed(self) -> None:
+        """Save the steps any time they change."""
         # Could implement a debug view of the steps, but just saving to the file is good enough for now.
         self.save_replay()
 
     async def replay_steps(self, pilot: Pilot[Any]) -> None:
+        """Replay the recorded steps, in the current app instance."""
         if not self.steps:
             return
         self.replaying = True
@@ -129,7 +136,9 @@ class PilotRecorder():
         self.replaying = False
 
     def run(self) -> None:
+        """Start the app, or restart it to replay the recorded steps."""
         def startup_and_replay() -> None:
+            """Start the app, hook its events, and replay steps if there are any."""
             self.next_after_exit = None  # important to allowing you to exit; don't keep launching the app
             self.app = PaintApp()
             self.app.on_event = self.app_on_event.__get__(self.app)
@@ -146,6 +155,7 @@ class PilotRecorder():
             startup_and_replay()
 
     def get_replay_code(self) -> str:
+        """Return code to replay the recorded steps."""
         steps_code = ""
         for event, offset, selector, index in self.steps:
             if isinstance(event, MouseDown):
@@ -167,6 +177,7 @@ class PilotRecorder():
         return steps_code or "pass"
 
     def save_replay(self) -> None:
+        """Save the recorded steps as a test file."""
         assert self.app is not None, "app should be set by now"
 
         script = f"""\
