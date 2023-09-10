@@ -117,10 +117,10 @@ class PilotRecorder():
             self.steps_changed()
         elif isinstance(event, Key):
             if event.key == "ctrl+z" and self.steps:
-                while isinstance(self.steps[-1][0], (MouseMove, MouseUp)):
+                while self.steps and isinstance(self.steps[-1][0], (MouseMove, MouseUp)):
                     self.steps.pop()
                 self.steps.pop()
-                while isinstance(self.steps[-1][0], MouseMove):
+                while self.steps and isinstance(self.steps[-1][0], MouseMove):
                     self.steps.pop()
 
                 self.steps_changed()
