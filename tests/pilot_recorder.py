@@ -96,10 +96,7 @@ class PilotRecorder():
     def handle_event(self, event: Event) -> None:
         """Record the event as a step, or handle certain key presses as commands."""
         assert self.app is not None, "app should be set if we're recording an event from it"
-        # Handling any event means including it in the undo stack right now.
-        # Don't want to undo a single mouse-move, especially when it doesn't do anything yet.
-        # if isinstance(event, (MouseDown, MouseMove, MouseUp)):
-        if isinstance(event, MouseDown):
+        if isinstance(event, (MouseDown, MouseMove, MouseUp)):
             if self.replaying:
                 return
             try:
@@ -111,7 +108,12 @@ class PilotRecorder():
             self.steps_changed()
         elif isinstance(event, Key):
             if event.key == "ctrl+z" and self.steps:
+                if isinstance(self.steps[-1], MouseUp):
+                    self.steps.pop()
                 self.steps.pop()
+                while isinstance(self.steps[-1], MouseMove):
+                    self.steps.pop()
+
                 self.steps_changed()
                 self.run()  # restart the app to replay up to this point
             elif event.key == "ctrl+c":
@@ -159,8 +161,49 @@ class PilotRecorder():
         """Return code to replay the recorded steps."""
         helpers: dict[str, str] = {}
         steps_code = ""
-        for event, offset, selector, index in self.steps:
-            if isinstance(event, MouseDown):
+        for step_index, (event, offset, selector, index) in enumerate(self.steps):
+            if isinstance(event, (MouseDown, MouseMove)):
+                pass
+            elif isinstance(event, MouseUp):
+                # Detect drags
+                if isinstance(self.steps[step_index - 1][0], MouseMove):
+                    helpers["drag"] = """
+async def drag(selector: str, offsets: list[Offset], shift: bool = False, meta: bool = False, control: bool = False) -> None:
+    \"""Drag across the given points.\"""
+    from textual.pilot import _get_mouse_message_arguments
+    from textual.events import MouseDown, MouseMove, MouseUp
+    await pilot.pause(0.5)
+    target_widget = pilot.app.query(selector)[0]
+    offset = offsets[0]
+    message_arguments = _get_mouse_message_arguments(
+        target_widget, offset, button=1, shift=shift, meta=meta, control=control
+    )
+    pilot.app.post_message(MouseDown(**message_arguments))
+    await pilot.pause(0.1)
+    for offset in offsets[1:]:
+        message_arguments = _get_mouse_message_arguments(
+            target_widget, offset, button=1, shift=shift, meta=meta, control=control
+        )
+        pilot.app.post_message(MouseMove(**message_arguments))
+        await pilot.pause(0.1)
+    pilot.app.post_message(MouseUp(**message_arguments))
+    await pilot.pause(0.1)
+    # pilot.app.post_message(Click(**message_arguments))
+    # await pilot.pause(0.1)
+
+"""
+                    # find the last mouse down event
+                    for previous_step_index in range(step_index - 1, -1, -1):
+                        previous_event, _, _, _ = self.steps[previous_step_index]
+                        if isinstance(previous_event, MouseDown):
+                            break
+                    else:
+                        raise Exception(f"Mouse up event {step_index} has no matching mouse down event")
+                    offsets = [step[1] for step in self.steps[previous_step_index:step_index + 1]]
+                    steps_code += f"await drag({selector!r}, [{', '.join(repr(offset) for offset in offsets)}])\n"
+                    continue
+
+                # Handle clicks
                 if index is None:
                     steps_code += f"await pilot.click({selector!r}, offset=Offset({offset.x}, {offset.y}))\n"
                 else:
@@ -180,11 +223,6 @@ async def click_by_index(selector: str, index: int) -> None:
 
 """
                     steps_code += f"await click_by_index({selector!r}, {index!r})\n"
-            elif isinstance(event, MouseMove):
-                # TODO: generate code for drags (but not extraneous mouse movement)
-                pass
-            elif isinstance(event, MouseUp):
-                pass
             elif isinstance(event, Key):
                 steps_code += f"await pilot.press({event.key!r})\n"
             else:
