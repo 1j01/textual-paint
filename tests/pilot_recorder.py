@@ -193,11 +193,9 @@ async def click_by_index(selector: str, index: int) -> None:
             steps_code = helper_code + steps_code
         return steps_code or "pass"
 
-    def save_replay(self) -> None:
-        """Save the recorded steps as a test file."""
-        assert self.app is not None, "app should be set by now"
-
-        script = f"""\
+    def get_test_code(self) -> str:
+        """Return pytest code that uses the replay."""
+        return f"""\
 from pathlib import Path, PurePath
 from typing import Awaitable, Callable, Iterable, Protocol
 
@@ -229,6 +227,12 @@ def test_paint_something(snap_compare: SnapCompareType):
 
     assert snap_compare(PAINT, run_before=test_paint_something_steps, terminal_size=({self.app.size.width}, {self.app.size.height}))
 """
+
+    def save_replay(self) -> None:
+        """Save the pytest code."""
+        assert self.app is not None, "app should be set by now"
+
+        script = self.get_test_code()
         with open(self.output_file, "w") as f:
             f.write(script)
 
