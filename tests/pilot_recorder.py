@@ -75,11 +75,11 @@ class PilotRecorder():
 
         recorder = self
         async def on_event(self: PaintApp, event: Event) -> None:
-            # Record before the event is handled, so a clicked button that closes a dialog,
-            # removing the button from the DOM, will still be in the DOM when we record it.
-            # Don't record forwarded events, because then every action is duplicated.
-            # I don't know if recording only forwarded events would make more sense,
-            # I don't claim to understand the forwarding scheme.
+            # - Record before the event is handled, so a clicked widget that removes itself,
+            #   such as an OK button in a dialog, will still be in the DOM when we record it.
+            # - Every event seems to be received twice, once with _forwarded set and once without.
+            #   I don't claim to understand the forwarding scheme, but ignoring either
+            #   the forwarded or the un-forwarded events seems workable.
             if not event._forwarded:
                 recorder.record_event(event)
             await original_on_event(self, event)
