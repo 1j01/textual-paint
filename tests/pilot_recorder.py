@@ -63,6 +63,8 @@ def get_selector(target: DOMNode) -> tuple[str, int|None]:
 
     return selector, None
 
+original_on_event = PaintApp.on_event
+
 class PilotRecorder():
     def __init__(self) -> None:
         self.app: PaintApp | None = None
@@ -71,7 +73,6 @@ class PilotRecorder():
         self.output_file = unique_file("tests/test_paint_something.py")
         self.next_after_exit: Callable[[], None] | None = None
 
-        original_on_event = PaintApp.on_event
         recorder = self
         async def on_event(self: PaintApp, event: Event) -> None:
             # Record before the event is handled, so a clicked button that closes a dialog,
@@ -82,12 +83,12 @@ class PilotRecorder():
     
     def record_event(self, event: Event) -> None:
         assert self.app is not None, "app should be set if we're recording an event from it"
-        if self.replaying:
-            return
         # Handling any event means including it in the undo stack right now.
         # Don't want to undo a single mouse-move, especially when it doesn't do anything yet.
         # if isinstance(event, (MouseDown, MouseMove, MouseUp)):
         if isinstance(event, MouseDown):
+            if self.replaying:
+                return
             try:
                 widget, _ = self.app.get_widget_at(*event.screen_offset)
             except NoWidget:
@@ -104,6 +105,8 @@ class PilotRecorder():
                 self.save_replay()
                 self.app.exit(None, Text("Saved test recording to " + self.output_file))
             else:
+                if self.replaying:
+                    return
                 self.steps.append((event, Offset(), "", None))
                 self.steps_changed()
 
