@@ -2,6 +2,7 @@
 
 import os
 from typing import Any, Callable
+from rich.text import Text
 from textual.css.query import NoMatches, TooManyMatches
 from textual.dom import DOMNode
 from textual.errors import NoWidget
@@ -101,6 +102,7 @@ class PilotRecorder():
                 self.run()  # restart the app to replay up to this point
             elif event.key == "ctrl+c":
                 self.save_replay()
+                self.app.exit(None, Text("Saved test recording to " + self.output_file))
             else:
                 self.steps.append((event, Offset(), "", None))
                 self.steps_changed()
