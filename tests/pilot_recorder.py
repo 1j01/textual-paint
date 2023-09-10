@@ -177,6 +177,16 @@ class PilotRecorder():
                 pass
             elif isinstance(event, MouseUp):
                 # Detect drags
+                # TODO: record Click events and don't trigger a drag if there's a Click after the MouseUp
+                # or maybe just enable replaying a Click at the end of the drag sequence...
+                # If you're drawing on a canvas, the Click doesn't matter,
+                # but if you're clicking a button, the drag doesn't matter.
+                # You probably never need both in the same test (maybe testing a text field's selection and focus?),
+                # but it's impossible to know which is intended. (If it's a Button, 99%+ you want a Click, but there are many widgets.)
+                # Maybe best is to include in a comment, "# Did you mean `await pilot.click(...)`?"
+                # or more neutrally, "# Drag ended with Click event."
+                # "# If you want just a click, use (...) and remove the drag helper if it's not needed."
+                # "# If you want just a drag, remove click=True."
                 if isinstance(self.steps[step_index - 1][0], MouseMove):
                     helpers.add("""
 async def drag(selector: str, offsets: list[Offset], shift: bool = False, meta: bool = False, control: bool = False) -> None:
