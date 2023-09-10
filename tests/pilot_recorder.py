@@ -289,7 +289,7 @@ from textual.pilot import Pilot
 from textual.widgets import Input
 
 class SnapCompareType(Protocol):
-    \"\"\"Type of the function returned by the snap_compare fixture.\"\"\"
+    \"""Type of the function returned by the snap_compare fixture.\"""
     def __call__(
         self,
         app_path: str | PurePath,
