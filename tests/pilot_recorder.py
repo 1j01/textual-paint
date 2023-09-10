@@ -1,7 +1,8 @@
 import os
-from typing import Callable
+from typing import Any, Callable
 from textual.css.query import NoMatches, TooManyMatches
 from textual.dom import DOMNode
+from textual.errors import NoWidget
 from textual.events import Event, Key, MouseDown, MouseMove, MouseUp
 from textual.geometry import Offset
 from textual.pilot import Pilot
@@ -56,7 +57,10 @@ original_on_event = PaintApp.on_event
 async def on_event(self: PaintApp, event: Event) -> None:
     await original_on_event(self, event)
     if isinstance(event, (MouseDown, MouseMove, MouseUp)):
-        widget, _ = self.get_widget_at(*event.screen_offset)
+        try:
+            widget, _ = self.get_widget_at(*event.screen_offset)
+        except NoWidget:
+            return
         offset = event.screen_offset - widget.region.offset
         steps.append((event, offset, *get_selector(widget)))
     elif isinstance(event, Key):
@@ -80,14 +84,14 @@ async def async_exec(code: str, **kwargs: object) -> object:
     # Get `async_exec_code` from the scope, call it and return the result
     return await scope['async_exec_code']()
 
-async def replay_steps() -> None:
+async def replay_steps(pilot: Pilot[Any]) -> None:
     global app
     assert app is not None, "app should be set by now"
     # for event, offset, selector, index in steps:
     #     ...
     if not steps:
         return
-    pilot = Pilot(app)
+    # pilot = Pilot(app)
     # await pilot._wait_for_screen()
     await async_exec(get_replay_code(), pilot=pilot, Offset=Offset)
 
@@ -98,12 +102,15 @@ def run() -> None:
         next_after_exit = None # important to allowing you to exit; don't keep launching the app
         app = PaintApp()
         app.on_event = on_event.__get__(app)
-        
-        app.call_later(replay_steps)
-        app.run() # blocking
+        # app.call_later(replay_steps)
+        # app.run()
+        app.run(auto_pilot=replay_steps)
+        # run is blocking, so this will happen after the app exits
         if next_after_exit:
             next_after_exit()
     if app is not None:
+        # exit can't be awaited, because it stops the whole event loop (eventually)
+        # but we need to wait for the event loop to stop before we can start a new app
         next_after_exit = startup_and_replay
         app.exit()
     else:
@@ -121,7 +128,7 @@ def get_replay_code() -> str:
                 # can't pass a widget to pilot.click, only a selector, or None
                 steps_code += f"await pilot.click(offset=Offset({offset.x}, {offset.y}) + widget.region.offset)\n"
         elif isinstance(event, MouseMove):
-            # TODO: generate code for drags (but not other mouse movement)
+            # TODO: generate code for drags (but not extraneous mouse movement)
             pass
         elif isinstance(event, MouseUp):
             pass
