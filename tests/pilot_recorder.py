@@ -168,7 +168,8 @@ class PilotRecorder():
 
     def get_replay_code(self) -> str:
         """Return code to replay the recorded steps."""
-        helpers: dict[str, str] = {}
+        # Might be cleaner define the helper codes in CONSTANTS.
+        helpers: set[str] = set()
         steps_code = ""
         for step_index, (event, offset, selector, index) in enumerate(self.steps):
             # steps_code += f"# {event!r}, {offset!r}, {selector!r}, {index!r})\n"
@@ -177,7 +178,7 @@ class PilotRecorder():
             elif isinstance(event, MouseUp):
                 # Detect drags
                 if isinstance(self.steps[step_index - 1][0], MouseMove):
-                    helpers["drag"] = """
+                    helpers.add("""
 async def drag(selector: str, offsets: list[Offset], shift: bool = False, meta: bool = False, control: bool = False) -> None:
     \"""Drag across the given points.\"""
     from textual.pilot import _get_mouse_message_arguments
@@ -201,7 +202,7 @@ async def drag(selector: str, offsets: list[Offset], shift: bool = False, meta: 
     # pilot.app.post_message(Click(**message_arguments))
     # await pilot.pause(0.1)
 
-"""
+""")
                     # find the last mouse down event
                     # TODO: make sure the offsets are all relative to the same widget
                     for previous_step_index in range(step_index - 1, -1, -1):
@@ -223,7 +224,7 @@ async def drag(selector: str, offsets: list[Offset], shift: bool = False, meta: 
                     # # can't pass a widget to pilot.click, only a selector, or None
                     # steps_code += f"await pilot.click(offset=Offset({offset.x}, {offset.y}) + widget.region.offset)\n"
                     # Strategy: add a class to the widget, and click on that.
-                    helpers["click_by_index"] = """
+                    helpers.add("""
 async def click_by_index(selector: str, index: int) -> None:
     \"""Click on widget, query disambiguated by index\"""
     await pilot.pause(0.5)
@@ -232,13 +233,13 @@ async def click_by_index(selector: str, index: int) -> None:
     await pilot.click('.pilot-click-target')
     widget.remove_class('pilot-click-target')
 
-"""
+""")
                     steps_code += f"await click_by_index({selector!r}, {index!r})\n"
             elif isinstance(event, Key):
                 steps_code += f"await pilot.press({event.key!r})\n"
             else:
                 raise Exception(f"Unexpected event type {type(event)}")
-        for helper_code in helpers.values():
+        for helper_code in helpers:
             steps_code = helper_code + steps_code
         return steps_code or "pass"
 
