@@ -2,6 +2,7 @@
 
 import os
 from typing import Any, Callable
+from rich.syntax import Syntax
 
 from rich.text import Text
 from textual.app import App
@@ -12,6 +13,7 @@ from textual.events import Event, Key, MouseDown, MouseMove, MouseUp
 from textual.geometry import Offset
 from textual.pilot import Pilot
 from textual.screen import Screen
+from textual.widgets import Static
 
 from textual_paint.paint import PaintApp
 
@@ -80,6 +82,10 @@ class PilotRecorder():
         self.replaying: bool = False
         self.output_file = unique_file("tests/test_paint_something.py")
         self.next_after_exit: Callable[[], None] | None = None
+        self.steps_view = Static(id="pilot-recorder-steps")
+        self.steps_view.styles.dock = "right"
+        self.steps_view.styles.width = 40
+        self.steps_view.styles.height = "100%"
 
         recorder = self
         async def on_event(self: App[Any], event: Event) -> None:
@@ -135,9 +141,15 @@ class PilotRecorder():
                 self.steps_changed()
 
     def steps_changed(self) -> None:
-        """Save the steps any time they change."""
-        # Could implement a debug view of the steps, but just saving to the file is good enough for now.
-        self.save_replay()
+        """Update the steps view any time the steps change."""
+        assert self.app is not None, "app should be set if we're recording an event from it"
+        if self.steps_view.parent is None:
+            self.app.mount(self.steps_view)
+        # self.steps_view.update("\n".join(
+        #     (f"{step_index + 1}. {event!r}" + ("{offset!r}, {selector!r}, {index!r}" if isinstance(event, (MouseDown, MouseMove, MouseUp)) else ""))
+        #     for step_index, (event, offset, selector, index) in enumerate(self.steps)
+        # ))
+        self.steps_view.update(Syntax(self.get_replay_code(), "python", line_numbers=True))
 
     async def replay_steps(self, pilot: Pilot[Any]) -> None:
         """Replay the recorded steps, in the current app instance."""
