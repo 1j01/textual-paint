@@ -25,6 +25,7 @@ def indent(text: str, spaces: int) -> str:
 OUTPUT_FILE = unique_file("tests/test_paint_something.py")
 
 steps: list[tuple[Event, Offset, str, int|None]] = []
+replaying: bool = False
 
 def get_selector(target: DOMNode) -> tuple[str, int|None]:
     """Return a selector that can be used to find the widget."""
@@ -43,6 +44,9 @@ def get_selector(target: DOMNode) -> tuple[str, int|None]:
     try:
         query_result = app.query_one(selector)
     except TooManyMatches:
+        # FIXME: I think this can fail due to a race condition,
+        # when clicking a button that closes a dialog, removing the button from the DOM.
+        # Maybe intercept events differently, like by overriding post_message?
         return selector, app.query(selector).nodes.index(target)
         # smarter differentiators would be nice, like tooltip or text content,
         # but at least with indices, you'll know when you changed the tab order
@@ -56,6 +60,8 @@ def get_selector(target: DOMNode) -> tuple[str, int|None]:
 original_on_event = PaintApp.on_event
 async def on_event(self: PaintApp, event: Event) -> None:
     await original_on_event(self, event)
+    if replaying:
+        return
     if isinstance(event, (MouseDown, MouseMove, MouseUp)):
         try:
             widget, _ = self.get_widget_at(*event.screen_offset)
@@ -64,7 +70,7 @@ async def on_event(self: PaintApp, event: Event) -> None:
         offset = event.screen_offset - widget.region.offset
         steps.append((event, offset, *get_selector(widget)))
     elif isinstance(event, Key):
-        if event.key == "ctrl+z":
+        if event.key == "ctrl+z" and steps:
             steps.pop()
             run() # restart the app to replay up to this point
         elif event.key == "ctrl+c":
@@ -85,7 +91,7 @@ async def async_exec(code: str, **kwargs: object) -> object:
     return await scope['async_exec_code']()
 
 async def replay_steps(pilot: Pilot[Any]) -> None:
-    global app
+    global app, replaying
     assert app is not None, "app should be set by now"
     # for event, offset, selector, index in steps:
     #     ...
@@ -93,7 +99,13 @@ async def replay_steps(pilot: Pilot[Any]) -> None:
         return
     # pilot = Pilot(app)
     # await pilot._wait_for_screen()
+    replaying = True
     await async_exec(get_replay_code(), pilot=pilot, Offset=Offset)
+    replaying = False
+    # def clear_replaying_flag() -> None:
+    #     global replaying
+    #     replaying = False
+    # app.set_timer(1.0, clear_replaying_flag)
 
 def run() -> None:
     global app, next_after_exit
@@ -136,7 +148,7 @@ def get_replay_code() -> str:
             steps_code += f"await pilot.press({event.key!r})\n"
         else:
             raise Exception(f"Unexpected event type {type(event)}")
-    return steps_code
+    return steps_code or "pass"
 
 
 def save_replay() -> None:
