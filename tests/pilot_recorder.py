@@ -75,6 +75,8 @@ async def on_event(self: PaintApp, event: Event) -> None:
             run() # restart the app to replay up to this point
         elif event.key == "ctrl+c":
             save_replay()
+        else:
+            steps.append((event, Offset(), "", None))
 
 app: PaintApp | None = None
 next_after_exit: Callable[[], None] | None = None
