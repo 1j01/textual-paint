@@ -95,7 +95,7 @@ class PilotRecorder():
         """
         self.app_path = app_path
         self.app_class = app_class
-        self.output_file = output_file or unique_file("tests/test_something.py")
+        self.output_file = output_file or unique_file("tests/test_playback.py")
 
         self.app: App[Any] | None = None
         self.steps: list[tuple[Event, Offset, str, int|None]] = []
@@ -324,11 +324,11 @@ APP_PATH = Path({self.app_path!r})
 # Prevent flaky tests due to timing issues.
 Input.cursor_blink = False  # type: ignore
 
-def test_something(snap_compare: SnapCompareType):
-    async def test_something_steps(pilot: Pilot[None]):
+def test_playback(snap_compare: SnapCompareType):
+    async def automate_app(pilot: Pilot[None]):
 {indent(self.get_replay_code(), 8)}
 
-    assert snap_compare(APP_PATH, run_before=test_something_steps, terminal_size=({self.app.size.width}, {self.app.size.height}))
+    assert snap_compare(APP_PATH, run_before=automate_app, terminal_size=({self.app.size.width}, {self.app.size.height}))
 """
 
     def save_replay(self) -> None:
