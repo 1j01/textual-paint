@@ -146,8 +146,8 @@ class PilotRecorder():
 
     def update_steps_view(self, highlight_lines: set[int] | None = None) -> None:
         assert self.app is not None, "app should be set when updating the steps view"
-        if self.steps_view.parent is None:
-            self.app.mount(self.steps_view)
+        if self.steps_view.parent != self.app.screen:
+            self.app.screen.mount(self.steps_view)
         # self.steps_view.update("\n".join(
         #     (f"{step_index + 1}. {event!r}" + ("{offset!r}, {selector!r}, {index!r}" if isinstance(event, (MouseDown, MouseMove, MouseUp)) else ""))
         #     for step_index, (event, offset, selector, index) in enumerate(self.steps)
