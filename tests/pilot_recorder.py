@@ -4,6 +4,7 @@ import os
 from typing import Any, Callable
 
 from rich.text import Text
+from textual.app import App
 from textual.css.query import NoMatches, TooManyMatches
 from textual.dom import DOMNode
 from textual.errors import NoWidget
@@ -69,19 +70,19 @@ def get_selector(target: DOMNode) -> tuple[str, int|None]:
 
     return selector, None
 
-original_on_event = PaintApp.on_event
+original_on_event = App.on_event  # type: ignore
 
 class PilotRecorder():
     """Record (and undo and replay) interactions with an app, and save as a test."""
     def __init__(self) -> None:
-        self.app: PaintApp | None = None
+        self.app: App[Any] | None = None
         self.steps: list[tuple[Event, Offset, str, int|None]] = []
         self.replaying: bool = False
         self.output_file = unique_file("tests/test_paint_something.py")
         self.next_after_exit: Callable[[], None] | None = None
 
         recorder = self
-        async def on_event(self: PaintApp, event: Event) -> None:
+        async def on_event(self: App[Any], event: Event) -> None:
             # - Record before the event is handled, so a clicked widget that removes itself,
             #   such as an OK button in a dialog, will still be in the DOM when we record it.
             # - Every event seems to be received twice, once with _forwarded set and once without.
