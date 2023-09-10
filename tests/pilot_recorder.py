@@ -47,7 +47,7 @@ def get_selector(target: DOMNode) -> tuple[str, int|None]:
         # FIXME: I think this can fail due to a race condition,
         # when clicking a button that closes a dialog, removing the button from the DOM.
         # Maybe intercept events differently, like by overriding post_message?
-        return selector, app.query(selector).nodes.index(target)
+        return selector, app.query(selector).nodes.index(target)  # type: ignore
         # smarter differentiators would be nice, like tooltip or text content,
         # but at least with indices, you'll know when you changed the tab order
     except NoMatches:
@@ -72,7 +72,7 @@ async def on_event(self: PaintApp, event: Event) -> None:
     elif isinstance(event, Key):
         if event.key == "ctrl+z" and steps:
             steps.pop()
-            run() # restart the app to replay up to this point
+            run()  # restart the app to replay up to this point
         elif event.key == "ctrl+c":
             save_replay()
         else:
@@ -90,34 +90,24 @@ async def async_exec(code: str, **kwargs: object) -> object:
     exec(f"async def async_exec_code():\n{indent(code, 4)}", scope)
 
     # Get `async_exec_code` from the scope, call it and return the result
-    return await scope['async_exec_code']()
+    return await scope['async_exec_code']()  # type: ignore
 
 async def replay_steps(pilot: Pilot[Any]) -> None:
     global app, replaying
     assert app is not None, "app should be set by now"
-    # for event, offset, selector, index in steps:
-    #     ...
     if not steps:
         return
-    # pilot = Pilot(app)
-    # await pilot._wait_for_screen()
     replaying = True
     await async_exec(get_replay_code(), pilot=pilot, Offset=Offset)
     replaying = False
-    # def clear_replaying_flag() -> None:
-    #     global replaying
-    #     replaying = False
-    # app.set_timer(1.0, clear_replaying_flag)
 
 def run() -> None:
     global app, next_after_exit
     def startup_and_replay() -> None:
         global app, next_after_exit
-        next_after_exit = None # important to allowing you to exit; don't keep launching the app
+        next_after_exit = None  # important to allowing you to exit; don't keep launching the app
         app = PaintApp()
         app.on_event = on_event.__get__(app)
-        # app.call_later(replay_steps)
-        # app.run()
         app.run(auto_pilot=replay_steps)
         # run is blocking, so this will happen after the app exits
         if next_after_exit:
@@ -190,7 +180,6 @@ def test_paint_something(snap_compare: SnapCompareType):
 """
     with open(OUTPUT_FILE, "w") as f:
         f.write(script)
-    # app.exit(None, Text(f"Saved replay to {OUTPUT_FILE}"))
 
 if __name__ == "__main__":
     run()
