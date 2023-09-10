@@ -1,3 +1,5 @@
+"""Record interactions and save as an automated test."""
+
 import os
 from typing import Any, Callable
 from textual.css.query import NoMatches, TooManyMatches
