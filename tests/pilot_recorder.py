@@ -87,7 +87,7 @@ original_on_event = App.on_event  # type: ignore
 class PilotRecorder():
     """Record (and undo and replay) interactions with an app, and save as a test."""
     def __init__(self, app_class: Callable[[], App[Any]], app_path: str, output_file: str | None = None) -> None:
-        """Initialize the recorder.
+        """Initialize the test recorder.
         
         app_class: A function that returns an App instance.
         app_path: The path to the app's source code, relative to output_file.
