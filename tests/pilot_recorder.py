@@ -24,14 +24,20 @@ def unique_file(path: str) -> str:
 def indent(text: str, spaces: int) -> str:
     return "\n".join(" " * spaces + line for line in text.splitlines())
 
-OUTPUT_FILE = unique_file("tests/test_paint_something.py")
+async def async_exec(code: str, **kwargs: object) -> object:
+    # This dict will be used for passing variables to the `exec`ed code
+    # as well as retrieving the function defined by the code.
+    scope = kwargs
 
-steps: list[tuple[Event, Offset, str, int|None]] = []
-replaying: bool = False
+    # Make an async function with the code and `exec` it
+    exec(f"async def async_exec_code():\n{indent(code, 4)}", scope)
+
+    # Get `async_exec_code` from the scope, call it and return the result
+    return await scope['async_exec_code']()  # type: ignore
 
 def get_selector(target: DOMNode) -> tuple[str, int|None]:
     """Return a selector that can be used to find the widget."""
-    assert app is not None, "app should be set by now"
+    app = target.app
     widget = target
     if widget.id:
         return f"#{widget.id}", None
@@ -59,96 +65,89 @@ def get_selector(target: DOMNode) -> tuple[str, int|None]:
 
     return selector, None
 
-original_on_event = PaintApp.on_event
-async def on_event(self: PaintApp, event: Event) -> None:
-    await original_on_event(self, event)
-    if replaying:
-        return
-    if isinstance(event, (MouseDown, MouseMove, MouseUp)):
-        try:
-            widget, _ = self.get_widget_at(*event.screen_offset)
-        except NoWidget:
+class PilotRecorder():
+    def __init__(self) -> None:
+        self.app: PaintApp | None = None
+        self.steps: list[tuple[Event, Offset, str, int|None]] = []
+        self.replaying: bool = False
+        self.output_file = unique_file("tests/test_paint_something.py")
+        self.next_after_exit: Callable[[], None] | None = None
+
+        original_on_event = PaintApp.on_event
+        recorder = self
+        async def on_event(self: PaintApp, event: Event) -> None:
+            await original_on_event(self, event)
+            recorder.record_event(event)
+        self.app_on_event = on_event
+    
+    def record_event(self, event: Event) -> None:
+        if self.replaying:
             return
-        offset = event.screen_offset - widget.region.offset
-        steps.append((event, offset, *get_selector(widget)))
-    elif isinstance(event, Key):
-        if event.key == "ctrl+z" and steps:
-            steps.pop()
-            run()  # restart the app to replay up to this point
-        elif event.key == "ctrl+c":
-            save_replay()
-        else:
-            steps.append((event, Offset(), "", None))
-
-app: PaintApp | None = None
-next_after_exit: Callable[[], None] | None = None
-
-async def async_exec(code: str, **kwargs: object) -> object:
-    # This dict will be used for passing variables to the `exec`ed code
-    # as well as retrieving the function defined by the code.
-    scope = kwargs
-
-    # Make an async function with the code and `exec` it
-    exec(f"async def async_exec_code():\n{indent(code, 4)}", scope)
-
-    # Get `async_exec_code` from the scope, call it and return the result
-    return await scope['async_exec_code']()  # type: ignore
-
-async def replay_steps(pilot: Pilot[Any]) -> None:
-    global app, replaying
-    assert app is not None, "app should be set by now"
-    if not steps:
-        return
-    replaying = True
-    await async_exec(get_replay_code(), pilot=pilot, Offset=Offset)
-    replaying = False
-
-def run() -> None:
-    global app, next_after_exit
-    def startup_and_replay() -> None:
-        global app, next_after_exit
-        next_after_exit = None  # important to allowing you to exit; don't keep launching the app
-        app = PaintApp()
-        app.on_event = on_event.__get__(app)
-        app.run(auto_pilot=replay_steps)
-        # run is blocking, so this will happen after the app exits
-        if next_after_exit:
-            next_after_exit()
-    if app is not None:
-        # exit can't be awaited, because it stops the whole event loop (eventually)
-        # but we need to wait for the event loop to stop before we can start a new app
-        next_after_exit = startup_and_replay
-        app.exit()
-    else:
-        startup_and_replay()
-
-
-def get_replay_code() -> str:
-    steps_code = ""
-    for event, offset, selector, index in steps:
-        if isinstance(event, MouseDown):
-            if index is None:
-                steps_code += f"await pilot.click({selector!r}, offset=Offset({offset.x}, {offset.y}))\n"
-            else:
-                steps_code += f"widget = pilot.app.query({selector!r})[{index!r}]\n"
-                # can't pass a widget to pilot.click, only a selector, or None
-                steps_code += f"await pilot.click(offset=Offset({offset.x}, {offset.y}) + widget.region.offset)\n"
-        elif isinstance(event, MouseMove):
-            # TODO: generate code for drags (but not extraneous mouse movement)
-            pass
-        elif isinstance(event, MouseUp):
-            pass
+        if isinstance(event, (MouseDown, MouseMove, MouseUp)):
+            try:
+                widget, _ = self.app.get_widget_at(*event.screen_offset)
+            except NoWidget:
+                return
+            offset = event.screen_offset - widget.region.offset
+            self.steps.append((event, offset, *get_selector(widget)))
         elif isinstance(event, Key):
-            steps_code += f"await pilot.press({event.key!r})\n"
+            if event.key == "ctrl+z" and self.steps:
+                self.steps.pop()
+                self.run()  # restart the app to replay up to this point
+            elif event.key == "ctrl+c":
+                self.save_replay()
+            else:
+                self.steps.append((event, Offset(), "", None))
+
+    async def replay_steps(self, pilot: Pilot[Any]) -> None:
+        if not self.steps:
+            return
+        self.replaying = True
+        await async_exec(self.get_replay_code(), pilot=pilot, Offset=Offset)
+        self.replaying = False
+
+    def run(self) -> None:
+        def startup_and_replay() -> None:
+            self.next_after_exit = None  # important to allowing you to exit; don't keep launching the app
+            self.app = PaintApp()
+            self.app.on_event = self.app_on_event.__get__(self.app)
+            self.app.run(auto_pilot=self.replay_steps)
+            # run is blocking, so this will happen after the app exits
+            if self.next_after_exit:
+                self.next_after_exit()
+        if self.app is not None:
+            # exit can't be awaited, because it stops the whole event loop (eventually)
+            # but we need to wait for the event loop to stop before we can start a new app
+            self.next_after_exit = startup_and_replay
+            self.app.exit()
         else:
-            raise Exception(f"Unexpected event type {type(event)}")
-    return steps_code or "pass"
+            startup_and_replay()
 
+    def get_replay_code(self) -> str:
+        steps_code = ""
+        for event, offset, selector, index in self.steps:
+            if isinstance(event, MouseDown):
+                if index is None:
+                    steps_code += f"await pilot.click({selector!r}, offset=Offset({offset.x}, {offset.y}))\n"
+                else:
+                    steps_code += f"widget = pilot.app.query({selector!r})[{index!r}]\n"
+                    # can't pass a widget to pilot.click, only a selector, or None
+                    steps_code += f"await pilot.click(offset=Offset({offset.x}, {offset.y}) + widget.region.offset)\n"
+            elif isinstance(event, MouseMove):
+                # TODO: generate code for drags (but not extraneous mouse movement)
+                pass
+            elif isinstance(event, MouseUp):
+                pass
+            elif isinstance(event, Key):
+                steps_code += f"await pilot.press({event.key!r})\n"
+            else:
+                raise Exception(f"Unexpected event type {type(event)}")
+        return steps_code or "pass"
 
-def save_replay() -> None:
-    assert app is not None, "app should be set by now"
+    def save_replay(self) -> None:
+        assert self.app is not None, "app should be set by now"
 
-    script = f"""\
+        script = f"""\
 from pathlib import Path, PurePath
 from typing import Awaitable, Callable, Iterable, Protocol
 
@@ -176,12 +175,13 @@ Input.cursor_blink = False  # type: ignore
 
 def test_paint_something(snap_compare: SnapCompareType):
     async def test_paint_something_steps(pilot: Pilot[None]):
-{indent(get_replay_code(), 8)}
+{indent(self.get_replay_code(), 8)}
 
-    assert snap_compare(PAINT, run_before=test_paint_something_steps, terminal_size=({app.size.width}, {app.size.height}))
+    assert snap_compare(PAINT, run_before=test_paint_something_steps, terminal_size=({self.app.size.width}, {self.app.size.height}))
 """
-    with open(OUTPUT_FILE, "w") as f:
-        f.write(script)
+        with open(self.output_file, "w") as f:
+            f.write(script)
 
 if __name__ == "__main__":
-    run()
+    recorder = PilotRecorder()
+    recorder.run()
