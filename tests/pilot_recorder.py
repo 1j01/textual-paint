@@ -142,21 +142,30 @@ class PilotRecorder():
 
     def steps_changed(self) -> None:
         """Update the steps view any time the steps change."""
-        assert self.app is not None, "app should be set if we're recording an event from it"
+        self.update_steps_view()
+
+    def update_steps_view(self, highlight_lines: set[int] | None = None) -> None:
+        assert self.app is not None, "app should be set when updating the steps view"
         if self.steps_view.parent is None:
             self.app.mount(self.steps_view)
         # self.steps_view.update("\n".join(
         #     (f"{step_index + 1}. {event!r}" + ("{offset!r}, {selector!r}, {index!r}" if isinstance(event, (MouseDown, MouseMove, MouseUp)) else ""))
         #     for step_index, (event, offset, selector, index) in enumerate(self.steps)
         # ))
-        self.steps_view.update(Syntax(self.get_replay_code(), "python", line_numbers=True))
+        self.steps_view.update(Syntax(self.get_replay_code(), "python", line_numbers=True, highlight_lines=highlight_lines))
+
+    def highlight_line(self, line_index: int) -> None:
+        """Highlight the given line in the steps view."""
+        self.update_steps_view({line_index + 1})
 
     async def replay_steps(self, pilot: Pilot[Any]) -> None:
         """Replay the recorded steps, in the current app instance."""
         if not self.steps:
             return
         self.replaying = True
-        await async_exec(self.get_replay_code(), pilot=pilot, Offset=Offset)
+        replay_code = self.get_replay_code()
+        replay_code = "\n".join(line if "def " in line or len(line) == 0 or line[0] == " " else f"highlight_line({line_index}); {line}" for line_index, line in enumerate(replay_code.splitlines()))
+        await async_exec(replay_code, pilot=pilot, Offset=Offset, highlight_line=self.highlight_line)
         self.replaying = False
 
     def run(self) -> None:
