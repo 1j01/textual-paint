@@ -195,7 +195,7 @@ async def drag(selector: str, offsets: list[Offset], shift: bool = False, meta: 
             target_widget, offset, button=1, shift=shift, meta=meta, control=control
         )
         pilot.app.post_message(MouseMove(**message_arguments))
-        await pilot.pause(0.1)
+        await pilot.pause()
     pilot.app.post_message(MouseUp(**message_arguments))
     await pilot.pause(0.1)
     # pilot.app.post_message(Click(**message_arguments))
