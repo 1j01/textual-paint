@@ -162,9 +162,20 @@ class PilotRecorder():
                 if index is None:
                     steps_code += f"await pilot.click({selector!r}, offset=Offset({offset.x}, {offset.y}))\n"
                 else:
-                    steps_code += f"widget = pilot.app.query({selector!r})[{index!r}]\n"
-                    # can't pass a widget to pilot.click, only a selector, or None
-                    steps_code += f"await pilot.click(offset=Offset({offset.x}, {offset.y}) + widget.region.offset)\n"
+                    # Strategy: click on the screen, offset by the widget's position.
+                    # steps_code += f"widget = pilot.app.query({selector!r})[{index!r}]\n"
+                    # # can't pass a widget to pilot.click, only a selector, or None
+                    # steps_code += f"await pilot.click(offset=Offset({offset.x}, {offset.y}) + widget.region.offset)\n"
+                    # Strategy: add a class to the widget, and click on that.
+                    steps_code += f"""
+# Click on widget disambiguated by index (selector {selector!r} matched multiple nodes)
+await pilot.pause(0.5)
+widget = pilot.app.query({selector!r})[{index!r}]
+widget.add_class('pilot-click-target')
+await pilot.click('.pilot-click-target')
+widget.remove_class('pilot-click-target')
+
+"""
             elif isinstance(event, MouseMove):
                 # TODO: generate code for drags (but not extraneous mouse movement)
                 pass
