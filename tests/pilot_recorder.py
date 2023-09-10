@@ -162,6 +162,7 @@ class PilotRecorder():
         helpers: dict[str, str] = {}
         steps_code = ""
         for step_index, (event, offset, selector, index) in enumerate(self.steps):
+            steps_code += f"# {event!r}, {offset!r}, {selector!r}, {index!r})\n"
             if isinstance(event, (MouseDown, MouseMove)):
                 pass
             elif isinstance(event, MouseUp):
