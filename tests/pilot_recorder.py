@@ -81,6 +81,7 @@ class PilotRecorder():
         self.app_on_event = on_event
     
     def record_event(self, event: Event) -> None:
+        assert self.app is not None, "app should be set if we're recording an event from it"
         if self.replaying:
             return
         if isinstance(event, (MouseDown, MouseMove, MouseUp)):
