@@ -74,7 +74,16 @@ class PilotRecorder():
         self.next_after_exit: Callable[[], None] | None = None
 
         recorder = self
+        hack = True
         async def on_event(self: PaintApp, event: Event) -> None:
+            # FIXME: every event is received in duplicate
+            # Ignoring every other event is a really stupid way to fix it,
+            # but I don't know why it's happening.
+            nonlocal hack # "oh no remote hacking"
+            hack = not hack # "psh this hack isn't really a hack"
+            if hack:
+                await original_on_event(self, event)
+                return
             # Record before the event is handled, so a clicked button that closes a dialog,
             # removing the button from the DOM, will still be in the DOM when we record it.
             recorder.record_event(event)
