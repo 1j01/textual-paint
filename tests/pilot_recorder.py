@@ -156,6 +156,7 @@ class PilotRecorder():
 
     def get_replay_code(self) -> str:
         """Return code to replay the recorded steps."""
+        helpers: dict[str, str] = {}
         steps_code = ""
         for event, offset, selector, index in self.steps:
             if isinstance(event, MouseDown):
@@ -167,15 +168,17 @@ class PilotRecorder():
                     # # can't pass a widget to pilot.click, only a selector, or None
                     # steps_code += f"await pilot.click(offset=Offset({offset.x}, {offset.y}) + widget.region.offset)\n"
                     # Strategy: add a class to the widget, and click on that.
-                    steps_code += f"""
-# Click on widget disambiguated by index (selector {selector!r} matched multiple nodes)
-await pilot.pause(0.5)
-widget = pilot.app.query({selector!r})[{index!r}]
-widget.add_class('pilot-click-target')
-await pilot.click('.pilot-click-target')
-widget.remove_class('pilot-click-target')
+                    helpers["click_by_index"] = """
+async def click_by_index(selector: str, index: int) -> None:
+    \"""Click on widget, query disambiguated by index\"""
+    await pilot.pause(0.5)
+    widget = pilot.app.query(selector)[index]
+    widget.add_class('pilot-click-target')
+    await pilot.click('.pilot-click-target')
+    widget.remove_class('pilot-click-target')
 
 """
+                    steps_code += f"await click_by_index({selector!r}, {index!r})\n"
             elif isinstance(event, MouseMove):
                 # TODO: generate code for drags (but not extraneous mouse movement)
                 pass
@@ -185,6 +188,8 @@ widget.remove_class('pilot-click-target')
                 steps_code += f"await pilot.press({event.key!r})\n"
             else:
                 raise Exception(f"Unexpected event type {type(event)}")
+        for helper_code in helpers.values():
+            steps_code = helper_code + steps_code
         return steps_code or "pass"
 
     def save_replay(self) -> None:
