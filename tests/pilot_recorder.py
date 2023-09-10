@@ -2,6 +2,7 @@
 
 import os
 from typing import Any, Callable
+
 from rich.text import Text
 from textual.css.query import NoMatches, TooManyMatches
 from textual.dom import DOMNode
@@ -10,7 +11,9 @@ from textual.events import Event, Key, MouseDown, MouseMove, MouseUp
 from textual.geometry import Offset
 from textual.pilot import Pilot
 from textual.screen import Screen
+
 from textual_paint.paint import PaintApp
+
 
 def unique_file(path: str) -> str:
     filename, extension = os.path.splitext(path)
@@ -84,7 +87,7 @@ class PilotRecorder():
                 recorder.record_event(event)
             await original_on_event(self, event)
         self.app_on_event = on_event
-    
+
     def record_event(self, event: Event) -> None:
         assert self.app is not None, "app should be set if we're recording an event from it"
         # Handling any event means including it in the undo stack right now.
