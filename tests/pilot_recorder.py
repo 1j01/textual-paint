@@ -131,6 +131,8 @@ class PilotRecorder():
 
                 self.steps_changed()
                 self.run()  # restart the app to replay up to this point
+            elif event.key == "ctrl+r":
+                self.run()  # restart and replay
             elif event.key == "ctrl+c":
                 self.save_replay()
                 self.app.exit(None, Text("Saved test recording to " + self.output_file))
