@@ -1,4 +1,16 @@
-"""Record interactions and save as an automated test."""
+"""Record interactions and save as an automated test.
+
+TODO:
+- Handle right clicks, middle clicks, and modifier keys.
+- Handle mouse wheel events.
+- Handle paste events.
+- Ideally the supporting functions like drag() should be part of Pilot.
+- Ideally SnapCompareType should be part of pytest-textual-snapshot.
+
+FIXME:
+- Clicks on the wrong thing sometimes
+- Steps view doesn't update sometimes
+"""
 
 import os
 from typing import Any, Callable
