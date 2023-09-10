@@ -104,7 +104,16 @@ class PilotRecorder():
             except NoWidget:
                 return
             offset = event.screen_offset - widget.region.offset
-            self.steps.append((event, offset, *get_selector(widget)))
+            try:
+                selector, index = get_selector(widget)
+            except Exception as e:
+                # e.g. Scrollbar can't be queried for
+                # Currently this means you can't drag a scrollbar
+                # in a test recording, but if you're not trying to,
+                # this shouldn't be fatal.
+                print(e)
+                return
+            self.steps.append((event, offset, selector, index))
             self.steps_changed()
         elif isinstance(event, Key):
             if event.key == "ctrl+z" and self.steps:
