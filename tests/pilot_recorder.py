@@ -52,9 +52,6 @@ def get_selector(target: DOMNode) -> tuple[str, int|None]:
     try:
         query_result = app.query_one(selector)
     except TooManyMatches:
-        # FIXME: I think this can fail due to a race condition,
-        # when clicking a button that closes a dialog, removing the button from the DOM.
-        # Maybe intercept events differently, like by overriding post_message?
         return selector, app.query(selector).nodes.index(target)  # type: ignore
         # smarter differentiators would be nice, like tooltip or text content,
         # but at least with indices, you'll know when you changed the tab order
@@ -76,8 +73,10 @@ class PilotRecorder():
         original_on_event = PaintApp.on_event
         recorder = self
         async def on_event(self: PaintApp, event: Event) -> None:
-            await original_on_event(self, event)
+            # Record before the event is handled, so a clicked button that closes a dialog,
+            # removing the button from the DOM, will still be in the DOM when we record it.
             recorder.record_event(event)
+            await original_on_event(self, event)
         self.app_on_event = on_event
     
     def record_event(self, event: Event) -> None:
