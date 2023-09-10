@@ -194,6 +194,7 @@ async def drag(selector: str, offsets: list[Offset], shift: bool = False, meta: 
 
 """
                     # find the last mouse down event
+                    # TODO: make sure the offsets are all relative to the same widget
                     for previous_step_index in range(step_index - 1, -1, -1):
                         previous_event, _, _, _ = self.steps[previous_step_index]
                         if isinstance(previous_event, MouseDown):
