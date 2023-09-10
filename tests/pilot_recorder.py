@@ -14,8 +14,8 @@ FIXME:
 
 import os
 from typing import Any, Callable
-from rich.syntax import Syntax
 
+from rich.syntax import Syntax
 from rich.text import Text
 from textual.app import App
 from textual.css.query import NoMatches, TooManyMatches
@@ -26,8 +26,6 @@ from textual.geometry import Offset
 from textual.pilot import Pilot
 from textual.screen import Screen
 from textual.widgets import Static
-
-from textual_paint.paint import PaintApp
 
 
 def unique_file(path: str) -> str:
@@ -88,11 +86,14 @@ original_on_event = App.on_event  # type: ignore
 
 class PilotRecorder():
     """Record (and undo and replay) interactions with an app, and save as a test."""
-    def __init__(self) -> None:
+    def __init__(self, app_class: Callable[[], App[Any]], app_path: str) -> None:
+        self.app_path = app_path
+        self.app_class = app_class
+
         self.app: App[Any] | None = None
         self.steps: list[tuple[Event, Offset, str, int|None]] = []
         self.replaying: bool = False
-        self.output_file = unique_file("tests/test_paint_something.py")
+        self.output_file = unique_file("tests/test_something.py")
         self.next_after_exit: Callable[[], None] | None = None
 
         self.steps_view = Static(id="pilot-recorder-steps")
@@ -188,7 +189,7 @@ class PilotRecorder():
         def startup_and_replay() -> None:
             """Start the app, hook its events, and replay steps if there are any."""
             self.next_after_exit = None  # important to allowing you to exit; don't keep launching the app
-            self.app = PaintApp()
+            self.app = self.app_class()
             self.app.on_event = self.app_on_event.__get__(self.app)
             self.app.run(auto_pilot=self.replay_steps)
             # run is blocking, so this will happen after the app exits
@@ -312,16 +313,16 @@ class SnapCompareType(Protocol):
         ...
 
 # Relative paths are treated as relative to this file, when using snap_compare.
-PAINT = Path("../src/textual_paint/paint.py")
+APP_PATH = Path({self.app_path!r})
 
 # Prevent flaky tests due to timing issues.
 Input.cursor_blink = False  # type: ignore
 
-def test_paint_something(snap_compare: SnapCompareType):
-    async def test_paint_something_steps(pilot: Pilot[None]):
+def test_something(snap_compare: SnapCompareType):
+    async def test_something_steps(pilot: Pilot[None]):
 {indent(self.get_replay_code(), 8)}
 
-    assert snap_compare(PAINT, run_before=test_paint_something_steps, terminal_size=({self.app.size.width}, {self.app.size.height}))
+    assert snap_compare(APP_PATH, run_before=test_something_steps, terminal_size=({self.app.size.width}, {self.app.size.height}))
 """
 
     def save_replay(self) -> None:
@@ -333,5 +334,6 @@ def test_paint_something(snap_compare: SnapCompareType):
             f.write(script)
 
 if __name__ == "__main__":
-    recorder = PilotRecorder()
+    from textual_paint.paint import PaintApp
+    recorder = PilotRecorder(PaintApp, "../src/textual_paint/paint.py")
     recorder.run()
