@@ -86,14 +86,20 @@ original_on_event = App.on_event  # type: ignore
 
 class PilotRecorder():
     """Record (and undo and replay) interactions with an app, and save as a test."""
-    def __init__(self, app_class: Callable[[], App[Any]], app_path: str) -> None:
+    def __init__(self, app_class: Callable[[], App[Any]], app_path: str, output_file: str | None = None) -> None:
+        """Initialize the recorder.
+        
+        app_class: A function that returns an App instance.
+        app_path: The path to the app's source code, relative to output_file.
+        output_file: The path to save the test to.
+        """
         self.app_path = app_path
         self.app_class = app_class
+        self.output_file = output_file or unique_file("tests/test_something.py")
 
         self.app: App[Any] | None = None
         self.steps: list[tuple[Event, Offset, str, int|None]] = []
         self.replaying: bool = False
-        self.output_file = unique_file("tests/test_something.py")
         self.next_after_exit: Callable[[], None] | None = None
 
         self.steps_view = Static(id="pilot-recorder-steps")
