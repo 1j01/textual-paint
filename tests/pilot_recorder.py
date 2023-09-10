@@ -82,6 +82,7 @@ class PilotRecorder():
         self.replaying: bool = False
         self.output_file = unique_file("tests/test_paint_something.py")
         self.next_after_exit: Callable[[], None] | None = None
+
         self.steps_view = Static(id="pilot-recorder-steps")
         self.steps_view.styles.dock = "right"
         self.steps_view.styles.width = 40
