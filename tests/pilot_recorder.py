@@ -184,6 +184,7 @@ class PilotRecorder():
         """Replay the recorded steps, in the current app instance."""
         if not self.steps:
             return
+        await pilot._wait_for_screen(timeout=5.0)
         self.replaying = True
         replay_code = self.get_replay_code()
         replay_code = "\n".join(line if "def " in line or len(line) == 0 or line[0] == " " else f"highlight_line({line_index}); {line}" for line_index, line in enumerate(replay_code.splitlines()))
@@ -236,7 +237,7 @@ async def drag(selector: str, offsets: list[Offset], shift: bool = False, meta: 
     \"""Drag across the given points.\"""
     from textual.pilot import _get_mouse_message_arguments
     from textual.events import MouseDown, MouseMove, MouseUp
-    await pilot.pause(0.5)
+    # await pilot.pause(0.5)
     target_widget = pilot.app.query(selector)[0]
     offset = offsets[0]
     message_arguments = _get_mouse_message_arguments(
@@ -280,7 +281,7 @@ async def drag(selector: str, offsets: list[Offset], shift: bool = False, meta: 
                     helpers.add("""
 async def click_by_index(selector: str, index: int) -> None:
     \"""Click on widget, query disambiguated by index\"""
-    await pilot.pause(0.5)
+    # await pilot.pause(0.5)
     widget = pilot.app.query(selector)[index]
     widget.add_class('pilot-click-target')
     await pilot.click('.pilot-click-target')
