@@ -84,7 +84,10 @@ class PilotRecorder():
         assert self.app is not None, "app should be set if we're recording an event from it"
         if self.replaying:
             return
-        if isinstance(event, (MouseDown, MouseMove, MouseUp)):
+        # Handling any event means including it in the undo stack right now.
+        # Don't want to undo a single mouse-move, especially when it doesn't do anything yet.
+        # if isinstance(event, (MouseDown, MouseMove, MouseUp)):
+        if isinstance(event, MouseDown):
             try:
                 widget, _ = self.app.get_widget_at(*event.screen_offset)
             except NoWidget:
