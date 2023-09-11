@@ -229,7 +229,7 @@ def test_text_tool_wrapping(snap_compare: SnapCompareType):
         
         await click_by_index('#tools_box Button', 9)
         await drag('#canvas', [Offset(x=5, y=8), Offset(x=24, y=16)])
-        for key in ('T', 'e', 'x', 't', 'space', 'T', 'o', 'o', 'l', 'space', 'T', 'e', 's', 't', 'space', 'left_parenthesis', 'T', 'T', 'T', 'right_parenthesis', 'n', 'e', 'w', 'space', 'l', 'i', 'n', 'e', 'space', 's', 't', 'a', 'r', 't', 's', 'space', 'h', 'e', 'r', 'e', 'a', 'n', 'd', 'space', 'h', 'e', 'r', 'e', 'space', 'a', 'u', 't', 'o', 'm', 'a', 't', 'i', 'c', 'a', 'l', 'minus', 'l', 'y'):
+        for key in ('T', 'e', 'x', 't', 'space', 'T', 'o', 'o', 'l', 'space', 'T', 'e', 's', 't', 'space', 'left_parenthesis', 'T', 'T', 'T', 'right_parenthesis', 'n', 'e', 'w', 'space', 'l', 'i', 'n', 'e', 'space', 's', 't', 'a', 'r', 't', 's', 'space', 'h', 'e', 'r', 'e', 'a', 'n', 'd', 'space', 'h', 'e', 'r', 'e', 'space', 'a', 'u', 't', 'o', 'm', 'a', 't', 'i', 'c', 'a', 'l', 'hyphen', 'l', 'y'):
             await pilot.press(key)
 
     assert snap_compare(PAINT, run_before=automate_app, terminal_size=LARGER)
