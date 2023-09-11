@@ -279,12 +279,12 @@ async def drag(selector: str, offsets: list[Offset], shift: bool = False, meta: 
                     # steps_code += f"await pilot.click(offset=Offset({offset.x}, {offset.y}) + widget.region.offset)\n"
                     # Strategy: add a class to the widget, and click on that.
                     helpers.add("""
-async def click_by_index(selector: str, index: int) -> None:
+async def click_by_index(selector: str, index: int, shift: bool = False, meta: bool = False, control: bool = False) -> None:
     \"""Click on widget, query disambiguated by index\"""
     # await pilot.pause(0.5)
     widget = pilot.app.query(selector)[index]
     widget.add_class('pilot-click-target')
-    await pilot.click('.pilot-click-target')
+    await pilot.click('.pilot-click-target', shift=shift, meta=meta, control=control)
     widget.remove_class('pilot-click-target')
 
 """)
