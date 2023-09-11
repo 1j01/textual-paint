@@ -179,18 +179,132 @@ def test_paint_polygon_tool(snap_compare: SnapCompareType):
         await pilot.click("Canvas", offset=Offset(30, 20))
         await pilot.click("Canvas", offset=Offset(30, 2))
         await pilot.click("Canvas", offset=Offset(2, 2)) # end by clicking on the start point
-        # await clickity(color_buttons[16]) # red
-        # await pilot.click("Canvas", offset=Offset(10, 5))
-        # await pilot.click("Canvas", offset=Offset(10, 9))
-        # await pilot.click("Canvas", offset=Offset(10, 9))
-        # await pilot.click("Canvas", offset=Offset(1, 5))
-        # await pilot.click("Canvas", offset=Offset(1, 5)) # end by double clicking
-        # await clickity(color_buttons[17]) # yellow
-        # await pilot.click("Canvas", offset=Offset(10, 13))
-        # await pilot.click("Canvas", offset=Offset(15, 13))
-        # await pilot.click("Canvas", offset=Offset(12, 16)) # don't end, leave as polyline
+        await clickity(color_buttons[16]) # red
+        await pilot.click("Canvas", offset=Offset(10, 5))
+        await pilot.click("Canvas", offset=Offset(10, 9))
+        await pilot.click("Canvas", offset=Offset(10, 9))
+        await pilot.click("Canvas", offset=Offset(1, 5))
+        await pilot.click("Canvas", offset=Offset(1, 5)) # end by double clicking
+        await clickity(color_buttons[17]) # yellow
+        await pilot.click("Canvas", offset=Offset(10, 13))
+        await pilot.click("Canvas", offset=Offset(15, 13))
+        await pilot.click("Canvas", offset=Offset(12, 16)) # don't end, leave as polyline
 
     assert snap_compare(PAINT, run_before=draw_polygon, terminal_size=LARGER)
+
+def test_text_tool_wrapping(snap_compare: SnapCompareType):
+    async def automate_app(pilot: Pilot[None]):
+        
+        async def click_by_index(selector: str, index: int) -> None:
+            """Click on widget, query disambiguated by index."""
+            # await pilot.pause(0.5)
+            widget = pilot.app.query(selector)[index]
+            widget.add_class('pilot-click-target')
+            await pilot.click('.pilot-click-target')
+            widget.remove_class('pilot-click-target')
+        
+        
+        async def drag(selector: str, offsets: list[Offset], shift: bool = False, meta: bool = False, control: bool = False) -> None:
+            """Drag across the given points."""
+            from textual.pilot import _get_mouse_message_arguments
+            from textual.events import MouseDown, MouseMove, MouseUp
+            # await pilot.pause(0.5)
+            target_widget = pilot.app.query(selector)[0]
+            offset = offsets[0]
+            message_arguments = _get_mouse_message_arguments(
+                target_widget, offset, button=1, shift=shift, meta=meta, control=control
+            )
+            pilot.app.post_message(MouseDown(**message_arguments))
+            await pilot.pause(0.1)
+            for offset in offsets[1:]:
+                message_arguments = _get_mouse_message_arguments(
+                    target_widget, offset, button=1, shift=shift, meta=meta, control=control
+                )
+                pilot.app.post_message(MouseMove(**message_arguments))
+                await pilot.pause()
+            pilot.app.post_message(MouseUp(**message_arguments))
+            await pilot.pause(0.1)
+            # pilot.app.post_message(Click(**message_arguments))
+            # await pilot.pause(0.1)
+        
+        await click_by_index('#tools_box Button', 9)
+        await drag('#canvas', [Offset(x=5, y=8), Offset(x=24, y=16)])
+        for key in ('T', 'e', 'x', 't', 'space', 'T', 'o', 'o', 'l', 'space', 'T', 'e', 's', 't', 'space', 'left_parenthesis', 'T', 'T', 'T', 'right_parenthesis', 'n', 'e', 'w', 'space', 'l', 'i', 'n', 'e', 'space', 's', 't', 'a', 'r', 't', 's', 'space', 'h', 'e', 'r', 'e', 'a', 'n', 'd', 'space', 'h', 'e', 'r', 'e', 'space', 'a', 'u', 't', 'o', 'm', 'a', 't', 'i', 'c', 'a', 'l', 'minus', 'l', 'y'):
+            await pilot.press(key)
+
+    assert snap_compare(PAINT, run_before=automate_app, terminal_size=LARGER)
+
+def test_text_tool_cursor_keys_and_color(snap_compare: SnapCompareType):
+    async def automate_app(pilot: Pilot[None]):
+        
+        async def click_by_index(selector: str, index: int) -> None:
+            """Click on widget, query disambiguated by index"""
+            # await pilot.pause(0.5)
+            widget = pilot.app.query(selector)[index]
+            widget.add_class('pilot-click-target')
+            await pilot.click('.pilot-click-target')
+            widget.remove_class('pilot-click-target')
+        
+        
+        async def drag(selector: str, offsets: list[Offset], shift: bool = False, meta: bool = False, control: bool = False) -> None:
+            """Drag across the given points."""
+            from textual.pilot import _get_mouse_message_arguments
+            from textual.events import MouseDown, MouseMove, MouseUp
+            # await pilot.pause(0.5)
+            target_widget = pilot.app.query(selector)[0]
+            offset = offsets[0]
+            message_arguments = _get_mouse_message_arguments(
+                target_widget, offset, button=1, shift=shift, meta=meta, control=control
+            )
+            pilot.app.post_message(MouseDown(**message_arguments))
+            await pilot.pause(0.1)
+            for offset in offsets[1:]:
+                message_arguments = _get_mouse_message_arguments(
+                    target_widget, offset, button=1, shift=shift, meta=meta, control=control
+                )
+                pilot.app.post_message(MouseMove(**message_arguments))
+                await pilot.pause()
+            pilot.app.post_message(MouseUp(**message_arguments))
+            await pilot.pause(0.1)
+            # pilot.app.post_message(Click(**message_arguments))
+            # await pilot.pause(0.1)
+        
+        await click_by_index('#tools_box Button', 9)
+        await drag('#canvas', [Offset(x=8, y=5), Offset(x=8, y=5), Offset(x=9, y=5), Offset(x=9, y=6), Offset(x=10, y=6), Offset(x=11, y=7), Offset(x=12, y=7), Offset(x=13, y=7), Offset(x=13, y=8), Offset(x=14, y=8), Offset(x=14, y=9), Offset(x=15, y=9), Offset(x=16, y=9), Offset(x=17, y=10), Offset(x=18, y=10), Offset(x=19, y=10), Offset(x=20, y=10), Offset(x=21, y=10), Offset(x=21, y=10)])
+        await pilot.press('s')
+        await pilot.press('end')
+        await pilot.press('pagedown')
+        await pilot.press('1')
+        await pilot.press('home')
+        await pilot.press('2')
+        await pilot.press('pageup')
+        await pilot.press('3')
+        await pilot.press('end')
+        await pilot.press('4')
+        await pilot.press('pageup')
+        await pilot.press('home')
+        await pilot.press('right')
+        await pilot.press('right')
+        await pilot.press('c')
+        await pilot.press('r')
+        await pilot.press('e')
+        await pilot.press('t')
+        await pilot.press('backspace')
+        await pilot.press('backspace')
+        await pilot.press('backspace')
+        await pilot.press('backspace')
+        await pilot.press('v')
+        await pilot.press('3')
+        await pilot.press('n')
+        await pilot.click('#canvas', offset=Offset(9, 10))
+        await pilot.press('e')
+        await pilot.press('v')
+        await pilot.press('e')
+        await pilot.press('n')
+        await click_by_index('#available_colors Button', 9)
+        await click_by_index('#available_colors Button', 18)
+
+    assert snap_compare(APP_PATH, run_before=automate_app, terminal_size=(123, 56))
 
 def test_gallery_app(snap_compare: SnapCompareType):
     assert snap_compare(GALLERY)
