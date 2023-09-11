@@ -187,6 +187,9 @@ class PilotRecorder():
         await pilot._wait_for_screen(timeout=5.0)
         self.replaying = True
         replay_code = self.get_replay_code()
+        # Fix import
+        replay_code = replay_code.replace("from tests.pilot_helpers import", "from pilot_helpers import")
+        # Instrument with highlight_line calls
         replay_code = "\n".join(line if "def " in line or len(line) == 0 or line[0] == " " else f"highlight_line({line_index}); {line}" for line_index, line in enumerate(replay_code.splitlines()))
         await async_exec(replay_code, pilot=pilot, Offset=Offset, highlight_line=self.highlight_line)
         self.replaying = False
@@ -212,7 +215,6 @@ class PilotRecorder():
 
     def get_replay_code(self) -> str:
         """Return code to replay the recorded steps."""
-        # Might be cleaner define the helper codes in CONSTANTS.
         helpers: set[str] = set()
         steps_code = ""
         for step_index, (event, offset, selector, index) in enumerate(self.steps):
@@ -232,31 +234,7 @@ class PilotRecorder():
                 # "# If you want just a click, use (...) and remove the drag helper if it's not needed."
                 # "# If you want just a drag, remove click=True."
                 if isinstance(self.steps[step_index - 1][0], MouseMove):
-                    helpers.add("""
-async def drag(selector: str, offsets: list[Offset], shift: bool = False, meta: bool = False, control: bool = False) -> None:
-    \"""Drag across the given points.\"""
-    from textual.pilot import _get_mouse_message_arguments
-    from textual.events import MouseDown, MouseMove, MouseUp
-    # await pilot.pause(0.5)
-    target_widget = pilot.app.query(selector)[0]
-    offset = offsets[0]
-    message_arguments = _get_mouse_message_arguments(
-        target_widget, offset, button=1, shift=shift, meta=meta, control=control
-    )
-    pilot.app.post_message(MouseDown(**message_arguments))
-    await pilot.pause(0.1)
-    for offset in offsets[1:]:
-        message_arguments = _get_mouse_message_arguments(
-            target_widget, offset, button=1, shift=shift, meta=meta, control=control
-        )
-        pilot.app.post_message(MouseMove(**message_arguments))
-        await pilot.pause()
-    pilot.app.post_message(MouseUp(**message_arguments))
-    await pilot.pause(0.1)
-    # pilot.app.post_message(Click(**message_arguments))
-    # await pilot.pause(0.1)
-
-""")
+                    helpers.add("drag")
                     # find the last mouse down event
                     # TODO: make sure the offsets are all relative to the same widget
                     for previous_step_index in range(step_index - 1, -1, -1):
@@ -266,7 +244,7 @@ async def drag(selector: str, offsets: list[Offset], shift: bool = False, meta: 
                     else:
                         raise Exception(f"Mouse up event {step_index} has no matching mouse down event")
                     offsets = [step[1] for step in self.steps[previous_step_index:step_index + 1]]
-                    steps_code += f"await drag({selector!r}, [{', '.join(repr(offset) for offset in offsets)}])\n"
+                    steps_code += f"await drag(pilot, {selector!r}, [{', '.join(repr(offset) for offset in offsets)}])\n"
                     continue
 
                 # Handle clicks
@@ -278,24 +256,14 @@ async def drag(selector: str, offsets: list[Offset], shift: bool = False, meta: 
                     # # can't pass a widget to pilot.click, only a selector, or None
                     # steps_code += f"await pilot.click(offset=Offset({offset.x}, {offset.y}) + widget.region.offset)\n"
                     # Strategy: add a class to the widget, and click on that.
-                    helpers.add("""
-async def click_by_index(selector: str, index: int, shift: bool = False, meta: bool = False, control: bool = False) -> None:
-    \"""Click on widget, query disambiguated by index\"""
-    # await pilot.pause(0.5)
-    widget = pilot.app.query(selector)[index]
-    widget.add_class('pilot-click-target')
-    await pilot.click('.pilot-click-target', shift=shift, meta=meta, control=control)
-    widget.remove_class('pilot-click-target')
-
-""")
-                    steps_code += f"await click_by_index({selector!r}, {index!r})\n"
+                    helpers.add("click_by_index")
+                    steps_code += f"await click_by_index(pilot, {selector!r}, {index!r})\n"
             elif isinstance(event, Key):
                 steps_code += f"await pilot.press({event.key!r})\n"
             else:
                 raise Exception(f"Unexpected event type {type(event)}")
-        for helper_code in helpers:
-            steps_code = helper_code + steps_code
-        return steps_code or "pass"
+        helper_code = f"from tests.pilot_helpers import {', '.join(helpers)}\n\n" if helpers else ""
+        return (helper_code + steps_code) or "pass"
 
     def get_test_code(self) -> str:
         """Return pytest code that uses the replay."""
