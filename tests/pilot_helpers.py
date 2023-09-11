@@ -22,9 +22,7 @@ async def click_by_index(pilot: Pilot[Any], selector: str, index: int, shift: bo
     """Click on widget, query disambiguated by index"""
     # await pilot.pause(0.5)
     widget = pilot.app.query(selector)[index]
-    widget.add_class('pilot-click-target')
-    await pilot.click('.pilot-click-target', shift=shift, meta=meta, control=control)
-    widget.remove_class('pilot-click-target')
+    await click_widget(pilot, widget, shift=shift, meta=meta, control=control)
 
 
 async def drag(pilot: Pilot[Any], selector: str, offsets: list[Offset], shift: bool = False, meta: bool = False, control: bool = False) -> None:
