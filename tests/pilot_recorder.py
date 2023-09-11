@@ -91,14 +91,21 @@ class PilotRecorder():
                 return
             offset = event.screen_offset - widget.region.offset
             self.steps.append((event, offset, *get_selector(widget)))
+            self.steps_changed()
         elif isinstance(event, Key):
             if event.key == "ctrl+z" and self.steps:
                 self.steps.pop()
+                self.steps_changed()
                 self.run()  # restart the app to replay up to this point
             elif event.key == "ctrl+c":
                 self.save_replay()
             else:
                 self.steps.append((event, Offset(), "", None))
+                self.steps_changed()
+
+    def steps_changed(self) -> None:
+        # Could implement a debug view of the steps, but just saving to the file is good enough for now.
+        self.save_replay()
 
     async def replay_steps(self, pilot: Pilot[Any]) -> None:
         if not self.steps:
