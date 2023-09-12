@@ -47,6 +47,17 @@
 			"args": ["run", "--dev", "src.textual_paint.paint --clear-screen --restart-on-changes"],
 			"console": "integratedTerminal",
 			"justMyCode": false
-		}
+		},
+		{
+            "name": "Debug Tests",
+            "type": "python",
+            "request": "launch",
+			"program": ".venv/bin/pytest",
+			// "args": ["tests/test_snapshots.py::test_paint_open_dialog"],
+            "console": "integratedTerminal",
+            "justMyCode": false,
+			// If using pytest-cov in the future:
+            // "env": {"PYTEST_ADDOPTS": "--no-cov"}
+        }
 	]
 }
