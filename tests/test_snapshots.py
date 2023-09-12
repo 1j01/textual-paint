@@ -241,6 +241,21 @@ def test_free_form_select(snap_compare: SnapCompareType):
 
     assert snap_compare(PAINT, run_before=automate_app, terminal_size=LARGER)
 
+def test_select(snap_compare: SnapCompareType):
+    async def automate_app(pilot: Pilot[None]):
+        await click_by_attr(pilot, "ToolsBox Button", "tooltip", "Select")
+        await drag(pilot, '#canvas', [Offset(5, 3), Offset(5, 3), Offset(6, 4), Offset(8, 5), Offset(9, 6), Offset(11, 7), Offset(13, 8), Offset(14, 10), Offset(15, 10), Offset(16, 11), Offset(17, 11), Offset(18, 12), Offset(19, 12), Offset(19, 13), Offset(20, 13), Offset(21, 13), Offset(21, 14), Offset(22, 14), Offset(22, 14)])
+        await pilot.press('ctrl+i')
+        await drag(pilot, '#canvas', [Offset(12, 8), Offset(13, 8), Offset(13, 9), Offset(14, 10), Offset(15, 12), Offset(16, 13), Offset(18, 14), Offset(19, 15), Offset(20, 15), Offset(20, 16), Offset(21, 16), Offset(22, 17), Offset(23, 17), Offset(24, 17), Offset(24, 16), Offset(24, 15), Offset(24, 14), Offset(25, 13), Offset(25, 13)])
+        await drag(pilot, '#canvas', [Offset(7, 13), Offset(7, 13), Offset(8, 13), Offset(9, 14), Offset(10, 15), Offset(11, 15), Offset(12, 16), Offset(13, 17), Offset(15, 17), Offset(16, 18), Offset(17, 19), Offset(18, 19), Offset(19, 19), Offset(19, 20), Offset(20, 20), Offset(21, 20), Offset(22, 21), Offset(23, 21), Offset(24, 21), Offset(24, 22), Offset(25, 22), Offset(25, 22)])
+        await pilot.press('ctrl+i')
+        await drag(pilot, '#canvas', [Offset(12, 3), Offset(12, 3), Offset(13, 4), Offset(14, 5), Offset(14, 6), Offset(15, 7), Offset(16, 7), Offset(17, 8), Offset(18, 9), Offset(19, 9), Offset(20, 10), Offset(21, 10), Offset(22, 10), Offset(23, 11), Offset(24, 12), Offset(25, 12), Offset(26, 12), Offset(26, 13), Offset(27, 13), Offset(28, 14), Offset(29, 14), Offset(30, 14), Offset(30, 15), Offset(31, 15), Offset(32, 15), Offset(32, 16), Offset(33, 16), Offset(34, 16), Offset(35, 16), Offset(36, 16), Offset(37, 16), Offset(38, 16), Offset(38, 15), Offset(39, 15), Offset(40, 15), Offset(41, 15), Offset(42, 16), Offset(41, 16), Offset(41, 16)])
+        await drag(pilot, '#canvas', [Offset(34, 13), Offset(34, 13), Offset(34, 12), Offset(35, 12), Offset(35, 11), Offset(35, 10), Offset(35, 9), Offset(36, 9), Offset(37, 9), Offset(38, 9), Offset(39, 9), Offset(40, 9), Offset(39, 9), Offset(38, 9), Offset(38, 9)],
+                   control=True) # duplicate selection with Ctrl
+        await drag(pilot, '#canvas', [Offset(2, 6), Offset(2, 6), Offset(3, 6), Offset(4, 6), Offset(4, 7), Offset(5, 7), Offset(6, 7), Offset(7, 8), Offset(8, 8), Offset(8, 9), Offset(10, 9), Offset(11, 10), Offset(12, 11), Offset(13, 11), Offset(13, 12), Offset(15, 12), Offset(16, 13), Offset(17, 13), Offset(18, 14), Offset(19, 14), Offset(20, 15), Offset(21, 16), Offset(23, 16), Offset(24, 17), Offset(25, 17), Offset(25, 18), Offset(26, 18), Offset(27, 18), Offset(28, 18), Offset(29, 18), Offset(30, 18), Offset(31, 18), Offset(32, 18), Offset(33, 18), Offset(33, 18)])
+
+    assert snap_compare(PAINT, run_before=automate_app, terminal_size=LARGER)
+
 def test_gallery_app(snap_compare: SnapCompareType):
     assert snap_compare(GALLERY)
 
