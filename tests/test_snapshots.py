@@ -157,28 +157,53 @@ def test_paint_about_paint_dialog(snap_compare: SnapCompareType, each_theme: Non
 
     assert snap_compare(PAINT, run_before=show_about_paint)
 
-@pytest.mark.skip(reason="@FIXME: polygon gets closed prematurely")
 def test_paint_polygon_tool(snap_compare: SnapCompareType):
     async def draw_polygon(pilot: Pilot[None]):
-        await click_by_attr(pilot, "ToolsBox Button", "tooltip", "Polygon")
-        await pilot.pause(1.0) # for good luck
-        await pilot.click("Canvas", offset=Offset(2, 2))
-        await pilot.click("Canvas", offset=Offset(2, 20))
-        await pilot.click("Canvas", offset=Offset(30, 20))
-        await pilot.click("Canvas", offset=Offset(30, 2))
-        await pilot.click("Canvas", offset=Offset(2, 2)) # end by clicking on the start point
-        await click_by_index(pilot, "ColorsBox Button", 16) # red
-        await pilot.pause(1.0) # for good luck
-        await pilot.click("Canvas", offset=Offset(10, 5))
-        await pilot.click("Canvas", offset=Offset(10, 9))
-        await pilot.click("Canvas", offset=Offset(10, 9))
-        await pilot.click("Canvas", offset=Offset(1, 5))
-        await pilot.click("Canvas", offset=Offset(1, 5)) # end by double clicking
-        await click_by_index(pilot, "ColorsBox Button", 17) # yellow
-        await pilot.pause(1.0) # for good luck
-        await pilot.click("Canvas", offset=Offset(10, 13))
-        await pilot.click("Canvas", offset=Offset(15, 13))
-        await pilot.click("Canvas", offset=Offset(12, 16)) # don't end, leave as polyline
+        # TODO: fix polygon closing prematurely
+        # (interpreting clicks as double clicks despite the distance)
+        # and then remove the pause() calls (as many as possible)
+        await pilot.pause(1.0)
+        await click_by_index(pilot, '#tools_box Button', 13)
+        await pilot.pause(1.0)
+        await pilot.click('#canvas', offset=Offset(3, 2))
+        await pilot.pause(1.0)
+        await pilot.click('#canvas', offset=Offset(19, 2))
+        await pilot.pause(1.0)
+        await pilot.click('#canvas', offset=Offset(29, 7))
+        await pilot.pause(1.0)
+        await pilot.click('#canvas', offset=Offset(11, 7))
+        await pilot.pause(1.0)
+        await pilot.click('#canvas', offset=Offset(3, 2))
+        await pilot.pause(1.0)
+        # first shape (defined above) should be closed by returning to start point
+
+        await click_by_index(pilot, '#available_colors Button', 16) # red
+        await pilot.pause(1.0)
+        await pilot.click('#canvas', offset=Offset(17, 10))
+        await pilot.pause(1.0)
+        await pilot.click('#canvas', offset=Offset(30, 16))
+        await pilot.pause(1.0)
+        await pilot.click('#canvas', offset=Offset(49, 16))
+        await pilot.pause(1.0)
+        await pilot.click('#canvas', offset=Offset(35, 10))
+        # await pilot.pause(1.0) # double click on purpose
+        await pilot.click('#canvas', offset=Offset(35, 10))
+        await pilot.pause(1.0)
+        # second shape (defined above) should be closed by double clicking
+
+        await click_by_index(pilot, '#available_colors Button', 17) # yellow
+        await pilot.pause(1.0)
+        await pilot.click('#canvas', offset=Offset(33, 2))
+        await pilot.pause(1.0)
+        await pilot.click('#canvas', offset=Offset(58, 16))
+        await pilot.pause(1.0)
+        await pilot.click('#canvas', offset=Offset(58, 2))
+        await pilot.pause(1.0)
+        await pilot.click('#canvas', offset=Offset(44, 2))
+        await pilot.pause(1.0)
+        await pilot.click('#canvas', offset=Offset(52, 7))
+        await pilot.pause(1.0)
+        # third shape (defined above) should be left open as a polyline
 
     assert snap_compare(PAINT, run_before=draw_polygon, terminal_size=LARGER)
 
