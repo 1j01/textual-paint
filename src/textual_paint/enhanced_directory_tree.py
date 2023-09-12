@@ -104,6 +104,11 @@ class EnhancedDirectoryTree(DirectoryTree):
         Once the last part of the path is reached, it scrolls to and selects the node.
         """
         # print("_expand_matching_child", node, remaining_parts)
+        if not remaining_parts:
+            # I noticed this happening when testing with pyfakefs.
+            # os.cwd() is faked to return "/" by default, leading to this edge case
+            # where the EnhancedDirectoryTree is "expanded" to the root.
+            return
         orig_add = node.add
         _expand_matching_child = self._expand_matching_child
         _add_to_load_queue = self._add_to_load_queue
@@ -163,11 +168,8 @@ class EnhancedDirectoryTree(DirectoryTree):
 
         if callback is None:
             callback = lambda: None
-        
-        remaining_parts = target_path.parts[1:]
-        # True unless target_path is the root (edge case which occurs when testing with pyfakefs).
-        if len(remaining_parts) > 1:
-            self._expand_matching_child(self.root, remaining_parts, callback)
+
+        self._expand_matching_child(self.root, target_path.parts[1:], callback)
 
     def render_label(
         self, node: TreeNode[DirEntry], base_style: Style, style: Style

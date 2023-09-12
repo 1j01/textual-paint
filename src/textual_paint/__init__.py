@@ -22,9 +22,8 @@ import sys
 PYTEST = "pytest" in sys.modules
 """Whether running from pytest."""
 
-if DEVELOPMENT:
-    __version__ = "development " + check_output(["git", "describe", "--tags"], cwd=dirname(__file__)).strip().decode()
-
 if PYTEST:
     # Avoid version string in About Paint dialog affecting snapshots.
     __version__ = "snapshot test edition :)"
+elif DEVELOPMENT:
+    __version__ = "development " + check_output(["git", "describe", "--tags"], cwd=dirname(__file__)).strip().decode()

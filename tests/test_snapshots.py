@@ -63,17 +63,21 @@ def each_theme(request: pytest.FixtureRequest):
     args.theme = "light"
     args.ascii_only = False
 
-APPS_DIR_ABSOLUTE = (Path(__file__).parent / APPS_DIR).resolve()
-TESTS_DIR_ABSOLUTE = Path(__file__).parent.resolve()
+# APPS_DIR_ABSOLUTE = (Path(__file__).parent / APPS_DIR).resolve()
+# TESTS_DIR_ABSOLUTE = Path(__file__).parent.resolve()
+REPO_DIR_ABSOLUTE = Path(__file__).parent.parent.resolve()
 
 @pytest.fixture
 def my_fs(fs: FakeFilesystem) -> Generator[FakeFilesystem, None, None]:
-    print("adding real directory", APPS_DIR_ABSOLUTE)
-    fs.add_real_directory(APPS_DIR_ABSOLUTE)
+    # print("adding real directory", APPS_DIR_ABSOLUTE)
+    # fs.add_real_directory(APPS_DIR_ABSOLUTE)
     
-    # Without this, pytest-textual-snapshot will show "No history for this test"
-    print("adding real directory", TESTS_DIR_ABSOLUTE)
-    fs.add_real_directory(TESTS_DIR_ABSOLUTE)
+    # # Without this, pytest-textual-snapshot will show "No history for this test"
+    # print("adding real directory", TESTS_DIR_ABSOLUTE)
+    # fs.add_real_directory(TESTS_DIR_ABSOLUTE)
+
+    print("adding real directory", REPO_DIR_ABSOLUTE)
+    fs.add_real_directory(REPO_DIR_ABSOLUTE)
 
     # TODO: use proper mocking or figure out how to get FigletFont to find the real font files.
     # This folder doesn't actually exist on my system, so it's not getting them from there.

@@ -65,7 +65,7 @@ def update_cli_help_on_readme():
         f.write(md)
         f.truncate()
 
-if DEVELOPMENT:
+if DEVELOPMENT and not PYTEST:
     # A pre-commit hook might technically be best for this,
     # but I doubt it's worth the complexity.
     # I'm usually running with --restart-on-changes anyways,
