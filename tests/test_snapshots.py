@@ -1,12 +1,17 @@
 from pathlib import Path, PurePath
-from typing import TYPE_CHECKING, Awaitable, Callable, Iterable, Protocol
+from typing import (TYPE_CHECKING, Awaitable, Callable, Generator, Iterable,
+                    Protocol)
 
+import pyfakefs
 import pytest
+from pyfakefs.fake_file import FakeDirectory
+from pyfakefs.fake_filesystem import FakeFilesystem
 from textual.geometry import Offset
 from textual.pilot import Pilot
 from textual.widgets import Input
 
 from tests.pilot_helpers import click_by_attr, click_by_index, drag
+from textual_paint.figlet_font_writer import FIGletFontWriter
 
 if TYPE_CHECKING:
     # When tests are run, paint.py is re-evaluated,
@@ -58,6 +63,38 @@ def each_theme(request: pytest.FixtureRequest):
     args.theme = "light"
     args.ascii_only = False
 
+APPS_DIR_ABSOLUTE = (Path(__file__).parent / APPS_DIR).resolve()
+TESTS_DIR_ABSOLUTE = Path(__file__).parent.resolve()
+
+@pytest.fixture
+def my_fs(fs: FakeFilesystem) -> Generator[FakeFilesystem, None, None]:
+    print("adding real directory", APPS_DIR_ABSOLUTE)
+    fs.add_real_directory(APPS_DIR_ABSOLUTE)
+    
+    # Without this, pytest-textual-snapshot will show "No history for this test"
+    print("adding real directory", TESTS_DIR_ABSOLUTE)
+    fs.add_real_directory(TESTS_DIR_ABSOLUTE)
+
+    # TODO: use proper mocking or figure out how to get FigletFont to find the real font files.
+    # This folder doesn't actually exist on my system, so it's not getting them from there.
+    # from pyfiglet import SHARED_DIRECTORY
+    # fs.add_real_directory(SHARED_DIRECTORY)
+
+    # Don't fail trying to load the default font "standard", we don't need it!
+    # `pkg_resources` doesn't seem to work with pyfakefs.
+    from pyfiglet import FigletFont
+    def preloadFont(self: FigletFont, font: str):
+        dumb_font = FIGletFontWriter(commentLines=["Stupid font for testing"])
+        for ordinal in dumb_font.charOrder:
+            dumb_font.figChars[ordinal] = "fallback font for testing"
+        return dumb_font.createFigFileData()
+    FigletFont.preloadFont = preloadFont
+  
+    # Add an extra file to show how a file looks in the EnhancedDirectoryTree widget.
+    fs.create_file("/pyfakefs_added_file.txt", contents="pyfakefs ate ur FS")
+
+    yield fs
+
 
 def test_paint_app(snap_compare: SnapCompareType, each_theme: None):
     assert snap_compare(PAINT, terminal_size=LARGER)
@@ -71,10 +108,10 @@ def test_paint_flip_rotate_dialog(snap_compare: SnapCompareType, each_theme: Non
 def test_paint_image_attributes_dialog(snap_compare: SnapCompareType, each_theme: None):
     assert snap_compare(PAINT, press=["ctrl+e"])
 
-def test_paint_open_dialog(snap_compare: SnapCompareType, each_theme: None):
+def test_paint_open_dialog(snap_compare: SnapCompareType, each_theme: None, my_fs: None):
     assert snap_compare(PAINT, press=["ctrl+o"], terminal_size=LARGER)
 
-def test_paint_save_dialog(snap_compare: SnapCompareType, each_theme: None):
+def test_paint_save_dialog(snap_compare: SnapCompareType, each_theme: None, my_fs: None):
     assert snap_compare(PAINT, press=["ctrl+s"], terminal_size=LARGER)
 
 def test_paint_help_dialog(snap_compare: SnapCompareType, each_theme: None):

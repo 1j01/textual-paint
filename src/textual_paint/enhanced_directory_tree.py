@@ -163,7 +163,11 @@ class EnhancedDirectoryTree(DirectoryTree):
 
         if callback is None:
             callback = lambda: None
-        self._expand_matching_child(self.root, target_path.parts[1:], callback)
+        
+        remaining_parts = target_path.parts[1:]
+        # True unless target_path is the root (edge case which occurs when testing with pyfakefs).
+        if len(remaining_parts) > 1:
+            self._expand_matching_child(self.root, remaining_parts, callback)
 
     def render_label(
         self, node: TreeNode[DirEntry], base_style: Style, style: Style

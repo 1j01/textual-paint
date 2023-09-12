@@ -118,6 +118,7 @@
 		"psutil",
 		"pybabel",
 		"pycache",
+		"pyfakefs",
 		"pyfiglet",
 		"Pylance",
 		"pyobjc",
