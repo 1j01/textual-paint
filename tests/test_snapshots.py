@@ -58,6 +58,14 @@ def each_theme(request: pytest.FixtureRequest):
     args.theme = "light"
     args.ascii_only = False
 
+REAL_PATH = (Path(__file__).parent / APPS_DIR).resolve()
+
+@pytest.fixture
+def my_fs(fs):
+    print("adding real directory", REAL_PATH)
+    fs.add_real_directory(REAL_PATH)
+    yield fs
+
 
 def test_paint_app(snap_compare: SnapCompareType, each_theme: None):
     assert snap_compare(PAINT, terminal_size=LARGER)
@@ -71,10 +79,10 @@ def test_paint_flip_rotate_dialog(snap_compare: SnapCompareType, each_theme: Non
 def test_paint_image_attributes_dialog(snap_compare: SnapCompareType, each_theme: None):
     assert snap_compare(PAINT, press=["ctrl+e"])
 
-def test_paint_open_dialog(snap_compare: SnapCompareType, each_theme: None):
+def test_paint_open_dialog(snap_compare: SnapCompareType, each_theme: None, my_fs: None):
     assert snap_compare(PAINT, press=["ctrl+o"], terminal_size=LARGER)
 
-def test_paint_save_dialog(snap_compare: SnapCompareType, each_theme: None):
+def test_paint_save_dialog(snap_compare: SnapCompareType, each_theme: None, my_fs: None):
     assert snap_compare(PAINT, press=["ctrl+s"], terminal_size=LARGER)
 
 def test_paint_help_dialog(snap_compare: SnapCompareType, each_theme: None):
