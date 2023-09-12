@@ -207,7 +207,7 @@ def test_paint_polygon_tool(snap_compare: SnapCompareType):
 def test_text_tool_wrapping(snap_compare: SnapCompareType):
     async def automate_app(pilot: Pilot[None]):
         await click_by_attr(pilot, "ToolsBox Button", "tooltip", "Text")
-        await drag(pilot, '#canvas', [Offset(x=5, y=8), Offset(x=24, y=16)])
+        await drag(pilot, '#canvas', [Offset(5, 8), Offset(24, 16)])
         for key in ('T', 'e', 'x', 't', 'space', 'T', 'o', 'o', 'l', 'space', 'T', 'e', 's', 't', 'space', 'left_parenthesis', 'T', 'T', 'T', 'right_parenthesis', 'n', 'e', 'w', 'space', 'l', 'i', 'n', 'e', 'space', 's', 't', 'a', 'r', 't', 's', 'space', 'h', 'e', 'r', 'e', 'a', 'n', 'd', 'space', 'h', 'e', 'r', 'e', 'space', 'a', 'u', 't', 'o', 'm', 'a', 't', 'i', 'c', 'a', 'l', 'hyphen', 'l', 'y'):
             await pilot.press(key)
 
@@ -216,7 +216,7 @@ def test_text_tool_wrapping(snap_compare: SnapCompareType):
 def test_text_tool_cursor_keys_and_color(snap_compare: SnapCompareType):
     async def automate_app(pilot: Pilot[None]):
         await click_by_attr(pilot, "ToolsBox Button", "tooltip", "Text")
-        await drag(pilot, '#canvas', [Offset(x=8, y=5), Offset(x=21, y=10)])
+        await drag(pilot, '#canvas', [Offset(8, 5), Offset(21, 10)])
         for key in ('s', 'end', 'pagedown', '1', 'home', '2', 'pageup', '3', 'end', '4', 'pageup', 'home', 'right', 'right', 'c', 'r', 'e', 't', 'backspace', 'backspace', 'backspace', 'backspace', 'v', '3', 'n'):
             await pilot.press(key)
         await pilot.click('#canvas', offset=Offset(9, 10))
