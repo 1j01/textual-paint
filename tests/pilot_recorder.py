@@ -18,6 +18,7 @@ FIXME:
 
 import os
 from typing import Any, Callable
+import uuid
 
 from rich.syntax import Syntax
 from rich.text import Text
@@ -193,7 +194,8 @@ class PilotRecorder():
         #     (f"{step_index + 1}. {event!r}" + ("{offset!r}, {selector!r}, {index!r}" if isinstance(event, (MouseDown, MouseMove, MouseUp)) else ""))
         #     for step_index, (event, offset, selector, index) in enumerate(self.steps)
         # ))
-        self.steps_view.update(Syntax(self.get_replay_code(), "python", line_numbers=True, highlight_lines=highlight_lines))
+        code = self.get_replay_code() + "\n\n# random id: " + uuid.uuid4().hex
+        self.steps_view.update(Syntax(code, "python", line_numbers=True, highlight_lines=highlight_lines))
 
     def highlight_line(self, line_index: int) -> None:
         """Highlight the given line in the steps view."""
