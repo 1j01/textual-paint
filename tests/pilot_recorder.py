@@ -4,6 +4,10 @@ TODO:
 - Handle right clicks, middle clicks, and modifier keys.
 - Handle mouse wheel events.
 - Handle paste events.
+- Ignore clicks on the #pilot-recorder-steps widget.
+- Add a way to toggle the steps view.
+- Try adding a delay before reloading so you can undo multiple steps at once.
+- Auto-save to a WIP test file.
 - Ideally the supporting functions like drag() should be part of Pilot.
 - Ideally SnapCompareType should be part of pytest-textual-snapshot.
 
@@ -236,7 +240,8 @@ class PilotRecorder():
                 if isinstance(self.steps[step_index - 1][0], MouseMove):
                     helpers.add("drag")
                     # find the last mouse down event
-                    # TODO: make sure the offsets are all relative to the same widget
+                    # TODO: make sure the offsets are all relative to
+                    # the initial position of the widget that got MouseDown.
                     for previous_step_index in range(step_index - 1, -1, -1):
                         previous_event, _, _, _ = self.steps[previous_step_index]
                         if isinstance(previous_event, MouseDown):

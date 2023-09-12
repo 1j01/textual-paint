@@ -40,6 +40,7 @@ async def click_by_attr(pilot: Pilot[Any], selector: str, attr: str, value: Any,
 
 async def drag(pilot: Pilot[Any], selector: str, offsets: list[Offset], shift: bool = False, meta: bool = False, control: bool = False) -> None:
     """Drag across the given points."""
+    # TODO: treat all offsets relative to the initial position of the matched widget
     # await pilot.pause(0.5)
     target_widget = pilot.app.query(selector)[0]
     offset = offsets[0]
@@ -52,8 +53,10 @@ async def drag(pilot: Pilot[Any], selector: str, offsets: list[Offset], shift: b
         message_arguments = _get_mouse_message_arguments(
             target_widget, offset, button=1, shift=shift, meta=meta, control=control
         )
+        # TODO: set delta_x and delta_y
         pilot.app.post_message(MouseMove(**message_arguments))
         await pilot.pause()
+    # TODO: (then zero out delta_x and delta_y)
     pilot.app.post_message(MouseUp(**message_arguments))
     await pilot.pause(0.1)
     # pilot.app.post_message(Click(**message_arguments))
