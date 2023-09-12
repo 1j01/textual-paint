@@ -2,7 +2,6 @@ from pathlib import Path, PurePath
 from typing import (TYPE_CHECKING, Awaitable, Callable, Generator, Iterable,
                     Protocol)
 
-import pyfakefs
 import pytest
 from pyfakefs.fake_file import FakeDirectory
 from pyfakefs.fake_filesystem import FakeFilesystem
@@ -79,6 +78,11 @@ def my_fs(fs: FakeFilesystem) -> Generator[FakeFilesystem, None, None]:
     print("adding real directory", REPO_DIR_ABSOLUTE)
     fs.add_real_directory(REPO_DIR_ABSOLUTE)
 
+    # DirectoryTree stores a reference to Path for some reason, making my life more difficult.
+    from textual.widgets._directory_tree import DirectoryTree
+    orig_PATH = DirectoryTree.PATH
+    DirectoryTree.PATH = Path
+
     # TODO: use proper mocking or figure out how to get FigletFont to find the real font files.
     # This folder doesn't actually exist on my system, so it's not getting them from there.
     # from pyfiglet import SHARED_DIRECTORY
@@ -98,6 +102,9 @@ def my_fs(fs: FakeFilesystem) -> Generator[FakeFilesystem, None, None]:
     fs.create_file("/pyfakefs_added_file.txt", contents="pyfakefs ate ur FS")
 
     yield fs
+
+    # probably don't need to actually clean up, but whatever
+    DirectoryTree.PATH = orig_PATH
 
 
 def test_paint_app(snap_compare: SnapCompareType, each_theme: None):

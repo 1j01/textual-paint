@@ -43,6 +43,9 @@ class EnhancedDirectoryTree(DirectoryTree):
     method for this one thing.)
     """
 
+    _id = "some fake shit"
+    _name = "some more fake shit"
+
     def filter_paths(self, paths: Iterable[Path]) -> Iterable[Path]:
         return [path for path in paths if not (path.name.startswith(".") or path.name.endswith("~") or path.name.startswith("~"))]
 
