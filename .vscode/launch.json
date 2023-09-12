@@ -58,6 +58,14 @@
             "justMyCode": false,
 			// If using pytest-cov in the future:
             // "env": {"PYTEST_ADDOPTS": "--no-cov"}
+        },
+		{
+            "name": "Debug Test Recorder",
+            "type": "python",
+            "request": "launch",
+			"module": "tests.pilot_recorder",
+            "console": "integratedTerminal",
+            "justMyCode": false,
         }
 	]
 }
