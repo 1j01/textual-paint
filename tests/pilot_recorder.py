@@ -47,17 +47,32 @@ def indent(text: str, spaces: int) -> str:
     """Return the text indented by the given number of spaces (including the first line)."""
     return "\n".join(" " * spaces + line for line in text.splitlines())
 
+# async def async_exec(code: str, **kwargs: object) -> object:
+#     """Execute the given code in an async function and return the result. Keyword arguments are made available as variables."""
+#     # This dict will be used for passing variables to the `exec`ed code
+#     # as well as retrieving the function defined by the code.
+#     scope = kwargs
+
+#     # Make an async function with the code and `exec` it
+#     exec(f"async def async_exec_code():\n{indent(code, 4)}", scope)
+
+#     # Get `async_exec_code` from the scope, call it and return the result
+#     return await scope['async_exec_code']()  # type: ignore
+
+
 async def async_exec(code: str, **kwargs: object) -> object:
     """Execute the given code in an async function and return the result. Keyword arguments are made available as variables."""
-    # This dict will be used for passing variables to the `exec`ed code
-    # as well as retrieving the function defined by the code.
-    scope = kwargs
-
-    # Make an async function with the code and `exec` it
-    exec(f"async def async_exec_code():\n{indent(code, 4)}", scope)
-
+    # Import the file as a module for debugging
+    temp_file = unique_file("async_exec_code.py")
+    with open(temp_file, "w") as f:
+        f.write(f"async def async_exec_code({', '.join(kwargs.keys())}):\n{indent(code, 4)}")
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("async_exec_code", temp_file)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
     # Get `async_exec_code` from the scope, call it and return the result
-    return await scope['async_exec_code']()  # type: ignore
+    return await module.async_exec_code(**kwargs)  # type: ignore
+
 
 def get_selector(target: DOMNode) -> tuple[str, int|None]:
     """Return a selector that can be used to find the widget."""
@@ -191,8 +206,8 @@ class PilotRecorder():
         await pilot._wait_for_screen(timeout=5.0)
         self.replaying = True
         replay_code = self.get_replay_code()
-        # Fix import
-        replay_code = replay_code.replace("from tests.pilot_helpers import", "from pilot_helpers import")
+        # Fix import if using exec(), not importlib
+        # replay_code = replay_code.replace("from tests.pilot_helpers import", "from pilot_helpers import")
         # Instrument with highlight_line calls
         replay_code = "\n".join(line if "def " in line or len(line) == 0 or line[0] == " " else f"highlight_line({line_index}); {line}" for line_index, line in enumerate(replay_code.splitlines()))
         await async_exec(replay_code, pilot=pilot, Offset=Offset, highlight_line=self.highlight_line)
