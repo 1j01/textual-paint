@@ -5,6 +5,7 @@ Ideally this functionality would be part of Pilot.
 
 from typing import Any
 
+from textual.errors import NoWidget
 from textual.events import MouseDown, MouseMove, MouseUp
 from textual.geometry import Offset
 from textual.pilot import Pilot, _get_mouse_message_arguments
@@ -23,6 +24,18 @@ async def click_by_index(pilot: Pilot[Any], selector: str, index: int, shift: bo
     # await pilot.pause(0.5)
     widget = pilot.app.query(selector)[index]
     await click_widget(pilot, widget, shift=shift, meta=meta, control=control)
+
+
+async def click_by_attr(pilot: Pilot[Any], selector: str, attr: str, value: Any, shift: bool = False, meta: bool = False, control: bool = False) -> None:
+    """Click on widget, query disambiguated by an attribute"""
+    # await pilot.pause(0.5)
+    widgets = pilot.app.query(selector)
+    for widget in widgets:
+        if getattr(widget, attr) == value:
+            break
+    else:
+        raise NoWidget(f"Could not find widget with {attr}={value}")
+    await click_widget(pilot, widget)
 
 
 async def drag(pilot: Pilot[Any], selector: str, offsets: list[Offset], shift: bool = False, meta: bool = False, control: bool = False) -> None:

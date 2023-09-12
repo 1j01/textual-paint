@@ -6,7 +6,7 @@ from textual.geometry import Offset
 from textual.pilot import Pilot
 from textual.widgets import Input
 
-from tests.pilot_helpers import click_by_index, click_widget, drag
+from tests.pilot_helpers import click_by_attr, click_by_index, drag
 
 if TYPE_CHECKING:
     # When tests are run, paint.py is re-evaluated,
@@ -160,30 +160,21 @@ def test_paint_about_paint_dialog(snap_compare: SnapCompareType, each_theme: Non
 @pytest.mark.skip(reason="@FIXME: polygon gets closed prematurely")
 def test_paint_polygon_tool(snap_compare: SnapCompareType):
     async def draw_polygon(pilot: Pilot[None]):
-        tool_buttons = pilot.app.query("ToolsBox Button")
-        color_buttons = pilot.app.query("ColorsBox Button")
-        for button in tool_buttons:
-            if button.tooltip == "Polygon":
-                polygon_tool_button = button
-                break
-        else:
-            raise Exception("Couldn't find Polygon tool button")
-
-        await click_widget(pilot, polygon_tool_button)
+        await click_by_attr(pilot, "ToolsBox Button", "tooltip", "Polygon")
         await pilot.pause(1.0) # for good luck
         await pilot.click("Canvas", offset=Offset(2, 2))
         await pilot.click("Canvas", offset=Offset(2, 20))
         await pilot.click("Canvas", offset=Offset(30, 20))
         await pilot.click("Canvas", offset=Offset(30, 2))
         await pilot.click("Canvas", offset=Offset(2, 2)) # end by clicking on the start point
-        await click_widget(pilot, color_buttons[16]) # red
+        await click_by_index(pilot, "ColorsBox Button", 16) # red
         await pilot.pause(1.0) # for good luck
         await pilot.click("Canvas", offset=Offset(10, 5))
         await pilot.click("Canvas", offset=Offset(10, 9))
         await pilot.click("Canvas", offset=Offset(10, 9))
         await pilot.click("Canvas", offset=Offset(1, 5))
         await pilot.click("Canvas", offset=Offset(1, 5)) # end by double clicking
-        await click_widget(pilot, color_buttons[17]) # yellow
+        await click_by_index(pilot, "ColorsBox Button", 17) # yellow
         await pilot.pause(1.0) # for good luck
         await pilot.click("Canvas", offset=Offset(10, 13))
         await pilot.click("Canvas", offset=Offset(15, 13))
@@ -193,7 +184,7 @@ def test_paint_polygon_tool(snap_compare: SnapCompareType):
 
 def test_text_tool_wrapping(snap_compare: SnapCompareType):
     async def automate_app(pilot: Pilot[None]):
-        await click_by_index(pilot, '#tools_box Button', 9)
+        await click_by_attr(pilot, "ToolsBox Button", "tooltip", "Text")
         await drag(pilot, '#canvas', [Offset(x=5, y=8), Offset(x=24, y=16)])
         for key in ('T', 'e', 'x', 't', 'space', 'T', 'o', 'o', 'l', 'space', 'T', 'e', 's', 't', 'space', 'left_parenthesis', 'T', 'T', 'T', 'right_parenthesis', 'n', 'e', 'w', 'space', 'l', 'i', 'n', 'e', 'space', 's', 't', 'a', 'r', 't', 's', 'space', 'h', 'e', 'r', 'e', 'a', 'n', 'd', 'space', 'h', 'e', 'r', 'e', 'space', 'a', 'u', 't', 'o', 'm', 'a', 't', 'i', 'c', 'a', 'l', 'hyphen', 'l', 'y'):
             await pilot.press(key)
@@ -202,7 +193,7 @@ def test_text_tool_wrapping(snap_compare: SnapCompareType):
 
 def test_text_tool_cursor_keys_and_color(snap_compare: SnapCompareType):
     async def automate_app(pilot: Pilot[None]):
-        await click_by_index(pilot, '#tools_box Button', 9)
+        await click_by_attr(pilot, "ToolsBox Button", "tooltip", "Text")
         await drag(pilot, '#canvas', [Offset(x=8, y=5), Offset(x=21, y=10)])
         for key in ('s', 'end', 'pagedown', '1', 'home', '2', 'pageup', '3', 'end', '4', 'pageup', 'home', 'right', 'right', 'c', 'r', 'e', 't', 'backspace', 'backspace', 'backspace', 'backspace', 'v', '3', 'n'):
             await pilot.press(key)
