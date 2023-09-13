@@ -188,7 +188,8 @@ class Tool(Enum):
         # so alternative characters need to be chosen carefully for each platform.
         # "🫗" causes jutting out in Ubuntu terminal, "🪣" causes the opposite in VS Code terminal
         # VS Code sets TERM_PROGRAM to "vscode", so we can use that to detect it
-        TERM_PROGRAM = os.environ.get("TERM_PROGRAM")
+        # Don't swap out tool button icons when running in pytest, to avoid snapshot differences across platforms.
+        TERM_PROGRAM = "pytest" if PYTEST else os.environ.get("TERM_PROGRAM")
         if TERM_PROGRAM == "vscode":
             if self == Tool.fill:
                 # return "🫗" # is also hard to see in the light theme
