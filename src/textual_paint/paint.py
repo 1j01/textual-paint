@@ -9,7 +9,6 @@ import re
 import shlex
 import sys
 from enum import Enum
-from pathlib import Path
 from random import random
 from typing import Any, Callable, Coroutine, Iterator, Optional
 from uuid import uuid4
