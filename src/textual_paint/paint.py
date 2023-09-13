@@ -46,6 +46,7 @@ from textual_paint.ansi_art_document import (SAVE_DISABLED_FORMATS,
 from textual_paint.args import args, get_help_text
 from textual_paint.ascii_mode import set_ascii_only_mode
 from textual_paint.auto_restart import restart_on_changes, restart_program
+from textual_paint.character_picker import CharacterSelectorDialogWindow
 from textual_paint.edit_colors import EditColorsDialogWindow
 from textual_paint.file_dialogs import OpenDialogWindow, SaveAsDialogWindow
 from textual_paint.graphics_primitives import (bezier_curve_walk,
@@ -60,9 +61,9 @@ from textual_paint.menus import Menu, MenuBar, MenuItem, Separator
 from textual_paint.palette_data import DEFAULT_PALETTE, IRC_PALETTE
 from textual_paint.rasterize_ansi_art import rasterize
 from textual_paint.wallpaper import get_config_dir, set_wallpaper
-from textual_paint.windows import (CharacterSelectorDialogWindow, DialogWindow,
-                                   MessageBox, Window, get_paint_icon,
-                                   get_question_icon, get_warning_icon)
+from textual_paint.windows import (DialogWindow, MessageBox, Window,
+                                   get_paint_icon, get_question_icon,
+                                   get_warning_icon)
 
 MAX_FILE_SIZE = 500000 # 500 KB
 
