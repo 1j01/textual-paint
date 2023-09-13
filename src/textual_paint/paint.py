@@ -55,15 +55,15 @@ from textual_paint.graphics_primitives import (bezier_curve_walk,
                                                midpoint_ellipse, polygon_walk,
                                                polyline_walk,
                                                quadratic_curve_walk)
+from textual_paint.icons import (get_paint_icon, get_question_icon,
+                                 get_warning_icon)
 from textual_paint.localization.i18n import get as _
 from textual_paint.localization.i18n import load_language, remove_hotkey
 from textual_paint.menus import Menu, MenuBar, MenuItem, Separator
 from textual_paint.palette_data import DEFAULT_PALETTE, IRC_PALETTE
 from textual_paint.rasterize_ansi_art import rasterize
 from textual_paint.wallpaper import get_config_dir, set_wallpaper
-from textual_paint.windows import (DialogWindow, MessageBox, Window,
-                                   get_paint_icon, get_question_icon,
-                                   get_warning_icon)
+from textual_paint.windows import DialogWindow, MessageBox, Window
 
 MAX_FILE_SIZE = 500000 # 500 KB
 
