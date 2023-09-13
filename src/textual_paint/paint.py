@@ -55,7 +55,7 @@ from textual_paint.graphics_primitives import (bezier_curve_walk,
                                                polyline_walk,
                                                quadratic_curve_walk)
 from textual_paint.icons import (get_paint_icon, get_question_icon,
-                                 get_warning_icon)
+                                 get_warning_icon, header_icon_text)
 from textual_paint.localization.i18n import get as _
 from textual_paint.localization.i18n import load_language, remove_hotkey
 from textual_paint.menus import Menu, MenuBar, MenuItem, Separator
@@ -4051,37 +4051,6 @@ Columns: {len(palette) // 2}
                     widget.styles.border = ("round", Color.from_hsl(i / 10, 1, 0.5))
                     widget.border_title = widget.css_identifier_styled  # type: ignore
 
-
-# header_icon_markup = "[on white][blue]\\\\[/][red]|[/][yellow]/[/][/]"
-# header_icon_markup = "[black]..,[/]\n[blue]\\\\[/][on white][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[_][/]"
-# trying different geometries for the page going behind the cup of brushes:
-# header_icon_markup = "[black]..,[/]\n[blue]\\\\[/][on white][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[][on white] [/][/]"
-# header_icon_markup = "[black]...[/]\n[on white][blue]\\\\[/][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[][on white] [/][/]"
-# going back to the first option and adding shading to the cup:
-# header_icon_markup = "[black]..,[/]\n[blue]\\\\[/][on white][red]|[/][yellow]/[/][/]\n[black on rgb(230,230,230)]\\[[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]][/]"
-# actually, place white behind it all
-# header_icon_markup = "[black on white]..,\n[blue]\\\\[/][red]|[/][yellow]/[/]\n[black on rgb(230,230,230)]\\[[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]][/][/]"
-# and pad it a bit horizontally
-# header_icon_markup = "[black on white] .., \n [blue]\\\\[/][red]|[/][yellow]/[/] \n [black on rgb(230,230,230)]\\[[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]][/] [/]"
-# well... if I'm doing that, I might as well add a page corner fold
-# header_icon_markup = "[black on white] ..,[white on rgb(192,192,192)]\\\\[/]\n [blue]\\\\[/][red]|[/][yellow]/[/] \n [black on rgb(230,230,230)]\\[[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]][/] [/]"
-# remove left padding because left-pad is a security risk
-# header_icon_markup = "[black on white]..,[white on rgb(192,192,192)]\\\\[/]\n[blue]\\\\[/][red]|[/][yellow]/[/] \n[black on rgb(230,230,230)]\\[[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]][/] [/]"
-# T it up, get that cup, yup! (this makes it look kind of like a crying face but other than that it's a pretty nice shape)
-# header_icon_markup = "[black on white]..,[white on rgb(192,192,192)]\\\\[/]\n[blue]\\\\[/][red]|[/][yellow]/[/] \n[black on rgb(230,230,230)]T[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]T[/] [/]"
-# oh and make the white actually white (not dim white)
-# header_icon_markup = "[rgb(0,0,0) on rgb(255,255,255)]..,[rgb(255,255,255) on rgb(192,192,192)]\\\\[/]\n[blue]\\\\[/][red]|[/][yellow]/[/] \n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
-# and remove the background from the page fold, to match the About Paint dialog's icon
-# header_icon_markup = "[rgb(0,0,0) on rgb(255,255,255)]..,[/][rgb(255,255,255)]\\\\[/][rgb(0,0,0) on rgb(255,255,255)]\n[blue]\\\\[/][red]|[/][yellow]/[/] \n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
-# and add a shading under the page fold
-# header_icon_markup = "[rgb(0,0,0) on rgb(255,255,255)]..,[/][rgb(255,255,255)]\\\\[/][rgb(0,0,0) on rgb(255,255,255)]\n[blue]\\\\[/][red]|[/][yellow]/[/][rgb(192,192,192)]~[/]\n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
-# unify the brush tops; the right-most one isn't a cell over like in the About Paint dialog's icon, to align with the slant of a comma
-# header_icon_markup = "[rgb(0,0,0) on rgb(255,255,255)]...[/][rgb(255,255,255)]\\\\[/][rgb(0,0,0) on rgb(255,255,255)]\n[blue]\\\\[/][red]|[/][yellow]/[/][rgb(192,192,192)]~[/]\n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
-# bold the brush handles
-header_icon_markup = "[rgb(0,0,0) on rgb(255,255,255)]...[/][rgb(255,255,255)]\\\\[/][rgb(0,0,0) on rgb(255,255,255)]\n[bold][blue]\\\\[/][red]|[/][yellow]/[/][/][rgb(192,192,192)]~[/]\n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
-# This got pretty out of hand. I should've done this in Textual Paint before letting it get this complex!
-# Prevent wrapping, for a CSS effect, cropping to hide the shading "~" of the page fold when the page fold isn't visible.
-header_icon_text = Text.from_markup(header_icon_markup, overflow="crop")
 
 # `textual run --dev src.textual_paint.paint` will search for a
 # global variable named `app`, and fallback to

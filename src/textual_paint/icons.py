@@ -1,11 +1,11 @@
-"""Icons for message boxes, as `Static` widget factories.
+"""Icons for message boxes, as `Static` widget factories, and for the `Header`, as `Text`.
 
 Reusing widget instances doesn't work, for obvious reasons in the case of multiple dialogs open at once,
 and reasons mysterious to me in the case of closing and re-opening a single dialog.
 
 Some of these icons are designed inside Textual Paint itself,
 and saved as `*._rich_console_markup` as a way to export the markup for embedding in the source code.
-The warning icon I did by hand in markup.
+The warning and header icons I did by hand in markup.
 
 Some icons used elsewhere in the application are loaded from .ans files.
 Two nice things about embedding it are:
@@ -15,6 +15,7 @@ Two nice things about embedding it are:
 TODO: dynamic dark mode (I already have alternate versions of some icons)
 """
 
+from rich.text import Text
 from textual.widgets import Static
 
 from textual_paint.args import args
@@ -227,8 +228,42 @@ def get_paint_icon() -> Static:
     markup = paint_icon_console_markup_ascii if args.ascii_only else paint_icon_console_markup
     return Static(markup, classes="paint_icon message_box_icon")
 
+
+# header_icon_markup = "[on white][blue]\\\\[/][red]|[/][yellow]/[/][/]"
+# header_icon_markup = "[black]..,[/]\n[blue]\\\\[/][on white][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[_][/]"
+# trying different geometries for the page going behind the cup of brushes:
+# header_icon_markup = "[black]..,[/]\n[blue]\\\\[/][on white][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[][on white] [/][/]"
+# header_icon_markup = "[black]...[/]\n[on white][blue]\\\\[/][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[][on white] [/][/]"
+# going back to the first option and adding shading to the cup:
+# header_icon_markup = "[black]..,[/]\n[blue]\\\\[/][on white][red]|[/][yellow]/[/][/]\n[black on rgb(230,230,230)]\\[[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]][/]"
+# actually, place white behind it all
+# header_icon_markup = "[black on white]..,\n[blue]\\\\[/][red]|[/][yellow]/[/]\n[black on rgb(230,230,230)]\\[[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]][/][/]"
+# and pad it a bit horizontally
+# header_icon_markup = "[black on white] .., \n [blue]\\\\[/][red]|[/][yellow]/[/] \n [black on rgb(230,230,230)]\\[[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]][/] [/]"
+# well... if I'm doing that, I might as well add a page corner fold
+# header_icon_markup = "[black on white] ..,[white on rgb(192,192,192)]\\\\[/]\n [blue]\\\\[/][red]|[/][yellow]/[/] \n [black on rgb(230,230,230)]\\[[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]][/] [/]"
+# remove left padding because left-pad is a security risk
+# header_icon_markup = "[black on white]..,[white on rgb(192,192,192)]\\\\[/]\n[blue]\\\\[/][red]|[/][yellow]/[/] \n[black on rgb(230,230,230)]\\[[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]][/] [/]"
+# T it up, get that cup, yup! (this makes it look kind of like a crying face but other than that it's a pretty nice shape)
+# header_icon_markup = "[black on white]..,[white on rgb(192,192,192)]\\\\[/]\n[blue]\\\\[/][red]|[/][yellow]/[/] \n[black on rgb(230,230,230)]T[/][black on rgb(192,192,192)]_[/][black on rgb(150,150,150)]T[/] [/]"
+# oh and make the white actually white (not dim white)
+# header_icon_markup = "[rgb(0,0,0) on rgb(255,255,255)]..,[rgb(255,255,255) on rgb(192,192,192)]\\\\[/]\n[blue]\\\\[/][red]|[/][yellow]/[/] \n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
+# and remove the background from the page fold, to match the About Paint dialog's icon
+# header_icon_markup = "[rgb(0,0,0) on rgb(255,255,255)]..,[/][rgb(255,255,255)]\\\\[/][rgb(0,0,0) on rgb(255,255,255)]\n[blue]\\\\[/][red]|[/][yellow]/[/] \n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
+# and add a shading under the page fold
+# header_icon_markup = "[rgb(0,0,0) on rgb(255,255,255)]..,[/][rgb(255,255,255)]\\\\[/][rgb(0,0,0) on rgb(255,255,255)]\n[blue]\\\\[/][red]|[/][yellow]/[/][rgb(192,192,192)]~[/]\n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
+# unify the brush tops; the right-most one isn't a cell over like in the About Paint dialog's icon, to align with the slant of a comma
+# header_icon_markup = "[rgb(0,0,0) on rgb(255,255,255)]...[/][rgb(255,255,255)]\\\\[/][rgb(0,0,0) on rgb(255,255,255)]\n[blue]\\\\[/][red]|[/][yellow]/[/][rgb(192,192,192)]~[/]\n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
+# bold the brush handles
+header_icon_markup = "[rgb(0,0,0) on rgb(255,255,255)]...[/][rgb(255,255,255)]\\\\[/][rgb(0,0,0) on rgb(255,255,255)]\n[bold][blue]\\\\[/][red]|[/][yellow]/[/][/][rgb(192,192,192)]~[/]\n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
+# This got pretty out of hand. I should've done this in Textual Paint before letting it get this complex!
+# Prevent wrapping, for a CSS effect, cropping to hide the shading "~" of the page fold when the page fold isn't visible.
+header_icon_text = Text.from_markup(header_icon_markup, overflow="crop")
+
+
 __all__ = [
     "get_warning_icon",
     "get_question_icon",
     "get_paint_icon",
+    "header_icon_text",
 ]
