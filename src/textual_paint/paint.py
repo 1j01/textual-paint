@@ -4131,42 +4131,6 @@ else:
     # This requires the canvas to exist, hence call_later().
     app.call_later(app.recover_from_backup)
 
-if args.recode_samples:
-    # Re-encode the sample files to test for changes/inconsistency in encoding.
-
-    async def recode_sample(file_path: str|Path) -> None:
-        """Re-encodes a single sample file."""
-        print(f"Re-encoding {file_path}")
-        with open(file_path, "rb") as f:
-            image = AnsiArtDocument.decode_based_on_file_extension(f.read(), str(file_path))
-        with open(file_path, "wb") as f:
-            f.write(image.encode_based_on_file_extension(str(file_path)))
-        print(f"Saved {file_path}")
-
-    async def recode_samples() -> None:
-        """Re-encodes all sample files in parallel."""
-        samples_folder = os.path.join(os.path.dirname(__file__), "../../samples")
-        tasks: list[Coroutine[Any, Any, None]] = []
-        for file_path in Path(samples_folder).glob("**/*"):
-            # Skip backup files in case some sample file is being edited.
-            if file_path.name.endswith("~"):
-                continue
-            # Skip GIMP Palette files.
-            if file_path.name.endswith(".gpl"):
-                continue
-            # Skip folders.
-            if file_path.is_dir():
-                continue
-            tasks.append(recode_sample(file_path))
-
-        await asyncio.gather(*tasks)
-
-    # have to wait for the app to be initialized
-    async def once_running() -> None:
-        await recode_samples()
-        app.exit()
-    app.call_later(once_running)
-
 if args.clear_screen:
     os.system("cls||clear")
 

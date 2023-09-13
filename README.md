@@ -87,7 +87,6 @@ development options:
   --clear-screen        Clear the screen before starting, to avoid seeing
                         outdated errors
   --restart-on-changes  Restart the app when the source code is changed
-  --recode-samples      Open and save each file in samples/, for testing
 ```
 
 ### Keyboard Shortcuts
@@ -329,22 +328,6 @@ This also makes it run slower.
 
 Often it's useful to exclude events with `textual console -x EVENT`.
 
-<details>
-<summary>Testing file save/load roundtrip</summary>
-
-> There are at this point lots of files that will change if you run this, so don't worry about it. Some are generated files, so they naturally change somewhat. The `0x0.ans` file saves as 1x1, due to the minimum size. `pathological_character_grid.svg` was free-handed with Inkscape, so naturally changes somewhat when re-saving. There may be actual problems, but they're hard to spot in the noise.
-
-To test file encoding, run `textual run --dev "src.textual_paint.paint --recode-samples"`.
-
-If there are differences in the ANSI files, you can set up a special diff like this:
-```bash
-git config --local "diff.cat-show-all.textconv" "cat --show-all"
-```
-but you should check that `cat --show-all samples/2x2.ans` works on your system first.
-Also, note that it might not work with your Git GUI of choice; you may need to use the command line.
-
-</details>
-
 ### Troubleshooting
 
 > `Unable to import 'app' from module 'src.textual_paint.paint'`
@@ -373,7 +356,7 @@ PYRIGHT_PYTHON_FORCE_VERSION=1.1.318 pyright
 # I also tried mypy and fixed some errors it reported, but I'm not targeting zero errors with mypy.
 mypy src --no-namespace-packages --check-untyped-defs
 
-# Visual Regression Testing
+# Visual Regression Testing (and a few other tests)
 # I use pytest-textual-snapshot, which is a pytest plugin for comparing SVG screenshots of Textual apps over time.
 pytest
 # To accept differences, update the baseline with:

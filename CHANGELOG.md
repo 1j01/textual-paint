@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- `--recode-samples` option is removed, now covered by the `pytest` test suite.
+
 ### Changed
 
 - Made radio buttons rounder in `--ascii-only` mode, using parentheses instead of square brackets.

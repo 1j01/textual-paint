@@ -18,6 +18,7 @@ parser.add_argument('--ascii-only', action='store_true', help='Use only ASCII ch
 parser.add_argument('--backup-folder', default=None, metavar="FOLDER", help='Folder to save backups to. By default a backup is saved alongside the edited file.')
 
 # TODO: hide development options from help? there's quite a few of them now
+# (...actually, less of them now, and I've grouped them together)
 dev_options = parser.add_argument_group('development options')
 dev_options.add_argument('--inspect-layout', action='store_true', help='Enables DOM inspector (F12) and middle click highlight')
 # This flag is important for my sanity during development,
@@ -27,7 +28,6 @@ dev_options.add_argument('--inspect-layout', action='store_true', help='Enables 
 # I really don't want false ones mixed in. You want to reward your brain for finding good solutions, after all.
 dev_options.add_argument('--clear-screen', action='store_true', help='Clear the screen before starting, to avoid seeing outdated errors')
 dev_options.add_argument('--restart-on-changes', action='store_true', help='Restart the app when the source code is changed')
-dev_options.add_argument('--recode-samples', action='store_true', help='Open and save each file in samples/, for testing')
 
 parser.add_argument('filename', nargs='?', default=None, help='Path to a file to open. File will be created if it doesn\'t exist.')
 
