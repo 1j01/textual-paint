@@ -1,9 +1,10 @@
+"""Visual regression tests, using pytest-textual-snapshot. Run with `pytest`."""
+
 from pathlib import Path, PurePath
 from typing import (TYPE_CHECKING, Awaitable, Callable, Generator, Iterable,
                     Protocol)
 
 import pytest
-from pyfakefs.fake_file import FakeDirectory
 from pyfakefs.fake_filesystem import FakeFilesystem
 from textual.geometry import Offset
 from textual.pilot import Pilot
@@ -41,7 +42,6 @@ LARGEST = (107, 42)
 
 # Prevent flaky tests due to timing issues.
 Input.cursor_blink = False  # type: ignore
-# paint.DOUBLE_CLICK_TIME = 20.0  # seconds; ridiculously high; probably ineffective since paint.py is re-evaluated for each test
 
 @pytest.fixture(params=[
     {"theme": "light", "ascii_only": False},
@@ -53,28 +53,23 @@ def each_theme(request: pytest.FixtureRequest):
     """Fixture to test each combination of UI styles."""
     theme = request.param.get("theme")
     ascii_only = request.param.get("ascii_only")
-    # os.environ["PYTEST_TEXTUAL_PAINT_ARGS"] = f"--theme {theme}" + (" --ascii-only" if ascii_only else "")
     from textual_paint.args import args
     args.theme = theme
     args.ascii_only = ascii_only
-    yield
-    # del os.environ["PYTEST_TEXTUAL_PAINT_ARGS"]
+
+    yield # run the test
+
     args.theme = "light"
     args.ascii_only = False
 
-# APPS_DIR_ABSOLUTE = (Path(__file__).parent / APPS_DIR).resolve()
-# TESTS_DIR_ABSOLUTE = Path(__file__).parent.resolve()
 REPO_DIR_ABSOLUTE = Path(__file__).parent.parent.resolve()
 
 @pytest.fixture
 def my_fs(fs: FakeFilesystem) -> Generator[FakeFilesystem, None, None]:
-    # print("adding real directory", APPS_DIR_ABSOLUTE)
-    # fs.add_real_directory(APPS_DIR_ABSOLUTE)
-    
-    # # Without this, pytest-textual-snapshot will show "No history for this test"
-    # print("adding real directory", TESTS_DIR_ABSOLUTE)
-    # fs.add_real_directory(TESTS_DIR_ABSOLUTE)
+    """Fixture to fake the filesystem, except for the repo directory."""
 
+    # Without the repo dir, textual paint will fail to load FIGlet fonts or dialog icons.
+    # Without the __snapshots__ dir, pytest-textual-snapshot will show "No history for this test" in the report.
     print("adding real directory", REPO_DIR_ABSOLUTE)
     fs.add_real_directory(REPO_DIR_ABSOLUTE)
 
@@ -83,7 +78,7 @@ def my_fs(fs: FakeFilesystem) -> Generator[FakeFilesystem, None, None]:
     orig_PATH = DirectoryTree.PATH
     DirectoryTree.PATH = Path
 
-    # TODO: use proper mocking or figure out how to get FigletFont to find the real font files.
+    # TODO: use proper(?) mocking or figure out how to get FigletFont to find the real font files.
     # This folder doesn't actually exist on my system, so it's not getting them from there.
     # from pyfiglet import SHARED_DIRECTORY
     # fs.add_real_directory(SHARED_DIRECTORY)
@@ -181,7 +176,6 @@ def test_paint_error_dialog(snap_compare: SnapCompareType, each_theme: None):
         assert pilot.app.query_one("MessageBox")
         await pilot.pause(1.0)
         assert pilot.app.query_one("MessageBox .details_button")
-        # pilot.app.query_one("MessageBox .details_button", Button).press()
         await pilot.click("MessageBox .details_button")
         await pilot.pause(0.5) # avoid pressed state
 
@@ -205,13 +199,12 @@ def test_paint_about_paint_dialog(snap_compare: SnapCompareType, each_theme: Non
 
     assert snap_compare(PAINT, run_before=show_about_paint)
 
-# TODO: test polygon color changing while in-progress when you select a color from the palette
-# TODO: test dragging to define polygon first — especially, the first two with one drag
+# TODO: test changing color of in-progress polygon when selecting a color from the palette
+# TODO: test dragging to define polygon; in particular, dragging can define the first two points at once
 def test_paint_polygon_tool(snap_compare: SnapCompareType):
     async def draw_polygon(pilot: Pilot[None]):
-        # TODO: fix polygon closing prematurely
-        # (interpreting clicks as double clicks despite the distance)
-        # and then remove the pause() calls (as many as possible)
+        # TODO: fix polygon closing prematurely, interpreting clicks as double clicks despite the distance,
+        # and then remove as many of these pause() calls as possible
         await click_by_attr(pilot, "ToolsBox Button", "tooltip", "Polygon")
         await pilot.click('#canvas', offset=Offset(3, 2))
         await pilot.pause(0.3)
