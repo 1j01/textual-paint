@@ -289,9 +289,6 @@ def test_free_form_select(snap_compare: SnapCompareType):
 
     assert snap_compare(PAINT, run_before=automate_app, terminal_size=LARGER)
 
-# Don't run, so that it doesn't overwrite the snapshot with --snapshot-update
-# You can run it to see the diff, but it's disabled to prevent accidentally committing a bad snapshot.
-@pytest.mark.xfail(run=False, reason="The Free-Form Select tool is currently buggy, melding incorrectly when off-screen to the left/top, but I've contrived the correct output for the test by disabling the deselect step at the end of automate_app and disabling the selection's border rendering in Canvas.render_line.")
 def test_free_form_select_meld_negative_coords(snap_compare: SnapCompareType):
     async def automate_app(pilot: Pilot[None]):
         await click_by_attr(pilot, "ToolsBox Button", "tooltip", "Fill With Color")
@@ -301,7 +298,9 @@ def test_free_form_select_meld_negative_coords(snap_compare: SnapCompareType):
         await drag(pilot, '#editing_area', [Offset(19, 1), Offset(19, 1), Offset(18, 2), Offset(17, 2), Offset(15, 3), Offset(13, 4), Offset(6, 6), Offset(2, 8), Offset(0, 10), Offset(3, 2), Offset(2, 0), Offset(2, 1), Offset(2, 2), Offset(3, 2), Offset(5, 2), Offset(14, 14), Offset(1, 14), Offset(1, 13), Offset(4, 13), Offset(8, 12), Offset(12, 11), Offset(16, 11), Offset(20, 10), Offset(22, 10), Offset(23, 9), Offset(24, 9), Offset(25, 9), Offset(26, 9), Offset(26, 8), Offset(25, 8), Offset(23, 7), Offset(19, 6), Offset(15, 6), Offset(11, 5), Offset(6, 3), Offset(3, 2), Offset(2, 1), Offset(2, 0), Offset(3, 0), Offset(3, 0)])
         await drag(pilot, '#canvas', [Offset(13, 8), Offset(13, 8), Offset(12, 8), Offset(12, 7), Offset(12, 6), Offset(11, 6), Offset(11, 5), Offset(10, 5), Offset(10, 4), Offset(9, 4), Offset(8, 3), Offset(8, 3)])
         await pilot.press('ctrl+i')
+        await pilot.pause(0.5)
         await pilot.click('#editing_area', offset=Offset(0, 20)) # deselect
+        await pilot.pause(0.5)
 
     assert snap_compare(PAINT, run_before=automate_app, terminal_size=LARGER)
 

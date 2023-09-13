@@ -184,7 +184,6 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 - The canvas flickers when zooming in with the Magnifier tool.
 - Some languages don't display correctly.
 - Large files can make the program very slow, as can magnifying the canvas. There is a 500 KB limit when opening files to prevent it from freezing.
-- Free-Form Select stamping/finalizing is incorrect when the selection is off-screen to the left or top.
 - The status bar description can be left blank when selecting a menu item. (I think the `Leave` event can come after closing, once the mouse moves.)
 - Menu items like Copy/Cut/Paste are not grayed out when inapplicable. Only unimplemented items are grayed out.
 - ANSI files (.ans) are treated as UTF-8 when saving and loading, rather than CP437 or Windows-1252 or any other encodings. Unicode is nice and modern terminals support it, but it's not the standard for ANSI files. There isn't really a standard for ANSI files.

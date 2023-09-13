@@ -1106,4 +1106,20 @@ class Selection:
         target_region = self.region.intersection(Region(0, 0, document.width, document.height))
         source_region = Region(target_region.x - self.region.x, target_region.y - self.region.y, self.contained_image.width, self.contained_image.height)
 
-        document.copy_region(source=self.contained_image, source_region=source_region, target_region=target_region, mask=self.mask)
+        # Offset mask due to account for the intersection.
+        # This is probably not the best way (or place) to do this.
+        # If refactoring, make sure to run:
+        #     pytest -k test_free_form_select_meld_negative_coords
+        # (and then all the tests)
+        offset = target_region.offset - self.region.offset
+        if self.mask:
+            def sample(x: int, y: int) -> bool:
+                try:
+                    return self.mask[y + offset.y][x + offset.x]
+                except IndexError:
+                    return False
+            mask = [[sample(x, y) for x in range(source_region.width)] for y in range(source_region.height)]
+        else:
+            mask = None
+
+        document.copy_region(source=self.contained_image, source_region=source_region, target_region=target_region, mask=mask)
