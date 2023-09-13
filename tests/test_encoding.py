@@ -15,14 +15,63 @@ ROUND_TRIP_EXCLUSIONS = [
     "0x0.ans",
     # This is a color palette file, meant to be loaded with Get Colors, not Open.
     "pipe_strip_palette.gpl",
-    # THIS ONE MAYBE SHOULD IDEALLY WORK? But I need a better way of viewing a diff...
+]
+ROUND_TRIP_XFAIL = [
+    # THESE ONES MAYBE SHOULD IDEALLY WORK? But I need a better way of viewing the diff...
     "cp437_as_utf8.txt",
+    "kitty_logo_v1.ans",
+    "kitty_logo_v2.ans",
+    "kitty_logo_v2.1_claws.ans",
+    "kitty_logo_v2.2_cropped_whiskers_swapped.ans",
+    "pipe_strip_sequel_micro_v1.ans",
+    "pipe_strip_sequel_micro_v2.ans",
+    "pipe_strip_sequel_mini_v1.ans",
+    "pipe_strip_sequel_v1.ans",
+    "pipe_strip_sequel_v2.ans",
+    "pipe_strip_sequel_v3.ans",
+    "pipe_strip_sequel_v4.ans",
+    "pipe_strip_sequel_v5.ans",
+    "pipe_strip_sequel_v6.ans",
+    "pipe_strip_sequel_v7.ans",
+    "pipe_strip_v12_tiling_v2.ans",
+    "pipe_strip_v12_tiling_v3.ans",
+    "text_tilt_tall.ans",
+    "text_tilt_v0.ans",
+    "text_tilt_v1.ans",
+    "text_tilt_v2.ans",
+    "text_tilt_v3.ans",
+    "text_tilt_v4.ans",
+    "text_tilt_v5_crazy_serifs.ans",
+    "text_tilt_v6.ans",
+    "text_tilt_v7.ans",
+    "text_tilt_v8.ans",
+    "text_tilt_v9.ans",
+    "textual_paint_logo_ascii_v3.ans",
+    "textual_paint_logo_v1.ans",
+    "textual_paint_logo_v2.ans",
+    "textual_paint_logo_v3.ans",
+    "textual_paint_logo_v4.ans",
+    "textual_paint_logo_v5.ans",
+    "textual_paint_logo_v6.ans",
+    "tool_options_v2.ans",
+    "tool_options_v3.ans",
+    "tool_options_v4.ans",
+    "tool_options_v5_parens.ans",
+    "tool_options_v6_red_ellipse_thing.ans",
+    "tool_options_v7_red_over_top_border_confusing.ans",
+    "tool_options_v8_paren_ornament.ans",
+    "tool_options_v9_paren_ornaments_not_as_good.ans",
+    "tool_options_v10_cropped_10x8.ans",
+    "tool_options_v10_inverting_is_interesting.ans",
+    "tool_options_v11_tweaked_braille_border_10x8.ans",
+    "tool_options_v12_tweaked_right_border_to_be_braille_10x8.ans",
+    "tool_options_v13_tweaked_right_border_corners_back_10x8.ans",
 ]
 SAMPLES_DIR = Path(__file__).parent.parent / "samples"
-SAMPLES = [f for f in SAMPLES_DIR.iterdir() if f.is_file() and "~" not in f.name]
+SAMPLES = [f for f in SAMPLES_DIR.rglob("**/*") if f.is_file() and "~" not in f.name]
 ROUND_TRIP_SAMPLES = [f for f in SAMPLES if f.name not in ROUND_TRIP_EXCLUSIONS]
 
-@pytest.mark.parametrize("file_path", ROUND_TRIP_SAMPLES)
+@pytest.mark.parametrize("file_path", [pytest.param(f, id=f.name, marks=[pytest.mark.xfail] if f.name in ROUND_TRIP_XFAIL else []) for f in ROUND_TRIP_SAMPLES])
 def test_round_trip(file_path: Path) -> None:
     """Test that files are re-encoded identically when opened and saved."""
     with open(file_path, "rb") as f:
