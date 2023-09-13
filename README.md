@@ -378,6 +378,12 @@ mypy src --no-namespace-packages --check-untyped-defs
 pytest
 # To accept differences, update the baseline with:
 pytest --snapshot-update
+# I also made a test recorder, which can generate test code, which is great for creating tests that interact with the canvas.
+# Run with:
+python tests/pilot_recorder.py
+# Then interact with the app, and press Ctrl+C to stop recording.
+# You can also hit Ctrl+R to replay what you have,
+# or Ctrl+Z to remove the last step and replay the rest.
 ```
 
 ## License

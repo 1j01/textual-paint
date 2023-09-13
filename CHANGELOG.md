@@ -10,6 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Made radio buttons rounder in `--ascii-only` mode, using parentheses instead of square brackets.
+- Moved some code out of the huge `paint.py` into smaller files.
+
+### Added
+
+- Replaced a complex shell one-liner on the readme with a new ANSI art gallery app. You can run it from the repo root, with: `python -m src.textual_paint.gallery`
+- Textual Paint now uses `pytest-textual-snapshot` and has tests covering most of the UI surface. This will allow me to update dependencies and do major restructuring of the code with confidence.
+- I created a test recorder, which can generate test code, which is great for creating interactions with the canvas.
+- Added docstrings to most of the code, where it was missing.
+
+### Fixed
+
+- Fixed behavior of Free-Form Select tool when melding with the canvas, when the selection was off-screen to the left or top (i.e. with negative coordinates).
 
 ## [0.2.0] - 2023-09-05
 
