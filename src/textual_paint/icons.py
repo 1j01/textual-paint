@@ -1,4 +1,4 @@
-"""Icons for message boxes, as `Static` widget factories, and for the `Header`, as `Text`.
+"""Icons for message boxes, as `Static` widget factories, and for the `Header`, as `Text`. Also, title bar icons as markup.
 
 Reusing widget instances doesn't work, for obvious reasons in the case of multiple dialogs open at once,
 and reasons mysterious to me in the case of closing and re-opening a single dialog.
@@ -12,6 +12,7 @@ Two nice things about embedding it are:
 1. there's no possibility of file system errors, and
 2. it's easier to dynamically modify them to remove the background color.
 
+TODO: unify formats/authoring workflow?
 TODO: dynamic dark mode (I already have alternate versions of some icons)
 """
 
@@ -228,6 +229,34 @@ def get_paint_icon() -> Static:
     markup = paint_icon_console_markup_ascii if args.ascii_only else paint_icon_console_markup
     return Static(markup, classes="paint_icon message_box_icon")
 
+# windows_icon_markup = "🌈🪟"
+# windows_icon_markup = "🏳️‍🌈🪟"  # this would be closer, but I can't do the rainbow flag in the terminal, it uses ZWJ
+# windows_icon_markup = "[blue on red]▀[/][green on yellow]▀[/]" # this gives dim colors
+# windows_icon_markup = "[#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # good
+# windows_icon_markup = "[#000000][b]≈[/][/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # trying to add the trailing flag effect
+# windows_icon_markup = "[#000000]⣿[/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # ah, that's brilliant! that worked way better than I expected
+windows_icon_markup = "[not bold][#000000]⣿[/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/][/]" # prevent bold on dots
+if args.ascii_only:
+    # windows_icon_markup = "[#000000]::[/][#0000ff on #ff0000]~[/][#00aa00 on #ffff00]~[/]" # not very convincing
+    # windows_icon_markup = "[#000000]::[/][#ff0000 on #0000ff]x[/][#ffff00 on #00aa00]x[/]"
+    # windows_icon_markup = "[#000000]::[/][#ff0000 on #0000ff]m[/][#ffff00 on #00aa00]m[/]" # probably the most balanced top/bottom split character (i.e. most dense while occupying only the top or only the bottom)
+    windows_icon_markup = "[#000000 not bold]::[/][bold #ff0000 on #0000ff]m[/][bold #ffff00 on #00aa00]m[/]" # prevent bold on dots, but definitely not the m's, it's better if they bleed into a blob
+
+# The Paint Help window's icon is a document with a yellow question mark.
+# I can almost represent that with emoji, but this causes issues
+# where the emoji and the first letter of the title
+# can disappear depending on the x position of the window.
+# help_icon_markup = "📄❓"
+# This icon can disappear too, but it doesn't seem
+# to cause the title to get cut off.
+# help_icon_markup = "📄"
+# Actually, I can make a yellow question mark!
+# Just don't use emoji for it.
+help_icon_markup = "📄[#ffff00]?[/]"
+# help_icon_markup = "[#ffffff]🭌[/][#ffff00]?[/]" # also works nicely
+if args.ascii_only:
+    help_icon_markup = "[#aaaaaa on #ffffff]=[/][#ffff00]?[/]"
+# Honorable mentions: 🯄 ˀ̣
 
 # header_icon_markup = "[on white][blue]\\\\[/][red]|[/][yellow]/[/][/]"
 # header_icon_markup = "[black]..,[/]\n[blue]\\\\[/][on white][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[_][/]"
@@ -266,4 +295,6 @@ __all__ = [
     "get_question_icon",
     "get_paint_icon",
     "header_icon_text",
+    "windows_icon_markup",
+    "help_icon_markup",
 ]

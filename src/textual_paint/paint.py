@@ -53,7 +53,7 @@ from textual_paint.graphics_primitives import (bezier_curve_walk,
                                                polyline_walk,
                                                quadratic_curve_walk)
 from textual_paint.icons import (get_paint_icon, get_question_icon,
-                                 get_warning_icon, header_icon_text)
+                                 get_warning_icon, header_icon_text, help_icon_markup, windows_icon_markup)
 from textual_paint.localization.i18n import get as _
 from textual_paint.localization.i18n import load_language, remove_hotkey
 from textual_paint.menus import Menu, MenuBar, MenuItem, Separator
@@ -1625,20 +1625,7 @@ Columns: {len(palette) // 2}
                 elif button.has_class("no"):
                     do_the_paste()
 
-            # logo_icon = "🌈🪟"
-            # logo_icon = "🏳️‍🌈🪟"  # this would be closer, but I can't do the rainbow flag in the terminal, it uses ZWJ
-            # logo_icon = "[blue on red]▀[/][green on yellow]▀[/]" # this gives dim colors
-            # logo_icon = "[#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # good
-            # logo_icon = "[#000000][b]≈[/][/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # trying to add the trailing flag effect
-            # logo_icon = "[#000000]⣿[/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # ah, that's brilliant! that worked way better than I expected
-            logo_icon = "[not bold][#000000]⣿[/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/][/]" # prevent bold on dots
-            if args.ascii_only:
-                # logo_icon = "[#000000]::[/][#0000ff on #ff0000]~[/][#00aa00 on #ffff00]~[/]" # not very convincing
-                # logo_icon = "[#000000]::[/][#ff0000 on #0000ff]x[/][#ffff00 on #00aa00]x[/]"
-                # logo_icon = "[#000000]::[/][#ff0000 on #0000ff]m[/][#ffff00 on #00aa00]m[/]" # probably the most balanced top/bottom split character (i.e. most dense while occupying only the top or only the bottom)
-                logo_icon = "[#000000 not bold]::[/][bold #ff0000 on #0000ff]m[/][bold #ffff00 on #00aa00]m[/]" # prevent bold on dots, but definitely not the m's, it's better if they bleed into a blob
-
-            title = logo_icon + " " + _("Paint")
+            title = windows_icon_markup + " " + _("Paint")
             self.message_box(title, message, "yes/no/cancel", handle_button, icon_widget=get_question_icon())
         else:
             do_the_paste()
@@ -2156,23 +2143,8 @@ Columns: {len(palette) // 2}
         # but we don't have translations for that.
         # This works in English, but probably sounds weird in other languages.
         title = _("Paint") + " " + _("Help")
-        # The icon is a document with a yellow question mark.
-        # I can almost represent that with emoji, but this causes issues
-        # where the emoji and the first letter of the title
-        # can disappear depending on the x position of the window.
-        # icon = "📄❓"
-        # This icon can disappear too, but it doesn't seem
-        # to cause the title to get cut off.
-        # icon = "📄"
-        # Actually, I can make a yellow question mark!
-        # Just don't use emoji for it.
-        icon = "📄[#ffff00]?[/]"
-        # icon = "[#ffffff]🭌[/][#ffff00]?[/]" # also works nicely
-        if args.ascii_only:
-            icon = "[#aaaaaa on #ffffff]=[/][#ffff00]?[/]"
-        # Honorable mentions: 🯄 ˀ̣
-
-        title = icon + " " + title
+  
+        title = help_icon_markup + " " + title
         def handle_button(button: Button) -> None:
             window.close()
         window = DialogWindow(
