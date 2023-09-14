@@ -20,6 +20,13 @@ class ColorsBox(Container):
 
     def compose(self) -> ComposeResult:
         """Add our selected color and color well buttons."""
+        if TYPE_CHECKING:
+            from textual_paint.paint import PaintApp
+            assert isinstance(self.app, PaintApp)
+            # TODO: decouple from PaintApp
+            # Could accept palette in constructor
+        palette = self.app.palette
+
         self.color_by_button: dict[Button, str] = {}
         with Container(id="palette_selection_box"):
             # This widget is doing double duty, showing the current color
@@ -27,7 +34,6 @@ class ColorsBox(Container):
             # I haven't settled on naming for this yet.
             yield CharInput(id="selected_color_char_input", classes="color_well")
         with Container(id="available_colors"):
-            from textual_paint.paint import palette # TODO: restructure data flow
             for color in palette:
                 button = Button("", classes="color_button color_well")
                 button.styles.background = color
@@ -37,7 +43,13 @@ class ColorsBox(Container):
 
     def update_palette(self) -> None:  # , palette: list[str]) -> None:
         """Update the palette with new colors."""
-        from textual_paint.paint import palette # TODO: restructure data flow
+        if TYPE_CHECKING:
+            from textual_paint.paint import PaintApp
+            assert isinstance(self.app, PaintApp)
+            # TODO: decouple from PaintApp
+            # Could accept palette as argument
+        palette = self.app.palette
+
         for button, color in zip(self.query(".color_button").nodes, palette):
             assert isinstance(button, Button)
             button.styles.background = color

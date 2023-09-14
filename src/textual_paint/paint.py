@@ -71,8 +71,6 @@ MAX_FILE_SIZE = 500000 # 500 KB
 load_language(args.language)
 
 
-palette = list(DEFAULT_PALETTE)
-
 def offset_to_text_index(textbox: Selection, offset: Offset) -> int:
     """Converts an offset in the textbox to an index in the text."""
     assert textbox.textbox_mode, "offset_to_text_index called on non-textbox selection"
@@ -177,13 +175,19 @@ class PaintApp(App[None]):
     show_status_bar = var(True)
     """Whether to show the status bar."""
 
+    palette = var(DEFAULT_PALETTE)
+    """The colors to show in the colors box.
+    
+    Note: mutating will not cause a watch_palette method to be called.
+    May want to make this a tuple for easier reactivity.
+    """
     selected_tool = var(Tool.pencil)
     """The currently selected tool."""
     return_to_tool = var(Tool.pencil)
     """Tool to switch to after using the Magnifier or Pick Color tools."""
-    selected_bg_color = var(palette[0])
+    selected_bg_color = var(DEFAULT_PALETTE[0])
     """The currently selected background color. Unlike MS Paint, this acts as the primary color."""
-    selected_fg_color = var(palette[len(palette) // 2])
+    selected_fg_color = var(DEFAULT_PALETTE[len(DEFAULT_PALETTE) // 2])
     """The currently selected foreground (text) color."""
     selected_char = var(" ")
     """The character to draw with."""
@@ -704,12 +708,11 @@ class PaintApp(App[None]):
         character picker, but it might be nice to have them more accessible,
         that or to make the character picker a dockable window.
         """
-        global palette
         if format_id == "IRC":
-            palette = IRC_PALETTE + [IRC_PALETTE[0]] * (len(palette) - len(IRC_PALETTE))
+            self.palette = IRC_PALETTE + [IRC_PALETTE[0]] * (len(self.palette) - len(IRC_PALETTE))
             self.query_one(ColorsBox).update_palette()
         elif format_id == "PLAINTEXT":
-            palette = ["#000000", "#ffffff"] + ["#ffffff"] * (len(palette) - 2)
+            self.palette = ["#000000", "#ffffff"] + ["#ffffff"] * (len(self.palette) - 2)
             self.query_one(ColorsBox).update_palette()
 
     async def save(self) -> bool:
@@ -1245,8 +1248,9 @@ class PaintApp(App[None]):
         self.preview_action = None
         # Following MS Paint's lead and resetting the color (but not the tool.)
         # It probably has to do with color modes.
-        self.selected_bg_color = palette[0]
-        self.selected_fg_color = palette[len(palette) // 2]
+        # TODO: Should this reset the palette?
+        self.selected_bg_color = self.palette[0]
+        self.selected_fg_color = self.palette[len(self.palette) // 2]
         self.selected_char = " "
 
         if manage_backup:
@@ -1279,9 +1283,12 @@ class PaintApp(App[None]):
             else:
                 self.selected_bg_color = color
             if color_palette_index is not None:
-                palette[color_palette_index] = color
-                # TODO: Update the palette in a reactive way.
-                # I'll need to move the palette state to the app.
+                self.palette[color_palette_index] = color
+                # TODO: Update the palette in a reactive way?
+                # Would need to replace the whole palette object
+                # for a watch_palette method to be called.
+                # Could make it a tuple for immutability.
+                # Not sure if it's worth it.
                 self.query_one(ColorsBox).update_palette()
             window.close()
         window = EditColorsDialogWindow(
@@ -1342,9 +1349,8 @@ class PaintApp(App[None]):
         except Exception as e:
             self.message_box(_("Paint"), _("Failed to read palette file."), "ok", error=e)
             return
-        global palette
-        palette[:len(new_colors)] = new_colors
-        palette[len(new_colors):] = [new_colors[0]] * (len(palette) - len(new_colors))
+        self.palette[:len(new_colors)] = new_colors
+        self.palette[len(new_colors):] = [new_colors[0]] * (len(self.palette) - len(new_colors))
         self.query_one(ColorsBox).update_palette()
 
     def action_get_colors(self) -> None:
@@ -1389,7 +1395,7 @@ class PaintApp(App[None]):
 
         def handle_selected_file_path(file_path: str) -> None:
             color_lines: list[str] = []
-            for color_str in palette:
+            for color_str in self.palette:
                 red, green, blue = Color.parse(color_str).rgb
                 red = str(red).ljust(3, " ")
                 green = str(green).ljust(3, " ")
@@ -1402,7 +1408,7 @@ class PaintApp(App[None]):
             # https://docs.python.org/3.12/whatsnew/3.12.html#pep-701-syntactic-formalization-of-f-strings
             palette_str = f"""GIMP Palette
 Name: Saved Colors
-Columns: {len(palette) // 2}
+Columns: {len(self.palette) // 2}
 #
 {newline.join(color_lines)}
 """

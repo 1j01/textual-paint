@@ -31,11 +31,4 @@ async def test_file_drag_and_drop(my_fs: FakeFilesystem):
         # It should ONLY load the file in this case, not also paste the filename into the char input.
         # assert char_input.value == " " # default, may become full block (█) in the future
         assert app.query_one("Canvas").render_line(0).text == "Hello, world!"
-    # TODO: bring palette state into the app class,
-    # and remove this KLUDGE of resetting the palette.
-    # Without this, the palette becomes black and white when loading a txt file,
-    # and it affects all snapshot tests! Pretty stupid.
-    import textual_paint.paint
-    from textual_paint.palette_data import DEFAULT_PALETTE
-    textual_paint.paint.palette = DEFAULT_PALETTE
 
