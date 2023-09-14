@@ -37,3 +37,10 @@ class ToolsBox(Container):
 
         if "tool_button" in event.button.classes:
             self.post_message(self.ToolSelected(self.tool_by_button[event.button]))
+
+    def show_selected_tool(self, selected_tool: Tool) -> None:
+        """Shows the given tool as selected."""
+        for button in self.query(".tool_button"):
+            assert isinstance(button, Button)
+            button_tool = self.tool_by_button[button]
+            button.set_class(selected_tool == button_tool, "selected")
