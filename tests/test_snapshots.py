@@ -1,9 +1,13 @@
-"""Visual regression tests, using pytest-textual-snapshot. Run with `pytest`."""
+"""Visual regression tests, using pytest-textual-snapshot.
+
+Run with `pytest tests/test_snapshots.py`, or `pytest` to run all tests.
+"""
 
 from pathlib import Path, PurePath
 from typing import TYPE_CHECKING, Awaitable, Callable, Iterable, Protocol
 
 import pytest
+from pyfakefs.fake_filesystem import FakeFilesystem
 from textual.geometry import Offset
 from textual.pilot import Pilot
 from textual.widgets import Input
@@ -53,10 +57,10 @@ def test_paint_flip_rotate_dialog(snap_compare: SnapCompareType, each_theme: Non
 def test_paint_image_attributes_dialog(snap_compare: SnapCompareType, each_theme: None):
     assert snap_compare(PAINT, press=["ctrl+e"])
 
-def test_paint_open_dialog(snap_compare: SnapCompareType, each_theme: None, my_fs: None):
+def test_paint_open_dialog(snap_compare: SnapCompareType, each_theme: None, my_fs: FakeFilesystem):
     assert snap_compare(PAINT, press=["ctrl+o"], terminal_size=LARGER)
 
-def test_paint_save_dialog(snap_compare: SnapCompareType, each_theme: None, my_fs: None):
+def test_paint_save_dialog(snap_compare: SnapCompareType, each_theme: None, my_fs: FakeFilesystem):
     assert snap_compare(PAINT, press=["ctrl+s"], terminal_size=LARGER)
 
 def test_paint_help_dialog(snap_compare: SnapCompareType, each_theme: None):

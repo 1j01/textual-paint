@@ -13,5 +13,6 @@ watchdog==3.0.0 # for development; optional (only used when --restart-on-changes
 types-Pillow==10.0.0.1 # for development
 types-psutil==5.9.5.15 # for development
 pytest==7.4.1 # for development
+pytest-asyncio==0.21.1 # for development
 pytest-textual-snapshot==0.4.0 # for development
 pyfakefs==5.2.4 # for development

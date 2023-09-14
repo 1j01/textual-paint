@@ -1,4 +1,7 @@
-"""Test that files are encoded correctly."""
+"""Test that files are encoded correctly.
+
+Run with `pytest tests/test_encoding.py`, or `pytest` to run all tests.
+"""
 
 from pathlib import Path
 import pytest
