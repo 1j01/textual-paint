@@ -143,7 +143,7 @@ def test_paint_about_paint_dialog(snap_compare: SnapCompareType, each_theme: Non
     assert snap_compare(PAINT, run_before=show_about_paint)
 
 # TODO: test changing color of in-progress polygon when selecting a color from the palette
-# TODO: test dragging to define polygon; in particular, dragging can define the first two points at once
+
 def test_paint_polygon_tool(snap_compare: SnapCompareType):
     async def draw_polygon(pilot: Pilot[None]):
         await click_by_attr(pilot, "ToolsBox Button", "tooltip", "Polygon")
@@ -172,6 +172,27 @@ def test_paint_polygon_tool(snap_compare: SnapCompareType):
         # third shape (defined above) should be left open as a polyline
 
     assert snap_compare(PAINT, run_before=draw_polygon, terminal_size=LARGER)
+
+def test_paint_polygon_tool_dragging(snap_compare: SnapCompareType):
+    async def automate_app(pilot: Pilot[None]):
+        await click_by_attr(pilot, "ToolsBox Button", "tooltip", "Polygon")
+        # dragging can define the first two points at once
+        await drag(pilot, '#canvas', [Offset(11, 4), Offset(38, 6)])
+        await pilot.click('#canvas', offset=Offset(23, 16))
+        await drag(pilot, '#canvas', [Offset(38, 16), Offset(65, 14)])
+        # FIXME: click at previous location should not be considered a double click
+        # due to the distance of the drag
+        await pilot.pause(1.0) # REMOVE ME WHEN FIXED
+        await pilot.click('#canvas', offset=Offset(65, 14))
+        await drag(pilot, '#canvas', [Offset(52, 19), Offset(8, 19)])
+        await pilot.click('#canvas', offset=Offset(21, 11))
+        await pilot.pause(1.0) # prevent double click
+        await pilot.click('#canvas', offset=Offset(21, 11))
+        # double click, with slightly different locations (within threshold):
+        await pilot.click('#canvas', offset=Offset(2, 11))
+        await pilot.click('#canvas', offset=Offset(3, 11))
+
+    assert snap_compare(PAINT, run_before=automate_app, terminal_size=LARGER)
 
 def test_text_tool_wrapping(snap_compare: SnapCompareType):
     async def automate_app(pilot: Pilot[None]):
