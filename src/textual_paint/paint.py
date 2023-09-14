@@ -23,7 +23,6 @@ from textual.containers import Container, Horizontal, Vertical
 from textual.css._style_properties import BorderDefinition
 from textual.dom import DOMNode
 from textual.geometry import Offset, Region, Size
-from textual.message import Message
 from textual.reactive import var
 from textual.widget import Widget
 from textual.widgets import (Button, Header, Input, RadioButton, RadioSet,
@@ -44,6 +43,7 @@ from textual_paint.auto_restart import restart_on_changes, restart_program
 from textual_paint.canvas import Canvas
 from textual_paint.char_input import CharInput
 from textual_paint.character_picker import CharacterSelectorDialogWindow
+from textual_paint.colors_box import ColorsBox
 from textual_paint.edit_colors import EditColorsDialogWindow
 from textual_paint.file_dialogs import OpenDialogWindow, SaveAsDialogWindow
 from textual_paint.graphics_primitives import (bezier_curve_walk,
@@ -66,66 +66,12 @@ from textual_paint.windows import DialogWindow, MessageBox, Window
 
 MAX_FILE_SIZE = 500000 # 500 KB
 
-DOUBLE_CLICK_TIME = 0.8 # seconds; overridden in tests to avoid flakiness
-
 # Most arguments are handled at the end of the file,
 # but it may be important to do this one early.
 load_language(args.language)
 
 
 palette = list(DEFAULT_PALETTE)
-
-class ColorsBox(Container):
-    """Color palette widget."""
-
-    class ColorSelected(Message):
-        """Message sent when a color is selected."""
-        def __init__(self, color: str, as_foreground: bool) -> None:
-            self.color = color
-            self.as_foreground = as_foreground
-            super().__init__()
-
-    def compose(self) -> ComposeResult:
-        """Add our selected color and color well buttons."""
-        self.color_by_button: dict[Button, str] = {}
-        with Container(id="palette_selection_box"):
-            # This widget is doing double duty, showing the current color
-            # and showing/editing the current character.
-            # I haven't settled on naming for this yet.
-            yield CharInput(id="selected_color_char_input", classes="color_well")
-        with Container(id="available_colors"):
-            for color in palette:
-                button = Button("", classes="color_button color_well")
-                button.styles.background = color
-                button.can_focus = False
-                self.color_by_button[button] = color
-                yield button
-
-    def update_palette(self) -> None:  # , palette: list[str]) -> None:
-        """Update the palette with new colors."""
-        for button, color in zip(self.query(".color_button").nodes, palette):
-            assert isinstance(button, Button)
-            button.styles.background = color
-            self.color_by_button[button] = color
-
-    last_click_time = 0
-    last_click_button: Button | None = None
-    # def on_button_pressed(self, event: Button.Pressed) -> None:
-        # """Called when a button is clicked."""
-    def on_mouse_down(self, event: events.MouseDown) -> None:
-        """Called when a mouse button is pressed."""
-        button, _ = self.app.get_widget_at(*event.screen_offset)
-        if "color_button" in button.classes:
-            assert isinstance(button, Button)
-            secondary = event.ctrl or event.button == 3
-            self.post_message(self.ColorSelected(self.color_by_button[button], secondary))
-            # Detect double click and open Edit Colors dialog.
-            if event.time - self.last_click_time < DOUBLE_CLICK_TIME and button == self.last_click_button:
-                assert isinstance(self.app, PaintApp)
-                self.app.action_edit_colors(self.query(".color_button").nodes.index(button), secondary)
-            self.last_click_time = event.time
-            self.last_click_button = button
-
 
 def offset_to_text_index(textbox: Selection, offset: Offset) -> int:
     """Converts an offset in the textbox to an index in the text."""

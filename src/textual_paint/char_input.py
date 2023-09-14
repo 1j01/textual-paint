@@ -11,7 +11,7 @@ from textual.message import Message
 from textual.strip import Strip
 from textual.widgets import Input
 
-DOUBLE_CLICK_TIME = 0.8 # seconds; overridden in tests to avoid flakiness
+DOUBLE_CLICK_TIME = 0.8 # seconds
 
 class CharInput(Input, inherit_bindings=False):
     """Widget for entering a single character."""
@@ -59,6 +59,7 @@ class CharInput(Input, inherit_bindings=False):
         if TYPE_CHECKING:
             from textual_paint.paint import PaintApp
             assert isinstance(self.app, PaintApp)
+            # TODO: decouple from PaintApp
         self.app.on_paste(event)
 
     def validate_cursor_position(self, cursor_position: int) -> int:
@@ -74,6 +75,7 @@ class CharInput(Input, inherit_bindings=False):
         if TYPE_CHECKING:
             from textual_paint.paint import PaintApp
             assert isinstance(self.app, PaintApp)
+            # TODO: decouple from PaintApp
         # Textural style, repeating the character:
         # This doesn't support a blinking cursor, and it can't extend all the way
         # to the edges, even when removing padding, due to the border, which takes up a cell on each side.
@@ -91,6 +93,7 @@ class CharInput(Input, inherit_bindings=False):
         if TYPE_CHECKING:
             from textual_paint.paint import PaintApp
             assert isinstance(self.app, PaintApp)
+            # TODO: decouple from PaintApp
         if event.ctrl or event.button == 3: # right click
             self.app.action_swap_colors()
             return
