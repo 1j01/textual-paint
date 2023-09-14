@@ -1,7 +1,10 @@
-"""Icons for message boxes, as `Static` widget factories, and for the `Header`, as `Text`. Also, title bar icons as markup.
+"""Icons for message boxes, as `Static` widget factories, and for the `Header`, as `Text`. Also, title bar icons as markup "factories".
 
 Reusing widget instances doesn't work, for obvious reasons in the case of multiple dialogs open at once,
 and reasons mysterious to me in the case of closing and re-opening a single dialog.
+
+The use of functions is also important because args.ascii_only can change while running pytest.
+The PaintApp is constructed many times, but all in a single process.
 
 Some of these icons are designed inside Textual Paint itself,
 and saved as `*._rich_console_markup` as a way to export the markup for embedding in the source code.
@@ -236,11 +239,13 @@ def get_paint_icon() -> Static:
 # windows_icon_markup = "[#000000][b]≈[/][/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # trying to add the trailing flag effect
 # windows_icon_markup = "[#000000]⣿[/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/]" # ah, that's brilliant! that worked way better than I expected
 windows_icon_markup = "[not bold][#000000]⣿[/][#0000ff on #ff0000]▀[/][#00aa00 on #ffff00]▀[/][/]" # prevent bold on dots
-if args.ascii_only:
-    # windows_icon_markup = "[#000000]::[/][#0000ff on #ff0000]~[/][#00aa00 on #ffff00]~[/]" # not very convincing
-    # windows_icon_markup = "[#000000]::[/][#ff0000 on #0000ff]x[/][#ffff00 on #00aa00]x[/]"
-    # windows_icon_markup = "[#000000]::[/][#ff0000 on #0000ff]m[/][#ffff00 on #00aa00]m[/]" # probably the most balanced top/bottom split character (i.e. most dense while occupying only the top or only the bottom)
-    windows_icon_markup = "[#000000 not bold]::[/][bold #ff0000 on #0000ff]m[/][bold #ffff00 on #00aa00]m[/]" # prevent bold on dots, but definitely not the m's, it's better if they bleed into a blob
+# windows_icon_markup_ascii = "[#000000]::[/][#0000ff on #ff0000]~[/][#00aa00 on #ffff00]~[/]" # not very convincing
+# windows_icon_markup_ascii = "[#000000]::[/][#ff0000 on #0000ff]x[/][#ffff00 on #00aa00]x[/]"
+# windows_icon_markup_ascii = "[#000000]::[/][#ff0000 on #0000ff]m[/][#ffff00 on #00aa00]m[/]" # probably the most balanced top/bottom split character (i.e. most dense while occupying only the top or only the bottom)
+windows_icon_markup_ascii = "[#000000 not bold]::[/][bold #ff0000 on #0000ff]m[/][bold #ffff00 on #00aa00]m[/]" # prevent bold on dots, but definitely not the m's, it's better if they bleed into a blob
+
+def get_windows_icon_markup() -> str:
+    return windows_icon_markup_ascii if args.ascii_only else windows_icon_markup
 
 # The Paint Help window's icon is a document with a yellow question mark.
 # I can almost represent that with emoji, but this causes issues
@@ -254,9 +259,11 @@ if args.ascii_only:
 # Just don't use emoji for it.
 help_icon_markup = "📄[#ffff00]?[/]"
 # help_icon_markup = "[#ffffff]🭌[/][#ffff00]?[/]" # also works nicely
-if args.ascii_only:
-    help_icon_markup = "[#aaaaaa on #ffffff]=[/][#ffff00]?[/]"
+help_icon_markup_ascii = "[#aaaaaa on #ffffff]=[/][#ffff00]?[/]"
 # Honorable mentions: 🯄 ˀ̣
+
+def get_help_icon_markup() -> str:
+    return help_icon_markup_ascii if args.ascii_only else help_icon_markup
 
 # header_icon_markup = "[on white][blue]\\\\[/][red]|[/][yellow]/[/][/]"
 # header_icon_markup = "[black]..,[/]\n[blue]\\\\[/][on white][red]|[/][yellow]/[/][/]\n[black on rgb(192,192,192)]\\[_][/]"
@@ -295,6 +302,6 @@ __all__ = [
     "get_question_icon",
     "get_paint_icon",
     "header_icon_text",
-    "windows_icon_markup",
-    "help_icon_markup",
+    "get_windows_icon_markup",
+    "get_help_icon_markup",
 ]

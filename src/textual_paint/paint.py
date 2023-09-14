@@ -53,7 +53,7 @@ from textual_paint.graphics_primitives import (bezier_curve_walk,
                                                polyline_walk,
                                                quadratic_curve_walk)
 from textual_paint.icons import (get_paint_icon, get_question_icon,
-                                 get_warning_icon, header_icon_text, help_icon_markup, windows_icon_markup)
+                                 get_warning_icon, header_icon_text, get_help_icon_markup, get_windows_icon_markup)
 from textual_paint.localization.i18n import get as _
 from textual_paint.localization.i18n import load_language, remove_hotkey
 from textual_paint.menus import Menu, MenuBar, MenuItem, Separator
@@ -1625,7 +1625,7 @@ Columns: {len(palette) // 2}
                 elif button.has_class("no"):
                     do_the_paste()
 
-            title = windows_icon_markup + " " + _("Paint")
+            title = get_windows_icon_markup() + " " + _("Paint")
             self.message_box(title, message, "yes/no/cancel", handle_button, icon_widget=get_question_icon())
         else:
             do_the_paste()
@@ -2144,7 +2144,7 @@ Columns: {len(palette) // 2}
         # This works in English, but probably sounds weird in other languages.
         title = _("Paint") + " " + _("Help")
   
-        title = help_icon_markup + " " + title
+        title = get_help_icon_markup() + " " + title
         def handle_button(button: Button) -> None:
             window.close()
         window = DialogWindow(
