@@ -22,7 +22,7 @@ def scale_region(region: Region, scale: int) -> Region:
 
 
 class Canvas(Widget):
-    """The image document widget."""
+    """The drawing surface widget. Displays an AnsiArtDocument and Selection, and handles mouse events."""
 
     magnification = reactive(1, layout=True)
     show_grid = reactive(False)
