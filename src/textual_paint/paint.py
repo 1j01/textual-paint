@@ -295,6 +295,9 @@ class PaintApp(App[None]):
                     self.image.selection.contained_image.bg[y][x] = self.selected_bg_color
             self.canvas.refresh_scaled_region(self.image.selection.region)
 
+        # update Polygon/Curve tool preview immediately
+        self.on_canvas_tool_preview_update(Canvas.ToolPreviewUpdate(events.MouseMove(-100, -100, 0, 0, 0, False, False, False)))
+
     def watch_selected_fg_color(self, selected_fg_color: str) -> None:
         """Called when selected_fg_color changes."""
         # self.query_one("#selected_color_char_input", CharInput).styles.color = selected_fg_color
@@ -308,6 +311,9 @@ class PaintApp(App[None]):
                 for x in range(self.image.selection.region.width):
                     self.image.selection.contained_image.fg[y][x] = self.selected_fg_color
             self.canvas.refresh_scaled_region(self.image.selection.region)
+
+        # update Polygon/Curve tool preview immediately
+        self.on_canvas_tool_preview_update(Canvas.ToolPreviewUpdate(events.MouseMove(-100, -100, 0, 0, 0, False, False, False)))
 
     def watch_selected_char(self, selected_char: str) -> None:
         """Called when selected_char changes."""

@@ -142,7 +142,6 @@ def test_paint_about_paint_dialog(snap_compare: SnapCompareType, each_theme: Non
 
     assert snap_compare(PAINT, run_before=show_about_paint)
 
-# TODO: test changing color of in-progress polygon when selecting a color from the palette
 
 def test_paint_polygon_tool(snap_compare: SnapCompareType):
     async def draw_polygon(pilot: Pilot[None]):
@@ -163,13 +162,14 @@ def test_paint_polygon_tool(snap_compare: SnapCompareType):
         await pilot.click('#canvas', offset=Offset(35, 10))
         # second shape (defined above) should be closed by double clicking
 
-        await click_by_index(pilot, '#available_colors Button', 17) # yellow
         await pilot.click('#canvas', offset=Offset(33, 2))
         await pilot.click('#canvas', offset=Offset(58, 16))
         await pilot.click('#canvas', offset=Offset(58, 2))
         await pilot.click('#canvas', offset=Offset(44, 2))
         await pilot.click('#canvas', offset=Offset(52, 7))
         # third shape (defined above) should be left open as a polyline
+        # Selecting a color should immediately update the in-progress shape:
+        await click_by_index(pilot, '#available_colors Button', 17) # yellow
 
     assert snap_compare(PAINT, run_before=draw_polygon, terminal_size=LARGER)
 
