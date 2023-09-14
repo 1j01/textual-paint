@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed behavior of Free-Form Select tool when melding with the canvas, when the selection was off-screen to the left or top (i.e. with negative coordinates).
+- Fixed Polygon tool closing the polygon when clicking quickly but moving between clicks, detected as a double-click.
 
 ## [0.2.0] - 2023-09-05
 

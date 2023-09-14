@@ -146,43 +146,28 @@ def test_paint_about_paint_dialog(snap_compare: SnapCompareType, each_theme: Non
 # TODO: test dragging to define polygon; in particular, dragging can define the first two points at once
 def test_paint_polygon_tool(snap_compare: SnapCompareType):
     async def draw_polygon(pilot: Pilot[None]):
-        # TODO: fix polygon closing prematurely, interpreting clicks as double clicks despite the distance,
-        # and then remove as many of these pause() calls as possible
         await click_by_attr(pilot, "ToolsBox Button", "tooltip", "Polygon")
         await pilot.click('#canvas', offset=Offset(3, 2))
-        await pilot.pause(0.3)
         await pilot.click('#canvas', offset=Offset(19, 2))
-        await pilot.pause(0.3)
         await pilot.click('#canvas', offset=Offset(29, 7))
-        await pilot.pause(0.3)
         await pilot.click('#canvas', offset=Offset(11, 7))
-        await pilot.pause(0.3)
         await pilot.click('#canvas', offset=Offset(3, 2))
-        await pilot.pause(0.3)
         # first shape (defined above) should be closed by returning to start point
 
         await click_by_index(pilot, '#available_colors Button', 16) # red
         await pilot.click('#canvas', offset=Offset(17, 10))
-        await pilot.pause(0.3)
         await pilot.click('#canvas', offset=Offset(30, 16))
-        await pilot.pause(0.3)
         await pilot.click('#canvas', offset=Offset(49, 16))
-        await pilot.pause(0.3)
+        # double click:
         await pilot.click('#canvas', offset=Offset(35, 10))
-        # no pause — double click on purpose
         await pilot.click('#canvas', offset=Offset(35, 10))
-        await pilot.pause(0.3)
         # second shape (defined above) should be closed by double clicking
 
         await click_by_index(pilot, '#available_colors Button', 17) # yellow
         await pilot.click('#canvas', offset=Offset(33, 2))
-        await pilot.pause(0.3)
         await pilot.click('#canvas', offset=Offset(58, 16))
-        await pilot.pause(0.3)
         await pilot.click('#canvas', offset=Offset(58, 2))
-        await pilot.pause(0.3)
         await pilot.click('#canvas', offset=Offset(44, 2))
-        await pilot.pause(0.3)
         await pilot.click('#canvas', offset=Offset(52, 7))
         # third shape (defined above) should be left open as a polyline
 

@@ -2912,14 +2912,21 @@ Columns: {len(self.palette) // 2}
                 abs(self.tool_points[0].x - event.x) <= close_gap_threshold_cells and
                 abs(self.tool_points[0].y - event.y) <= close_gap_threshold_cells
             )
+
+            # print("self.mouse_at_start.x - event.x", self.mouse_at_start.x - event.x)
+            # print("self.tool_points[-2].x - event.x if len(self.tool_points) >= 2 else None", self.tool_points[-2].x - event.x if len(self.tool_points) >= 2 else None)
             double_clicked = (
                 time_since_last_click < double_click_threshold_seconds and
-                # Distance from second click press to release
+                # Distance during second click (from press to release)
                 abs(self.mouse_at_start.x - event.x) <= double_click_threshold_cells and
                 abs(self.mouse_at_start.y - event.y) <= double_click_threshold_cells and
                 # Distance between first and second clicks
-                abs(self.tool_points[-1].x - event.x) <= double_click_threshold_cells and
-                abs(self.tool_points[-1].y - event.y) <= double_click_threshold_cells
+                # I guess if the tool points are updated on mouse move,
+                # this is the distance between the two mouse up events.
+                # TODO: use distance between first mouse down and second mouse up (or maybe second mouse down?)
+                len(self.tool_points) >= 2 and
+                abs(self.tool_points[-2].x - event.x) <= double_click_threshold_cells and
+                abs(self.tool_points[-2].y - event.y) <= double_click_threshold_cells
             )
             if enough_points and (closed_gap or double_clicked):
                 self.finalize_polygon_or_curve()
