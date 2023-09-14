@@ -292,7 +292,12 @@ def get_help_icon_markup() -> str:
 # header_icon_markup = "[rgb(0,0,0) on rgb(255,255,255)]...[/][rgb(255,255,255)]\\\\[/][rgb(0,0,0) on rgb(255,255,255)]\n[blue]\\\\[/][red]|[/][yellow]/[/][rgb(192,192,192)]~[/]\n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
 # bold the brush handles
 header_icon_markup = "[rgb(0,0,0) on rgb(255,255,255)]...[/][rgb(255,255,255)]\\\\[/][rgb(0,0,0) on rgb(255,255,255)]\n[bold][blue]\\\\[/][red]|[/][yellow]/[/][/][rgb(192,192,192)]~[/]\n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
+# use rgb for all colors, so they're not dimmed
+# (not sure about this; it makes the yellow really hard to see)
+# header_icon_markup = "[rgb(0,0,0) on rgb(255,255,255)]...[/][rgb(255,255,255)]\\\\[/][rgb(0,0,0) on rgb(255,255,255)]\n[bold][rgb(0,0,255)]\\\\[/][rgb(255,0,0)]|[/][rgb(255,255,0)]/[/][/][rgb(192,192,192)]~[/]\n[rgb(0,0,0) on rgb(230,230,230)]T[/][rgb(0,0,0) on rgb(192,192,192)]_[/][rgb(0,0,0) on rgb(150,150,150)]T[/] [/]"
+
 # This got pretty out of hand. I should've done this in Textual Paint before letting it get this complex!
+
 # Prevent wrapping, for a CSS effect, cropping to hide the shading "~" of the page fold when the page fold isn't visible.
 header_icon_text = Text.from_markup(header_icon_markup, overflow="crop")
 
