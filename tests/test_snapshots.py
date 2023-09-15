@@ -170,6 +170,7 @@ def test_paint_polygon_tool(snap_compare: SnapCompareType):
         # third shape (defined above) should be left open as a polyline
         # Selecting a color should immediately update the in-progress shape:
         await click_by_index(pilot, '#available_colors Button', 17) # yellow
+        await pilot.pause(0.5) # avoid pressed state
 
     assert snap_compare(PAINT, run_before=draw_polygon, terminal_size=LARGER)
 
