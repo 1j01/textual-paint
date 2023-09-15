@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Made radio buttons rounder in `--ascii-only` mode, using parentheses instead of square brackets.
-- Moved some code out of the huge `paint.py` into smaller files.
+- Split up code files (especially the huge `paint.py`) into lots of smaller modules, and refactored a bunch of things.
 
 ### Added
 
