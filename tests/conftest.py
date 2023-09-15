@@ -3,6 +3,8 @@
 https://docs.pytest.org/en/7.1.x/reference/fixtures.html#conftest-py-sharing-fixtures-across-multiple-files
 """
 
+import os
+import sys
 from pathlib import Path
 from typing import Generator
 
@@ -11,7 +13,8 @@ from pyfakefs.fake_filesystem import FakeFilesystem
 
 # This is needed on Windows but not Ubuntu/macOS?
 # I hate python's import system with a burning passion.
-import sys, os; sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '../src/')))
+sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '../src/')))
+
 from textual_paint.figlet_font_writer import FIGletFontWriter
 
 
