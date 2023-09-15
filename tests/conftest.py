@@ -9,6 +9,9 @@ from typing import Generator
 import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
 
+# This is needed on Windows but not Ubuntu/macOS?
+# I hate python's import system with a burning passion.
+import sys, os; sys.path.insert(0, os.path.realpath(os.path.join(os.path.dirname(__file__), '../src/')))
 from textual_paint.figlet_font_writer import FIGletFontWriter
 
 
