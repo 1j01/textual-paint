@@ -11,6 +11,7 @@ from textual.widgets._directory_tree import DirEntry
 from textual.widgets._tree import TOGGLE_STYLE, TreeNode
 
 # from textual_paint.args import args
+from textual_paint.__init__ import PYTEST
 from textual_paint.ascii_mode import replace
 
 # Vague skeuomorphism
@@ -188,6 +189,12 @@ class EnhancedDirectoryTree(DirectoryTree):
             A Rich Text object containing the label.
         """
         node_label = node._label.copy()  # type: ignore
+
+        if PYTEST and node_label.plain == "\\":
+            # Normalize root node display for cross-platform snapshot testing.
+            # (Setting pyfakefs's fs.os = OSType.LINUX caused bigger problems.)
+            node_label.plain = "/"
+
         node_label.stylize(style)
 
         if node._allow_expand:  # type: ignore
