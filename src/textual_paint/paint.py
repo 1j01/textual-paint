@@ -2545,7 +2545,10 @@ Columns: {len(self.palette) // 2}
         event.stop()
         self.cancel_preview()
 
-        self.get_widget_by_id("status_coords", Static).update(f"{event.x},{event.y}")
+        # -100, -100 is a "sentinel value" for no mouse position (hacky)
+        # TODO: add an attribute to ToolPreviewUpdate or make it's x/y Optional
+        if event.x >= 0:
+            self.get_widget_by_id("status_coords", Static).update(f"{event.x},{event.y}")
 
         if self.selected_tool in [Tool.brush, Tool.pencil, Tool.eraser, Tool.curve, Tool.polygon]:
             if self.selected_tool == Tool.curve:
