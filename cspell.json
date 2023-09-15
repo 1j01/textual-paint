@@ -10,6 +10,8 @@
 		"toml"
 	],
 	"ignorePaths": [
+		"snapshot_report.html",
+		"*.ambr",
 		".git",
 		"*.(bmp|png|jpg|jpeg|gif|svg|ico|tiff|tif|ans|flf)",
 		"*.log",
