@@ -53,7 +53,7 @@ def my_fs(fs: FakeFilesystem) -> Generator[FakeFilesystem, None, None]:
     # fs.add_real_directory(SHARED_DIRECTORY)
 
     # Don't fail trying to load the default font "standard", we don't need it!
-    # `pkg_resources` doesn't seem to work with pyfakefs.
+    # `pkg_resources` doesn't seem to work with pyfakefs (or I don't know what directories I need to add)
     from pyfiglet import FigletFont
     def preloadFont(self: FigletFont, font: str):
         dumb_font = FIGletFontWriter(commentLines=["Stupid font for testing"])
@@ -64,6 +64,23 @@ def my_fs(fs: FakeFilesystem) -> Generator[FakeFilesystem, None, None]:
   
     # Add an extra file to show how a file looks in the EnhancedDirectoryTree widget.
     fs.create_file("/pyfakefs_added_file.txt", contents="pyfakefs ate ur FS")
+    
+    # Add files so both Users and home exist regardless of the OS.
+    # And HOPEFULLY not other folders. I suppose if you clone the repo at the root,
+    # you may see textual-paint in the file dialog snapshots, and if you clone it
+    # anywhere that doesn't start with Users or home as the first part, that will show up too,
+    # due to the real directory being added above.
+    # Maybe I should fine a more fine-grained way to target the EnhancedDirectoryTree widget.
+    fs.create_file("/Users/username/.bashrc", contents="")
+    fs.create_file("/home/username/.bashrc", contents="")
+    fs.create_file("/var/something.txt", contents="") # var shows on macOS
+    fs.create_file("/tmp/something.txt", contents="") # tmp shows on Ubuntu and macOS
+    fs.create_file("/media/something.txt", contents="") # in case you clone on an external drive
+    # Roll with it...
+    fs.create_file("/UsersHome/username/.bashrc", contents="")
+    fs.create_file("/UsersNotAtHome/username/.bashrc", contents="")
+    fs.create_file("/UsersWhoHaveLeftHomeForGood/username/.bashrc", contents="")
+    fs.create_file("/homeWithNoUsers/.bashrc", contents="")
 
     yield fs
 
