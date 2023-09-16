@@ -45,17 +45,19 @@ class ColorsBox(Container):
 
     def watch_palette(self, palette: tuple[str, ...]) -> None:
         """Called when the palette is changed."""
-        # TODO: optimize; don't remove or add buttons unless the palette size changes
-        # Side note: the palette size never changes in the current implementation.
-        self.query(".color_button").remove()
-        self.color_by_button.clear()
         container = self.query_one("#available_colors")
-        for color in palette:
+        buttons = self.query(".color_button").nodes
+        for extra_button in buttons[len(palette):]:
+            extra_button.remove()
+            del self.color_by_button[extra_button]  # type: ignore
+        for _new_color in palette[len(buttons):]:
             button = Button("", classes="color_button color_well")
-            button.styles.background = color
             button.can_focus = False
-            self.color_by_button[button] = color
             container.mount(button)
+            buttons.append(button)
+        for button, color in zip(buttons, palette):
+            button.styles.background = color
+            self.color_by_button[button] = color  # type: ignore
 
     last_click_time = 0
     last_click_button: Button | None = None
