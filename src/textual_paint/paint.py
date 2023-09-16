@@ -281,7 +281,7 @@ class PaintApp(App[None]):
 
     def watch_palette(self, palette: tuple[str, ...]) -> None:
         """Called when palette changes."""
-        self.query_one("ColorsBox", ColorsBox).update_palette()
+        self.query_one("ColorsBox", ColorsBox).palette = palette
 
     def watch_selected_bg_color(self, selected_bg_color: str) -> None:
         """Called when selected_bg_color changes."""
@@ -1279,6 +1279,10 @@ class PaintApp(App[None]):
     def action_swap_colors(self) -> None:
         """Swap the foreground and background colors."""
         self.selected_bg_color, self.selected_fg_color = self.selected_fg_color, self.selected_bg_color
+
+    def on_colors_box_edit_color(self, event: ColorsBox.EditColor) -> None:
+        """Called when a color is double-clicked in the palette."""
+        self.action_edit_colors(color_palette_index=event.color_index, as_foreground=event.as_foreground)
 
     def action_edit_colors(self, color_palette_index: int|None = None, as_foreground: bool = False) -> None:
         """Show dialog to edit colors."""
