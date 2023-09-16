@@ -288,6 +288,7 @@ class PaintApp(App[None]):
         self.query_one("#selected_color_char_input", CharInput).styles.background = selected_bg_color
         # CharInput now handles the background style itself PARTIALLY; it doesn't affect the whole area.
 
+        # update Text tool textbox immediately
         if self.image.selection and self.image.selection.textbox_mode:
             assert self.image.selection.contained_image is not None, "textbox_mode without contained_image"
             for y in range(self.image.selection.region.height):
@@ -296,7 +297,7 @@ class PaintApp(App[None]):
             self.canvas.refresh_scaled_region(self.image.selection.region)
 
         # update Polygon/Curve tool preview immediately
-        self.on_canvas_tool_preview_update(Canvas.ToolPreviewUpdate(events.MouseMove(-100, -100, 0, 0, 0, False, False, False)))
+        self.draw_tool_preview_on_canvas()
 
     def watch_selected_fg_color(self, selected_fg_color: str) -> None:
         """Called when selected_fg_color changes."""
@@ -305,6 +306,7 @@ class PaintApp(App[None]):
         # Well, it still needs to be updated.
         self.query_one("#selected_color_char_input", CharInput).refresh()
 
+        # update Text tool textbox immediately
         if self.image.selection and self.image.selection.textbox_mode:
             assert self.image.selection.contained_image is not None, "textbox_mode without contained_image"
             for y in range(self.image.selection.region.height):
@@ -313,7 +315,7 @@ class PaintApp(App[None]):
             self.canvas.refresh_scaled_region(self.image.selection.region)
 
         # update Polygon/Curve tool preview immediately
-        self.on_canvas_tool_preview_update(Canvas.ToolPreviewUpdate(events.MouseMove(-100, -100, 0, 0, 0, False, False, False)))
+        self.draw_tool_preview_on_canvas()
 
     def watch_selected_char(self, selected_char: str) -> None:
         """Called when selected_char changes."""
@@ -2543,12 +2545,14 @@ Columns: {len(self.palette) // 2}
     def on_canvas_tool_preview_update(self, event: Canvas.ToolPreviewUpdate) -> None:
         """Called when the user is hovering over the canvas but not drawing yet."""
         event.stop()
-        self.cancel_preview()
 
-        # -100, -100 is a "sentinel value" for no mouse position (hacky)
-        # TODO: add an attribute to ToolPreviewUpdate or make it's x/y Optional
-        if event.x >= 0:
-            self.get_widget_by_id("status_coords", Static).update(f"{event.x},{event.y}")
+        self.get_widget_by_id("status_coords", Static).update(f"{event.x},{event.y}")
+
+        self.draw_tool_preview_on_canvas(Offset(event.x, event.y))
+
+    def draw_tool_preview_on_canvas(self, mouse: Offset|None = None) -> None:
+        """Update the tool preview on the canvas, if applicable."""
+        self.cancel_preview()
 
         if self.selected_tool in [Tool.brush, Tool.pencil, Tool.eraser, Tool.curve, Tool.polygon]:
             if self.selected_tool == Tool.curve:
@@ -2556,9 +2560,9 @@ Columns: {len(self.palette) // 2}
             elif self.selected_tool == Tool.polygon:
                 # polyline until finished
                 self.make_preview(self.draw_current_polyline, show_dimensions_in_status_bar=True)
-            else:
-                self.make_preview(lambda: self.stamp_brush(event.x, event.y))
-        elif self.selected_tool == Tool.magnifier:
+            elif mouse is not None:
+                self.make_preview(lambda: self.stamp_brush(mouse.x, mouse.y))
+        elif self.selected_tool == Tool.magnifier and mouse is not None:
             prospective_magnification = self.get_prospective_magnification()
 
             if prospective_magnification < self.magnification:
@@ -2568,8 +2572,8 @@ Columns: {len(self.palette) // 2}
             w = self.editing_area.size.width // prospective_magnification
             h = self.editing_area.size.height // prospective_magnification
 
-            rect_x1 = (event.x - w // 2)
-            rect_y1 = (event.y - h // 2)
+            rect_x1 = (mouse.x - w // 2)
+            rect_y1 = (mouse.y - h // 2)
 
             # try to move rect into bounds without squishing
             rect_x1 = max(0, rect_x1)
