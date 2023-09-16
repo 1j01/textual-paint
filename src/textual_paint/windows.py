@@ -493,7 +493,7 @@ class MessageBox(DialogWindow):
         """Toggle the visibility of the error details."""
         self.details_widget.display = not self.details_widget.display
         button_text = _("Hide Details") if self.details_widget.display else _("Show Details")
-        self.details_button.update(button_text)
+        self.details_button.label = button_text
 
     def on_mount(self):
         """Called when the window is mounted."""
