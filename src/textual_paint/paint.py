@@ -1280,10 +1280,6 @@ class PaintApp(App[None]):
         """Swap the foreground and background colors."""
         self.selected_bg_color, self.selected_fg_color = self.selected_fg_color, self.selected_bg_color
 
-    def on_colors_box_edit_color(self, event: ColorsBox.EditColor) -> None:
-        """Called when a color is double-clicked in the palette."""
-        self.action_edit_colors(color_palette_index=event.color_index, as_foreground=event.as_foreground)
-
     def action_edit_colors(self, color_palette_index: int|None = None, as_foreground: bool = False) -> None:
         """Show dialog to edit colors."""
         self.close_windows("#edit_colors_dialog")
@@ -3167,6 +3163,10 @@ Columns: {len(self.palette) // 2}
             self.selected_fg_color = event.color
         else:
             self.selected_bg_color = event.color
+
+    def on_colors_box_edit_color(self, event: ColorsBox.EditColor) -> None:
+        """Called when a color is double-clicked in the palette."""
+        self.action_edit_colors(color_palette_index=event.color_index, as_foreground=event.as_foreground)
 
     def on_menu_status_info(self, event: Menu.StatusInfo) -> None:
         """Called when a menu item is hovered."""
