@@ -279,6 +279,10 @@ class PaintApp(App[None]):
         """Called when selected_tool changes."""
         self.query_one("ToolsBox", ToolsBox).show_selected_tool(selected_tool)
 
+    def watch_palette(self, palette: tuple[str, ...]) -> None:
+        """Called when palette changes."""
+        self.query_one("ColorsBox", ColorsBox).update_palette()
+
     def watch_selected_bg_color(self, selected_bg_color: str) -> None:
         """Called when selected_bg_color changes."""
         self.query_one("#selected_color_char_input", CharInput).styles.background = selected_bg_color
@@ -714,10 +718,8 @@ class PaintApp(App[None]):
         """
         if format_id == "IRC":
             self.palette = IRC_PALETTE + (IRC_PALETTE[0],) * (len(self.palette) - len(IRC_PALETTE))
-            self.query_one(ColorsBox).update_palette()
         elif format_id == "PLAINTEXT":
             self.palette = ("#000000", "#ffffff") + ("#ffffff",) * (len(self.palette) - 2)
-            self.query_one(ColorsBox).update_palette()
 
     async def save(self) -> bool:
         """Save the image to a file.
@@ -1287,12 +1289,10 @@ class PaintApp(App[None]):
             else:
                 self.selected_bg_color = color
             if color_palette_index is not None:
-                # Was simpler when this was a list:
+                # Effectively:
                 # self.palette[color_palette_index] = color
-                # But now it's a tuple.
+                # But I made it a tuple for immutability guarantees.
                 self.palette = self.palette[:color_palette_index] + (color,) + self.palette[color_palette_index + 1:]
-                # TODO: Update the palette in a reactive way. I've made it immutable to support this.
-                self.query_one(ColorsBox).update_palette()
             window.close()
         window = EditColorsDialogWindow(
             id="edit_colors_dialog",
@@ -1352,10 +1352,7 @@ class PaintApp(App[None]):
         except Exception as e:
             self.message_box(_("Paint"), _("Failed to read palette file."), "ok", error=e)
             return
-        # self.palette[:len(new_colors)] = new_colors
-        # self.palette[len(new_colors):] = [new_colors[0]] * (len(self.palette) - len(new_colors))
         self.palette = new_colors[:len(self.palette)] + (new_colors[0],) * (len(self.palette) - len(new_colors))
-        self.query_one(ColorsBox).update_palette()
 
     def action_get_colors(self) -> None:
         """Show a dialog to select a palette file to load."""
