@@ -1,6 +1,6 @@
 """Color palette data for Textual Paint."""
 
-DEFAULT_PALETTE = [
+DEFAULT_PALETTE = (
     "rgb(0,0,0)",  # Black
     "rgb(128,128,128)",  # Dark Gray
     "rgb(128,0,0)",  # Dark Red
@@ -30,9 +30,9 @@ DEFAULT_PALETTE = [
     "rgb(128,128,255)",
     "rgb(255,0,128)",
     "rgb(255,128,64)",
-]
+)
 
-IRC_PALETTE = [
+IRC_PALETTE = (
     "rgb(255,255,255)", # 0 White
     "rgb(0,0,0)", # 1 Black
     "rgb(0,0,127)", # 2 Navy
@@ -49,4 +49,4 @@ IRC_PALETTE = [
     "rgb(255,0,255)", # 13 Magenta
     "rgb(127,127,127)", # 14 Gray
     "rgb(210,210,210)", # 15 Light Gray
-]
+)

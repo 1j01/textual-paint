@@ -176,11 +176,7 @@ class PaintApp(App[None]):
     """Whether to show the status bar."""
 
     palette = var(DEFAULT_PALETTE)
-    """The colors to show in the colors box.
-    
-    Note: mutating will not cause a watch_palette method to be called.
-    May want to make this a tuple for easier reactivity.
-    """
+    """The colors to show in the colors box. This is a tuple for immutability, since mutations would not trigger watch_palette."""
     selected_tool = var(Tool.pencil)
     """The currently selected tool."""
     return_to_tool = var(Tool.pencil)
@@ -717,10 +713,10 @@ class PaintApp(App[None]):
         that or to make the character picker a dockable window.
         """
         if format_id == "IRC":
-            self.palette = IRC_PALETTE + [IRC_PALETTE[0]] * (len(self.palette) - len(IRC_PALETTE))
+            self.palette = IRC_PALETTE + (IRC_PALETTE[0],) * (len(self.palette) - len(IRC_PALETTE))
             self.query_one(ColorsBox).update_palette()
         elif format_id == "PLAINTEXT":
-            self.palette = ["#000000", "#ffffff"] + ["#ffffff"] * (len(self.palette) - 2)
+            self.palette = ("#000000", "#ffffff") + ("#ffffff",) * (len(self.palette) - 2)
             self.query_one(ColorsBox).update_palette()
 
     async def save(self) -> bool:
@@ -1291,12 +1287,11 @@ class PaintApp(App[None]):
             else:
                 self.selected_bg_color = color
             if color_palette_index is not None:
-                self.palette[color_palette_index] = color
-                # TODO: Update the palette in a reactive way?
-                # Would need to replace the whole palette object
-                # for a watch_palette method to be called.
-                # Could make it a tuple for immutability.
-                # Not sure if it's worth it.
+                # Was simpler when this was a list:
+                # self.palette[color_palette_index] = color
+                # But now it's a tuple.
+                self.palette = self.palette[:color_palette_index] + (color,) + self.palette[color_palette_index + 1:]
+                # TODO: Update the palette in a reactive way. I've made it immutable to support this.
                 self.query_one(ColorsBox).update_palette()
             window.close()
         window = EditColorsDialogWindow(
@@ -1307,7 +1302,7 @@ class PaintApp(App[None]):
         )
         self.mount(window)
 
-    def read_palette(self, file_content: str) -> list[str]:
+    def read_palette(self, file_content: str) -> tuple[str, ...]:
         """Read a GIMP Palette file."""
         format_name = "GIMP Palette"
         lines = file_content.splitlines()
@@ -1345,7 +1340,7 @@ class PaintApp(App[None]):
             # name = r_g_b_name[4]
             colors.append(f"#{red:02x}{green:02x}{blue:02x}")
 
-        return colors
+        return tuple(colors)
 
     def load_palette(self, file_content: str) -> None:
         """Load a palette from a GIMP palette file."""
@@ -1357,8 +1352,9 @@ class PaintApp(App[None]):
         except Exception as e:
             self.message_box(_("Paint"), _("Failed to read palette file."), "ok", error=e)
             return
-        self.palette[:len(new_colors)] = new_colors
-        self.palette[len(new_colors):] = [new_colors[0]] * (len(self.palette) - len(new_colors))
+        # self.palette[:len(new_colors)] = new_colors
+        # self.palette[len(new_colors):] = [new_colors[0]] * (len(self.palette) - len(new_colors))
+        self.palette = new_colors[:len(self.palette)] + (new_colors[0],) * (len(self.palette) - len(new_colors))
         self.query_one(ColorsBox).update_palette()
 
     def action_get_colors(self) -> None:
@@ -3151,7 +3147,7 @@ Columns: {len(self.palette) // 2}
         self.show_status_bar = not self.show_status_bar
 
     def on_tools_box_tool_selected(self, event: ToolsBox.ToolSelected) -> None:
-        """Called when a tool is selected in the palette."""
+        """Called when a tool is selected in the tools box."""
         self.finalize_polygon_or_curve()  # must come before setting selected_tool
         self.meld_selection()
         self.tool_points = []
