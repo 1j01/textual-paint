@@ -1,13 +1,14 @@
 """The ColorsBox widget for selecting colors."""
 
-from typing import TYPE_CHECKING
 from textual import events
 from textual.app import ComposeResult
 from textual.containers import Container
 from textual.message import Message
 from textual.reactive import var
 from textual.widgets import Button
+
 from textual_paint.char_input import DOUBLE_CLICK_TIME, CharInput
+
 
 class ColorsBox(Container):
     """Color palette widget."""

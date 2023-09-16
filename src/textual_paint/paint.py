@@ -52,8 +52,9 @@ from textual_paint.graphics_primitives import (bezier_curve_walk,
                                                midpoint_ellipse, polygon_walk,
                                                polyline_walk,
                                                quadratic_curve_walk)
-from textual_paint.icons import (get_paint_icon, get_question_icon,
-                                 get_warning_icon, header_icon_text, get_help_icon_markup, get_windows_icon_markup)
+from textual_paint.icons import (get_help_icon_markup, get_paint_icon,
+                                 get_question_icon, get_warning_icon,
+                                 get_windows_icon_markup, header_icon_text)
 from textual_paint.localization.i18n import get as _
 from textual_paint.localization.i18n import load_language, remove_hotkey
 from textual_paint.menus import Menu, MenuBar, MenuItem, Separator
