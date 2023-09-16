@@ -21,14 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Replaced a complex shell one-liner on the readme with a new ANSI art gallery app. You can run it from the repo root, with: `python -m src.textual_paint.gallery`
 - Textual Paint now uses `pytest-textual-snapshot` and has tests covering most of the UI surface. This will allow me to update dependencies and do major restructuring of the code with confidence.
-- I created a test recorder, which can generate test code, which is great for creating interactions with the canvas.
+- I created a test recorder, which can generate test code by recording interactions with a running app. This is great for testing interactions with the canvas.
 - Added docstrings to most of the code, where it was missing.
 
 ### Fixed
 
 - Fixed behavior of Free-Form Select tool when melding with the canvas, when the selection was off-screen to the left or top (i.e. with negative coordinates).
-- Fixed Polygon tool closing the polygon when clicking quickly but moving between clicks, detected as a double-click.
-- In-progress curves/polygons are now re-colored immediately when a color is selected, instead of only when mousing over the canvas.
+- Fixed some false positives in the Polygon tool's double click detection. Before, it would close the polygon prematurely if you clicked quickly, even if you moved the mouse a significant distance between clicks.
+- In-progress curves/polygons are now re-colored immediately when a color is selected. Before, it would only update if you moved the mouse over the canvas.
 - Fixed "Show Details" button label not changing to "Hide Details" when clicked, in error message dialogs.
 
 ## [0.2.0] - 2023-09-05
