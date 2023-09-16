@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Made radio buttons rounder in `--ascii-only` mode, using parentheses instead of square brackets.
+- Improved the appearance of the warning icon and question icon in `--ascii-only` mode with the dark theme, and made it update when toggling dark mode with <kbd>Ctrl+D</kbd>. (The question icon is used only when pasting content larger than the canvas.)
 - Split up code files (especially the huge `paint.py`) into lots of smaller modules, and refactored a bunch of things.
 
 ### Added

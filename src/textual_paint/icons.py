@@ -16,14 +16,75 @@ Two nice things about embedding it are:
 2. it's easier to dynamically modify them to remove the background color.
 
 TODO: unify formats/authoring workflow?
-TODO: dynamic dark mode (I already have alternate versions of some icons)
 """
 
+from rich.console import RenderableType
+from rich.protocol import is_renderable
 from rich.text import Text
+from textual.errors import RenderError
 from textual.widgets import Static
 
 from textual_paint.args import args
 from textual_paint.localization.i18n import get as _
+
+
+def _check_renderable(renderable: object):
+    """Check if a renderable conforms to the Rich Console protocol
+    (https://rich.readthedocs.io/en/latest/protocol.html)
+
+    Args:
+        renderable: A potentially renderable object.
+
+    Raises:
+        RenderError: If the object can not be rendered.
+    """
+    if not is_renderable(renderable):
+        raise RenderError(
+            f"unable to render {renderable!r}; a string, Text, or other Rich renderable is required"
+        )
+
+class ThemedIcon(Static):
+    """A Static widget that changes its content based on the theme.
+    
+    Args:
+        light_renderable: A Rich renderable, or string containing console markup, for the light theme.
+        dark_renderable: A Rich renderable, or string containing console markup, for the dark theme.
+        name: Name of widget.
+        id: ID of Widget.
+        classes: Space separated list of class names.
+        disabled: Whether the static is disabled or not.
+    """
+
+    def __init__(
+        self,
+        light_renderable: RenderableType,
+        dark_renderable: RenderableType, 
+        *,
+        name: str | None = None,
+        id: str | None = None,
+        classes: str | None = None,
+        disabled: bool = False,
+    ):
+        """Initialize the icon."""
+        super().__init__("", 
+            name=name,
+            id=id,
+            classes=classes,
+            disabled=disabled,
+        )
+        self.light_renderable = light_renderable
+        self.dark_renderable = dark_renderable
+        _check_renderable(light_renderable)
+        _check_renderable(dark_renderable)
+        self.watch(self.app, "dark", self._on_dark_changed, init=False)
+        self._on_dark_changed(False, self.app.dark)
+
+    def _on_dark_changed(self, old_value: bool, dark: bool) -> None:
+        if dark:
+            self.update(self.dark_renderable)
+        else:
+            self.update(self.light_renderable)
+
 
 # ASCII line art version:
 # get_warning_icon = lambda: Static("""[#ffff00]
@@ -133,9 +194,10 @@ warning_icon_markup_ascii_dark_mode = """[#ffff00]
 [/]"""
 
 def get_warning_icon() -> Static:
-    markup = warning_icon_markup_ascii if args.ascii_only else warning_icon_markup_unicode
-    # TODO: Use warning_icon_markup_ascii_dark_mode for a less blocky looking outline in dark mode.
-    return Static(markup, classes="warning_icon message_box_icon")
+    if args.ascii_only:
+        return ThemedIcon(warning_icon_markup_ascii, warning_icon_markup_ascii_dark_mode, classes="warning_icon message_box_icon")
+    else:
+        return Static(warning_icon_markup_unicode, classes="warning_icon message_box_icon")
 
 
 # question_icon_ansi = ""
@@ -156,32 +218,6 @@ question_icon_console_markup = """
 """
 # make background transparent
 question_icon_console_markup = question_icon_console_markup.replace(" on rgb(128,128,128)", "")
-# class QuestionIcon(Static):
-#     """A question mark icon."""
-#
-#     def __init__(self) -> None:
-#         """Initialize the icon."""
-#         super().__init__("", classes="question_icon message_box_icon")
-#         # This assertion fails.
-#         # > type(self.app)
-#         # <class '<run_path>.PaintApp'>
-#         # > type(PaintApp())
-#         # <class 'paint.PaintApp'>
-#         # from paint import PaintApp
-#         # assert isinstance(self.app, PaintApp), "QuestionIcon should be used in PaintApp, but got: " + repr(self.app)
-#         self.watch(self.app, "dark", self._on_dark_changed, init=False)
-#         self._on_dark_changed(False, self.app.dark)
-#
-#     def _on_dark_changed(self, old_value: bool, dark: bool) -> None:
-#         # tweak colors according to the theme
-#         if dark:
-#             # Never happens?
-#             self.update(question_icon_console_markup.replace("rgb(0,0,0)", "rgb(255,0,255)"))
-#         else:
-#             self.update(question_icon_console_markup.replace("rgb(0,0,0)", "rgb(128,128,128)"))
-#
-# def get_question_icon() -> QuestionIcon:
-#     return QuestionIcon()
 
 
 # also the shadow is normally gray, I just drew it black because I was using gray as the background
@@ -201,9 +237,18 @@ question_icon_console_markup_ascii = question_icon_console_markup_ascii.replace(
 # bold question mark
 question_icon_console_markup_ascii = question_icon_console_markup_ascii.replace("?", "[b]?[/b]")
 
+# swap white and black, and brighten blue to cyan
+question_icon_console_markup_ascii_dark_mode = question_icon_console_markup_ascii.replace("rgb(0,0,0)", "rgb(255,0,255)").replace("rgb(255,255,255)", "rgb(0,0,0)").replace("rgb(255,0,255)", "rgb(255,255,255)").replace("rgb(0,0,255)", "rgb(0,255,255)")
+
 def get_question_icon() -> Static:
-    markup = question_icon_console_markup_ascii if args.ascii_only else question_icon_console_markup
-    return Static(markup, classes="question_icon message_box_icon")
+    if args.ascii_only:
+        return ThemedIcon(
+            question_icon_console_markup_ascii,
+            question_icon_console_markup_ascii_dark_mode,
+            classes="question_icon message_box_icon",
+        )
+    else:
+        return Static(question_icon_console_markup, classes="question_icon message_box_icon")
 
 
 paint_icon_console_markup = """
