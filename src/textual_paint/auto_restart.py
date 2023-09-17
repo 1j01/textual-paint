@@ -26,7 +26,7 @@ def restart_program() -> None:
         # It's meant to eventually call this, but we need it immediately (unless we delay with asyncio perhaps)
         # Otherwise the terminal will be left in a state where you can't (visibly) type anything
         # if you exit the app after reloading, since the new process will pick up the old terminal state.
-        _app._driver.stop_application_mode()  # type: ignore
+        _app._driver.stop_application_mode()  # pyright: ignore[reportPrivateUsage, reportOptionalMemberAccess]
     except Exception as e:
         print("Error stopping application mode. The command line may not work as expected. The `reset` command should restore it on Linux.", e)
 

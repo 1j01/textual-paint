@@ -75,7 +75,7 @@ class EnhancedDirectoryTree(DirectoryTree):
             # So instead, listen for NodeHighlighted,
             # and then clear the flag.
 
-            region = self._get_label_region(node._line) # type: ignore
+            region = self._get_label_region(node._line)  # pyright: ignore[reportPrivateUsage]
             assert region, "Node not found in tree"
             self.scroll_to_region(region, animate=False, top=True)
 
@@ -188,7 +188,7 @@ class EnhancedDirectoryTree(DirectoryTree):
         Returns:
             A Rich Text object containing the label.
         """
-        node_label = node._label.copy()  # type: ignore
+        node_label = node._label.copy()  # pyright: ignore[reportPrivateUsage]
 
         if PYTEST and node_label.plain == "\\":
             # Normalize root node display for cross-platform snapshot testing.
@@ -197,7 +197,7 @@ class EnhancedDirectoryTree(DirectoryTree):
 
         node_label.stylize(style)
 
-        if node._allow_expand:  # type: ignore
+        if node._allow_expand:  # pyright: ignore[reportPrivateUsage]
             prefix = (FOLDER_OPEN_ICON if node.is_expanded else FOLDER_CLOSED_ICON).copy()
             prefix.stylize_before(base_style + TOGGLE_STYLE)
             node_label.stylize_before(
