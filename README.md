@@ -369,6 +369,22 @@ python tests/pilot_recorder.py
 # or Ctrl+Z to remove the last step and replay the rest.
 ```
 
+### Publishing
+
+- Run QA steps above
+- Update version numbers in `setup.cfg` in `src/textual_paint/__init__.py` to a pre-release version (e.g. `0.3.0-pre.1`)
+- Add version header to `CHANGELOG.md` below "Unreleased", and update version links at bottom
+- Commit (e.g. `git commit -m "Prepare v0.3.0"`)
+- Build package: `python -m build --sdist --wheel`
+- Upload to TestPyPI: (updating version numbers) `python -m twine upload --repository testpypi dist/textual_paint-0.3.0rc1-py3-none-any.whl dist/textual_paint-0.3.0rc1.tar.gz`
+- Test installing from TestPyPI with: (outside the venv, updating the version number) `pipx uninstall textual-paint; pipx install textual-paint==0.3.0rc1 --pip-args "--index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple textual-paint"`
+- If all is good, update version numbers to remove `-pre.N` suffixes
+- Amend commit (`git commit --amend --no-edit`)
+- Rebuild: `python -m build --sdist --wheel`
+- Upload to PyPI: `python -m twine upload dist/textual_paint-0.3.0-py3-none-any.whl dist/textual_paint-0.3.0.tar.gz`
+- Push `main` branch (`git push origin main`)
+- Tag and push tag (e.g. `git tag v0.3.0 && git push origin v0.3.0`)
+
 ## License
 
 [MIT](https://github.com/1j01/textual-paint/blob/main/LICENSE.txt)
