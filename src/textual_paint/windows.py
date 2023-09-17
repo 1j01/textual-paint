@@ -169,7 +169,7 @@ class Window(Container):
         border_h = self.outer_size.height - self.size.height - 1 # bottom border isn't applicable, subtract 1
         bottom_margin = self.title_bar.outer_size.height + border_h
         try:
-            screen = self.screen  # type: ignore
+            screen = self.screen
         except NoScreen:
             # I got when hitting Ctrl+O rapidly.
             # Any old Open dialog is closed when opening the Open dialog.

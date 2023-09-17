@@ -125,7 +125,7 @@ class EnhancedDirectoryTree(DirectoryTree):
                         if node.data.path.is_dir():
                             sliced_parts = remaining_parts[1:]
                             # print("recursing with sliced_parts", sliced_parts)
-                            _expand_matching_child(node, sliced_parts, callback)  # type: ignore
+                            _expand_matching_child(node, sliced_parts, callback)
                             _add_to_load_queue(node)
                         # else:
                         #     print("Found a file, not as last part of path:", node.data.path, "remaining_parts:", remaining_parts)

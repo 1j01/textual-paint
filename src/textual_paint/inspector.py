@@ -944,11 +944,7 @@ class NodeInfo(Container):
                     ancestor.css_identifier_styled, # TODO: link to DOM node in tree; link to source code where binding is defined
                 ]
                 for (ancestor, binding) in nodes_and_bindings
-            ]  # type: ignore
-            # Pyright v1.1.315 introduced `error: Argument of type "list[list[str]]" cannot be assigned to parameter "rows" of type "Iterable[Iterable[CellType@DataTable]]" in function "add_rows" (reportGeneralTypeIssues)`
-            # It doesn't seem to understand the specific type of key_bindings_data_table, even though it's annotated.
-            # A workaround might be to store the DataTable in an attribute in __init__.
-            # This bug may be related: https://github.com/microsoft/pyright/issues/5455
+            ]
         )
 
         # For events, look for class properties that are subclasses of Message
@@ -1299,7 +1295,7 @@ class Inspector(Container):
         # expand_icon = "+" # Alternatives: + ⨁ 🪜 🎊 🐡 🔬 (↕️ arrow emoji unreliable)
         yield Button(f"{inspect_icon} Inspect Element", classes="inspect_button")
         # yield Button(f"{expand_icon} Expand All Visible", classes="expand_all_button")
-        yield DOMTree(self.app)  # type: ignore
+        yield DOMTree(self.app)
         yield NodeInfo()
         yield ResizeHandle(self, "left")
 
