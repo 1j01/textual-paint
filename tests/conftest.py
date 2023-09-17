@@ -66,6 +66,7 @@ def my_fs(fs: FakeFilesystem) -> Generator[FakeFilesystem, None, None]:
         for ordinal in dumb_font.charOrder:
             dumb_font.figChars[ordinal] = "fallback font for testing"
         return dumb_font.createFigFileData()
+    orig_preloadFont = FigletFont.preloadFont
     FigletFont.preloadFont = preloadFont
   
     # Add an extra file to show how a file looks in the EnhancedDirectoryTree widget.
@@ -92,3 +93,4 @@ def my_fs(fs: FakeFilesystem) -> Generator[FakeFilesystem, None, None]:
 
     # probably don't need to actually clean up, but whatever
     DirectoryTree.PATH = orig_PATH
+    FigletFont.preloadFont = orig_preloadFont
