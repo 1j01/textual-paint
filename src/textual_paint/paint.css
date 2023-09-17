@@ -332,6 +332,7 @@ RadioSet {
 
 DialogWindow .buttons {
     layout: horizontal;
+    width: auto;
     height: auto;
 }
 DialogWindow .buttons Button {
@@ -477,8 +478,7 @@ EditColorsDialogWindow LuminosityRamp {
     margin: 1;
 }
 EditColorsDialogWindow ColorField {
-    /* width: 30; */
-    width: 1fr;
+    width: 40;
     height: 10;
     margin: 1;
 }
