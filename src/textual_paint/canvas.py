@@ -264,6 +264,9 @@ class Canvas(Widget):
                 (sel and sel.textbox_mode and within_text_selection_highlight(sel))
             ):
                 # invert the colors
+                if TYPE_CHECKING:
+                    assert style.color.triplet is not None
+                    assert style.bgcolor.triplet is not None
                 inverse_color = f"rgb({255 - style.color.triplet.red},{255 - style.color.triplet.green},{255 - style.color.triplet.blue})"
                 inverse_bgcolor = f"rgb({255 - style.bgcolor.triplet.red},{255 - style.bgcolor.triplet.green},{255 - style.bgcolor.triplet.blue})"
                 style = Style(color=inverse_color, bgcolor=inverse_bgcolor)

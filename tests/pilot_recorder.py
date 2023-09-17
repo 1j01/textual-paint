@@ -272,6 +272,7 @@ class PilotRecorder():
 
     def get_test_code(self) -> str:
         """Return pytest code that uses the replay."""
+        assert self.app is not None, "app should be set"
         return f"""\
 from pathlib import Path, PurePath
 from typing import Awaitable, Callable, Iterable, Protocol
