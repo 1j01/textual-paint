@@ -1447,7 +1447,7 @@ Columns: {len(self.palette) // 2}
         """Center the image as the wallpaper."""
         self.set_as_wallpaper(tiled=False)
     # worker thread helps keep the UI responsive
-    @work(exclusive=True)
+    @work(exclusive=True, thread=True)
     def set_as_wallpaper(self, tiled: bool) -> None:
         """Set the image as the wallpaper."""
         try:

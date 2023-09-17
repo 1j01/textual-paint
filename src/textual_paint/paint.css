@@ -262,6 +262,9 @@ FileDialogWindow .window_content Button {
 
 CharacterSelectorDialogWindow DataTable {
     width: auto;
+    /* textual 0.31.0 adds `max-height: 100%` to DataTable */
+    /* `unset` is not supported */
+    max-height: 10000;
 }
 CharacterSelectorDialogWindow .ok,
 CharacterSelectorDialogWindow .cancel {
