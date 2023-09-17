@@ -6,7 +6,6 @@ Run with `pytest tests/test_snapshots.py`, or `pytest` to run all tests.
 from pathlib import Path, PurePath
 from typing import TYPE_CHECKING, Awaitable, Callable, Iterable, Protocol
 
-import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
 from textual.geometry import Offset
 from textual.pilot import Pilot

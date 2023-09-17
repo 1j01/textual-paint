@@ -1468,7 +1468,9 @@ class Inspector(Container):
         # TODO: Highlight the metrics of the hovered widget: padding, border, margin.
 
         if "inspector_highlight" not in self.app.styles.layers:
-            self.app.styles.layers += ("inspector_highlight",)
+            # tuple[str] vs tuple[str, ...] in NameListProperty.__set__ vs NameListProperty.__get__
+            self.app.styles.layers += ("inspector_highlight",)  # type: ignore
+
 
         if dom_node not in self._highlight_boxes:
             self._highlight_boxes[dom_node] = {}

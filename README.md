@@ -349,10 +349,8 @@ cspell-cli lint .
 # Type checking
 # I use the "Python" and "Pylance" VS Code extensions, and the Pyright CLI:
 pyright
-# It should give 0 errors at this version of Pyright:
-PYRIGHT_PYTHON_FORCE_VERSION=1.1.317 pyright
-# It gives 508 errors with the next version (the current latest) for some reason:
-PYRIGHT_PYTHON_FORCE_VERSION=1.1.318 pyright
+# I'm targeting zero errors at this version of Pyright:
+PYRIGHT_PYTHON_FORCE_VERSION=1.1.327 pyright
 # I also tried mypy and fixed some errors it reported, but I'm not targeting zero errors with mypy.
 mypy src --no-namespace-packages --check-untyped-defs
 

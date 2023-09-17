@@ -102,7 +102,7 @@ class EnhancedDirectoryTree(DirectoryTree):
         # self.call_later(clear_flag) # too early!
         self.call_after_refresh(clear_flag) # finally reliable
 
-    def _expand_matching_child(self, node: TreeNode[DirEntry], remaining_parts: tuple[str], callback: Callable[[], None]) -> None:
+    def _expand_matching_child(self, node: TreeNode[DirEntry], remaining_parts: tuple[str, ...], callback: Callable[[], None]) -> None:
         """Hooks into DirectoryTree's add method, and expands the child node matching the next path part, recursively.
 
         Once the last part of the path is reached, it scrolls to and selects the node.

@@ -118,7 +118,7 @@ class PilotRecorder():
             # - Every event seems to be received twice, once with _forwarded set and once without.
             #   I don't claim to understand the forwarding scheme, but ignoring either
             #   the forwarded or the un-forwarded events seems workable.
-            if not event._forwarded:
+            if not event._forwarded:  # pyright: ignore[reportPrivateUsage]
                 recorder.handle_event(event)
             await original_on_event(self, event)
         self.app_on_event = on_event
@@ -188,7 +188,7 @@ class PilotRecorder():
         """Replay the recorded steps, in the current app instance."""
         if not self.steps:
             return
-        await pilot._wait_for_screen(timeout=5.0)
+        await pilot._wait_for_screen(timeout=5.0)  # pyright: ignore[reportPrivateUsage]
         self.replaying = True
         replay_code = self.get_replay_code()
         # Fix import

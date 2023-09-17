@@ -8,8 +8,33 @@ from typing import Any
 from textual.errors import NoWidget
 from textual.events import MouseDown, MouseMove, MouseUp
 from textual.geometry import Offset
-from textual.pilot import Pilot, _get_mouse_message_arguments
+from textual.pilot import Pilot
 from textual.widget import Widget
+
+
+def _get_mouse_message_arguments(
+    target: Widget,
+    offset: Offset = Offset(),
+    button: int = 0,
+    shift: bool = False,
+    meta: bool = False,
+    control: bool = False,
+) -> dict[str, Any]:
+    """Get the arguments to pass into mouse messages for the click and hover methods."""
+    click_x, click_y = target.region.offset + offset
+    message_arguments = {
+        "x": click_x,
+        "y": click_y,
+        "delta_x": 0,
+        "delta_y": 0,
+        "button": button,
+        "shift": shift,
+        "meta": meta,
+        "ctrl": control,
+        "screen_x": click_x,
+        "screen_y": click_y,
+    }
+    return message_arguments
 
 
 async def click_widget(pilot: Pilot[Any], widget: Widget, shift: bool = False, meta: bool = False, control: bool = False) -> None:

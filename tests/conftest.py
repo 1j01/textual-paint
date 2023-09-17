@@ -60,14 +60,14 @@ def my_fs(fs: FakeFilesystem) -> Generator[FakeFilesystem, None, None]:
 
     # Don't fail trying to load the default font "standard", we don't need it!
     # `pkg_resources` doesn't seem to work with pyfakefs (or I don't know what directories I need to add)
-    from pyfiglet import FigletFont
+    from pyfiglet import FigletFont  # type: ignore
     def preloadFont(self: FigletFont, font: str):
         dumb_font = FIGletFontWriter(commentLines=["Stupid font for testing"])
         for ordinal in dumb_font.charOrder:
             dumb_font.figChars[ordinal] = "fallback font for testing"
         return dumb_font.createFigFileData()
-    orig_preloadFont = FigletFont.preloadFont
-    FigletFont.preloadFont = preloadFont
+    orig_preloadFont = FigletFont.preloadFont  # type: ignore
+    FigletFont.preloadFont = preloadFont  # type: ignore
   
     # Add an extra file to show how a file looks in the EnhancedDirectoryTree widget.
     fs.create_file("/pyfakefs_added_file.txt", contents="pyfakefs ate ur FS")

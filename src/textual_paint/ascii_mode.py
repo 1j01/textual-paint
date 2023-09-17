@@ -12,7 +12,7 @@ replacements: list[tuple[object, str, object, object]] = []
 def replace(obj: object, attr: str, ascii_only_value: object) -> None:
     """Replace an attribute with a value for --ascii-only mode."""
     if isinstance(obj, dict):
-        replacements.append((obj, attr, ascii_only_value, obj[attr]))
+        replacements.append((obj, attr, ascii_only_value, obj[attr]))  # type: ignore
     else:
         replacements.append((obj, attr, ascii_only_value, getattr(obj, attr)))
 

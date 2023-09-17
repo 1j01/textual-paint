@@ -46,8 +46,8 @@ def load_language(language_code: str):
 	except Exception as e:
 		print(f"Could not load language '{language_code}': {e}")
 
+untranslated: set[str] = set()
 if TRACK_UNTRANSLATED:
-	untranslated: set[str] = set()
 	try:
 		with open(untranslated_file, "r", encoding="utf-8") as f:
 			untranslated = set(f.read().splitlines())

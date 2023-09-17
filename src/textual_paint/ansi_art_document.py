@@ -1114,6 +1114,7 @@ class Selection:
         offset = target_region.offset - self.region.offset
         if self.mask:
             def sample(x: int, y: int) -> bool:
+                assert self.mask is not None
                 try:
                     return self.mask[y + offset.y][x + offset.x]
                 except IndexError:
