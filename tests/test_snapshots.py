@@ -11,6 +11,7 @@ from textual.geometry import Offset
 from textual.pilot import Pilot
 from textual.widgets import Input
 
+import textual_paint.char_input
 from tests.pilot_helpers import click_by_attr, click_by_index, drag
 
 if TYPE_CHECKING:
@@ -42,6 +43,7 @@ LARGEST = (107, 42)
 
 # Prevent flaky tests due to timing issues.
 Input.cursor_blink = False  # type: ignore
+textual_paint.char_input.DOUBLE_CLICK_TIME = 10 # seconds
 
 
 def test_paint_app(snap_compare: SnapCompareType, each_theme: None):
