@@ -2885,11 +2885,7 @@ Columns: {len(self.palette) // 2}
             self.image.selection = Selection(select_region)
             self.image.selection.textbox_mode = self.selected_tool == Tool.text
             if self.image.selection.textbox_mode:
-                self.image.selection.contained_image = AnsiArtDocument(self.image.selection.region.width, self.image.selection.region.height)
-                for y in range(self.image.selection.region.height):
-                    for x in range(self.image.selection.region.width):
-                        self.image.selection.contained_image.fg[y][x] = self.selected_fg_color
-                        self.image.selection.contained_image.bg[y][x] = self.selected_bg_color
+                self.image.selection.contained_image = AnsiArtDocument(self.image.selection.region.width, self.image.selection.region.height, default_fg=self.selected_fg_color, default_bg=self.selected_bg_color)
             if self.selected_tool == Tool.free_form_select:
                 # Define the mask for the selection using the polygon
                 self.image.selection.mask = [[is_inside_polygon(x + select_region.x, y + select_region.y, self.tool_points) for x in range(select_region.width)] for y in range(select_region.height)]
