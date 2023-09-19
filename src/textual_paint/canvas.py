@@ -1,6 +1,7 @@
 """The Canvas widget."""
 
 from typing import TYPE_CHECKING, Any, Optional
+from rich.color import Color
 
 from rich.segment import Segment
 from rich.style import Style
@@ -239,7 +240,7 @@ class Canvas(Widget):
                             ch = "|" if args.ascii_only else "▌" # "┆" # (▏, not 🭰)
                         elif y % self.magnification == 0:
                             ch = "-" if args.ascii_only else "▀" # "┄" # (▔, not 🭶)
-            style = Style(color=fg, bgcolor=bg)
+            style = Style.from_color(color=Color.parse(fg), bgcolor=Color.parse(bg))
             assert style.color is not None
             assert style.bgcolor is not None
             def within_text_selection_highlight(textbox: Selection) -> int:
@@ -267,9 +268,10 @@ class Canvas(Widget):
                 if TYPE_CHECKING:
                     assert style.color.triplet is not None
                     assert style.bgcolor.triplet is not None
-                inverse_color = f"rgb({255 - style.color.triplet.red},{255 - style.color.triplet.green},{255 - style.color.triplet.blue})"
-                inverse_bgcolor = f"rgb({255 - style.bgcolor.triplet.red},{255 - style.bgcolor.triplet.green},{255 - style.bgcolor.triplet.blue})"
-                style = Style(color=inverse_color, bgcolor=inverse_bgcolor)
+                style = Style.from_color(
+                    color=Color.from_rgb(255 - style.color.triplet.red, 255 - style.color.triplet.green, 255 - style.color.triplet.blue),
+                    bgcolor=Color.from_rgb(255 - style.bgcolor.triplet.red, 255 - style.bgcolor.triplet.green, 255 - style.bgcolor.triplet.blue)
+                )
             segments.append(Segment(ch, style))
         return Strip(segments, self.size.width)
 
