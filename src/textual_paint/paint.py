@@ -401,9 +401,6 @@ class PaintApp(App[None]):
             style = Style(color=self.image.fg[y][x], bgcolor=self.image.bg[y][x])
             assert style.color is not None
             assert style.bgcolor is not None
-            # Why do I need these extra asserts here and not in Canvas.render_line
-            # using pyright, even though hovering over the other place shows that it also considers
-            # triplet to be ColorTriplet|None?
             assert style.color.triplet is not None
             assert style.bgcolor.triplet is not None
             # self.image.bg[y][x] = f"rgb({255 - style.bgcolor.triplet.red},{255 - style.bgcolor.triplet.green},{255 - style.bgcolor.triplet.blue})"
