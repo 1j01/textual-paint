@@ -190,6 +190,7 @@ class Canvas(Widget):
             return Strip.blank(self.size.width)
         segments: list[Segment] = []
         sel = self.image.selection
+        magnification = self.magnification  # reactive.__get__ is a performance bottleneck
 
         # Avoiding "possibly unbound" errors.
         magnifier_preview_region = None
@@ -200,17 +201,17 @@ class Canvas(Widget):
         inner_selection_region = None
 
         if self.magnifier_preview_region:
-            magnifier_preview_region = scale_region(self.magnifier_preview_region, self.magnification)
+            magnifier_preview_region = scale_region(self.magnifier_preview_region, magnification)
             inner_magnifier_preview_region = magnifier_preview_region.shrink((1, 1, 1, 1))
         if self.select_preview_region:
-            select_preview_region = scale_region(self.select_preview_region, self.magnification)
+            select_preview_region = scale_region(self.select_preview_region, magnification)
             inner_select_preview_region = select_preview_region.shrink((1, 1, 1, 1))
         if sel:
-            selection_region = scale_region(sel.region, self.magnification)
+            selection_region = scale_region(sel.region, magnification)
             inner_selection_region = selection_region.shrink((1, 1, 1, 1))
         for x in range(self.size.width):
-            cell_x = x // self.magnification
-            cell_y = y // self.magnification
+            cell_x = x // magnification
+            cell_y = y // magnification
             try:
                 if sel and sel.contained_image and sel.region.contains(cell_x, cell_y) and (sel.mask is None or sel.mask[cell_y - sel.region.y][cell_x - sel.region.x]):
                     bg = sel.contained_image.bg[cell_y - sel.region.y][cell_x - sel.region.x]
@@ -225,20 +226,20 @@ class Canvas(Widget):
                 bg = "#555555"
                 fg = "#cccccc"
                 ch = "?"
-            if self.magnification > 1:
-                ch = self.big_ch(ch, x % self.magnification, y % self.magnification)
-                if self.show_grid and self.magnification >= 4:
-                    if x % self.magnification == 0 or y % self.magnification == 0:
+            if magnification > 1:
+                ch = self.big_ch(ch, x % magnification, y % magnification, magnification)
+                if self.show_grid and magnification >= 4:
+                    if x % magnification == 0 or y % magnification == 0:
                         # Not setting `bg` here, because:
                         # Its actually useful to see the background color of the cell,
                         # as it lets you distinguish between a space " " and a full block "█".
                         # Plus this lets the grid be more subtle, visually taking up less than a cell.
                         fg = "#c0c0c0" if (x + y) % 2 == 0 else "#808080"
-                        if x % self.magnification == 0 and y % self.magnification == 0:
+                        if x % magnification == 0 and y % magnification == 0:
                             ch = "+" if args.ascii_only else "▛" # "┼" # (🭽 may render as wide)
-                        elif x % self.magnification == 0:
+                        elif x % magnification == 0:
                             ch = "|" if args.ascii_only else "▌" # "┆" # (▏, not 🭰)
-                        elif y % self.magnification == 0:
+                        elif y % magnification == 0:
                             ch = "-" if args.ascii_only else "▀" # "┄" # (▔, not 🭶)
             style = Style.from_color(color=Color.parse(fg), bgcolor=Color.parse(bg))
             assert style.color is not None
@@ -292,12 +293,12 @@ class Canvas(Widget):
         """Called when magnification changes."""
         self.active_meta_glyph_font = largest_font_that_fits(self.magnification, self.magnification)
 
-    def big_ch(self, ch: str, x: int, y: int) -> str:
+    def big_ch(self, ch: str, x: int, y: int, magnification: int) -> str:
         """Return a character part of a meta-glyph."""
         if self.active_meta_glyph_font and ch in self.active_meta_glyph_font.glyphs:
             glyph_lines = self.active_meta_glyph_font.glyphs[ch]
-            x -= (self.magnification - self.active_meta_glyph_font.width) // 2
-            y -= (self.magnification - self.active_meta_glyph_font.height) // 2
+            x -= (magnification - self.active_meta_glyph_font.width) // 2
+            y -= (magnification - self.active_meta_glyph_font.height) // 2
             if y >= len(glyph_lines) or y < 0:
                 return " "
             glyph_line = glyph_lines[y]
@@ -309,13 +310,13 @@ class Canvas(Widget):
         match ch:
             # These are now obsolete special cases of below fractional block character handling.
             # case "▄":
-            #     return "█" if y >= self.magnification // 2 else " "
+            #     return "█" if y >= magnification // 2 else " "
             # case "▀":
-            #     return "█" if y < self.magnification // 2 else " "
+            #     return "█" if y < magnification // 2 else " "
             # case "▌":
-            #     return "█" if x < self.magnification // 2 else " "
+            #     return "█" if x < magnification // 2 else " "
             # case "▐":
-            #     return "█" if x >= self.magnification // 2 else " "
+            #     return "█" if x >= magnification // 2 else " "
             # Corner triangles
             case "◣":
                 diagonal = x - y
@@ -324,23 +325,23 @@ class Canvas(Widget):
                 diagonal = x - y
                 return "█" if diagonal > 0 else " " if diagonal < 0 else "◥"
             case "◢":
-                diagonal = x + y + 1 - self.magnification
+                diagonal = x + y + 1 - magnification
                 return "█" if diagonal > 0 else " " if diagonal < 0 else "◢"
             case "◤":
-                diagonal = x + y + 1 - self.magnification
+                diagonal = x + y + 1 - magnification
                 return "█" if diagonal < 0 else " " if diagonal > 0 else "◤"
             case "╱":
-                diagonal = x + y + 1 - self.magnification
+                diagonal = x + y + 1 - magnification
                 return "╱" if diagonal == 0 else " "
             case "╲":
                 diagonal = x - y
                 return "╲" if diagonal == 0 else " "
             case "╳":
-                diagonal_1 = x + y + 1 - self.magnification
+                diagonal_1 = x + y + 1 - magnification
                 diagonal_2 = x - y
                 return "╲" if diagonal_2 == 0 else "╱" if diagonal_1 == 0 else " "
             case "/":
-                diagonal = x + y + 1 - self.magnification
+                diagonal = x + y + 1 - magnification
                 return "/" if diagonal == 0 else " "
             case "\\":
                 diagonal = x - y
@@ -352,7 +353,7 @@ class Canvas(Widget):
             case ch if ch in "█▇▆▅▄▃▂▁":
                 gradient = "█▇▆▅▄▃▂▁ "
                 index = gradient.index(ch)
-                threshold_y = int(index / 8 * self.magnification)
+                threshold_y = int(index / 8 * magnification)
                 if y == threshold_y:
                     # Within the threshold cell, which is at y here,
                     # use one of the fractional characters.
@@ -361,7 +362,7 @@ class Canvas(Widget):
                     # If you look at a 6/8ths character, to scale it up 2x,
                     # you need a full block and a 4/8ths character, 4/8ths being the threshold cell here,
                     # so it needs to wrap around, taking the remainder.
-                    return gradient[index * self.magnification % 8]
+                    return gradient[index * magnification % 8]
                 elif y > threshold_y:
                     return "█"
                 else:
@@ -369,9 +370,9 @@ class Canvas(Widget):
             case ch if ch in "▏▎▍▌▋▊▉█":
                 gradient = " ▏▎▍▌▋▊▉█"
                 index = gradient.index(ch)
-                threshold_x = int(index / 8 * self.magnification)
+                threshold_x = int(index / 8 * magnification)
                 if x == threshold_x:
-                    return gradient[index * self.magnification % 8]
+                    return gradient[index * magnification % 8]
                 elif x < threshold_x:
                     return "█"
                 else:
@@ -379,9 +380,9 @@ class Canvas(Widget):
             case ch if ch in "▔🮂🮃▀🮄🮅🮆█":
                 gradient = " ▔🮂🮃▀🮄🮅🮆█"
                 index = gradient.index(ch)
-                threshold_y = int(index / 8 * self.magnification)
+                threshold_y = int(index / 8 * magnification)
                 if y == threshold_y:
-                    return gradient[index * self.magnification % 8]
+                    return gradient[index * magnification % 8]
                 elif y < threshold_y:
                     return "█"
                 else:
@@ -389,16 +390,16 @@ class Canvas(Widget):
             case ch if ch in "█🮋🮊🮉▐🮈🮇▕":
                 gradient = "█🮋🮊🮉▐🮈🮇▕ "
                 index = gradient.index(ch)
-                threshold_x = int(index / 8 * self.magnification)
+                threshold_x = int(index / 8 * magnification)
                 if x == threshold_x:
-                    return gradient[index * self.magnification % 8]
+                    return gradient[index * magnification % 8]
                 elif x > threshold_x:
                     return "█"
                 else:
                     return " "
             case _: pass
         # Fall back to showing the character in a single cell, approximately centered.
-        if x == self.magnification // 2 and y == self.magnification // 2:
+        if x == magnification // 2 and y == magnification // 2:
             return ch
         else:
             return " "
