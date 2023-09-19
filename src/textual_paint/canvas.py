@@ -189,8 +189,9 @@ class Canvas(Widget):
         if y >= self.size.height:
             return Strip.blank(self.size.width)
         segments: list[Segment] = []
-        sel = self.image.selection
-        magnification = self.magnification  # reactive.__get__ is a performance bottleneck
+        image = self.image  # avoid repeated reactive.__get__ (not a performance bottleneck)
+        sel = image.selection
+        magnification = self.magnification  # avoid repeated reactive.__get__ (performance bottleneck)
 
         # Avoiding "possibly unbound" errors.
         magnifier_preview_region = None
@@ -218,9 +219,9 @@ class Canvas(Widget):
                     fg = sel.contained_image.fg[cell_y - sel.region.y][cell_x - sel.region.x]
                     ch = sel.contained_image.ch[cell_y - sel.region.y][cell_x - sel.region.x]
                 else:
-                    bg = self.image.bg[cell_y][cell_x]
-                    fg = self.image.fg[cell_y][cell_x]
-                    ch = self.image.ch[cell_y][cell_x]
+                    bg = image.bg[cell_y][cell_x]
+                    fg = image.fg[cell_y][cell_x]
+                    ch = image.ch[cell_y][cell_x]
             except IndexError:
                 # This should be easier to debug visually.
                 bg = "#555555"
