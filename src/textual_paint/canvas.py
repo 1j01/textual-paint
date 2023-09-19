@@ -182,6 +182,22 @@ class Canvas(Widget):
             return 0 # shouldn't really happen
         return self.image.height * self.magnification
 
+    def watch_parent_scroll_x(self, old_value: float, new_value: float) -> None:
+        """Refresh when the viewport is scrolled. Needed for viewport culling optimization."""
+        # print("watch_parent_scroll_x", old_value, new_value)
+        self.refresh()
+
+    def watch_parent_scroll_y(self, old_value: float, new_value: float) -> None:
+        """Refresh when the viewport is scrolled. Needed for viewport culling optimization."""
+        # print("watch_parent_scroll_y", old_value, new_value)
+        self.refresh()
+
+    def on_mount(self) -> None:
+        """Called when the widget is mounted."""
+        assert isinstance(self.parent, Widget)
+        self.watch(self.parent, "scroll_x", self.watch_parent_scroll_x)
+        self.watch(self.parent, "scroll_y", self.watch_parent_scroll_y)
+
     def render_line(self, y: int) -> Strip:
         """Render a line of the widget. y is relative to the top of the widget."""
         assert self.image is not None
@@ -210,7 +226,25 @@ class Canvas(Widget):
         if sel:
             selection_region = scale_region(sel.region, magnification)
             inner_selection_region = selection_region.shrink((1, 1, 1, 1))
-        for x in range(self.size.width):
+
+        # for x in range(self.size.width):
+        # Optimization using the viewport, important for large documents:
+        assert isinstance(self.parent, Widget)
+        # left_visible_x = max(self.region.x, self.parent.region.x)
+        # right_visible_x = min(self.region.right, self.parent.region.right)
+        # left_visible_x = self.parent.window_region.x
+        # right_visible_x = self.parent.window_region.right
+        # container_viewport = parent region, can avoid assert above if that's all we need from the parent
+        scrolled = self.region.at_offset(self.parent.scroll_offset)
+        left_visible_x = max(scrolled.x, self.container_viewport.x)
+        right_visible_x = min(scrolled.right, self.container_viewport.right)
+        # print("self.region.x", self.region.x, "left_visible_x", left_visible_x)
+        # print("self.region.right", self.region.right, "right_visible_x", right_visible_x)
+        # For testing, make this visible
+        # left_visible_x += 1
+        # right_visible_x -= 1
+        segments.append(Segment("<" * left_visible_x, style=Style(bgcolor="#808080", color="#cccccc")))
+        for x in range(left_visible_x, right_visible_x):
             cell_x = x // magnification
             cell_y = y // magnification
             try:
