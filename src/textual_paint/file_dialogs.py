@@ -102,7 +102,9 @@ class FileDialogWindow(DialogWindow):
         Called when a file/folder is selected in the DirectoryTree.
 
         This message comes from Tree.
-        DirectoryTree gives FileSelected, but only for files, not folders.
+        ~~DirectoryTree gives FileSelected, but only for files, not folders.~~
+        Update: as of Textual 0.37.0, DirectoryTree gives DirectorySelected for folders.
+        TODO: does that make it cleaner, or is it still awkward because it's two different messages?
         """
         assert event.node.data
 

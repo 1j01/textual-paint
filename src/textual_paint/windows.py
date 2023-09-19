@@ -467,6 +467,7 @@ class MessageBox(DialogWindow):
             self.message_widget = message
         if error:
             # expandable error details
+            # TODO: use new Collapsible widget from Textual 0.37.0
             import traceback
             details = "\n".join(traceback.format_exception(error))
             self.details_widget = Container(Static(details, markup=False, classes="details"))
