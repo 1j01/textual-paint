@@ -95,9 +95,22 @@ class AnsiArtDocument:
         self.width = width
         self.height: int = height
         self.ch = [[" " for _ in range(width)] for _ in range(height)]
+        """2D array of characters."""
         self.bg = [[default_bg for _ in range(width)] for _ in range(height)]
+        """2D array of background colors."""
         self.fg = [[default_fg for _ in range(width)] for _ in range(height)]
+        """2D array of foreground colors."""
+        style = Style(color=default_fg, bgcolor=default_bg)
+        self.sc = [[style for _ in range(width)] for _ in range(height)]
+        """Style cache 2D array."""
         self.selection: Optional[Selection] = None
+        """The current selection, which can itself contain an ANSI art document."""
+
+    def update_style_cache(self) -> None:
+        """Update the style cache based on foreground and background colors."""
+        for y in range(self.height):
+            for x in range(self.width):
+                self.sc[y][x] = Style(color=self.fg[y][x], bgcolor=self.bg[y][x])
 
     def copy(self, source: 'AnsiArtDocument') -> None:
         """Copy the image size and data from another document. Does not copy the selection."""
@@ -106,6 +119,7 @@ class AnsiArtDocument:
         self.ch = [row[:] for row in source.ch]
         self.bg = [row[:] for row in source.bg]
         self.fg = [row[:] for row in source.fg]
+        self.sc = [row[:] for row in source.sc]
         self.selection = None
 
     def copy_region(self, source: 'AnsiArtDocument', source_region: Region|None = None, target_region: Region|None = None, mask: list[list[bool]]|None = None) -> None:
@@ -125,6 +139,7 @@ class AnsiArtDocument:
                     self.ch[y + target_offset.y][x + target_offset.x] = source.ch[y + source_offset.y][x + source_offset.x]
                     self.bg[y + target_offset.y][x + target_offset.x] = source.bg[y + source_offset.y][x + source_offset.x]
                     self.fg[y + target_offset.y][x + target_offset.x] = source.fg[y + source_offset.y][x + source_offset.x]
+                    self.sc[y + target_offset.y][x + target_offset.x] = source.sc[y + source_offset.y][x + source_offset.x]
                     if DEBUG_REGION_UPDATES:
                         assert random_color is not None
                         # self.bg[y + target_offset.y][x + target_offset.x] = "rgb(" + str((x + source_offset.x) * 255 // self.width) + "," + str((y + source_offset.y) * 255 // self.height) + ",0)"
@@ -134,6 +149,7 @@ class AnsiArtDocument:
                         self.ch[y + target_offset.y][x + target_offset.x] = "?"
                         self.bg[y + target_offset.y][x + target_offset.x] = "#ff00ff"
                         self.fg[y + target_offset.y][x + target_offset.x] = "#000000"
+                        self.sc[y + target_offset.y][x + target_offset.x] = Style(color="#000000", bgcolor="#ff00ff")
 
     def resize(self, width: int, height: int, default_bg: str = "#ffffff", default_fg: str = "#000000") -> None:
         """Resize the document."""
@@ -142,16 +158,19 @@ class AnsiArtDocument:
         new_ch = [[" " for _ in range(width)] for _ in range(height)]
         new_bg = [[default_bg for _ in range(width)] for _ in range(height)]
         new_fg = [[default_fg for _ in range(width)] for _ in range(height)]
+        new_sc = [[Style(color=default_fg, bgcolor=default_bg) for _ in range(width)] for _ in range(height)]
         for y in range(min(height, self.height)):
             for x in range(min(width, self.width)):
                 new_ch[y][x] = self.ch[y][x]
                 new_bg[y][x] = self.bg[y][x]
                 new_fg[y][x] = self.fg[y][x]
+                new_sc[y][x] = self.sc[y][x]
         self.width = width
         self.height = height
         self.ch = new_ch
         self.bg = new_bg
         self.fg = new_fg
+        self.sc = new_sc
 
     def invert(self) -> None:
         """Invert the foreground and background colors."""
@@ -162,13 +181,15 @@ class AnsiArtDocument:
         # TODO: DRY color inversion, and/or simplify it. It shouldn't need a Style object.
         for y in range(region.y, region.y + region.height):
             for x in range(region.x, region.x + region.width):
-                style = Style(color=self.fg[y][x], bgcolor=self.bg[y][x])
+                # style = Style(color=self.fg[y][x], bgcolor=self.bg[y][x])
+                style = self.sc[y][x]
                 assert style.color is not None
                 assert style.bgcolor is not None
                 assert style.color.triplet is not None
                 assert style.bgcolor.triplet is not None
                 self.bg[y][x] = f"#{(255 - style.bgcolor.triplet.red):02x}{(255 - style.bgcolor.triplet.green):02x}{(255 - style.bgcolor.triplet.blue):02x}"
                 self.fg[y][x] = f"#{(255 - style.color.triplet.red):02x}{(255 - style.color.triplet.green):02x}{(255 - style.color.triplet.blue):02x}"
+                self.sc[y][x] = Style(color=self.fg[y][x], bgcolor=self.bg[y][x])
 
     @staticmethod
     def format_from_extension(file_path: str) -> str | None:
@@ -237,8 +258,11 @@ class AnsiArtDocument:
         assert pixels is not None, "failed to load pixels for new image"
         for y in range(self.height):
             for x in range(self.width):
-                color = Color.parse(self.bg[y][x])
-                pixels[x, y] = (color.r, color.g, color.b)
+                # color = Color.parse(self.bg[y][x])
+                # pixels[x, y] = (color.r, color.g, color.b)
+                color = self.sc[y][x].bgcolor
+                assert color is not None
+                pixels[x, y] = color.triplet
         buffer = io.BytesIO()
         # `lossless` is for WebP
         # `sizes` is for ICO, since it defaults to a list of square sizes, blurring/distorting the image.
@@ -343,7 +367,8 @@ class AnsiArtDocument:
         for y in range(self.height):
             line = Text()
             for x in range(self.width):
-                line.append(self.ch[y][x], style=Style(bgcolor=self.bg[y][x], color=self.fg[y][x]))
+                # line.append(self.ch[y][x], style=Style(bgcolor=self.bg[y][x], color=self.fg[y][x]))
+                line.append(self.ch[y][x], style=self.sc[y][x])
             lines.append(line)
         result = joiner.join(lines)
         return result
@@ -428,10 +453,12 @@ class AnsiArtDocument:
                 document.ch.append([])
                 document.bg.append([])
                 document.fg.append([])
+                document.sc.append([])
             while len(document.ch[y]) <= x:
                 document.ch[y].append(' ')
                 document.bg[y].append(default_bg)
                 document.fg[y].append(default_fg)
+                document.sc[y].append(Style.null())
             document.ch[y][x] = char
             document.bg[y][x] = bg_color
             document.fg[y][x] = fg_color
@@ -447,13 +474,16 @@ class AnsiArtDocument:
             document.ch.append([])
             document.bg.append([])
             document.fg.append([])
+            document.sc.append([])
         # Pad rows to a consistent width.
         for y in range(document.height):
             for x in range(len(document.ch[y]), document.width):
                 document.ch[y].append(' ')
                 document.bg[y].append(default_bg)
                 document.fg[y].append(default_fg)
+                document.sc[y].append(Style.null())
 
+        document.update_style_cache()
         return document
 
     @staticmethod
@@ -525,10 +555,12 @@ class AnsiArtDocument:
                             document.ch.append([])
                             document.bg.append([])
                             document.fg.append([])
+                            document.sc.append([])
                         while len(document.ch[y]) <= x:
                             document.ch[y].append(' ')
                             document.bg[y].append(default_bg)
                             document.fg[y].append(default_fg)
+                            document.sc[y].append(Style.null())
                         document.ch[y][x] = char
                         document.bg[y][x] = bg_color
                         document.fg[y][x] = fg_color
@@ -567,6 +599,7 @@ class AnsiArtDocument:
                     document.ch.append([])
                     document.bg.append([])
                     document.fg.append([])
+                    document.sc.append([])
             elif isinstance(instruction, stransi.SetClear):
                 def clear_line(row_to_clear: int, before: bool, after: bool):
                     cols_to_clear: list[int] = []
@@ -616,12 +649,15 @@ class AnsiArtDocument:
             document.ch.append([])
             document.bg.append([])
             document.fg.append([])
+            document.sc.append([])
         # Pad rows to a consistent width.
         for y in range(document.height):
             for x in range(len(document.ch[y]), document.width):
                 document.ch[y].append(' ')
                 document.bg[y].append(default_bg)
                 document.fg[y].append(default_fg)
+                document.sc[y].append(Style.null())
+        document.update_style_cache()
         return document
 
     @staticmethod
@@ -646,6 +682,7 @@ class AnsiArtDocument:
             for x in range(width):
                 r, g, b = rgb_image.getpixel((x, y))  # type: ignore
                 document.bg[y][x] = "#" + hex(r)[2:].zfill(2) + hex(g)[2:].zfill(2) + hex(b)[2:].zfill(2)  # type: ignore
+        document.update_style_cache()
         return document
 
     @staticmethod
@@ -1027,6 +1064,8 @@ class AnsiArtDocument:
         # For debugging, write the SVG with the ignored rects outlined, and coordinate markers added.
         if DEBUG_SVG_LOADING:
             ET.ElementTree(root).write("debug.svg", encoding="unicode")
+
+        document.update_style_cache()
 
         return document
 

@@ -215,18 +215,21 @@ class Canvas(Widget):
             cell_y = y // magnification
             try:
                 if sel and sel.contained_image and sel.region.contains(cell_x, cell_y) and (sel.mask is None or sel.mask[cell_y - sel.region.y][cell_x - sel.region.x]):
-                    bg = sel.contained_image.bg[cell_y - sel.region.y][cell_x - sel.region.x]
-                    fg = sel.contained_image.fg[cell_y - sel.region.y][cell_x - sel.region.x]
+                    # bg = sel.contained_image.bg[cell_y - sel.region.y][cell_x - sel.region.x]
+                    # fg = sel.contained_image.fg[cell_y - sel.region.y][cell_x - sel.region.x]
                     ch = sel.contained_image.ch[cell_y - sel.region.y][cell_x - sel.region.x]
+                    style = sel.contained_image.sc[cell_y - sel.region.y][cell_x - sel.region.x]
                 else:
-                    bg = self.image.bg[cell_y][cell_x]
-                    fg = self.image.fg[cell_y][cell_x]
+                    # bg = self.image.bg[cell_y][cell_x]
+                    # fg = self.image.fg[cell_y][cell_x]
                     ch = self.image.ch[cell_y][cell_x]
+                    style = self.image.sc[cell_y][cell_x]
             except IndexError:
                 # This should be easier to debug visually.
                 bg = "#555555"
                 fg = "#cccccc"
                 ch = "?"
+                style = Style.from_color(color=Color.parse(fg), bgcolor=Color.parse(bg))
             if magnification > 1:
                 ch = self.big_ch(ch, x % magnification, y % magnification, magnification)
                 if show_grid:
@@ -242,7 +245,8 @@ class Canvas(Widget):
                             ch = "|" if args.ascii_only else "▌" # "┆" # (▏, not 🭰)
                         elif y % magnification == 0:
                             ch = "-" if args.ascii_only else "▀" # "┄" # (▔, not 🭶)
-            style = Style.from_color(color=Color.parse(fg), bgcolor=Color.parse(bg))
+                        style = Style.from_color(color=Color.parse(fg), bgcolor=Color.parse(bg))
+            # style = Style.from_color(color=Color.parse(fg), bgcolor=Color.parse(bg))
             assert style.color is not None
             assert style.bgcolor is not None
             def within_text_selection_highlight(textbox: Selection) -> int:

@@ -295,6 +295,7 @@ class PaintApp(App[None]):
             for y in range(self.image.selection.region.height):
                 for x in range(self.image.selection.region.width):
                     self.image.selection.contained_image.bg[y][x] = self.selected_bg_color
+            self.image.selection.contained_image.update_style_cache()
             self.canvas.refresh_scaled_region(self.image.selection.region)
 
         # update Polygon/Curve tool preview immediately
@@ -313,6 +314,7 @@ class PaintApp(App[None]):
             for y in range(self.image.selection.region.height):
                 for x in range(self.image.selection.region.width):
                     self.image.selection.contained_image.fg[y][x] = self.selected_fg_color
+            self.image.selection.contained_image.update_style_cache()
             self.canvas.refresh_scaled_region(self.image.selection.region)
 
         # update Polygon/Curve tool preview immediately
@@ -377,7 +379,8 @@ class PaintApp(App[None]):
 
                 # Use color comparison instead of string comparison because "#000000" != "rgb(0,0,0)"
                 # This stuff might be simpler and more efficient if we used Color objects in the document model
-                style = Style(color=self.image.fg[y][x], bgcolor=self.image.bg[y][x])
+                # style = Style(color=self.image.fg[y][x], bgcolor=self.image.bg[y][x])
+                style = self.image.sc[y][x]
                 selected_fg_style = Style(color=self.selected_fg_color)
                 assert style.color is not None
                 assert style.bgcolor is not None
@@ -398,7 +401,8 @@ class PaintApp(App[None]):
         if self.selected_tool == Tool.free_form_select:
             # Invert the underlying colors
             # TODO: DRY color inversion, and/or simplify it. It shouldn't need a Style object.
-            style = Style(color=self.image.fg[y][x], bgcolor=self.image.bg[y][x])
+            # style = Style(color=self.image.fg[y][x], bgcolor=self.image.bg[y][x])
+            style = self.image.sc[y][x]
             assert style.color is not None
             assert style.bgcolor is not None
             assert style.color.triplet is not None
@@ -408,10 +412,12 @@ class PaintApp(App[None]):
             # Use hex instead, for less memory usage, theoretically
             self.image.bg[y][x] = f"#{(255 - style.bgcolor.triplet.red):02x}{(255 - style.bgcolor.triplet.green):02x}{(255 - style.bgcolor.triplet.blue):02x}"
             self.image.fg[y][x] = f"#{(255 - style.color.triplet.red):02x}{(255 - style.color.triplet.green):02x}{(255 - style.color.triplet.blue):02x}"
+            self.image.sc[y][x] = Style(color=self.image.fg[y][x], bgcolor=self.image.bg[y][x])
         else:
             self.image.ch[y][x] = char
             self.image.bg[y][x] = bg_color
             self.image.fg[y][x] = fg_color
+            self.image.sc[y][x] = Style(color=fg_color, bgcolor=bg_color)
 
     def erase_region(self, region: Region, mask: Optional[list[list[bool]]] = None) -> None:
         """Clears the given region."""
@@ -1816,6 +1822,7 @@ Columns: {len(self.palette) // 2}
                 self.image.ch[y][self.image.width - x - 1] = source.ch[y][x]
                 self.image.fg[y][self.image.width - x - 1] = source.fg[y][x]
                 self.image.bg[y][self.image.width - x - 1] = source.bg[y][x]
+                self.image.sc[y][self.image.width - x - 1] = source.sc[y][x]
         self.canvas.refresh()
 
     def action_flip_vertical(self) -> None:
@@ -1833,6 +1840,7 @@ Columns: {len(self.palette) // 2}
                 self.image.ch[self.image.height - y - 1][x] = source.ch[y][x]
                 self.image.fg[self.image.height - y - 1][x] = source.fg[y][x]
                 self.image.bg[self.image.height - y - 1][x] = source.bg[y][x]
+                self.image.sc[self.image.height - y - 1][x] = source.sc[y][x]
         self.canvas.refresh()
 
     def action_rotate_by_angle(self, angle: int) -> None:
@@ -1854,14 +1862,17 @@ Columns: {len(self.palette) // 2}
                     self.image.ch[y][x] = source.ch[self.image.width - x - 1][y]
                     self.image.fg[y][x] = source.fg[self.image.width - x - 1][y]
                     self.image.bg[y][x] = source.bg[self.image.width - x - 1][y]
+                    self.image.sc[y][x] = source.sc[self.image.width - x - 1][y]
                 elif angle == 180:
                     self.image.ch[y][x] = source.ch[self.image.height - y - 1][self.image.width - x - 1]
                     self.image.fg[y][x] = source.fg[self.image.height - y - 1][self.image.width - x - 1]
                     self.image.bg[y][x] = source.bg[self.image.height - y - 1][self.image.width - x - 1]
+                    self.image.sc[y][x] = source.sc[self.image.height - y - 1][self.image.width - x - 1]
                 elif angle == 270:
                     self.image.ch[y][x] = source.ch[x][self.image.height - y - 1]
                     self.image.fg[y][x] = source.fg[x][self.image.height - y - 1]
                     self.image.bg[y][x] = source.bg[x][self.image.height - y - 1]
+                    self.image.sc[y][x] = source.sc[x][self.image.height - y - 1]
         self.canvas.refresh(layout=True)
 
     def action_stretch_skew(self) -> None:
@@ -2008,10 +2019,12 @@ Columns: {len(self.palette) // 2}
                     self.image.ch[y][x] = source.ch[sample_y][sample_x]
                     self.image.fg[y][x] = source.fg[sample_y][sample_x]
                     self.image.bg[y][x] = source.bg[sample_y][sample_x]
+                    self.image.sc[y][x] = source.sc[sample_y][sample_x]
                 else:
                     self.image.ch[y][x] = " "
                     self.image.fg[y][x] = "#000000" # default_fg — if this was a variable, would it allocate less strings?
                     self.image.bg[y][x] = "#ffffff" # default_bg
+                    self.image.sc[y][x] = Style(color=self.image.fg[y][x], bgcolor=self.image.bg[y][x])
         self.canvas.refresh(layout=True)
 
     def action_invert_colors_unless_should_switch_focus(self) -> None:
@@ -2133,6 +2146,7 @@ Columns: {len(self.palette) // 2}
                 self.image.ch[y][x] = " "
                 self.image.fg[y][x] = "#000000"
                 self.image.bg[y][x] = "#ffffff"
+                self.image.sc[y][x] = Style(color=self.image.fg[y][x], bgcolor=self.image.bg[y][x])
 
         self.canvas.refresh()
 
