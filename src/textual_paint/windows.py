@@ -2,7 +2,7 @@
 
 from typing import Any, Callable, ClassVar
 
-from textual import events, on
+from textual import events
 from textual.app import ComposeResult
 from textual.containers import Container, Horizontal, Vertical
 from textual.css.query import NoMatches
@@ -11,8 +11,9 @@ from textual.geometry import Offset
 from textual.message import Message
 from textual.reactive import var
 from textual.widget import Widget
-from textual.widgets import Button, Static
+from textual.widgets import Button, Collapsible, Static
 from typing_extensions import Self
+from textual_paint.args import args
 
 from textual_paint.localization.i18n import get as _
 
@@ -467,18 +468,20 @@ class MessageBox(DialogWindow):
             self.message_widget = message
         if error:
             # expandable error details
-            # TODO: use new Collapsible widget from Textual 0.37.0
             import traceback
             details = "\n".join(traceback.format_exception(error))
             self.details_widget = Container(Static(details, markup=False, classes="details"))
-            self.details_widget.display = False
             self.details_widget.styles.overflow_x = "auto"
             self.details_widget.styles.overflow_y = "auto"
-            self.details_button = Button(_("Show Details"), classes="details_button")
+            self.collapsible = Collapsible(
+                self.details_widget,
+                title="Details",
+                collapsed_symbol=">>> Show" if args.ascii_only else "▶ Show",
+                expanded_symbol="<<< Hide" if args.ascii_only else "▼ Hide",
+            )
             self.message_widget = Vertical(
                 self.message_widget,
-                self.details_button,
-                self.details_widget,
+                self.collapsible,
             )
             self.message_widget.styles.height = "auto"
             self.message_widget.styles.max_height = "35"
@@ -488,13 +491,6 @@ class MessageBox(DialogWindow):
             icon_widget = Static("")
         self.icon_widget = icon_widget
         self.button_types = button_types
-
-    @on(Button.Pressed, ".details_button")
-    def toggle_details(self, event: Button.Pressed) -> None:
-        """Toggle the visibility of the error details."""
-        self.details_widget.display = not self.details_widget.display
-        button_text = _("Hide Details") if self.details_widget.display else _("Show Details")
-        self.details_button.label = button_text
 
     def on_mount(self):
         """Called when the window is mounted."""

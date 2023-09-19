@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated Textual from 0.28.0 to 0.37.1
+- Error details now use Textual's `Collapsible` widget (introduced in 0.37), simplifying the code, and giving it a distinct look, whereas before it looked just like the other buttons in the dialog, but on a separate row.
+
 ## [0.3.0] - 2023-09-16
 
 ### Removed

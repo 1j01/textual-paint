@@ -119,8 +119,8 @@ def test_paint_error_dialog(snap_compare: SnapCompareType, each_theme: None):
         pilot.app.message_box("EMIT", "Error Message Itself Test", "ok", error=Exception("Error Message Itself Test"))
         assert pilot.app.query_one("MessageBox")
         await pilot.pause(1.0)
-        assert pilot.app.query_one("MessageBox .details_button")
-        await pilot.click("MessageBox .details_button")
+        assert pilot.app.query_one("MessageBox CollapsibleTitle")
+        await pilot.click("MessageBox CollapsibleTitle")
         await pilot.pause(0.5) # avoid pressed state
 
     assert snap_compare(PAINT, run_before=show_error)

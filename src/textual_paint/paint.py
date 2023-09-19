@@ -1068,8 +1068,7 @@ class PaintApp(App[None]):
             # It's a difference in name, and an automatic close
             if callback:
                 callback(button)
-            if not button.has_class("details_button"):
-                window.close()
+            window.close()
         window = MessageBox(
             # id="message_box",
             title=title,
