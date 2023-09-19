@@ -19,6 +19,11 @@ class MetaGlyphFont:
         """The height in characters of a meta-glyph."""
         self.covered_characters = covered_characters
         """The characters supported by this font."""
+
+        # EXCLUDE certain characters which are better handled by procedural glyph rendering.
+        for ch in " ░▒▓██▔🮂🮃▀🮄🮅🮆▇▆▅▄▃▂▁▏▎▍▌▋▊▉███🮋🮊🮉▐🮈🮇▕":
+            self.covered_characters = self.covered_characters.replace(ch, "")
+
         self.load()
 
     def load(self):
@@ -46,6 +51,7 @@ meta_glyph_fonts: dict[int, MetaGlyphFont] = {
     2: MetaGlyphFont(os.path.join(os.path.dirname(__file__), "fonts/NanoTiny/NanoTiny_v14_2x2.flf"), 2, 2, covered_characters),
     # 4: MetaGlyphFont(os.path.join(os.path.dirname(__file__), "fonts/NanoTiny/NanoTiny_v14_4x4.flf"), 4, 4, covered_characters),
     # TODO: less specialized (more practical) fonts for larger sizes
+    # Also ASCII-only fonts for --ascii-only mode
 }
 
 def largest_font_that_fits(max_width: int, max_height: int) -> MetaGlyphFont | None:

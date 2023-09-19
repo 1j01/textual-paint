@@ -306,9 +306,17 @@ class Canvas(Widget):
             if x >= len(glyph_line) or x < 0:
                 return " "
             return glyph_line[x]
-        if ch in " ░▒▓█":
-            return ch
         match ch:
+            case " ":
+                return " "
+            case "░":
+                return "░"
+            case "▒":
+                return "▒"
+            case "▓":
+                return "▓"
+            case "█":
+                return "█"
             # These are now obsolete special cases of below fractional block character handling.
             # case "▄":
             #     return "█" if y >= magnification // 2 else " "
