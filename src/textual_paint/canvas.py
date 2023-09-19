@@ -209,6 +209,7 @@ class Canvas(Widget):
         if sel:
             selection_region = scale_region(sel.region, magnification)
             inner_selection_region = selection_region.shrink((1, 1, 1, 1))
+        show_grid = magnification >= 4 and self.show_grid  # avoiding reactive.__get__ in loop, not as much of a bottleneck though
         for x in range(self.size.width):
             cell_x = x // magnification
             cell_y = y // magnification
@@ -228,7 +229,7 @@ class Canvas(Widget):
                 ch = "?"
             if magnification > 1:
                 ch = self.big_ch(ch, x % magnification, y % magnification, magnification)
-                if self.show_grid and magnification >= 4:
+                if show_grid:
                     if x % magnification == 0 or y % magnification == 0:
                         # Not setting `bg` here, because:
                         # Its actually useful to see the background color of the cell,
