@@ -6,7 +6,7 @@ pyfiglet==0.8.post1
 # PyGObject==3.42.1 # gi.repository module, used for setting the wallpaper on gnome, unity, and cinnamon; optional, falls back to gsettings CLI
 pyperclip==1.8.2
 pyxdg==0.28 # xdg module, used for wallpaper setting; optional, falls back to ~/.config
-rich==13.3.5
+rich==13.4.2
 stransi==0.3.0
 textual==0.37.1
 textual-dev==1.1.0 # for development (`textual` CLI)
