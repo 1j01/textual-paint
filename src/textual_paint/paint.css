@@ -30,7 +30,7 @@ Header.-tall HeaderIcon {
     background: rgb(128, 128, 128);
     overflow: auto;
 }
-.-dark-mode #editing_area {
+#editing_area:dark {
     background: $surface-lighten-2;
 }
 .view_bitmap #editing_area {
@@ -326,7 +326,7 @@ RadioSet {
     /* border: round $text; */
     border: round black;
 }
-.-dark-mode RadioSet {
+RadioSet:dark {
     border: round white;
 }
 
@@ -339,14 +339,14 @@ DialogWindow .buttons Button {
     width: auto;
     margin: 1;
 }
-.-light-mode DialogWindow Input {
+DialogWindow Input:light {
     background: white;
     border: tall $panel-darken-3;
     /* can't really do good inset styles because of how the corners work */
     /* border-right: tall $panel-lighten-1; */
     /* border-bottom: tall $panel-lighten-1; */
 }
-.-light-mode DialogWindow Input:focus {
+DialogWindow Input:focus:light {
     border: tall black;
 }
 
@@ -379,7 +379,7 @@ DialogWindow .buttons Button {
     height: auto;
     border: round black;
 }
-.-dark-mode .fieldset {
+.fieldset:dark {
     border: round white;
 }
 
