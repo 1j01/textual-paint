@@ -13,6 +13,7 @@ from rich.console import Console
 from rich.segment import Segment
 from rich.style import Style
 from rich.text import Text
+from rich.color import Color as RichColor
 from stransi.instruction import Instruction
 from textual.color import Color, ColorParseError
 from textual.geometry import Offset, Region
@@ -96,30 +97,18 @@ class AnsiArtDocument:
         self.height: int = height
         self.ch = [[" " for _ in range(width)] for _ in range(height)]
         """2D array of characters."""
-        self.bg = [[default_bg for _ in range(width)] for _ in range(height)]
-        """2D array of background colors."""
-        self.fg = [[default_fg for _ in range(width)] for _ in range(height)]
-        """2D array of foreground colors."""
         style = Style(color=default_fg, bgcolor=default_bg)
-        self.sc = [[style for _ in range(width)] for _ in range(height)]
-        """Style cache 2D array."""
+        self.st = [[style for _ in range(width)] for _ in range(height)]
+        """2D array of styles."""
         self.selection: Optional[Selection] = None
         """The current selection, which can itself contain an ANSI art document."""
-
-    def update_style_cache(self) -> None:
-        """Update the style cache based on foreground and background colors."""
-        for y in range(self.height):
-            for x in range(self.width):
-                self.sc[y][x] = Style(color=self.fg[y][x], bgcolor=self.bg[y][x])
 
     def copy(self, source: 'AnsiArtDocument') -> None:
         """Copy the image size and data from another document. Does not copy the selection."""
         self.width = source.width
         self.height = source.height
         self.ch = [row[:] for row in source.ch]
-        self.bg = [row[:] for row in source.bg]
-        self.fg = [row[:] for row in source.fg]
-        self.sc = [row[:] for row in source.sc]
+        self.st = [row[:] for row in source.st]
         self.selection = None
 
     def copy_region(self, source: 'AnsiArtDocument', source_region: Region|None = None, target_region: Region|None = None, mask: list[list[bool]]|None = None) -> None:
@@ -137,40 +126,29 @@ class AnsiArtDocument:
             for x in range(target_region.width):
                 if source_region.contains(x + source_offset.x, y + source_offset.y) and (mask is None or mask[y][x]):
                     self.ch[y + target_offset.y][x + target_offset.x] = source.ch[y + source_offset.y][x + source_offset.x]
-                    self.bg[y + target_offset.y][x + target_offset.x] = source.bg[y + source_offset.y][x + source_offset.x]
-                    self.fg[y + target_offset.y][x + target_offset.x] = source.fg[y + source_offset.y][x + source_offset.x]
-                    self.sc[y + target_offset.y][x + target_offset.x] = source.sc[y + source_offset.y][x + source_offset.x]
+                    self.st[y + target_offset.y][x + target_offset.x] = source.st[y + source_offset.y][x + source_offset.x]
                     if DEBUG_REGION_UPDATES:
                         assert random_color is not None
-                        # self.bg[y + target_offset.y][x + target_offset.x] = "rgb(" + str((x + source_offset.x) * 255 // self.width) + "," + str((y + source_offset.y) * 255 // self.height) + ",0)"
-                        self.bg[y + target_offset.y][x + target_offset.x] = random_color
+                        self.st[y + target_offset.y][x + target_offset.x] += Style(bgcolor=random_color)
                 else:
                     if DEBUG_REGION_UPDATES:
                         self.ch[y + target_offset.y][x + target_offset.x] = "?"
-                        self.bg[y + target_offset.y][x + target_offset.x] = "#ff00ff"
-                        self.fg[y + target_offset.y][x + target_offset.x] = "#000000"
-                        self.sc[y + target_offset.y][x + target_offset.x] = Style(color="#000000", bgcolor="#ff00ff")
+                        self.st[y + target_offset.y][x + target_offset.x] = Style(color="#000000", bgcolor="#ff00ff")
 
     def resize(self, width: int, height: int, default_bg: str = "#ffffff", default_fg: str = "#000000") -> None:
         """Resize the document."""
         if width == self.width and height == self.height:
             return
         new_ch = [[" " for _ in range(width)] for _ in range(height)]
-        new_bg = [[default_bg for _ in range(width)] for _ in range(height)]
-        new_fg = [[default_fg for _ in range(width)] for _ in range(height)]
-        new_sc = [[Style(color=default_fg, bgcolor=default_bg) for _ in range(width)] for _ in range(height)]
+        new_st = [[Style(color=default_fg, bgcolor=default_bg) for _ in range(width)] for _ in range(height)]
         for y in range(min(height, self.height)):
             for x in range(min(width, self.width)):
                 new_ch[y][x] = self.ch[y][x]
-                new_bg[y][x] = self.bg[y][x]
-                new_fg[y][x] = self.fg[y][x]
-                new_sc[y][x] = self.sc[y][x]
+                new_st[y][x] = self.st[y][x]
         self.width = width
         self.height = height
         self.ch = new_ch
-        self.bg = new_bg
-        self.fg = new_fg
-        self.sc = new_sc
+        self.st = new_st
 
     def invert(self) -> None:
         """Invert the foreground and background colors."""
@@ -181,15 +159,22 @@ class AnsiArtDocument:
         # TODO: DRY color inversion, and/or simplify it. It shouldn't need a Style object.
         for y in range(region.y, region.y + region.height):
             for x in range(region.x, region.x + region.width):
-                # style = Style(color=self.fg[y][x], bgcolor=self.bg[y][x])
-                style = self.sc[y][x]
+                style = self.st[y][x]
                 assert style.color is not None
                 assert style.bgcolor is not None
                 assert style.color.triplet is not None
                 assert style.bgcolor.triplet is not None
-                self.bg[y][x] = f"#{(255 - style.bgcolor.triplet.red):02x}{(255 - style.bgcolor.triplet.green):02x}{(255 - style.bgcolor.triplet.blue):02x}"
-                self.fg[y][x] = f"#{(255 - style.color.triplet.red):02x}{(255 - style.color.triplet.green):02x}{(255 - style.color.triplet.blue):02x}"
-                self.sc[y][x] = Style(color=self.fg[y][x], bgcolor=self.bg[y][x])
+
+                style = Style.from_color(
+                    color=RichColor.parse(f"#{(255 - style.color.triplet.red):02x}{(255 - style.color.triplet.green):02x}{(255 - style.color.triplet.blue):02x}"),
+                    bgcolor=RichColor.parse(f"#{(255 - style.bgcolor.triplet.red):02x}{(255 - style.bgcolor.triplet.green):02x}{(255 - style.bgcolor.triplet.blue):02x}")
+                )
+                # Better but causes invisible changes to the snapshot tests:
+                # style = Style.from_color(
+                #     color=RichColor.from_rgb(255 - style.color.triplet.red, 255 - style.color.triplet.green, 255 - style.color.triplet.blue),
+                #     bgcolor=RichColor.from_rgb(255 - style.bgcolor.triplet.red, 255 - style.bgcolor.triplet.green, 255 - style.bgcolor.triplet.blue)
+                # )
+                self.st[y][x] = style
 
     @staticmethod
     def format_from_extension(file_path: str) -> str | None:
@@ -258,9 +243,7 @@ class AnsiArtDocument:
         assert pixels is not None, "failed to load pixels for new image"
         for y in range(self.height):
             for x in range(self.width):
-                # color = Color.parse(self.bg[y][x])
-                # pixels[x, y] = (color.r, color.g, color.b)
-                color = self.sc[y][x].bgcolor
+                color = self.st[y][x].bgcolor
                 assert color is not None
                 pixels[x, y] = color.triplet
         buffer = io.BytesIO()
@@ -367,8 +350,7 @@ class AnsiArtDocument:
         for y in range(self.height):
             line = Text()
             for x in range(self.width):
-                # line.append(self.ch[y][x], style=Style(bgcolor=self.bg[y][x], color=self.fg[y][x]))
-                line.append(self.ch[y][x], style=self.sc[y][x])
+                line.append(self.ch[y][x], style=self.st[y][x])
             lines.append(line)
         result = joiner.join(lines)
         return result
@@ -406,6 +388,7 @@ class AnsiArtDocument:
     def from_irc(text: str, default_bg: str = "#ffffff", default_fg: str = "#000000") -> 'AnsiArtDocument':
         """Creates a document from text with mIRC codes."""
 
+        default_style = Style(color=default_fg, bgcolor=default_bg)
         document = AnsiArtDocument(0, 0, default_bg, default_fg)
         # Minimum size of 1x1, so that the document is never empty.
         width = 1
@@ -413,8 +396,7 @@ class AnsiArtDocument:
 
         x = 0
         y = 0
-        bg_color = default_bg
-        fg_color = default_fg
+        current_style = default_style
 
         color_escape = "\x03"
         # an optional escape code at the end disambiguates a digit from part of the color code
@@ -429,17 +411,18 @@ class AnsiArtDocument:
                 if match:
                     index += len(match.group(0))
                     # TODO: should a one-value syntax reset the background?
-                    bg_color = default_bg
-                    fg_color = default_fg
+                    # currently it does, since default_style contains a background color
+                    # It would be slightly simpler to not affect it, now, but I'm preserving previous behavior.
+                    color_change = default_style
                     if match.group(1):
-                        fg_color = IRC_PALETTE[int(match.group(1))]
+                        color_change += Style.from_color(color=RichColor.parse(IRC_PALETTE[int(match.group(1))]))
                     if match.group(2):
-                        bg_color = IRC_PALETTE[int(match.group(2))]
+                        color_change += Style.from_color(bgcolor=RichColor.parse(IRC_PALETTE[int(match.group(2))]))
+                    current_style += color_change
                     continue
             if char == reset_escape:
                 index += 1
-                bg_color = default_bg
-                fg_color = default_fg
+                current_style = default_style
                 continue
             if char == "\n":
                 width = max(width, x)
@@ -451,17 +434,12 @@ class AnsiArtDocument:
             # Handle a single character, adding rows/columns as needed.
             while len(document.ch) <= y:
                 document.ch.append([])
-                document.bg.append([])
-                document.fg.append([])
-                document.sc.append([])
+                document.st.append([])
             while len(document.ch[y]) <= x:
                 document.ch[y].append(' ')
-                document.bg[y].append(default_bg)
-                document.fg[y].append(default_fg)
-                document.sc[y].append(Style.null())
+                document.st[y].append(default_style)
             document.ch[y][x] = char
-            document.bg[y][x] = bg_color
-            document.fg[y][x] = fg_color
+            document.st[y][x] = current_style
             width = max(x + 1, width)
             height = max(y + 1, height)
             x += 1
@@ -472,18 +450,13 @@ class AnsiArtDocument:
         # Handle minimum height.
         while len(document.ch) <= document.height:
             document.ch.append([])
-            document.bg.append([])
-            document.fg.append([])
-            document.sc.append([])
+            document.st.append([])
         # Pad rows to a consistent width.
         for y in range(document.height):
             for x in range(len(document.ch[y]), document.width):
                 document.ch[y].append(' ')
-                document.bg[y].append(default_bg)
-                document.fg[y].append(default_fg)
-                document.sc[y].append(Style.null())
+                document.st[y].append(default_style)
 
-        document.update_style_cache()
         return document
 
     @staticmethod
@@ -513,6 +486,7 @@ class AnsiArtDocument:
 
         ansi = stransi.Ansi(text)
 
+        default_style = Style(color=default_fg, bgcolor=default_bg)
         document = AnsiArtDocument(0, 0, default_bg, default_fg)
         # Minimum size of 1x1, so that the document is never empty.
         width = 1
@@ -520,8 +494,7 @@ class AnsiArtDocument:
 
         x = 0
         y = 0
-        bg_color = default_bg
-        fg_color = default_fg
+        current_style = default_style
         instruction: Instruction[Any] | str
         for instruction in ansi.instructions():
             if isinstance(instruction, str):
@@ -553,17 +526,12 @@ class AnsiArtDocument:
                     else:
                         while len(document.ch) <= y:
                             document.ch.append([])
-                            document.bg.append([])
-                            document.fg.append([])
-                            document.sc.append([])
+                            document.st.append([])
                         while len(document.ch[y]) <= x:
                             document.ch[y].append(' ')
-                            document.bg[y].append(default_bg)
-                            document.fg[y].append(default_fg)
-                            document.sc[y].append(Style.null())
+                            document.st[y].append(default_style)
                         document.ch[y][x] = char
-                        document.bg[y][x] = bg_color
-                        document.fg[y][x] = fg_color
+                        document.st[y][x] = current_style
                         width = max(x + 1, width)
                         height = max(y + 1, height)
                         x += 1
@@ -575,10 +543,14 @@ class AnsiArtDocument:
                 # (maybe just for initial state?)
                 if instruction.role == stransi.color.ColorRole.FOREGROUND:
                     rgb = instruction.color.rgb
-                    fg_color = "rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"
+                    # fg_color = "rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"
+                    current_style += Style.from_color(color=RichColor.parse("rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"))
+                    # current_style += Style.from_color(color=RichColor.from_rgb(rgb.red * 255, rgb.green * 255, rgb.blue * 255))
                 elif instruction.role == stransi.color.ColorRole.BACKGROUND:
                     rgb = instruction.color.rgb
-                    bg_color = "rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"
+                    # bg_color = "rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"
+                    current_style += Style.from_color(bgcolor=RichColor.parse("rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"))
+                    # current_style += Style.from_color(bgcolor=RichColor.from_rgb(rgb.red * 255, rgb.green * 255, rgb.blue * 255))
             elif isinstance(instruction, stransi.SetCursor):
                 # Cursor position is encoded as y;x, so stransi understandably gets this backwards.
                 # TODO: fix stransi to interpret ESC[<y>;<x>H correctly
@@ -597,9 +569,7 @@ class AnsiArtDocument:
                 height = max(y + 1, height)
                 while len(document.ch) <= y:
                     document.ch.append([])
-                    document.bg.append([])
-                    document.fg.append([])
-                    document.sc.append([])
+                    document.st.append([])
             elif isinstance(instruction, stransi.SetClear):
                 def clear_line(row_to_clear: int, before: bool, after: bool):
                     cols_to_clear: list[int] = []
@@ -609,8 +579,7 @@ class AnsiArtDocument:
                         cols_to_clear += range(x, len(document.ch[row_to_clear]))
                     for col_to_clear in cols_to_clear:
                         document.ch[row_to_clear][col_to_clear] = ' '
-                        document.bg[row_to_clear][col_to_clear] = default_bg
-                        document.fg[row_to_clear][col_to_clear] = default_fg
+                        document.st[row_to_clear][col_to_clear] = default_style
                 match instruction.region:
                     case stransi.clear.Clear.LINE:
                         # Clear the current line
@@ -647,17 +616,12 @@ class AnsiArtDocument:
         # Handle minimum height.
         while len(document.ch) <= document.height:
             document.ch.append([])
-            document.bg.append([])
-            document.fg.append([])
-            document.sc.append([])
+            document.st.append([])
         # Pad rows to a consistent width.
         for y in range(document.height):
             for x in range(len(document.ch[y]), document.width):
                 document.ch[y].append(' ')
-                document.bg[y].append(default_bg)
-                document.fg[y].append(default_fg)
-                document.sc[y].append(Style.null())
-        document.update_style_cache()
+                document.st[y].append(default_style)
         return document
 
     @staticmethod
@@ -681,8 +645,7 @@ class AnsiArtDocument:
         for y in range(height):
             for x in range(width):
                 r, g, b = rgb_image.getpixel((x, y))  # type: ignore
-                document.bg[y][x] = "#" + hex(r)[2:].zfill(2) + hex(g)[2:].zfill(2) + hex(b)[2:].zfill(2)  # type: ignore
-        document.update_style_cache()
+                document.st[y][x] += Style.from_color(color=RichColor.from_rgb(r, g, b))  # type: ignore
         return document
 
     @staticmethod
@@ -1018,7 +981,7 @@ class AnsiArtDocument:
                     y = int((y - min_y) / cell_height)
                     if fill is not None:
                         try:
-                            document.bg[y][x] = fill
+                            document.st[y][x] += Style.from_color(bgcolor=RichColor.parse(fill))
                         except IndexError:
                             print("Warning: rect out of bounds: " + ET.tostring(rect, encoding="unicode"))
 
@@ -1056,7 +1019,7 @@ class AnsiArtDocument:
             try:
                 document.ch[y][x] = ch
                 if fill is not None:
-                    document.fg[y][x] = fill
+                    document.st[y][x] += Style.from_color(color=RichColor.parse(fill))
             except IndexError:
                 print("Warning: text element is out of bounds: " + ET.tostring(text, encoding="unicode"))
                 continue
@@ -1064,8 +1027,6 @@ class AnsiArtDocument:
         # For debugging, write the SVG with the ignored rects outlined, and coordinate markers added.
         if DEBUG_SVG_LOADING:
             ET.ElementTree(root).write("debug.svg", encoding="unicode")
-
-        document.update_style_cache()
 
         return document
 

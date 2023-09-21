@@ -1,6 +1,7 @@
 """Drawing utilities for use with the AnsiArtDocument class."""
 
 from typing import TYPE_CHECKING, Iterator
+from rich.style import Style
 
 from textual.geometry import Offset, Region
 
@@ -183,10 +184,11 @@ def midpoint_ellipse(xc: int, yc: int, rx: int, ry: int) -> Iterator[tuple[int, 
 def flood_fill(document: 'AnsiArtDocument', x: int, y: int, fill_ch: str, fill_fg: str, fill_bg: str) -> Region|None:
     """Flood fill algorithm."""
 
+    fill_style = Style(color=fill_fg, bgcolor=fill_bg)
+
     # Get the original value of the cell.
     # This is the color to be replaced.
-    original_fg = document.fg[y][x]
-    original_bg = document.bg[y][x]
+    original_style = document.st[y][x]
     original_ch = document.ch[y][x]
 
     # Track the region affected by the fill.
@@ -196,21 +198,26 @@ def flood_fill(document: 'AnsiArtDocument', x: int, y: int, fill_ch: str, fill_f
     max_y = y
 
     def inside(x: int, y: int) -> bool:
-        """Returns true if the cell at the given coordinates matches the color to be replaced. Treats foreground color as equal if character is a space."""
+        """Returns true if the cell at the given coordinates matches the color to be replaced.
+        
+        Treats foreground color as equal if character is a space.
+
+        TODO: treat colors as equal if only their names are different, e.g. "rgb(0,0,0)" and "#000000"
+        See stamp_char's handling of Color Eraser for some threshold handling code
+        """
         if x < 0 or x >= document.width or y < 0 or y >= document.height:
             return False
         return (
             document.ch[y][x] == original_ch and
-            document.bg[y][x] == original_bg and
-            (original_ch == " " or document.fg[y][x] == original_fg) and
-            (document.ch[y][x] != fill_ch or document.bg[y][x] != fill_bg or document.fg[y][x] != fill_fg)
+            document.st[y][x].bgcolor == original_style.bgcolor and
+            (original_ch == " " or document.st[y][x].color == original_style.color) and
+            (document.ch[y][x] != fill_ch or document.st[y][x].bgcolor != fill_style.bgcolor or document.st[y][x].color != fill_style.color)
         )
 
     def set_cell(x: int, y: int) -> None:
         """Sets the cell at the given coordinates to the fill color, and updates the region bounds."""
         document.ch[y][x] = fill_ch
-        document.fg[y][x] = fill_fg
-        document.bg[y][x] = fill_bg
+        document.st[y][x] = fill_style
         nonlocal min_x, min_y, max_x, max_y
         min_x = min(min_x, x)
         min_y = min(min_y, y)
@@ -242,8 +249,6 @@ def flood_fill(document: 'AnsiArtDocument', x: int, y: int, fill_ch: str, fill_f
             while x1 < x2 and not inside(x1, y):
                 x1 = x1 + 1
             x = x1
-
-    document.update_style_cache()
 
     # Return the affected region.
     return Region(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)

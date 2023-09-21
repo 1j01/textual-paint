@@ -90,17 +90,18 @@ def rasterize(doc: 'AnsiArtDocument') -> Image.Image:
     # draw cell backgrounds
     for y in range(doc.height):
         for x in range(doc.width):
-            bg_color = doc.bg[y][x]
-            draw.rectangle((x * ch_width, y * ch_height, (x + 1) * ch_width, (y + 1) * ch_height), fill=bg_color)
+            bg_color = doc.st[y][x].bgcolor
+            assert bg_color is not None
+            draw.rectangle((x * ch_width, y * ch_height, (x + 1) * ch_width, (y + 1) * ch_height), fill=bg_color.get_truecolor().hex)
 
     # draw text
     for y in range(doc.height):
         for x in range(doc.width):
             char = doc.ch[y][x]
-            bg_color = doc.bg[y][x]
-            fg_color = doc.fg[y][x]
+            fg_color = doc.st[y][x].color
+            assert fg_color is not None
             try:
-                draw.text((x * ch_width, y * ch_height), char, font=font, fill=fg_color)
+                draw.text((x * ch_width, y * ch_height), char, font=font, fill=fg_color.get_truecolor().hex)
             except UnicodeEncodeError:
                 pass
 
