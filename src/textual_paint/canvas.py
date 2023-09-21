@@ -232,6 +232,10 @@ class Canvas(Widget):
                         # Its actually useful to see the background color of the cell,
                         # as it lets you distinguish between a space " " and a full block "█".
                         # Plus this lets the grid be more subtle, visually taking up less than a cell.
+                        # That said, in --ascii-only mode, the background color is visible past the border
+                        # of the cell, as the border is centered in a cell, not flush with the left/top edge,
+                        # having less characters to work with, so it's a closer call, and might make sense
+                        # to use space characters instead, making for a thicker but more coherent grid.
                         fg = "#c0c0c0" if (x + y) % 2 == 0 else "#808080"
                         if x % magnification == 0 and y % magnification == 0:
                             ch = "+" if args.ascii_only else "▛" # "┼" # (🭽 may render as wide)
