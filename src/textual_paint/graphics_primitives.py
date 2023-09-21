@@ -243,5 +243,7 @@ def flood_fill(document: 'AnsiArtDocument', x: int, y: int, fill_ch: str, fill_f
                 x1 = x1 + 1
             x = x1
 
+    document.update_style_cache()
+
     # Return the affected region.
     return Region(min_x, min_y, max_x - min_x + 1, max_y - min_y + 1)
