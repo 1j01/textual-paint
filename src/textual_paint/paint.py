@@ -373,28 +373,20 @@ class PaintApp(App[None]):
             if self.color_eraser_mode:
                 char = self.image.ch[y][x]
                 # Use color comparison instead of string comparison because "#000000" != "rgb(0,0,0)"
-                # This stuff might be simpler and more efficient if we used Color objects in the document model
                 style = self.image.st[y][x]
-                selected_fg_style = Style(color=self.selected_fg_color)
+                selected_fg_color = RichColor.parse(self.selected_fg_color)
                 assert style.color is not None
                 assert style.bgcolor is not None
-                assert selected_fg_style.color is not None
-                # fg_matches = style.color.triplet == selected_fg_style.color.triplet
-                # bg_matches = style.bgcolor.triplet == selected_fg_style.color.triplet
+                # fg_matches = style.color.triplet == selected_fg_color.triplet
+                # bg_matches = style.bgcolor.triplet == selected_fg_color.triplet
                 threshold = 5
                 assert style.color.triplet is not None
                 assert style.bgcolor.triplet is not None
-                assert selected_fg_style.color.triplet is not None
-                fg_matches = abs(style.color.triplet[0] - selected_fg_style.color.triplet[0]) < threshold and abs(style.color.triplet[1] - selected_fg_style.color.triplet[1]) < threshold and abs(style.color.triplet[2] - selected_fg_style.color.triplet[2]) < threshold
-                bg_matches = abs(style.bgcolor.triplet[0] - selected_fg_style.color.triplet[0]) < threshold and abs(style.bgcolor.triplet[1] - selected_fg_style.color.triplet[1]) < threshold and abs(style.bgcolor.triplet[2] - selected_fg_style.color.triplet[2]) < threshold
-                fg = self.image.st[y][x].color
-                bg = self.image.st[y][x].bgcolor
-                assert fg is not None
-                assert bg is not None
-                fg_triplet = fg.get_truecolor()
-                bg_triplet = bg.get_truecolor()
-                fg_color = self.selected_bg_color if fg_matches else fg_triplet.hex
-                bg_color = self.selected_bg_color if bg_matches else bg_triplet.hex
+                assert selected_fg_color.triplet is not None
+                fg_matches = all(abs(style.color.triplet[i] - selected_fg_color.triplet[i]) < threshold for i in range(3))
+                bg_matches = all(abs(style.bgcolor.triplet[i] - selected_fg_color.triplet[i]) < threshold for i in range(3))
+                fg_color = self.selected_bg_color if fg_matches else style.color.triplet.hex
+                bg_color = self.selected_bg_color if bg_matches else style.bgcolor.triplet.hex
         if self.selected_tool == Tool.airbrush:
             if random() < 0.7:
                 return
