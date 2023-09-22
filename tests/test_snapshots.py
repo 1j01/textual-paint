@@ -7,12 +7,15 @@ from pathlib import Path, PurePath
 from typing import TYPE_CHECKING, Awaitable, Callable, Iterable, Protocol
 
 from pyfakefs.fake_filesystem import FakeFilesystem
+from rich.color import Color
+from rich.style import Style
 from textual.geometry import Offset
 from textual.pilot import Pilot
 from textual.widgets import Input
 
 import textual_paint.char_input
 from tests.pilot_helpers import click_by_attr, click_by_index, drag
+from textual_paint.graphics_primitives import bresenham_walk
 
 if TYPE_CHECKING:
     # When tests are run, paint.py is re-evaluated,
@@ -260,6 +263,49 @@ def test_select(snap_compare: SnapCompareType):
         await drag(pilot, '#canvas', [Offset(34, 13), Offset(34, 13), Offset(34, 12), Offset(35, 12), Offset(35, 11), Offset(35, 10), Offset(35, 9), Offset(36, 9), Offset(37, 9), Offset(38, 9), Offset(39, 9), Offset(40, 9), Offset(39, 9), Offset(38, 9), Offset(38, 9)],
                    control=True) # duplicate selection with Ctrl
         await drag(pilot, '#canvas', [Offset(2, 6), Offset(2, 6), Offset(3, 6), Offset(4, 6), Offset(4, 7), Offset(5, 7), Offset(6, 7), Offset(7, 8), Offset(8, 8), Offset(8, 9), Offset(10, 9), Offset(11, 10), Offset(12, 11), Offset(13, 11), Offset(13, 12), Offset(15, 12), Offset(16, 13), Offset(17, 13), Offset(18, 14), Offset(19, 14), Offset(20, 15), Offset(21, 16), Offset(23, 16), Offset(24, 17), Offset(25, 17), Offset(25, 18), Offset(26, 18), Offset(27, 18), Offset(28, 18), Offset(29, 18), Offset(30, 18), Offset(31, 18), Offset(32, 18), Offset(33, 18), Offset(33, 18)])
+
+    assert snap_compare(PAINT, run_before=automate_app, terminal_size=LARGER)
+
+def test_fill_spiral(snap_compare: SnapCompareType):
+    def square_spiral(X: int, Y: int) -> Iterable[tuple[int, int]]:
+        x = y = 0
+        dx = 0
+        dy = -1
+        for _ in range(max(X, Y)**2):
+            if (-X/2 < x <= X/2) and (-Y/2 < y <= Y/2):
+                yield (x, y)
+            if x == y or (x < 0 and x == -y) or (x > 0 and x == 1-y):
+                dx, dy = -dy, dx
+            x, y = x+dx, y+dy
+
+    def translated(offset_x: int, offset_y: int, points: Iterable[tuple[int, int]]) -> Iterable[tuple[int, int]]:
+        for x, y in points:
+            yield (x + offset_x, y + offset_y)
+    
+    def scaled(scale_x: int, scale_y: int, points: Iterable[tuple[int, int]]) -> Iterable[tuple[int, int]]:
+        for x, y in points:
+            yield (x * scale_x, y * scale_y)
+
+    def interpolated(points: Iterable[tuple[int, int]]) -> Iterable[tuple[int, int]]:
+        points = list(points)
+        for i in range(len(points) - 1):
+            x0, y0 = points[i]
+            x1, y1 = points[i+1]
+            yield from bresenham_walk(x0, y0, x1, y1)
+    
+    async def automate_app(pilot: Pilot[None]):
+        if TYPE_CHECKING:
+            from textual_paint.paint import PaintApp
+            assert isinstance(pilot.app, PaintApp)
+        for x, y in interpolated(translated(10, 10, scaled(2, 2, square_spiral(10, 10)))):
+            pilot.app.image.st[y][x] += Style(bgcolor=Color.parse("#ff00ff"))
+            # FIXME: colors should not be compared as strings, but as RGB triplets
+            # pilot.app.image.st[y][x] += Style(bgcolor=Color.parse("#ff00ff" if (x + y) % 2 else "rgb(255,0,255)"))
+        pilot.app.canvas.refresh()
+
+        await click_by_attr(pilot, "ToolsBox Button", "tooltip", "Fill With Color")
+        await click_by_index(pilot, '#available_colors Button', 18) # lime
+        await pilot.click('#canvas', offset=Offset(10, 10))
 
     assert snap_compare(PAINT, run_before=automate_app, terminal_size=LARGER)
 
