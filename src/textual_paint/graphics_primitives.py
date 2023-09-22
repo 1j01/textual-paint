@@ -186,8 +186,6 @@ def flood_fill(document: 'AnsiArtDocument', x: int, y: int, fill_ch: str, fill_f
     """Flood fill algorithm."""
 
     fill_style = Style(color=fill_fg, bgcolor=fill_bg)
-    assert fill_style.color is not None
-    assert fill_style.bgcolor is not None
 
     # Get the original value of the cell.
     # This is the color to be replaced.
@@ -225,6 +223,8 @@ def flood_fill(document: 'AnsiArtDocument', x: int, y: int, fill_ch: str, fill_f
         assert color is not None
         assert original_style.bgcolor is not None
         assert original_style.color is not None
+        assert fill_style.color is not None
+        assert fill_style.bgcolor is not None
         return (
             document.ch[y][x] == original_ch and
             colors_match(bgcolor, original_style.bgcolor) and
