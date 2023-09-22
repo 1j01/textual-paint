@@ -734,7 +734,7 @@ class AnsiArtDocument:
 
             css = re.sub(property_pattern, rewrite_property, css)
 
-            for rule_set in parse(css, "inline <style> (modified)"):
+            for rule_set in parse(scope="", css=css, path="inline <style> (modified)"):
                 rule_sets.append(rule_set)
         # Apply stylesheets as inline styles.
         for rule_set in rule_sets:
