@@ -291,14 +291,7 @@ class PaintApp(App[None]):
         # CharInput now handles the background style itself PARTIALLY; it doesn't affect the whole area.
 
         # update Text tool textbox immediately
-        # TODO: DRY
-        style = Style(bgcolor=selected_bg_color)
-        if self.image.selection and self.image.selection.textbox_mode:
-            assert self.image.selection.contained_image is not None, "textbox_mode without contained_image"
-            for y in range(self.image.selection.region.height):
-                for x in range(self.image.selection.region.width):
-                    self.image.selection.contained_image.st[y][x] += style
-            self.canvas.refresh_scaled_region(self.image.selection.region)
+        self.update_textbox_style(Style(bgcolor=selected_bg_color))
 
         # update Polygon/Curve tool preview immediately
         self.draw_tool_preview_on_canvas()
@@ -311,13 +304,7 @@ class PaintApp(App[None]):
         self.query_one("#selected_color_char_input", CharInput).refresh()
 
         # update Text tool textbox immediately
-        style = Style(color=selected_fg_color)
-        if self.image.selection and self.image.selection.textbox_mode:
-            assert self.image.selection.contained_image is not None, "textbox_mode without contained_image"
-            for y in range(self.image.selection.region.height):
-                for x in range(self.image.selection.region.width):
-                    self.image.selection.contained_image.st[y][x] += style
-            self.canvas.refresh_scaled_region(self.image.selection.region)
+        self.update_textbox_style(Style(color=selected_fg_color))
 
         # update Polygon/Curve tool preview immediately
         self.draw_tool_preview_on_canvas()
@@ -339,6 +326,15 @@ class PaintApp(App[None]):
     def watch_show_grid(self, show_grid: bool) -> None:
         """Called when show_grid changes."""
         self.canvas.show_grid = show_grid
+
+    def update_textbox_style(self, style: Style) -> None:
+        """Apply a style to the whole textbox."""
+        if self.image.selection and self.image.selection.textbox_mode:
+            assert self.image.selection.contained_image is not None, "textbox_mode without contained_image"
+            for y in range(self.image.selection.region.height):
+                for x in range(self.image.selection.region.width):
+                    self.image.selection.contained_image.st[y][x] += style
+            self.canvas.refresh_scaled_region(self.image.selection.region)
 
     def stamp_brush(self, x: int, y: int, affected_region_base: Optional[Region] = None) -> Region:
         """Draws the current brush at the given coordinates, with special handling for different tools."""
