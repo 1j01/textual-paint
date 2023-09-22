@@ -298,9 +298,9 @@ def test_fill_spiral(snap_compare: SnapCompareType):
             from textual_paint.paint import PaintApp
             assert isinstance(pilot.app, PaintApp)
         for x, y in interpolated(translated(10, 10, scaled(2, 2, square_spiral(10, 10)))):
-            pilot.app.image.st[y][x] += Style(bgcolor=Color.parse("#ff00ff"))
-            # FIXME: colors should not be compared as strings, but as RGB triplets
-            # pilot.app.image.st[y][x] += Style(bgcolor=Color.parse("#ff00ff" if (x + y) % 2 else "rgb(255,0,255)"))
+            # Colors should be compared numerically, not as strings.
+            # Test this by alternating between representations of the same color.
+            pilot.app.image.st[y][x] += Style(bgcolor=Color.parse("#ff00ff" if (x + y) % 2 else "rgb(255,0,255)"))
         pilot.app.canvas.refresh()
 
         await click_by_attr(pilot, "ToolsBox Button", "tooltip", "Fill With Color")

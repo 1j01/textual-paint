@@ -1,8 +1,9 @@
 """Drawing utilities for use with the AnsiArtDocument class."""
 
 from typing import TYPE_CHECKING, Iterator
-from rich.style import Style
 
+from rich.color import Color
+from rich.style import Style
 from textual.geometry import Offset, Region
 
 if TYPE_CHECKING:
@@ -185,6 +186,8 @@ def flood_fill(document: 'AnsiArtDocument', x: int, y: int, fill_ch: str, fill_f
     """Flood fill algorithm."""
 
     fill_style = Style(color=fill_fg, bgcolor=fill_bg)
+    assert fill_style.color is not None
+    assert fill_style.bgcolor is not None
 
     # Get the original value of the cell.
     # This is the color to be replaced.
@@ -197,21 +200,36 @@ def flood_fill(document: 'AnsiArtDocument', x: int, y: int, fill_ch: str, fill_f
     max_x = x
     max_y = y
 
+    def colors_match(a: Color, b: Color) -> bool:
+        # Use color comparison instead of string comparison because "#000000" != "rgb(0,0,0)"
+        # and Color("#000000") != Color("rgb(0,0,0)").
+        threshold = 5
+        assert a.triplet is not None
+        assert b.triplet is not None
+        return all(abs(a.triplet[i] - b.triplet[i]) < threshold for i in range(3))
+
     def inside(x: int, y: int) -> bool:
         """Returns true if the cell at the given coordinates matches the color to be replaced.
         
-        Treats foreground color as equal if character is a space.
+        Ignores foreground color if character is a space, since spaces are transparent.
 
-        TODO: treat colors as equal if only their names are different, e.g. "rgb(0,0,0)" and "#000000"
-        See stamp_char's handling of Color Eraser for some threshold handling code
+        Compares colors numerically, since names can differ, e.g. "rgb(0,0,0)" != "#000000"
+        and Color("rgb(0,0,0)") != Color("#000000").
         """
         if x < 0 or x >= document.width or y < 0 or y >= document.height:
             return False
+
+        bgcolor = document.st[y][x].bgcolor
+        color = document.st[y][x].color
+        assert bgcolor is not None
+        assert color is not None
+        assert original_style.bgcolor is not None
+        assert original_style.color is not None
         return (
             document.ch[y][x] == original_ch and
-            document.st[y][x].bgcolor == original_style.bgcolor and
-            (original_ch == " " or document.st[y][x].color == original_style.color) and
-            (document.ch[y][x] != fill_ch or document.st[y][x].bgcolor != fill_style.bgcolor or document.st[y][x].color != fill_style.color)
+            colors_match(bgcolor, original_style.bgcolor) and
+            (original_ch == " " or colors_match(color, original_style.color)) and
+            (document.ch[y][x] != fill_ch or (not colors_match(bgcolor, fill_style.bgcolor)) or (not colors_match(color, fill_style.color)))
         )
 
     def set_cell(x: int, y: int) -> None:
