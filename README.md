@@ -370,7 +370,7 @@ python tests/pilot_recorder.py
 ### Publishing
 
 - Run QA steps above
-- Update version numbers in `setup.cfg` in `src/textual_paint/__init__.py` to a pre-release version (e.g. `0.3.0-pre.1`)
+- Update version numbers in `setup.cfg` and `src/textual_paint/__init__.py` to a pre-release version (e.g. `0.3.0-pre.1`)
 - Add version header to `CHANGELOG.md` below "Unreleased", and update version links at bottom
 - Commit (e.g. `git commit -m "Prepare v0.3.0"`)
 - Build package: `python -m build --sdist --wheel`
