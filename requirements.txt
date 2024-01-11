@@ -17,3 +17,5 @@ pytest==7.4.1 # for development
 pytest-asyncio==0.21.1 # for development
 pytest-textual-snapshot==0.4.0 # for development
 pyfakefs==5.2.4 # for development
+build==1.0.3 # for release
+twine==4.0.2 # for release
