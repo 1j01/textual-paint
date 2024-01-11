@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated Textual from 0.27.0 to 0.38.1
 - Error details now use Textual's `Collapsible` widget (introduced in 0.37), simplifying the code, and giving it a distinct look, whereas before it looked just like the other buttons in the dialog, but on a separate row.
 - The document model now uses `Style` objects instead of foreground and background color strings as separate 2D lists. This opens the door to supporting text attributes (bold, italic, and underline) in the future.
-- Improved performance of canvas rendering, with the document model change and other optimizations. It's still slow when zoomed in, but it's a bit better.
+- I tried to improve the performance of canvas rendering, with the document model change and other optimizations. It's still slow when zoomed in, but it may be a bit better.
 - The Fill With Color tool now compares colors numerically, instead of as strings, and has a slight tolerance when comparing colors.
 
 ## [0.3.0] - 2023-09-16
