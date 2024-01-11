@@ -350,7 +350,7 @@ cspell-cli lint .
 # I use the "Python" and "Pylance" VS Code extensions, and the Pyright CLI:
 pyright
 # I'm targeting zero errors at this version of Pyright:
-PYRIGHT_PYTHON_FORCE_VERSION=1.1.327 pyright
+PYRIGHT_PYTHON_FORCE_VERSION=1.1.345 pyright
 # I also tried mypy and fixed some errors it reported, but I'm not targeting zero errors with mypy.
 mypy src --no-namespace-packages --check-untyped-defs
 

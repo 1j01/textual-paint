@@ -238,7 +238,7 @@ def get_config_dir(app_name: str) -> str:
         config_home = os.environ["APPDATA"]
     else:
         try:
-            from xdg import BaseDirectory  # type: ignore
+            from xdg import BaseDirectory
             config_home = BaseDirectory.xdg_config_home
         except ImportError: # Most likely a Linux/Unix system anyway
             config_home = os.path.join(get_home_dir(), ".config")
