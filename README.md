@@ -339,6 +339,13 @@ Often it's useful to exclude events with `textual console -x EVENT`.
 
 - Make sure to run the program from the root directory of the repository.
 
+<!-- spell-checker: disable -->
+> `ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+textual-paint 0.3.0 requires textual==0.39.0, but you have textual 0.40.0 which is incompatible.`
+<!-- spell-checker: enable -->
+
+- After installing with `pip install --editable .`, when updating dependencies, pip complains about a dependency conflict between the "installed" version and the development version, even though it's supposed to be an editable install. This error can be ignored, as far as I know, as it will install the new versions; I think it's just vestigial metadata from the time of the editable install. You can run `pip show textual-paint` to see where the package is installed, and find e.g. `Requires-Dist: textual ==0.39.0` in `.venv/lib/python3.10/site-packages/textual_paint-0.4.0.dist-info/METADATA` although I don't know for sure if it uses that when [checking for conflicts](https://github.com/pypa/pip/blob/64d89385ce4b5ae2d05d176e7746bff0baaabafd/src/pip/_internal/operations/check.py#L101). I haven't looked that deeply into this.
+
 ### Quality Assurance
 
 ```bash
