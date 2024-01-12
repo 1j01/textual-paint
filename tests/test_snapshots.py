@@ -185,7 +185,7 @@ def test_paint_polygon_tool_dragging(snap_compare: SnapCompareType):
         await drag(pilot, '#canvas', [Offset(11, 4), Offset(38, 6)])
         await pilot.click('#canvas', offset=Offset(23, 16))
         await drag(pilot, '#canvas', [Offset(38, 16), Offset(65, 14)])
-        # FIXME: click at previous location should not be considered a double click
+        # FIXME: click at drag end location should not be considered a double click
         # due to the distance of the drag
         await pilot.pause(1.0) # REMOVE ME WHEN FIXED
         await pilot.click('#canvas', offset=Offset(65, 14))
