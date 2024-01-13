@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Prevented widgets keeping focus when entering View Bitmap mode.
   - May have fixed double-acting key presses when toggling View Bitmap mode in some cases.
   - Menus are now closed when entering View Bitmap mode.
+- When a backup is automatically restored, and you say "No" to keeping the backup, it now restores the state before recovering the backup even if you make changes while the dialog is open.
 
 ## [0.4.0] - 2024-01-11
 

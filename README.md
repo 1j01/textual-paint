@@ -219,7 +219,6 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 ### Misc
 - Extraneous undo states may be created in some cases. In particular, I noticed when undoing/redoing with free-typing mode, the last state had no cursor but was otherwise identical.
 - Document recovery dialog is shown unnecessarily if the backup file is identical.
-- When clicking "No" in document recovery dialog after making edits, it doesn't restore the right history state. (This is fixed on a branch, but I haven't merged it yet...)
 - Pressing a key to exit View Bitmap mode may cause unwanted side effects, such as deselecting if you pressed <kbd>Esc</kbd>, or deleting the selection if you pressed <kbd>Delete</kbd>.
 - Can crash if the command palette is opened while moving the mouse over the canvas, as it tries to update the status bar with the mouse position and fails to find the status bar on the current screen, since he command palette uses a separate screen.
 
