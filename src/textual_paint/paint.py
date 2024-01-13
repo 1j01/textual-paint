@@ -627,6 +627,11 @@ class PaintApp(App[None]):
                 # See: 74ffc34de4b789ec1da2ae2e08bf99f1bb4670c9
                 # I could make backup_checked_for into owned_backup_file_path (or a dict if needed)
                 return
+            # In case you say "No" to keeping the changes,
+            # usually we'll undo once, but if you modify the document
+            # while the dialog is open, it makes sense to go back
+            # to before the backup was loaded.
+            undo_count_before_restore = len(self.undos)
             # This creates an undo
             self.resize_document(backup_image.width, backup_image.height)
             self.undos[-1].name = _("Recover from backup")
@@ -639,7 +644,8 @@ class PaintApp(App[None]):
 
             def handle_button(button: Button) -> None:
                 if button.has_class("no"):
-                    self.action_undo()
+                    while len(self.undos) > undo_count_before_restore:
+                        self.action_undo()
             # This message may be ambiguous if the main file has been changed since the backup was made.
             # TODO: UX design; maybe compare file modification times
             self.message_box(_("Paint"), _("Recovered document from backup.\nKeep changes?"), "yes/no", handle_button)

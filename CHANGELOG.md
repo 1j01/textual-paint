@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- When a backup is automatically restored, and you say "No" to keeping the backup, it now restores the state before recovering the backup even if you make changes while the dialog is open.
+
 ## [0.4.0] - 2024-01-11
 
 ### Changed
