@@ -281,10 +281,12 @@ First, create a virtual environment, and activate it:
 ```bash
 python -m venv .venv
 # The activate script is in different places on different systems:
-# Linux/macOS:
+# Linux/macOS/WSL:
 source .venv/bin/activate
-# Windows:
+# Windows (cmd.exe or PowerShell):
 .venv\Scripts\activate
+# Git Bash on Windows:
+source .venv/Scripts/activate
 ```
 
 Install Textual and other dependencies:
