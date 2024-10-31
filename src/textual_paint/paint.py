@@ -2878,7 +2878,12 @@ Columns: {len(self.palette) // 2}
             self.image.selection = Selection(select_region)
             self.image.selection.textbox_mode = self.selected_tool == Tool.text
             if self.image.selection.textbox_mode:
-                self.image.selection.contained_image = AnsiArtDocument(self.image.selection.region.width, self.image.selection.region.height, default_fg=self.selected_fg_color, default_bg=self.selected_bg_color)
+                free_typing_mode = select_region.width == 1 and select_region.height == 1
+                if free_typing_mode:
+                    # self.extract_to_selection(erase_underlying=False)
+                    self.image.selection.copy_from_document(self.image)
+                else:
+                    self.image.selection.contained_image = AnsiArtDocument(self.image.selection.region.width, self.image.selection.region.height, default_fg=self.selected_fg_color, default_bg=self.selected_bg_color)
             if self.selected_tool == Tool.free_form_select:
                 # Define the mask for the selection using the polygon
                 self.image.selection.mask = [[is_inside_polygon(x + select_region.x, y + select_region.y, self.tool_points) for x in range(select_region.width)] for y in range(select_region.height)]
@@ -2988,6 +2993,9 @@ Columns: {len(self.palette) // 2}
             textbox = self.image.selection
             assert textbox.contained_image is not None, "Textbox mode should always have contained_image, to edit as text."
 
+            free_typing_mode = textbox.contained_image.width == 1 and textbox.contained_image.height == 1
+            free_movement = Offset(0, 0)
+
             def delete_selected_text() -> None:
                 """Deletes the selected text, if any."""
                 # This was JUST checked above, but Pyright doesn't know that.
@@ -3023,13 +3031,18 @@ Columns: {len(self.palette) // 2}
                 # textbox.textbox_edited = True
             elif key == "left":
                 x = max(0, x - 1)
+                free_movement = Offset(-1, 0)
             elif key == "right":
                 x = min(textbox.contained_image.width - 1, x + 1)
+                free_movement = Offset(1, 0)
             elif key == "up":
                 y = max(0, y - 1)
+                free_movement = Offset(0, -1)
             elif key == "down":
                 y = min(textbox.contained_image.height - 1, y + 1)
+                free_movement = Offset(0, 1)
             elif key == "backspace":
+                free_movement = Offset(-1, 0) # TODO: delete character to the left in free typing mode too
                 if textbox.text_selection_end == textbox.text_selection_start:
                     x = max(0, x - 1)
                     textbox.contained_image.ch[y][x] = " "
@@ -3038,6 +3051,7 @@ Columns: {len(self.palette) // 2}
                     x, y = textbox.text_selection_end
                 textbox.textbox_edited = True
             elif key == "delete":
+                free_movement = Offset(1, 0)
                 if textbox.text_selection_end == textbox.text_selection_start:
                     textbox.contained_image.ch[y][x] = " "
                     x = min(textbox.contained_image.width - 1, x + 1)
@@ -3067,11 +3081,25 @@ Columns: {len(self.palette) // 2}
                         y = textbox.contained_image.height - 1
                         x = textbox.contained_image.width - 1
                 textbox.textbox_edited = True
+                if free_typing_mode:
+                    free_movement = Offset(1, 0)
             if shift:
                 textbox.text_selection_end = Offset(x, y)
             else:
                 textbox.text_selection_start = Offset(x, y)
                 textbox.text_selection_end = Offset(x, y)
+            
+            if free_typing_mode:
+                # TODO: handle boundaries, and more keys in free typing mode
+                select_region = Region(textbox.region.x + free_movement.x, textbox.region.y + free_movement.y, 1, 1)
+                if textbox.textbox_edited:
+                    self.meld_selection()
+                self.image.selection = Selection(select_region)
+                self.image.selection.textbox_mode = True
+                # self.extract_to_selection(erase_underlying=False)
+                self.image.selection.copy_from_document(self.image)
+                self.canvas.refresh_scaled_region(select_region)
+
             self.canvas.refresh_scaled_region(textbox.region)
 
     def on_paste(self, event: events.Paste) -> None:
