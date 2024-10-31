@@ -2994,7 +2994,6 @@ Columns: {len(self.palette) // 2}
             assert textbox.contained_image is not None, "Textbox mode should always have contained_image, to edit as text."
 
             free_typing_mode = textbox.contained_image.width == 1 and textbox.contained_image.height == 1
-            free_movement = Offset(0, 0)
 
             def delete_selected_text() -> None:
                 """Deletes the selected text, if any."""
@@ -3022,39 +3021,41 @@ Columns: {len(self.palette) // 2}
             # hit an arrow key without shift, but with shift it will extend
             # the selection.
             x, y = textbox.text_selection_end
+            image = textbox.contained_image
+            if free_typing_mode:
+                x, y = textbox.region.offset
+                image = self.image
+            w, h = image.width, image.height
 
             if key == "enter":
                 x = 0
                 y += 1
-                if y >= textbox.contained_image.height:
-                    y = textbox.contained_image.height - 1
+                if y >= h:
+                    y = h - 1
                 # textbox.textbox_edited = True
             elif key == "left":
                 x = max(0, x - 1)
-                free_movement = Offset(-1, 0)
             elif key == "right":
-                x = min(textbox.contained_image.width - 1, x + 1)
-                free_movement = Offset(1, 0)
+                x = min(w - 1, x + 1)
             elif key == "up":
                 y = max(0, y - 1)
-                free_movement = Offset(0, -1)
             elif key == "down":
-                y = min(textbox.contained_image.height - 1, y + 1)
-                free_movement = Offset(0, 1)
+                y = min(h - 1, y + 1)
             elif key == "backspace":
-                free_movement = Offset(-1, 0) # TODO: delete character to the left in free typing mode too
                 if textbox.text_selection_end == textbox.text_selection_start:
                     x = max(0, x - 1)
-                    textbox.contained_image.ch[y][x] = " "
+                    # TODO: delete character to the left in free typing mode too
+                    # This is supposed to be after the x = max(0, x - 1) line, but it's only editing the one character right now.
+                    # I made `image` but haven't used it for this yet.
+                    textbox.contained_image.ch[0 if free_typing_mode else y][0 if free_typing_mode else x] = " "
                 else:
                     delete_selected_text()
                     x, y = textbox.text_selection_end
                 textbox.textbox_edited = True
             elif key == "delete":
-                free_movement = Offset(1, 0)
                 if textbox.text_selection_end == textbox.text_selection_start:
-                    textbox.contained_image.ch[y][x] = " "
-                    x = min(textbox.contained_image.width - 1, x + 1)
+                    textbox.contained_image.ch[0 if free_typing_mode else y][0 if free_typing_mode else x] = " "
+                    x = min(w - 1, x + 1)
                 else:
                     delete_selected_text()
                     x, y = textbox.text_selection_end
@@ -3062,27 +3063,25 @@ Columns: {len(self.palette) // 2}
             elif key == "home":
                 x = 0
             elif key == "end":
-                x = textbox.contained_image.width - 1
+                x = w - 1
             elif key == "pageup":
                 y = 0
             elif key == "pagedown":
-                y = textbox.contained_image.height - 1
+                y = h - 1
             elif event.is_printable:
                 assert event.character is not None, "is_printable should imply character is not None"
                 # Type a character into the textbox
-                textbox.contained_image.ch[y][x] = event.character
-                # x = min(textbox.contained_image.width - 1, x + 1)
+                textbox.contained_image.ch[0 if free_typing_mode else y][0 if free_typing_mode else x] = event.character
+                # x = min(w - 1, x + 1)
                 x += 1
-                if x >= textbox.contained_image.width:
+                if x >= w:
                     x = 0
-                    # y = min(textbox.contained_image.height - 1, y + 1)
+                    # y = min(h - 1, y + 1)
                     y += 1
-                    if y >= textbox.contained_image.height:
-                        y = textbox.contained_image.height - 1
-                        x = textbox.contained_image.width - 1
+                    if y >= h:
+                        y = h - 1
+                        x = w - 1
                 textbox.textbox_edited = True
-                if free_typing_mode:
-                    free_movement = Offset(1, 0)
             if shift:
                 textbox.text_selection_end = Offset(x, y)
             else:
@@ -3090,8 +3089,7 @@ Columns: {len(self.palette) // 2}
                 textbox.text_selection_end = Offset(x, y)
             
             if free_typing_mode:
-                # TODO: handle boundaries, and more keys in free typing mode
-                select_region = Region(textbox.region.x + free_movement.x, textbox.region.y + free_movement.y, 1, 1)
+                select_region = Region(x, y, 1, 1)
                 if textbox.textbox_edited:
                     self.meld_selection()
                 self.image.selection = Selection(select_region)
