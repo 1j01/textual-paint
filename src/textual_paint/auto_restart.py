@@ -58,7 +58,15 @@ def restart_program() -> None:
 
     # python = sys.executable
     # os.execl(python, python, *sys.argv)
-    os.execl(sys.executable, *sys.orig_argv)
+    # print(sys.executable, sys.orig_argv)
+    if os.name == "nt":
+        # On Windows, os.exec* bungles the arguments: https://github.com/python/cpython/issues/64650
+        # This is a very bad and fragile workaround.
+        # After several hours of my life wasted, it doesn't even work correctly. The reloaded process has some broken terminal state.
+        # (Perhaps `App._driver` does not exist and the error is being swallowed? And/or there's a way to actually wait for the App to exit properly?)
+        os.execl(sys.executable, *(f'"{arg.replace('"', '""')}"' if " " in arg else arg.replace('"', '""') for arg in sys.orig_argv))
+    else:
+        os.execl(sys.executable, *sys.orig_argv)
 
 def restart_on_changes(app: PaintApp|GalleryApp) -> None:
     """Restarts the current program when a file is changed"""
