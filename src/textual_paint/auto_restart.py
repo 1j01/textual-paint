@@ -46,13 +46,17 @@ def restart_program() -> None:
         print("Error stopping file change observer:", e)
 
     try:
-        import psutil
-        p = psutil.Process(os.getpid())
-        for handler in p.open_files() + p.connections():
-            try:
-                os.close(handler.fd)
-            except Exception as e:
-                print(f"Error closing file descriptor ({handler.fd}):", e)
+        try:
+            import psutil
+        except ImportError:
+            print("psutil module not available; skipping file descriptor cleanup for auto-restart.")
+        else:
+            p = psutil.Process(os.getpid())
+            for handler in p.open_files() + p.connections():
+                try:
+                    os.close(handler.fd)
+                except Exception as e:
+                    print(f"Error closing file descriptor ({handler.fd}):", e)
     except Exception as e:
         print("Error closing file descriptors:", e)
 
