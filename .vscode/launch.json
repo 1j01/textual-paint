@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "Run Textual App",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             // TODO: is there a way to get this from the environment, i.e. to use
             // the binary that `which textual` would return,
@@ -21,7 +21,7 @@
         },
         {
             "name": "Open A File in App",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             // "program": "src.textual_paint.paint",
             // "args": ["LICENSE.txt"],
@@ -32,7 +32,7 @@
         },
         {
             "name": "Recode Samples",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "src.textual_paint.paint",
             "args": ["--recode-samples"],
@@ -41,7 +41,7 @@
         },
         {
             "name": "Debug --restart-on-changes file matching",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": ".venv/bin/textual",
             "args": ["run", "--dev", "src.textual_paint.paint --clear-screen --restart-on-changes"],
@@ -50,7 +50,7 @@
         },
         {
             "name": "Debug Tests",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": ".venv/bin/pytest",
             // "args": ["tests/test_snapshots.py::test_paint_open_dialog"],
