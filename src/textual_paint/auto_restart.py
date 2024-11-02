@@ -53,6 +53,10 @@ def restart_program() -> None:
         else:
             p = psutil.Process(os.getpid())
             for handler in p.open_files() + p.connections():
+                if handler.fd == -1:
+                    # On Windows, this happens for kernel32.dll.mui, KernelBase.dll.mui, and about 4 sockets. Dunno man.
+                    # print("Skipping invalid file descriptor (-1) for:", handler)
+                    continue
                 try:
                     os.close(handler.fd)
                 except Exception as e:
