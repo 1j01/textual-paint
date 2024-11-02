@@ -68,6 +68,7 @@ def restart_program() -> None:
         # This is a very bad and fragile workaround.
         # After several hours of my life wasted, it doesn't even work correctly. The reloaded process has some broken terminal state.
         # (Perhaps `App._driver` does not exist and the error is being swallowed? And/or there's a way to actually wait for the App to exit properly?)
+        # Also this doesn't work when debugging in VS Code with debugpy. I mean it wouldn't be able to attach anyways, but this escaping itself breaks somehow.
         os.execl(sys.executable, *(f'"{arg.replace('"', '""')}"' if " " in arg else arg.replace('"', '""') for arg in sys.orig_argv))
     else:
         os.execl(sys.executable, *sys.orig_argv)
@@ -112,11 +113,16 @@ def restart_on_changes(app: PaintApp|GalleryApp) -> None:
         # Don't need to restart on changes to .css, since Textual will reload them in --dev mode
         # Could include localization files, but I'm not actively localizing this app at this point.
         # WET: WatchDog doesn't match zero directories for **, so we have to split up any patterns that use it.
+        # BTW: I have a VS Code launch configuration specifically for testing this.
+        # FIXME: Ignore patterns aren't working on Windows.
+        # Might be able to update watchdog, or might have to switch to RegexMatchingEventHandler.
+        # RegexMatchingEventHandler should be able to be DRY anyway.
         patterns=[
             "**/*.py", "*.py"
         ],
         ignore_patterns=[
-            ".history/**/*", ".history/*",
+            ".history/**/*", ".history/*", # "./.history/**/*", "./.history/*", "**/.history/**/*", "**/.history/*",
+            # ".history\\**\\*", ".history\\*", ".\\.history\\**\\*", ".\\.history\\*", "**\\.history\\**\\*", "**\\.history\\*",
             ".vscode/**/*", ".vscode/*",
             ".git/**/*", ".git/*",
             "node_modules/**/*", "node_modules/*",
