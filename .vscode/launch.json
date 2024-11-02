@@ -15,6 +15,9 @@
             // that should exist if you follow the readme instructions.
             // Although the docs for "program" say "Absolute path to the program."
             "program": ".venv/bin/textual",
+            "windows": {
+                "program": ".venv/Scripts/textual.exe",
+            },
             "args": ["run", "--dev", "src.textual_paint.paint --clear-screen --inspect-layout"],
             "console": "integratedTerminal",
             "justMyCode": false
@@ -26,6 +29,9 @@
             // "program": "src.textual_paint.paint",
             // "args": ["LICENSE.txt"],
             "program": ".venv/bin/textual",
+            "windows": {
+                "program": ".venv/Scripts/textual.exe",
+            },
             "args": ["run", "--dev", "src.textual_paint.paint --clear-screen --inspect-layout LICENSE.txt"],
             "console": "integratedTerminal",
             "justMyCode": false
@@ -44,6 +50,9 @@
             "type": "debugpy",
             "request": "launch",
             "program": ".venv/bin/textual",
+            "windows": {
+                "program": ".venv/Scripts/textual.exe",
+            },
             "args": ["run", "--dev", "src.textual_paint.paint --clear-screen --restart-on-changes"],
             "console": "integratedTerminal",
             "justMyCode": false
@@ -53,6 +62,9 @@
             "type": "debugpy",
             "request": "launch",
             "program": ".venv/bin/pytest",
+            "windows": {
+                "program": ".venv/Scripts/pytest.exe",
+            },
             // "args": ["tests/test_snapshots.py::test_paint_open_dialog"],
             "console": "integratedTerminal",
             "justMyCode": false,
