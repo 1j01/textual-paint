@@ -81,10 +81,13 @@ def restart_on_changes(app: PaintApp|GalleryApp) -> None:
     """Restarts the current program when a file is changed"""
 
     from watchdog.events import (EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED,
-                                 FileSystemEvent, PatternMatchingEventHandler)
+                                 FileSystemEvent, RegexMatchingEventHandler)
     from watchdog.observers import Observer
 
-    class RestartHandler(PatternMatchingEventHandler):
+    # Why RegexMatchingEventHandler instead of PatternMatchingEventHandler?
+    # Because watchdog doesn't match zero directories for `**` patterns, requiring writing everything twice,
+    # and the ignore patterns weren't working at all on Windows.
+    class RestartHandler(RegexMatchingEventHandler):
         """A handler for file changes"""
         def on_any_event(self, event: FileSystemEvent) -> None:
             if event.event_type in (EVENT_TYPE_CLOSED, EVENT_TYPE_OPENED):
@@ -116,22 +119,19 @@ def restart_on_changes(app: PaintApp|GalleryApp) -> None:
     handler = RestartHandler(
         # Don't need to restart on changes to .css, since Textual will reload them in --dev mode
         # Could include localization files, but I'm not actively localizing this app at this point.
-        # WET: WatchDog doesn't match zero directories for **, so we have to split up any patterns that use it.
         # BTW: I have a VS Code launch configuration specifically for testing this.
-        # FIXME: Ignore patterns aren't working on Windows.
-        # Might be able to update watchdog, or might have to switch to RegexMatchingEventHandler.
-        # RegexMatchingEventHandler should be able to be DRY anyway.
-        patterns=[
-            "**/*.py", "*.py"
+        # NOTE: watchdog uses pattern.match() which matches from the beginning of a string
+        # but it doesn't have to be a full match, so it's asymmetrical in how it treats the beginning and end.
+        regexes=[
+            r".*\.py$",
         ],
-        ignore_patterns=[
-            ".history/**/*", ".history/*", # "./.history/**/*", "./.history/*", "**/.history/**/*", "**/.history/*",
-            # ".history\\**\\*", ".history\\*", ".\\.history\\**\\*", ".\\.history\\*", "**\\.history\\**\\*", "**\\.history\\*",
-            ".vscode/**/*", ".vscode/*",
-            ".git/**/*", ".git/*",
-            "node_modules/**/*", "node_modules/*",
-            "__pycache__/**/*", "__pycache__/*",
-            "venv/**/*", "venv/*",
+        ignore_regexes=[
+            r".*(/|\\|^)\.[^/\\]", # dotfiles and dotfolders, e.g. .git, .vscode, .history, .venv, .env, .pytest_cache
+            r".*(/|\\|^)node_modules(/|\\|$)",
+            r".*(/|\\|^)__pycache__(/|\\|$)",
+            r".*(/|\\|^)v?env(/|\\|$)", # just in case you don't use the folder name ".venv" recommended in the readme, and which the VS Code launch tasks are set up for
+            # only matching *.py files, so we don't need to handle *.ans~ or *.py~
+            # r".*~$", # backup files, as saved by Textual Paint (and some text editors)
         ],
         ignore_directories=True,
     )
