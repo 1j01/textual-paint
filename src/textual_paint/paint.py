@@ -3044,17 +3044,26 @@ Columns: {len(self.palette) // 2}
             elif key == "backspace":
                 if textbox.text_selection_end == textbox.text_selection_start:
                     x = max(0, x - 1)
-                    # TODO: delete character to the left in free typing mode too
-                    # This is supposed to be after the x = max(0, x - 1) line, but it's only editing the one character right now.
-                    # I made `image` but haven't used it for this yet.
-                    textbox.contained_image.ch[0 if free_typing_mode else y][0 if free_typing_mode else x] = " "
+                    # TODO: DRY with other undo state creation
+                    # TODO: undoable even in textbox
+                    if image == self.image:
+                        action = Action(_("Backspace Character"), Region(x, y, 1, 1))
+                        action.update(self.image)
+                        self.add_action(action)
+                    image.ch[y][x] = " "
                 else:
                     delete_selected_text()
                     x, y = textbox.text_selection_end
                 textbox.textbox_edited = True
             elif key == "delete":
                 if textbox.text_selection_end == textbox.text_selection_start:
-                    textbox.contained_image.ch[0 if free_typing_mode else y][0 if free_typing_mode else x] = " "
+                    # TODO: DRY with other undo state creation
+                    # TODO: undoable even in textbox
+                    if image == self.image:
+                        action = Action(_("Delete Character"), Region(x, y, 1, 1))
+                        action.update(self.image)
+                        self.add_action(action)
+                    image.ch[y][x] = " "
                     x = min(w - 1, x + 1)
                 else:
                     delete_selected_text()
@@ -3070,8 +3079,15 @@ Columns: {len(self.palette) // 2}
                 y = h - 1
             elif event.is_printable:
                 assert event.character is not None, "is_printable should imply character is not None"
-                # Type a character into the textbox
-                textbox.contained_image.ch[0 if free_typing_mode else y][0 if free_typing_mode else x] = event.character
+                # Type a character into the textbox or document.
+                
+                # TODO: DRY with other undo state creation
+                # TODO: undoable even in textbox
+                if image == self.image:
+                    action = Action(_("Type Character"), Region(x, y, 1, 1))
+                    action.update(self.image)
+                    self.add_action(action)
+                image.ch[y][x] = event.character
                 # x = min(w - 1, x + 1)
                 x += 1
                 if x >= w:
@@ -3090,8 +3106,9 @@ Columns: {len(self.palette) // 2}
             
             if free_typing_mode:
                 select_region = Region(x, y, 1, 1)
-                if textbox.textbox_edited:
-                    self.meld_selection()
+                # Don't meld the textbox, since the document should already be modified, with undo states already created.
+                # if textbox.textbox_edited:
+                #     self.meld_selection()
                 self.image.selection = Selection(select_region)
                 self.image.selection.textbox_mode = True
                 # self.extract_to_selection(erase_underlying=False)
