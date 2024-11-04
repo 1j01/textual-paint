@@ -11,6 +11,7 @@
     "strict": [
         // "**/*.py"
     ],
+    "pythonVersion": "3.10",
 
     // CUSTOMIZATIONS
     "reportOptionalMemberAccess": "warning",
