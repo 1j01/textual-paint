@@ -512,6 +512,11 @@ class PaintApp(App[None]):
 
     def action_cancel(self) -> None:
         """Action to end the current tool activity, via Escape key."""
+        # Also un-focus CharInput when pressing Escape.
+        # This is important to avoid getting stuck with the character input field focused, in order to use free typing mode.
+        if self.app.focused:
+            self.app.set_focus(None)
+            return
         self.stop_action_in_progress()
 
     def stop_action_in_progress(self) -> None:
