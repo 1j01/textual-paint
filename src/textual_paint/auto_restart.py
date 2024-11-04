@@ -73,7 +73,7 @@ def restart_program() -> None:
         # After several hours of my life wasted, it doesn't even work correctly. The reloaded process has some broken terminal state.
         # (Perhaps `App._driver` does not exist and the error is being swallowed? And/or there's a way to actually wait for the App to exit properly?)
         # Also this doesn't work when debugging in VS Code with debugpy. I mean it wouldn't be able to attach anyways, but this escaping itself breaks somehow.
-        os.execl(sys.executable, *(f'"{arg.replace('"', '""')}"' if " " in arg else arg.replace('"', '""') for arg in sys.orig_argv))
+        os.execl(sys.executable, *('"' + arg.replace('"', '""') + '"' if " " in arg else arg.replace('"', '""') for arg in sys.orig_argv))
     else:
         os.execl(sys.executable, *sys.orig_argv)
 
