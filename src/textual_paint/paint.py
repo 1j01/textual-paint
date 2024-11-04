@@ -2982,6 +2982,13 @@ Columns: {len(self.palette) // 2}
 
     def on_key(self, event: events.Key) -> None:
         """Called when the user presses a key."""
+
+        if len(self.screen_stack) > 1: # type: ignore
+            # Avoid error if command palette is open, and you press an arrow key,
+            # thereby creating a cursor and switching to the Text tool.
+            # (NoMatches: No nodes match <DOMQuery query='ToolsBox'>)
+            return
+
         key = event.key
         shift = key.startswith("shift+")
         if shift:
@@ -3255,6 +3262,10 @@ Columns: {len(self.palette) // 2}
 
     def on_mouse_down(self, event: events.MouseDown) -> None:
         """Called when the mouse button gets pressed."""
+
+        if len(self.screen_stack) > 1: # type: ignore
+            # Avoid error if clicking to close the command palette
+            return
 
         leaf_widget, _ = self.get_widget_at(*event.screen_offset)
 
