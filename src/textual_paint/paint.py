@@ -2995,6 +2995,23 @@ Columns: {len(self.palette) // 2}
             self.call_later(self.action_view_bitmap)
             return
 
+        if not self.image.selection:
+            if key in ["left", "right", "up", "down", "home", "end", "pageup", "pagedown", "insert"]:
+                # Switch to the Text tool
+                self.selected_tool = Tool.text
+                # Ensure focus is not on the CharInput
+                self.app.set_focus(None)
+                # Create an initial cursor
+                self.image.selection = Selection(Region(0, 0, 1, 1))
+                self.image.selection.textbox_mode = True
+                self.image.selection.copy_from_document(self.image)
+                # Avoid returning for home/end/pageup/pagedown to allow the cursor to start in different places.
+                # This would be weird for arrow keys, unless perhaps it started from the side opposite the arrow direction,
+                # which would make it so that repeating the key would always do something.
+                # There's also an argument for always starting at the top left, for consistency.
+                if key not in ["home", "end", "pageup", "pagedown"]:
+                    self.canvas.refresh_scaled_region(self.image.selection.region)
+                    return
         if self.image.selection and not self.image.selection.textbox_mode:
             # TODO: smear selection if shift is held
             if key == "left":
@@ -3038,6 +3055,8 @@ Columns: {len(self.palette) // 2}
             # the selection.
             x, y = textbox.text_selection_end
             image = textbox.contained_image
+            # For free-typing mode, the AnsiArtDocument to be edited
+            # is the whole canvas instead of the textbox, and x and y are relative to the canvas.
             if free_typing_mode:
                 x, y = textbox.region.offset
                 image = self.image
@@ -3117,6 +3136,7 @@ Columns: {len(self.palette) // 2}
                         y = h - 1
                         x = w - 1
                 textbox.textbox_edited = True
+
             if shift:
                 textbox.text_selection_end = Offset(x, y)
             else:

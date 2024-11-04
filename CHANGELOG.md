@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- With the Text tool, you can now click anywhere on the canvas and start typing without dragging to create a textbox. This gives a much more useful workflow for ASCII art and ANSI art, as you can make tiny edits all over the canvas without having to create a new textbox each time.
+- **Free typing mode**
+  - With the Text tool, you can now click anywhere on the canvas and start typing without dragging to create a textbox. This gives a much more useful workflow for ASCII art and ANSI art, as you can make tiny edits all over the canvas without having to create a new textbox each time.
+  - You can also press <kbd>Insert</kbd> or arrow keys to make a cursor appear to start editing, and it will switch to the Text tool if needed.
 
 ## [0.4.0] - 2024-01-11
 
