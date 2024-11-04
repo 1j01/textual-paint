@@ -3049,6 +3049,7 @@ Columns: {len(self.palette) // 2}
                     if image == self.image:
                         action = Action(_("Backspace Character"), Region(x, y, 1, 1))
                         action.update(self.image)
+                        action.cursor_position_before = Offset(x, y)
                         self.add_action(action)
                     image.ch[y][x] = " "
                 else:
@@ -3062,6 +3063,7 @@ Columns: {len(self.palette) // 2}
                     if image == self.image:
                         action = Action(_("Delete Character"), Region(x, y, 1, 1))
                         action.update(self.image)
+                        action.cursor_position_before = Offset(x, y)
                         self.add_action(action)
                     image.ch[y][x] = " "
                     x = min(w - 1, x + 1)
@@ -3086,6 +3088,7 @@ Columns: {len(self.palette) // 2}
                 if image == self.image:
                     action = Action(_("Type Character"), Region(x, y, 1, 1))
                     action.update(self.image)
+                    action.cursor_position_before = Offset(x, y)
                     self.add_action(action)
                 image.ch[y][x] = event.character
                 # x = min(w - 1, x + 1)

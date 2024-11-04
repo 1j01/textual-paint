@@ -1,8 +1,8 @@
 """Action that can be undone."""
 
-from textual.geometry import Region
+from textual.geometry import Offset, Region
 
-from textual_paint.ansi_art_document import AnsiArtDocument
+from textual_paint.ansi_art_document import AnsiArtDocument, Selection
 
 
 class Action:
@@ -22,17 +22,24 @@ class Action:
 
     def __init__(self, name: str, region: Region|None = None) -> None:
         """Initialize the action using the document state before modification."""
+
         self.name = name
         """The name of the action, for future display."""
+
         self.region = region
         """The region of the document that was modified."""
+
         self.is_full_update = False
         """Indicates that this action resizes the document, and thus should not be undone with a region update.
 
         That is, unless in the future region updates support a mask and work in tandem with resizes.
         """
+
         self.sub_image_before: AnsiArtDocument|None = None
         """The image data from the region of the document before modification."""
+
+        self.cursor_position_before: Offset|None = None
+        """The cursor position before the action was performed. (This may be generalized into a Selection state in the future to hold textbox contents.)"""
 
     def update(self, document: AnsiArtDocument) -> None:
         """Grabs the image data from the current region of the document."""
@@ -54,3 +61,7 @@ class Action:
             target_document.copy(self.sub_image_before)
         else:
             target_document.copy_region(self.sub_image_before, target_region=self.region)
+        if self.cursor_position_before:
+            target_document.selection = Selection(Region.from_offset(self.cursor_position_before, (1, 1)))
+            target_document.selection.textbox_mode = True
+            target_document.selection.copy_from_document(target_document)
