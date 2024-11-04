@@ -529,13 +529,21 @@ class PaintApp(App[None]):
         """Undoes the last action."""
         # print("Before undo, undos:", ", ".join(map(lambda action: f"{action.name} {action.region}", self.undos)))
         # print("redos:", ", ".join(map(lambda action: f"{action.name} {action.region}", self.redos)))
+
+        # Have to grab the cursor position before stop_action_in_progress because it will meld the selection.
+        cursor_position_before = None
+        if self.image.selection and self.image.selection.textbox_mode and self.image.selection.region.area == 1:
+            cursor_position_before = self.image.selection.region.offset
+
         self.stop_action_in_progress()
+
         if len(self.undos) > 0:
             action = self.undos.pop()
             redo_region = Region(0, 0, self.image.width, self.image.height) if action.is_full_update else action.region
             redo_action = Action(_("Undo") + " " + action.name, redo_region)
             redo_action.is_full_update = action.is_full_update
             redo_action.update(self.image)
+            redo_action.cursor_position_before = cursor_position_before
             action.undo(self.image)
             self.redos.append(redo_action)
             self.canvas.refresh(layout=True)
@@ -544,13 +552,21 @@ class PaintApp(App[None]):
         """Redoes the last undone action."""
         # print("Before redo, undos:", ", ".join(map(lambda action: f"{action.name} {action.region}", self.undos)))
         # print("redos:", ", ".join(map(lambda action: f"{action.name} {action.region}", self.redos)))
+
+        # Have to grab the cursor position before stop_action_in_progress because it will meld the selection.
+        cursor_position_before = None
+        if self.image.selection and self.image.selection.textbox_mode and self.image.selection.region.area == 1:
+            cursor_position_before = self.image.selection.region.offset
+
         self.stop_action_in_progress()
+
         if len(self.redos) > 0:
             action = self.redos.pop()
             undo_region = Region(0, 0, self.image.width, self.image.height) if action.is_full_update else action.region
             undo_action = Action(_("Undo") + " " + action.name, undo_region)
             undo_action.is_full_update = action.is_full_update
             undo_action.update(self.image)
+            undo_action.cursor_position_before = cursor_position_before
             action.undo(self.image)
             self.undos.append(undo_action)
             self.canvas.refresh(layout=True)
