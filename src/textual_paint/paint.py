@@ -2988,6 +2988,10 @@ Columns: {len(self.palette) // 2}
             # thereby creating a cursor and switching to the Text tool.
             # (NoMatches: No nodes match <DOMQuery query='ToolsBox'>)
             return
+        
+        if self.focused is not None:
+            # Avoid double-acting arrow keys when dialogs are open.
+            return
 
         key = event.key
         shift = key.startswith("shift+")

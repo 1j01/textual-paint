@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed errors when interacting with the command palette (opened by clicking the paint icon in the top left).
+- Fixed double-acting arrow keys. Before it was moving between buttons of a dialog while also moving the selection on the canvas.
 
 ## [0.4.0] - 2024-01-11
 
