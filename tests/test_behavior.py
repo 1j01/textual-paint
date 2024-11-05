@@ -18,6 +18,15 @@ async def test_char_input_paste():
         await pilot.pause()
         assert char_input.value == "!"
 
+@pytest.mark.xfail(reason="Currently splitting on codepoints, not graphemes")
+async def test_char_input_paste_emoji():
+    app = PaintApp()
+    async with app.run_test() as pilot:  # type: ignore
+        char_input = app.query_one(CharInput)
+        char_input.post_message(Paste("🆖👨‍👩‍👧‍👧"))  # 🆗 is too easy, 👨‍👩‍👧‍👧 uses zero-width joiner characters
+        await pilot.pause()
+        assert char_input.value == "👨‍👩‍👧‍👧"
+
 async def test_file_drag_and_drop(my_fs: FakeFilesystem):
     # File drag and drop is treated as a paste in the terminal.
     # CharInput often has focus, and needs to propagate the event to the app.
