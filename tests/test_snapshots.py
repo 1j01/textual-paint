@@ -310,6 +310,10 @@ def test_fill_spiral(snap_compare: SnapCompareType):
 
     assert snap_compare(PAINT, run_before=automate_app, terminal_size=LARGER)
 
+def test_open_png_file(snap_compare: SnapCompareType, my_fs: FakeFilesystem):
+    my_fs.add_real_file("tests/samples_for_textual_paint_tests/pipe-strip-88x31-v4.png", target_path="images/pipe-strip-88x31-v4.png")
+    assert snap_compare(PAINT, press=["ctrl+o", *"images/pipe-strip-88x31-v4.png", "enter"], terminal_size=LARGER)
+
 def test_gallery_app_small_art_centered(snap_compare: SnapCompareType):
     os.environ["PYTEST_GALLERY_ARGS"] = "./tests/samples_for_gallery_app_tests"
     assert snap_compare(GALLERY)
