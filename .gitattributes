@@ -13,6 +13,9 @@
 *.nfo binary diff=cat-show-all
 *.NFO binary diff=cat-show-all
 
+# Normalize line endings for visual regression test snapshots which store terminal output as SVG.
+*.ambr text
+
 # Localization data (copied from JS Paint) shouldn't affect the language statistics on GitHub.
 *.js linguist-detectable=false
 
