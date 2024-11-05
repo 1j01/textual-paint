@@ -9,7 +9,7 @@ import re
 import shlex
 import sys
 from random import random
-from typing import Any, Callable, Iterator, Optional
+from typing import Any, Callable, Iterable, Iterator, Optional
 from uuid import uuid4
 
 from PIL import Image, UnidentifiedImageError
@@ -17,7 +17,7 @@ from rich.color import Color as RichColor
 from rich.style import Style
 from rich.text import Text
 from textual import events, on, work
-from textual.app import App, ComposeResult
+from textual.app import App, ComposeResult, SystemCommand
 from textual.binding import Binding
 from textual.color import Color
 from textual.containers import Container, Horizontal, Vertical
@@ -25,6 +25,7 @@ from textual.css._style_properties import BorderDefinition
 from textual.dom import DOMNode
 from textual.geometry import Offset, Region, Size
 from textual.reactive import var
+from textual.screen import Screen
 from textual.widget import Widget
 from textual.widgets import (Button, Header, Input, RadioButton, RadioSet,
                              Static)
@@ -2306,6 +2307,10 @@ Columns: {len(self.palette) // 2}
         inspector = Inspector()
         inspector.display = False
         yield inspector
+
+    def get_system_commands(self, screen: Screen) -> Iterable[SystemCommand]:
+        yield from super().get_system_commands(screen)  
+        yield SystemCommand("Bell", "Ring the bell", self.bell)  
 
     def on_mount(self) -> None:
         """Called when the app is mounted."""
