@@ -2319,7 +2319,6 @@ Columns: {len(self.palette) // 2}
         self.query_one(HeaderIcon).icon = header_icon_text  # type: ignore
 
         # TODO: move cursor blinking into Canvas
-        # TODO: reset blink timer if the cursor is moved
         self.cursor_blink_timer = self.set_interval(0.5, self.toggle_cursor_visible)
 
     def toggle_cursor_visible(self) -> None:
@@ -2332,6 +2331,12 @@ Columns: {len(self.palette) // 2}
             # TODO: more granular refresh in case of textbox (for free-typing mode it's 1x1 so it's fine)
             self.canvas.cursor_visible = self.cursor_visible
             self.canvas.refresh_scaled_region(self.image.selection.region)
+
+    def restart_cursor_blink_cycle(self) -> None:
+        """Restart the cursor blink cycle."""
+        self.cursor_visible = True
+        if self.cursor_blink_timer:
+            self.cursor_blink_timer.reset()
 
     def pick_color(self, x: int, y: int) -> None:
         """Select a color from the image."""
@@ -3056,6 +3061,8 @@ Columns: {len(self.palette) // 2}
             elif key == "down":
                 self.move_selection_relative(0, 1)
         if self.image.selection and self.image.selection.textbox_mode:
+            self.restart_cursor_blink_cycle()
+
             textbox = self.image.selection
             assert textbox.contained_image is not None, "Textbox mode should always have contained_image, to edit as text."
 
