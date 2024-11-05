@@ -70,6 +70,18 @@
             "justMyCode": false,
             // If using pytest-cov in the future:
             // "env": {"PYTEST_ADDOPTS": "--no-cov"}
-        }
+        },
+        {
+            "name": "Debug pip install",
+            "type": "debugpy",
+            "request": "launch",
+            "program": ".venv/bin/pip",
+            "windows": {
+                "program": ".venv/Scripts/pip.exe",
+            },
+            "args": ["install", "-r", "requirements.txt"],
+            "console": "integratedTerminal",
+            "justMyCode": false,
+        },
     ]
 }
