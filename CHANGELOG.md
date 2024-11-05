@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed errors when interacting with the command palette (opened by clicking the paint icon in the top left).
 - Fixed double-acting arrow keys. Before it was moving between buttons of a dialog while also moving the selection on the canvas.
+- Fixed image files opening as blank white. This bug was introduced in in Textual Paint v0.4.0.
 
 ## [0.4.0] - 2024-01-11
 
@@ -28,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The document model now uses `Style` objects instead of foreground and background color strings as separate 2D lists. This opens the door to supporting text attributes (bold, italic, and underline) in the future.
 - I tried to improve the performance of canvas rendering, with the document model change and other optimizations. It's still slow when zoomed in, but it may be a bit better.
 - The Fill With Color tool now compares colors numerically, instead of as strings, and has a slight tolerance when comparing colors.
+
+### Broken
+
+- Image files open as blank white. Also, when saving files, the canvas becomes blank white (to reflect how the app will read the file if re-opened), although the file is saved correctly. This regression was discovered after the release, and is fixed in the next release.
 
 ## [0.3.0] - 2023-09-16
 

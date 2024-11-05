@@ -645,7 +645,7 @@ class AnsiArtDocument:
         for y in range(height):
             for x in range(width):
                 r, g, b = rgb_image.getpixel((x, y))  # type: ignore
-                document.st[y][x] += Style.from_color(color=RichColor.from_rgb(r, g, b))  # type: ignore
+                document.st[y][x] += Style.from_color(bgcolor=RichColor.from_rgb(r, g, b))  # type: ignore
         return document
 
     @staticmethod
