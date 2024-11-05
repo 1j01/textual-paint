@@ -27,6 +27,7 @@ class Canvas(Widget):
 
     magnification = reactive(1, layout=True)
     show_grid = reactive(False)
+    cursor_visible = reactive(True)
 
     # Is it kosher to include an event in a message?
     # Is it better (and possible) to bubble up the event, even though I'm capturing the mouse?
@@ -257,6 +258,9 @@ class Canvas(Widget):
                 min_index = min(start_index, end_index)
                 max_index = max(start_index, end_index)
                 cell_index = offset_to_text_index(Offset(cell_x, cell_y) - textbox.region.offset)
+                if min_index == max_index and not self.cursor_visible:
+                    # Hide the cursor for blinking effect.
+                    return False
                 return min_index <= cell_index <= max_index
             if TYPE_CHECKING:
                 from textual_paint.paint import PaintApp

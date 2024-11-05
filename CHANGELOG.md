@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - With the Text tool, you can now click anywhere on the canvas and start typing without dragging to create a textbox. This gives a much more useful workflow for ASCII art and ANSI art, as you can make tiny edits all over the canvas without having to create a new textbox each time.
   - You can also press <kbd>Insert</kbd> or arrow keys to make a cursor appear to start editing, and it will switch to the Text tool if needed.
 - Focus is reset when pressing <kbd>Esc</kbd>. This is important to avoid getting stuck with the character input field focused, in order to use free typing mode, or move the selection with the arrow keys, or copy the selection with <kbd>Ctrl+C</kbd>. (The character input field is where it shows the currently selected colors.)
+- Text cursor now blinks.
 
 ### Fixed
 

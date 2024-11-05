@@ -175,7 +175,6 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 ## Known Issues
 
 - Undo/Redo doesn't work inside the Text tool's textbox. <kbd>Ctrl</kbd>+<kbd>Z</kbd> will delete the textbox. (Also note that the Text tool works differently from MS Paint; it will overwrite characters and the cursor can move freely, which makes it better for ASCII art, but worse for prose.)
-- The Text tool's cursor doesn't blink.
 - The selection box border appears inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
 - Pressing both mouse buttons stops the current tool, but doesn't undo the current action. Also Pick Color can't be cancelled (with <kbd>Esc</kbd> or by pressing both mouse buttons), since it samples the color continuously.
 - Due to limitations of the terminal, shortcuts using <kbd>Shift</kbd> or <kbd>Alt</kbd> might not work. Menus are not keyboard navigable, because I can't detect <kbd>Alt</kbd>+<kbd>F</kbd>, etc.

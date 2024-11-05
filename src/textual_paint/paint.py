@@ -205,6 +205,8 @@ class PaintApp(App[None]):
     """Whether to show the grid. Only applies when zoomed in to 400% or more."""
     old_scroll_offset = var(Offset(0, 0))
     """The scroll offset before View Bitmap mode was entered."""
+    cursor_visible = var(True)
+    """Whether the cursor is visible. Used for blinking effect."""
 
     undos: list[Action] = []
     """Past actions that can be undone"""
@@ -2315,6 +2317,21 @@ Columns: {len(self.palette) // 2}
         self.canvas.image = self.image
         self.editing_area = self.query_one("#editing_area", Container)
         self.query_one(HeaderIcon).icon = header_icon_text  # type: ignore
+
+        # TODO: move cursor blinking into Canvas
+        # TODO: reset blink timer if the cursor is moved
+        self.cursor_blink_timer = self.set_interval(0.5, self.toggle_cursor_visible)
+
+    def toggle_cursor_visible(self) -> None:
+        """Toggle visibility of the cursor for the purposes of 'cursor blink'."""
+        self.cursor_visible = not self.cursor_visible
+
+    def watch_cursor_visible(self) -> None:
+        """When the cursor visibility is toggled, ensure the row is refreshed."""
+        if self.image.selection is not None and self.image.selection.textbox_mode:
+            # TODO: more granular refresh in case of textbox (for free-typing mode it's 1x1 so it's fine)
+            self.canvas.cursor_visible = self.cursor_visible
+            self.canvas.refresh_scaled_region(self.image.selection.region)
 
     def pick_color(self, x: int, y: int) -> None:
         """Select a color from the image."""
