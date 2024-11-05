@@ -3,6 +3,7 @@
 Run with `pytest tests/test_snapshots.py`, or `pytest` to run all tests.
 """
 
+import os
 from pathlib import Path, PurePath
 from typing import TYPE_CHECKING, Awaitable, Callable, Iterable, Protocol
 
@@ -309,6 +310,27 @@ def test_fill_spiral(snap_compare: SnapCompareType):
 
     assert snap_compare(PAINT, run_before=automate_app, terminal_size=LARGER)
 
-def test_gallery_app(snap_compare: SnapCompareType):
+def test_gallery_app_small_art_centered(snap_compare: SnapCompareType):
+    os.environ["PYTEST_GALLERY_ARGS"] = "./tests/samples_for_gallery_app_tests"
     assert snap_compare(GALLERY)
 
+def test_gallery_app_big_art_with_scrollbars(snap_compare: SnapCompareType):
+    os.environ["PYTEST_GALLERY_ARGS"] = "./tests/samples_for_gallery_app_tests"
+    assert snap_compare(GALLERY, press=["right"])
+
+def test_gallery_app_nonexistent_folder(snap_compare: SnapCompareType):
+    os.environ["PYTEST_GALLERY_ARGS"] = "./tests/this_folder_does_not_exist"
+    # TODO: test app exit with error message
+    # could spy on `app.exit` or try to listen for an exit event if there is one
+    # or make a separate test that runs the CLI directly and checks stderr
+    assert snap_compare(GALLERY, press=["right", "left"]) # arrow keys shouldn't cause errors
+
+def test_gallery_app_empty_folder(snap_compare: SnapCompareType):
+    os.environ["PYTEST_GALLERY_ARGS"] = "./tests/empty_folder"
+    # Create the empty folder since Git doesn't track empty folders.
+    os.makedirs("./tests/empty_folder", exist_ok=True)
+    assert snap_compare(GALLERY, press=["right", "left"]) # arrow keys shouldn't cause errors
+
+def test_gallery_app_file_path(snap_compare: SnapCompareType):
+    os.environ["PYTEST_GALLERY_ARGS"] = "./tests/samples_for_gallery_app_tests/scroll_and_candle.ans"
+    assert snap_compare(GALLERY, press=["right", "left"]) # arrow keys shouldn't cause errors

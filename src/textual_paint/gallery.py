@@ -26,7 +26,7 @@ dev_options = parser.add_argument_group('development options')
 dev_options.add_argument('--inspect-layout', action='store_true', help='Enables DOM inspector (F12) and middle click highlight')
 dev_options.add_argument('--restart-on-changes', action='store_true', help='Restart the app when the source code is changed')
 
-args = parser.parse_args()
+args = parser.parse_args(os.environ.get("PYTEST_GALLERY_ARGS", "").split() or None)
 
 def _(text: str) -> str:
     """Placeholder for localization function."""
