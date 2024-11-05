@@ -185,6 +185,7 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 - The status bar description can be left blank when selecting a menu item. (I think the `Leave` event can come after closing, once the mouse moves.)
 - Menu items like Copy/Cut/Paste are not grayed out when inapplicable. Only unimplemented items are grayed out.
 - Clicking Save As menu item scrolls down menu instead of activating it if there's not enough space to show the whole menu. (It seems to be scrolling the menu item to the top when it becomes focused during the click.)
+  - Worse, clicking Open can scroll down so that Save is under the mouse and trigger Save instead!
 - Extraneous undo states may be created in some cases. In particular, I noticed when undoing/redoing with free-typing mode, the last state had no cursor but was otherwise identical.
 - ANSI files (.ans) are treated as UTF-8 when saving and loading, rather than CP437 or Windows-1252 or any other encodings. Unicode is nice and modern terminals support it, but it's not the standard for ANSI files. There isn't really a standard for ANSI files.
 - ANSI files are loaded with a white background. This may make sense as a default for text files, but ANSI files either draw a background or assume a black background, being designed for terminals.
