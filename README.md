@@ -189,7 +189,7 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 - Extraneous undo states may be created in some cases. In particular, I noticed when undoing/redoing with free-typing mode, the last state had no cursor but was otherwise identical.
 - ANSI files (.ans) are treated as UTF-8 when saving and loading, rather than CP437 or Windows-1252 or any other encodings. Unicode is nice and modern terminals support it, but it's not the standard for ANSI files. There isn't really a standard for ANSI files.
 - ANSI files are loaded with a white background. This may make sense as a default for text files, but ANSI files either draw a background or assume a black background, being designed for terminals.
-- Opening image files (such as `.png`) is broken. It's loading the image size, but all cells are white. This worked previously. (TODO: bisect to find the cause)
+- Opening image files (such as `.png`) is broken since v0.4.0. It's loading the image size, but all cells are white. It was broken by commit [00bd187](https://github.com/1j01/textual-paint/commit/00bd187d5acebf95d110adccefbf2276eeb8ee6a) which changed the document model in a major way.
 - Hitting Enter in View Bitmap mode may trigger a menu item while exiting the mode. Menu items ought to be disabled when hidden, and View Bitmap should also prevent the key event from taking other actions if possible.
 - Document recovery dialog is shown unnecessarily if the backup file is identical.
 - Airbrush is continuous in space instead of time. It should keep spraying while the mouse stays still.
