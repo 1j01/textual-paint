@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Focus is reset when pressing <kbd>Esc</kbd>. This is important to avoid getting stuck with the character input field focused, in order to use free typing mode, or move the selection with the arrow keys, or copy the selection with <kbd>Ctrl+C</kbd>. (The character input field is where it shows the currently selected colors.)
 - Text cursor now blinks.
 
+### Changed
+
+- Plain text files (`.txt`) are now saved with CRLF line endings on Windows.
+
 ### Fixed
 
 - Fixed errors when interacting with the command palette (opened by clicking the paint icon in the top left).

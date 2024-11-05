@@ -320,7 +320,7 @@ class AnsiArtDocument:
         for y in range(self.height):
             for x in range(self.width):
                 text += self.ch[y][x]
-            text += "\n"
+            text += os.linesep
         return text
 
     def get_rich_console_markup(self) -> str:
