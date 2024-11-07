@@ -1213,7 +1213,7 @@ class PaintApp(App[None]):
                     self.message_box(_("Paste"), _("The file is too large to open."), "ok")
                     return
                 with open(file_path, "r", encoding="utf-8") as f:
-                    # TODO: handle pasting image files
+                    # TODO: handle pasting image files (and remove from Known Issues in the readme, and add to changelog)
                     self.paste(f.read())
                 window.close()
             except UnicodeDecodeError:
