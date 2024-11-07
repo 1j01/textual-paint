@@ -35,7 +35,11 @@ This is a TUI (Text User Interface) image editor, inspired by MS Paint, built wi
 
 ## Usage
 
-Python 3.10 or later is required. See [Compatibility](#compatibility) for details on terminals supported.
+Textual Paint requires a Python version between 3.10 and 3.12 to run.
+
+See [Compatibility](#compatibility) for details on terminals supported.
+
+Python 3.13 is not yet supported, so please use Python 3.12 for now.
 
 ### Installation
 
@@ -208,7 +212,7 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 <!-- PyPI doesn't generate linkable headings -->
 <a id="compatibility"></a>
 
-Python 3.10 or later is required.
+A Python version between 3.10 and 3.12 is required.
 
 ### Linux
 
@@ -343,6 +347,13 @@ Often it's useful to exclude events with `textual console -x EVENT`.
 > `ModuleNotFoundError: No module named 'src'`
 
 - Make sure to run the program from the root directory of the repository.
+
+> `pip install -r requirements.txt` fails with `KeyError: '__version__'` or other errors
+
+- `KeyError: '__version__'` is due to an [incompatibility](https://github.com/python-pillow/Pillow/issues/8075) between Pillow 9.5.0 and Python 3.13. Please use Python 3.12 for now, until I can update Pillow and other dependencies for compatibility with the latest Python version.
+- A VS Code launch configuration is included to debug the installation process.
+  - This allows pausing on exceptions and setting breakpoints in pip source code and `setup.py` files.
+  - If you want to set breakpoints in package source code, or test out modifications to a `setup.py` file, since packages are extracted to temporary folders, you need to pause early and find the newest temporary folder for the package.
 
 ### Quality Assurance
 
