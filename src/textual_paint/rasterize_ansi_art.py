@@ -75,9 +75,9 @@ if not font:
     print("Font not found, falling back to built-in font for ANSI art rasterization if Set As Wallpaper feature is used.")
     font = ImageFont.load_default()
 
-ch_width: int
-ch_height: int
-ch_width, ch_height = font.getsize('A')  # type: ignore
+bbox = font.getbbox('A')  # type: ignore
+ch_width: int = bbox[2] - bbox[0]  # type: ignore
+ch_height: int = bbox[3] - bbox[1]  # type: ignore
 assert isinstance(ch_width, int), "ch_width is not an int, but a " + str(type(ch_width))  # type: ignore
 assert isinstance(ch_height, int), "ch_height is not an int, but a " + str(type(ch_height))  # type: ignore
 

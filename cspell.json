@@ -67,6 +67,7 @@
         "fudgedness",
         "gconftool",
         "getbands",
+        "getbbox",
         "getpid",
         "getpixel",
         "goland",
