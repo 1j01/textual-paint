@@ -178,35 +178,45 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 
 ## Known Issues
 
+### Editing
 - Undo/Redo doesn't work inside the Text tool's textbox. <kbd>Ctrl</kbd>+<kbd>Z</kbd> will delete the textbox. (Also note that the Text tool works differently from MS Paint; it will overwrite characters and the cursor can move freely, which makes it better for ASCII art, but worse for prose.)
-- The selection box border appears inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
 - Pressing both mouse buttons stops the current tool, but doesn't undo the current action. Also Pick Color can't be cancelled (with <kbd>Esc</kbd> or by pressing both mouse buttons), since it samples the color continuously.
-- Due to limitations of the terminal, shortcuts using <kbd>Shift</kbd> or <kbd>Alt</kbd> might not work. Menus are not keyboard navigable, because I can't detect <kbd>Alt</kbd>+<kbd>F</kbd>, etc.
+- Airbrush is continuous in space instead of time. It should keep spraying while the mouse stays still.
+- Large files can make the program very slow, as can magnifying the canvas. There is a 500 KB limit when opening files to prevent it from freezing.
+
+### Visual
+- The selection box border appears inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
 - The canvas flickers when zooming in with the Magnifier tool.
 - Some languages don't display correctly.
-- Large files can make the program very slow, as can magnifying the canvas. There is a 500 KB limit when opening files to prevent it from freezing.
+
+### Menus
+- Due to limitations of the terminal, shortcuts using <kbd>Shift</kbd> or <kbd>Alt</kbd> might not work. Menus are not keyboard navigable, because I can't detect <kbd>Alt</kbd>+<kbd>F</kbd>, etc.
 - The status bar description can be left blank when selecting a menu item. (I think the `Leave` event can come after closing, once the mouse moves.)
 - Menu items like Copy/Cut/Paste are not grayed out when inapplicable. Only unimplemented items are grayed out.
 - Clicking Save As menu item scrolls down menu instead of activating it if there's not enough space to show the whole menu. (It seems to be scrolling the menu item to the top when it becomes focused during the click.)
   - Worse, clicking Open can scroll down so that Save is under the mouse and trigger Save instead!
-- Extraneous undo states may be created in some cases. In particular, I noticed when undoing/redoing with free-typing mode, the last state had no cursor but was otherwise identical.
+- Hitting Enter in View Bitmap mode may trigger a menu item while exiting the mode. Menu items ought to be disabled when hidden, and View Bitmap should also prevent the key event from taking other actions if possible.
+
+### File compatibility
 - ANSI files (.ans) are treated as UTF-8 when saving and loading, rather than CP437 or Windows-1252 or any other encodings. Unicode is nice and modern terminals support it, but it's not the standard for ANSI files. There isn't really a standard for ANSI files.
 - ANSI files are loaded with a white background. This may make sense as a default for text files, but ANSI files either draw a background or assume a black background, being designed for terminals.
 - Edit > Paste From doesn't support image files, only ANSI art and plain text files. It should support all the same formats as Open.
-- Hitting Enter in View Bitmap mode may trigger a menu item while exiting the mode. Menu items ought to be disabled when hidden, and View Bitmap should also prevent the key event from taking other actions if possible.
-- Document recovery dialog is shown unnecessarily if the backup file is identical.
-- Airbrush is continuous in space instead of time. It should keep spraying while the mouse stays still.
 - Error messages may not show up when opening a file fails. I'm not sure how to reproduce this, so if you run into this, do let me know.
+
+### Edit Colors dialog
+- Focus ring shows even while grid is not focused
+- Can show two cells as selected, instead of one across both grids
+- Custom colors order X/Y is different from MS Paint
+- Pressing enter in color grid should select color and close
+- Selection ring is hard to see in dark mode
+- Focus ring is invisible on a black color cell
+- When dragging on the color field or luminosity slider, the cursor can be seen to jump back to earlier places where the mouse was, before settling at the current position. (This may only be visible when the program is running slowly, such while debugging. I haven't observed this on the canvas, so maybe it has something to do with the dialog being on a separate layer.)
+- When opening the Edit Colors dialog, it may immediately close, if the mouse lines up with the "OK" or "Cancel" buttons. (This doesn't seem to currently happen, but I haven't knowingly fixed it. A git bisect turned up a bogus commit, possibly due to reproducing the behavior being unreliable. It also seems like it might depend on the specific layout of the dialog, which changed during development, and maybe even the terminal size.)
+
+### Misc
+- Extraneous undo states may be created in some cases. In particular, I noticed when undoing/redoing with free-typing mode, the last state had no cursor but was otherwise identical.
+- Document recovery dialog is shown unnecessarily if the backup file is identical.
 - Closing dialogs focuses the character input which is undesirable as it prevents typing in the canvas or copying the selection with <kbd>Ctrl</kbd>+<kbd>C</kbd> etc. (You can use <kbd>Esc</kbd> to reset focus.)
-- Edit Colors dialog
-  - Focus ring shows even while grid is not focused
-  - Can show two cells as selected, instead of one across both grids
-  - Custom colors order X/Y is different from MS Paint
-  - Pressing enter in color grid should select color and close
-  - Selection ring is hard to see in dark mode
-  - Focus ring is invisible on a black color cell
-  - When dragging on the color field or luminosity slider, the cursor can be seen to jump back to earlier places where the mouse was, before settling at the current position. (This may only be visible when the program is running slowly, such while debugging. I haven't observed this on the canvas, so maybe it has something to do with the dialog being on a separate layer.)
-  - When opening the Edit Colors dialog, it may immediately close, if the mouse lines up with the "OK" or "Cancel" buttons. (This doesn't seem to currently happen, but I haven't knowingly fixed it. A git bisect turned up a bogus commit, possibly due to reproducing the behavior being unreliable. It also seems like it might depend on the specific layout of the dialog, which changed during development, and maybe even the terminal size.)
 
 ## Compatibility
 
