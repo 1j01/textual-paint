@@ -210,7 +210,7 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 - Pressing enter in color grid should select color and close
 - Selection ring is hard to see in dark mode
 - Focus ring is invisible on a black color cell
-- When dragging on the color field or luminosity slider, the cursor can be seen to jump back to earlier places where the mouse was, before settling at the current position. (This may only be visible when the program is running slowly, such while debugging. I haven't observed this on the canvas, so maybe it has something to do with the dialog being on a separate layer.)
+- When dragging on the color field or luminosity slider, the cursor can be seen to jump back to earlier places where the mouse was, before settling at the current position. (This may only be visible when the program is running slowly, such as while debugging. I haven't observed this on the canvas, so maybe it has something to do with the dialog being on a separate layer.)
 - When opening the Edit Colors dialog, it may immediately close, if the mouse lines up with the "OK" or "Cancel" buttons. (This doesn't seem to currently happen, but I haven't knowingly fixed it. A git bisect turned up a bogus commit, possibly due to reproducing the behavior being unreliable. It also seems like it might depend on the specific layout of the dialog, which changed during development, and maybe even the terminal size.)
 
 ### Misc
