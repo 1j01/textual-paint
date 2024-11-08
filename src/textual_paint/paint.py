@@ -112,6 +112,8 @@ class PaintApp(App[None]):
 
     CSS_PATH = "paint.css"
 
+    AUTO_FOCUS = None
+
     # These call action_* methods on the widget.
     # They can have parameters, if need be.
     # https://textual.textualize.io/guide/actions/
