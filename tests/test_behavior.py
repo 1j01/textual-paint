@@ -4,6 +4,7 @@ Run with `pytest tests/test_behavior.py`, or `pytest` to run all tests.
 """
 
 from pyfakefs.fake_filesystem import FakeFilesystem
+import pytest
 from textual.events import Paste
 
 from textual_paint.char_input import CharInput
