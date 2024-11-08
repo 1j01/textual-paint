@@ -188,6 +188,7 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 - The selection box border appears inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
 - The canvas flickers when zooming in with the Magnifier tool.
 - Some languages don't display correctly.
+- The cursor can blink on the canvas while focus is on the character input. In fact you can have three blinking cursors at once if you open the command palette (via the icon in the top left corner) with a cursor on the canvas and focus on the character input.
 
 ### Menus
 - Due to limitations of the terminal, shortcuts using <kbd>Shift</kbd> or <kbd>Alt</kbd> might not work. Menus are not keyboard navigable, because I can't detect <kbd>Alt</kbd>+<kbd>F</kbd>, etc.
