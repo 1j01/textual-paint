@@ -3199,6 +3199,15 @@ Columns: {len(self.palette) // 2}
                 self.image.selection.copy_from_document(self.image)
                 self.canvas.refresh_scaled_region(select_region)
 
+                # Scroll the canvas area if needed.
+                # TODO: prevent animation for small movements, maybe ideally preserving it for page up/down and home/end.
+                self.editing_area.scroll_to_region(Region(
+                    x * self.magnification + self.canvas.styles.margin.left,
+                    y * self.magnification + self.canvas.styles.margin.top,
+                    self.magnification,
+                    self.magnification,
+                ))
+
             self.canvas.refresh_scaled_region(textbox.region)
 
     def on_paste(self, event: events.Paste) -> None:
