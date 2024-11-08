@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed double-acting arrow keys. Before it was moving between buttons of a dialog while also moving the selection on the canvas.
 - Fixed image files opening as blank white. This bug was introduced in in Textual Paint v0.4.0.
 - Fixed menu scrolling down when clicking a menu item when the screen was smaller than the menu. In some cases this lead to clicking the wrong menu item, such as Save instead of Open, which is a destructive action.
+- The "File" menu button no longer receives focus when the app is opened.
 
 ## [0.4.0] - 2024-01-11
 
