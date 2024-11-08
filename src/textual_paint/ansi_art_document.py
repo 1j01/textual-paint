@@ -1073,20 +1073,31 @@ class Selection:
     """
     def __init__(self, region: Region) -> None:
         """Initialize a selection."""
+
         self.region: Region = region
         """The region of the selection within the outer document."""
+
         self.contained_image: Optional[AnsiArtDocument] = None
         """The image data contained in the selection, None until dragged, except for text boxes."""
+
         self.pasted: bool = False
         """Whether the selection was pasted from the clipboard, and thus needs an undo state created for it when melding."""
+
         self.textbox_mode = False
-        """Whether the selection is a text box. Either way it's text, but it's a different editing mode."""
+        """Whether the selection is a text box OR A CURSOR. Regardless, it's always text, but there are different editing modes."""
+
+        self.cursor_mode = False
+        """Whether the selection is a cursor. I'm probably shoehorning too much into "Selection"."""
+
         self.textbox_edited = False
         """Whether text has been typed into the text box, ever. If not, the textbox can be deleted when clicking off."""
+
         self.text_selection_start = Offset(0, 0)
         """The start position of the text selection within the text box. This may be before or after the end."""""
+
         self.text_selection_end = Offset(0, 0)
         """The end position of the text selection within the text box. This may be before or after the start."""""
+
         self.mask: Optional[list[list[bool]]] = None
         """A mask of the selection to cut out, used for Free-Form Select tool. Coordinates are relative to the selection region."""
 

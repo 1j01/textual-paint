@@ -64,4 +64,5 @@ class Action:
         if self.cursor_position_before:
             target_document.selection = Selection(Region.from_offset(self.cursor_position_before, (1, 1)))
             target_document.selection.textbox_mode = True
+            target_document.selection.cursor_mode = True
             target_document.selection.copy_from_document(target_document)

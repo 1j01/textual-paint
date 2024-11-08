@@ -333,8 +333,7 @@ class PaintApp(App[None]):
 
     def update_textbox_style(self, style: Style) -> None:
         """Apply a style to the whole textbox."""
-        # TODO: replace area/width/height checks with a cursor_mode flag (or is_cursor, and rename textbox_mode to is_textbox)
-        if self.image.selection and self.image.selection.textbox_mode and self.image.selection.region.area != 1:
+        if self.image.selection and self.image.selection.textbox_mode and not self.image.selection.cursor_mode:
             assert self.image.selection.contained_image is not None, "textbox_mode without contained_image"
             for y in range(self.image.selection.region.height):
                 for x in range(self.image.selection.region.width):
@@ -542,7 +541,7 @@ class PaintApp(App[None]):
 
         # Have to grab the cursor position before stop_action_in_progress because it will meld the selection.
         cursor_position_before = None
-        if self.image.selection and self.image.selection.textbox_mode and self.image.selection.region.area == 1:
+        if self.image.selection and self.image.selection.cursor_mode:
             cursor_position_before = self.image.selection.region.offset
 
         self.stop_action_in_progress()
@@ -565,7 +564,7 @@ class PaintApp(App[None]):
 
         # Have to grab the cursor position before stop_action_in_progress because it will meld the selection.
         cursor_position_before = None
-        if self.image.selection and self.image.selection.textbox_mode and self.image.selection.region.area == 1:
+        if self.image.selection and self.image.selection.cursor_mode:
             cursor_position_before = self.image.selection.region.offset
 
         self.stop_action_in_progress()
@@ -2928,6 +2927,7 @@ Columns: {len(self.palette) // 2}
                 if free_typing_mode:
                     # self.extract_to_selection(erase_underlying=False)
                     self.image.selection.copy_from_document(self.image)
+                    self.image.selection.cursor_mode = True
                 else:
                     self.image.selection.contained_image = AnsiArtDocument(self.image.selection.region.width, self.image.selection.region.height, default_fg=self.selected_fg_color, default_bg=self.selected_bg_color)
             if self.selected_tool == Tool.free_form_select:
@@ -3045,6 +3045,7 @@ Columns: {len(self.palette) // 2}
                 # Create an initial cursor
                 self.image.selection = Selection(Region(0, 0, 1, 1))
                 self.image.selection.textbox_mode = True
+                self.image.selection.cursor_mode = True
                 self.image.selection.copy_from_document(self.image)
                 # Avoid returning for home/end/pageup/pagedown to allow the cursor to start in different places.
                 # This would be weird for arrow keys, unless perhaps it started from the side opposite the arrow direction,
@@ -3069,7 +3070,7 @@ Columns: {len(self.palette) // 2}
             textbox = self.image.selection
             assert textbox.contained_image is not None, "Textbox mode should always have contained_image, to edit as text."
 
-            free_typing_mode = textbox.contained_image.width == 1 and textbox.contained_image.height == 1
+            free_typing_mode = textbox.cursor_mode
 
             def delete_selected_text() -> None:
                 """Deletes the selected text, if any."""
@@ -3193,6 +3194,7 @@ Columns: {len(self.palette) // 2}
                 #     self.meld_selection()
                 self.image.selection = Selection(select_region)
                 self.image.selection.textbox_mode = True
+                self.image.selection.cursor_mode = True
                 # self.extract_to_selection(erase_underlying=False)
                 self.image.selection.copy_from_document(self.image)
                 self.canvas.refresh_scaled_region(select_region)
