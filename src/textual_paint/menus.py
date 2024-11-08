@@ -230,6 +230,12 @@ class MenuItem(Button):
         if grayed:
             self.add_class("grayed")
             self.can_focus = False
+
+        # Prevent menu scrolling down when clicking a menu item,
+        # potentially clicking a different menu item, such as Save instead of Open (dangerous!)
+        # when the screen is smaller than the menu.
+        self.can_focus = False
+
         self.action = action
         self.submenu = submenu
         self.description = description
