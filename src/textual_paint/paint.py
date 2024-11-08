@@ -333,7 +333,8 @@ class PaintApp(App[None]):
 
     def update_textbox_style(self, style: Style) -> None:
         """Apply a style to the whole textbox."""
-        if self.image.selection and self.image.selection.textbox_mode:
+        # TODO: replace area/width/height checks with a cursor_mode flag (or is_cursor, and rename textbox_mode to is_textbox)
+        if self.image.selection and self.image.selection.textbox_mode and self.image.selection.region.area != 1:
             assert self.image.selection.contained_image is not None, "textbox_mode without contained_image"
             for y in range(self.image.selection.region.height):
                 for x in range(self.image.selection.region.width):
