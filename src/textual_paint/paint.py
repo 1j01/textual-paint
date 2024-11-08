@@ -3042,8 +3042,12 @@ Columns: {len(self.palette) // 2}
                 self.selected_tool = Tool.text
                 # Ensure focus is not on the CharInput
                 self.app.set_focus(None)
-                # Create an initial cursor
-                self.image.selection = Selection(Region(0, 0, 1, 1))
+                # Create an initial cursor, at top left corner of viewport
+                # print(self.canvas.offset, self.canvas.scroll_offset, self.canvas.content_offset, self.editing_area.content_offset)
+                # print("self.canvas.styles.margin", self.canvas.styles.margin, "self.canvas.container_viewport", self.canvas.container_viewport)
+                corner_x = int((self.editing_area.scroll_x - self.canvas.styles.margin.left) // self.magnification)
+                corner_y = int((self.editing_area.scroll_y - self.canvas.styles.margin.top) // self.magnification)
+                self.image.selection = Selection(Region(corner_x, corner_y, 1, 1))
                 self.image.selection.textbox_mode = True
                 self.image.selection.cursor_mode = True
                 self.image.selection.copy_from_document(self.image)
