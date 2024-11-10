@@ -3032,6 +3032,10 @@ Columns: {len(self.palette) // 2}
             # Don't interfere with Ctrl+C, Ctrl+V, etc.
             # and don't double-handle Ctrl+F (View Bitmap)
             return
+        if key == "escape":
+            # Don't scroll view to cursor position when pressing escape.
+            # Escape is handled by `cancel` binding, which removes the cursor.
+            return
 
         if self.has_class("view_bitmap"):
             self.call_later(self.action_view_bitmap)
