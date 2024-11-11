@@ -395,6 +395,8 @@ class Window(Container):
 
     def close(self) -> None:
         """Force close the window."""
+        # Before removing from the DOM, unfocus, because otherwise Textual will try to focus a widget "nearby" in the focus order, in `_reset_focus`.
+        self.app.set_focus(None)
         self.remove()
         self.post_message(self.Closed())
 

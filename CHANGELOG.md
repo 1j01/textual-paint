@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Plain text files (`.txt`) are now saved with CRLF line endings on Windows.
+- When closing dialogs, the character input no longer becomes focused.
 
 ### Fixed
 

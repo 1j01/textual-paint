@@ -216,7 +216,6 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 ### Misc
 - Extraneous undo states may be created in some cases. In particular, I noticed when undoing/redoing with free-typing mode, the last state had no cursor but was otherwise identical.
 - Document recovery dialog is shown unnecessarily if the backup file is identical.
-- Closing dialogs focuses the character input which is undesirable as it prevents typing in the canvas or copying the selection with <kbd>Ctrl</kbd>+<kbd>C</kbd> etc. (You can use <kbd>Esc</kbd> to reset focus.)
 - Pressing a key to exit View Bitmap mode may cause unwanted side effects.
 - Pressing a key doesn't exit View Bitmap mode if the character input is focused.
 
