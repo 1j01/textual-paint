@@ -554,6 +554,7 @@ class PaintApp(App[None]):
             redo_action.update(self.image)
             redo_action.cursor_position_before = cursor_position_before
             action.undo(self.image)
+            self.restart_cursor_blink_cycle()
             self.redos.append(redo_action)
             self.canvas.refresh(layout=True)
 
@@ -577,6 +578,7 @@ class PaintApp(App[None]):
             undo_action.update(self.image)
             undo_action.cursor_position_before = cursor_position_before
             action.undo(self.image)
+            self.restart_cursor_blink_cycle()
             self.undos.append(undo_action)
             self.canvas.refresh(layout=True)
 
@@ -2933,6 +2935,7 @@ Columns: {len(self.palette) // 2}
                     # self.extract_to_selection(erase_underlying=False)
                     self.image.selection.copy_from_document(self.image)
                     self.image.selection.cursor_mode = True
+                    self.restart_cursor_blink_cycle()
                 else:
                     self.image.selection.contained_image = AnsiArtDocument(self.image.selection.region.width, self.image.selection.region.height, default_fg=self.selected_fg_color, default_bg=self.selected_bg_color)
             if self.selected_tool == Tool.free_form_select:
@@ -3056,6 +3059,7 @@ Columns: {len(self.palette) // 2}
                 self.image.selection.textbox_mode = True
                 self.image.selection.cursor_mode = True
                 self.image.selection.copy_from_document(self.image)
+                self.restart_cursor_blink_cycle() # must be after copy_from_document since this triggers an immediate render
                 # Avoid returning for home/end/pageup/pagedown to allow the cursor to start in different places.
                 # This would be weird for arrow keys, unless perhaps it started from the side opposite the arrow direction,
                 # which would make it so that repeating the key would always do something.
@@ -3206,7 +3210,8 @@ Columns: {len(self.palette) // 2}
                 self.image.selection.cursor_mode = True
                 # self.extract_to_selection(erase_underlying=False)
                 self.image.selection.copy_from_document(self.image)
-                self.canvas.refresh_scaled_region(select_region)
+                self.restart_cursor_blink_cycle() # must be after copy_from_document since this triggers an immediate render
+                self.canvas.refresh_scaled_region(select_region) # may be redundant but it'd be weird to rely on restart_cursor_blink_cycle
 
                 # Scroll the canvas area if needed.
                 # TODO: prevent animation for small movements, maybe ideally preserving it for page up/down and home/end.
