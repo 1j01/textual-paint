@@ -1754,6 +1754,14 @@ Columns: {len(self.palette) // 2}
             adjusted_x = self.editing_area.scroll_x // self.magnification
             adjusted_y = self.editing_area.scroll_y // self.magnification
             self.editing_area.scroll_to(adjusted_x, adjusted_y, animate=False)
+            # Avoid widgets like CharInput handling key events and preventing exiting View Bitmap mode by typing.
+            # TODO: Use a separate Screen for View Bitmap mode, or the new maximize API(?), or something.
+            # A separate Screen should definitely work although it requires changing various things to avoid errors when querying for widgets.
+            self.set_focus(None)
+            # Close any open menus (in case View Bitmap is triggered with Ctrl+F shortcut)
+            # (TODO: any keyboard shortcut should close the menus... at least if the shortcut is visible in an open menu)
+            if self.query_one(MenuBar).any_menus_open():
+                self.query_one(MenuBar).close()
         else:
             # exiting View Bitmap mode
             self.canvas.magnification = self.magnification
@@ -3040,17 +3048,21 @@ Columns: {len(self.palette) // 2}
         shift = key.startswith("shift+")
         if shift:
             key = key[len("shift+"):]
+
         if "ctrl" in key:
             # Don't interfere with Ctrl+C, Ctrl+V, etc.
             # and don't double-handle Ctrl+F (View Bitmap)
             return
-        if key == "escape":
-            # Don't scroll view to cursor position when pressing escape.
-            # Escape is handled by `cancel` binding, which removes the cursor.
-            return
 
         if self.has_class("view_bitmap"):
             self.call_later(self.action_view_bitmap)
+            # event.stop() not gonna help since App is the top-level widget
+            return
+
+        if key == "escape":
+            # Don't scroll view to cursor position when pressing escape.
+            # Escape is handled by `cancel` binding, which removes the cursor.
+            # This is after View Bitmap handling so that you can press escape to exit View Bitmap.
             return
 
         if not self.image.selection:
@@ -3343,6 +3355,8 @@ Columns: {len(self.palette) // 2}
         if self.has_class("view_bitmap"):
             # Call later to avoid drawing on the canvas when exiting
             self.call_later(self.action_view_bitmap)
+            # event.stop() not gonna help since App is the top-level widget
+            return
 
         # Deselect if clicking outside the canvas
         if leaf_widget is self.editing_area:

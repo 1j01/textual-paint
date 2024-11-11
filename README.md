@@ -194,7 +194,6 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 - Due to limitations of the terminal, shortcuts using <kbd>Shift</kbd> or <kbd>Alt</kbd> might not work. Menus are not keyboard navigable, because I can't detect <kbd>Alt</kbd>+<kbd>F</kbd>, etc.
 - The status bar description can be left blank when selecting a menu item. (I think the `Leave` event can come after closing, once the mouse moves.)
 - Menu items like Copy/Cut/Paste are not grayed out when inapplicable. Only unimplemented items are grayed out.
-- Entering View Bitmap mode with <kbd>Ctrl</kbd>+<kbd>F</kbd> doesn't close any open menus.
 - <kbd>Esc</kbd> doesn't close menus.
 
 ### File compatibility
@@ -216,8 +215,7 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 ### Misc
 - Extraneous undo states may be created in some cases. In particular, I noticed when undoing/redoing with free-typing mode, the last state had no cursor but was otherwise identical.
 - Document recovery dialog is shown unnecessarily if the backup file is identical.
-- Pressing a key to exit View Bitmap mode may cause unwanted side effects.
-- Pressing a key doesn't exit View Bitmap mode if the character input is focused.
+- Pressing a key to exit View Bitmap mode may cause unwanted side effects, such as deselecting if you pressed <kbd>Esc</kbd>, or deleting the selection if you pressed <kbd>Delete</kbd>.
 
 ## Compatibility
 
