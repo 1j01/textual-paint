@@ -3048,32 +3048,10 @@ Columns: {len(self.palette) // 2}
                 # Ensure focus is not on the CharInput
                 self.app.set_focus(None)
                 # Create an initial cursor, at top left corner of viewport
-                # print(self.canvas.offset, self.canvas.scroll_offset, self.canvas.content_offset, self.editing_area.content_offset)
-                # print("self.canvas.styles.margin", self.canvas.styles.margin, "self.canvas.container_viewport", self.canvas.container_viewport)
-                # offset = self.canvas.region.offset - self.editing_area.virtual_region.offset
-                offset = self.canvas.virtual_region.offset
-                # print("offset", offset)
-                # corner_x = int((self.editing_area.scroll_x - self.canvas.styles.margin.left) // self.magnification)
-                # corner_y = int((self.editing_area.scroll_y - self.canvas.styles.margin.top) // self.magnification)
-                # corner_x: int = max(0, min(self.image.width - 1, int(self.editing_area.scroll_x // self.magnification)))
-                # corner_y: int = max(0, min(self.image.height - 1, int(self.editing_area.scroll_y // self.magnification)))
-                # print("self.editing_area.scroll_x / self.magnification", self.editing_area.scroll_x / self.magnification, "self.editing_area.scroll_y / self.magnification", self.editing_area.scroll_y / self.magnification)
-                # print("self.editing_area.scroll_x / self.magnification - offset.x", self.editing_area.scroll_x / self.magnification - offset.x, "self.editing_area.scroll_y / self.magnification - offset.y", self.editing_area.scroll_y / self.magnification - offset.y)
-
-                # corner_x: int = max(0, min(self.image.width - 1, int(self.editing_area.scroll_x / self.magnification) - offset.x))
-                # corner_y: int = max(0, min(self.image.height - 1, int(self.editing_area.scroll_y / self.magnification) - offset.y))
-                # corner_x: int = max(0, min(self.image.width - 1, int(math.ceil(self.editing_area.scroll_x / self.magnification) - offset.x)))
-                # corner_y: int = max(0, min(self.image.height - 1, int(math.ceil(self.editing_area.scroll_y / self.magnification) - offset.y)))
-                corner_x: int = int(self.editing_area.scroll_x - offset.x)
-                corner_y: int = int(self.editing_area.scroll_y - offset.y)
-                # print("corner_x", corner_x, "corner_y", corner_y)
-                corner_x = math.ceil(corner_x / self.magnification)
-                corner_y = math.ceil(corner_y / self.magnification)
-                # print("corner_x", corner_x, "corner_y", corner_y)
-                corner_x = max(0, min(self.image.width - 1, corner_x))
-                corner_y = max(0, min(self.image.height - 1, corner_y))
-                # print("corner_x", corner_x, "corner_y", corner_y)
-                self.image.selection = Selection(Region(corner_x, corner_y, 1, 1))
+                corner_unscaled = self.editing_area.scroll_offset - self.canvas.virtual_region.offset
+                corner_document_x: int = max(0, min(self.image.width - 1, math.ceil(corner_unscaled.x / self.magnification)))
+                corner_document_y: int = max(0, min(self.image.height - 1, math.ceil(corner_unscaled.y / self.magnification)))
+                self.image.selection = Selection(Region(corner_document_x, corner_document_y, 1, 1))
                 self.image.selection.textbox_mode = True
                 self.image.selection.cursor_mode = True
                 self.image.selection.copy_from_document(self.image)
