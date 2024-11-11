@@ -183,12 +183,16 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 - Pressing both mouse buttons stops the current tool, but doesn't undo the current action. Also Pick Color can't be cancelled (with <kbd>Esc</kbd> or by pressing both mouse buttons), since it samples the color continuously.
 - Airbrush is continuous in space instead of time. It should keep spraying while the mouse stays still.
 - Large files can make the program very slow, as can magnifying the canvas. There is a 500 KB limit when opening files to prevent it from freezing.
+- In free-typing mode, Copy/Paste operate on the cursor as if it were a textbox, telling you there's not enough room to paste because its size is limited to 1 character.
+- Can't paste certain emoji into the character input. (This is because the character input is limited to one character, and some emoji are secretly made up of multiple characters.)
 
 ### Visual
 - The selection box border appears inside instead of outside (and lacks dashes). For the text box, I hid the border because it was too visually confusing, but it should also have an outer border.
 - The canvas flickers when zooming in with the Magnifier tool.
 - Some languages don't display correctly.
 - The cursor can blink on the canvas while focus is on the character input. In fact you can have three blinking cursors at once if you open the command palette (via the icon in the top left corner) with a cursor on the canvas and focus on the character input.
+- The cursor is not guaranteed to be visible immediately after its creation, due to the blink cycle. (I tried making it reset the blink cycle, but it still didn't work reliably...)
+- Blinking cursor shows in View Bitmap mode even though you can't type there.
 
 ### Menus
 - Due to limitations of the terminal, shortcuts using <kbd>Shift</kbd> or <kbd>Alt</kbd> might not work. Menus are not keyboard navigable, because I can't detect <kbd>Alt</kbd>+<kbd>F</kbd>, etc.
@@ -215,7 +219,9 @@ To preview ANSI art files in file managers like Nautilus, Thunar, Nemo, or Caja,
 ### Misc
 - Extraneous undo states may be created in some cases. In particular, I noticed when undoing/redoing with free-typing mode, the last state had no cursor but was otherwise identical.
 - Document recovery dialog is shown unnecessarily if the backup file is identical.
+- When clicking "No" in document recovery dialog after making edits, it doesn't restore the right history state. (This is fixed on a branch, but I haven't merged it yet...)
 - Pressing a key to exit View Bitmap mode may cause unwanted side effects, such as deselecting if you pressed <kbd>Esc</kbd>, or deleting the selection if you pressed <kbd>Delete</kbd>.
+- Can crash if the command palette is opened while moving the mouse over the canvas, as it tries to update the status bar with the mouse position and fails to find the status bar on the current screen, since he command palette uses a separate screen.
 
 ## Compatibility
 
