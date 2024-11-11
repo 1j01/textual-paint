@@ -3008,6 +3008,13 @@ Columns: {len(self.palette) // 2}
         sel.region = Region.from_offset(offset, sel.region.size)
         combined_region = old_region.union(sel.region)
         self.canvas.refresh_scaled_region(combined_region)
+        # Don't scroll the selection into view, because it's problematic with large selections.
+        # self.editing_area.scroll_to_region(Region(
+        #     sel.region.x * self.magnification + self.canvas.styles.margin.left,
+        #     sel.region.y * self.magnification + self.canvas.styles.margin.top,
+        #     sel.region.width * self.magnification,
+        #     sel.region.height * self.magnification,
+        # ), animate=False)
 
     def move_selection_relative(self, delta_x: int, delta_y: int) -> None:
         """Moves the selection relative to its current position."""
