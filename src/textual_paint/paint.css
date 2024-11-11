@@ -42,7 +42,6 @@ Header.-tall HeaderIcon {
 #canvas {
     width: auto;
     height: auto;
-    /* Note: styles.margin is used in cursor position calculations (could be changed to use difference between absolute regions of parent and child or something...) */
     margin: 1 2;
 }
 

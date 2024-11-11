@@ -2352,6 +2352,7 @@ Columns: {len(self.palette) // 2}
 
     def get_document_coords_at_top_left_corner(self) -> Offset:
         """Returns the document coordinates of the top left corner of the viewport, clamped to the document."""
+        # self.canvas.virtual_region.offset is basically self.canvas.styles.margin.left/top, but slightly less coupled to CSS.
         corner_unscaled = self.editing_area.scroll_offset - self.canvas.virtual_region.offset
         corner_document_x: int = max(0, min(self.image.width - 1, math.ceil(corner_unscaled.x / self.magnification)))
         corner_document_y: int = max(0, min(self.image.height - 1, math.ceil(corner_unscaled.y / self.magnification)))
@@ -3010,8 +3011,8 @@ Columns: {len(self.palette) // 2}
         self.canvas.refresh_scaled_region(combined_region)
         # Don't scroll the selection into view, because it's problematic with large selections.
         # self.editing_area.scroll_to_region(Region(
-        #     sel.region.x * self.magnification + self.canvas.styles.margin.left,
-        #     sel.region.y * self.magnification + self.canvas.styles.margin.top,
+        #     sel.region.x * self.magnification + self.canvas.virtual_region.offset.x,
+        #     sel.region.y * self.magnification + self.canvas.virtual_region.offset.y,
         #     sel.region.width * self.magnification,
         #     sel.region.height * self.magnification,
         # ), animate=False)
@@ -3218,8 +3219,8 @@ Columns: {len(self.palette) // 2}
                 # Scroll the canvas area if needed.
                 # TODO: prevent animation for small movements, maybe ideally preserving it for page up/down and home/end.
                 self.editing_area.scroll_to_region(Region(
-                    x * self.magnification + self.canvas.styles.margin.left,
-                    y * self.magnification + self.canvas.styles.margin.top,
+                    x * self.magnification + self.canvas.virtual_region.offset.x,
+                    y * self.magnification + self.canvas.virtual_region.offset.y,
                     self.magnification,
                     self.magnification,
                 ))
