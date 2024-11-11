@@ -1631,10 +1631,7 @@ Columns: {len(self.palette) // 2}
         def do_the_paste() -> None:
             self.stop_action_in_progress()
             # paste at top left corner of viewport
-            # TODO: adjust formula to match cursor creation
-            x: int = max(0, min(self.image.width - 1, int(self.editing_area.scroll_x // self.magnification)))
-            y: int = max(0, min(self.image.height - 1, int(self.editing_area.scroll_y // self.magnification)))
-            self.image.selection = Selection(Region(x, y, pasted_image.width, pasted_image.height))
+            self.image.selection = Selection(Region.from_offset(self.get_document_coords_at_top_left_corner(), (pasted_image.width, pasted_image.height)))
             self.image.selection.contained_image = pasted_image
             self.image.selection.pasted = True  # create undo state when finalizing selection
             self.canvas.refresh_scaled_region(self.image.selection.region)
@@ -2353,6 +2350,13 @@ Columns: {len(self.palette) // 2}
         self.selected_fg_color = color.get_truecolor().hex
         self.selected_char = self.image.ch[y][x]
 
+    def get_document_coords_at_top_left_corner(self) -> Offset:
+        """Returns the document coordinates of the top left corner of the viewport, clamped to the document."""
+        corner_unscaled = self.editing_area.scroll_offset - self.canvas.virtual_region.offset
+        corner_document_x: int = max(0, min(self.image.width - 1, math.ceil(corner_unscaled.x / self.magnification)))
+        corner_document_y: int = max(0, min(self.image.height - 1, math.ceil(corner_unscaled.y / self.magnification)))
+        return Offset(corner_document_x, corner_document_y)
+
     def get_prospective_magnification(self) -> int:
         """Returns the magnification result on click with the Magnifier tool."""
         return self.return_to_magnification if self.magnification == 1 else 1
@@ -3048,10 +3052,7 @@ Columns: {len(self.palette) // 2}
                 # Ensure focus is not on the CharInput
                 self.app.set_focus(None)
                 # Create an initial cursor, at top left corner of viewport
-                corner_unscaled = self.editing_area.scroll_offset - self.canvas.virtual_region.offset
-                corner_document_x: int = max(0, min(self.image.width - 1, math.ceil(corner_unscaled.x / self.magnification)))
-                corner_document_y: int = max(0, min(self.image.height - 1, math.ceil(corner_unscaled.y / self.magnification)))
-                self.image.selection = Selection(Region(corner_document_x, corner_document_y, 1, 1))
+                self.image.selection = Selection(Region.from_offset(self.get_document_coords_at_top_left_corner(), (1, 1)))
                 self.image.selection.textbox_mode = True
                 self.image.selection.cursor_mode = True
                 self.image.selection.copy_from_document(self.image)
