@@ -14,6 +14,7 @@ from rich.segment import Segment
 from rich.style import Style
 from rich.text import Text
 from rich.color import Color as RichColor
+from stransi.attribute import Attribute
 from stransi.instruction import Instruction
 from textual.color import Color, ColorParseError
 from textual.geometry import Offset, Region
@@ -67,6 +68,14 @@ assert ansi_detector_pattern.search("\x1B") is not None, "ESC should be matched 
 assert ansi_detector_pattern.search("\x7F") is not None, "DEL should be matched by ansi_detector_pattern"
 assert ansi_detector_pattern.search("\x00") is not None, "NUL should be matched by ansi_detector_pattern"
 assert ansi_detector_pattern.search("\x80") is None, "Ç (in CP 437) or € (U+0080) should not be matched by ansi_detector_pattern"
+
+# Detects escape sequences with private-mode or otherwise non-numeric parameters,
+# such as ESC[?25l and ESC[?25h, which chafa uses to hide and show the cursor.
+# stransi only understands sequences with numeric/semicolon parameters, and it assumes any
+# chunk of text that starts with an escape character is a sequence it can parse, so such
+# sequences can crash it. (https://github.com/1j01/textual-paint/issues/12)
+# They don't affect a static document, so they're dropped before parsing.
+ansi_private_sequence_pattern = re.compile(r"\x1b\[(?![0-9;]*[a-zA-Z])[\x20-\x3f]*[\x40-\x7e]")
 
 class FormatWriteNotSupported(Exception):
     """The format doesn't support writing."""
@@ -484,7 +493,7 @@ class AnsiArtDocument:
         RGB.__post_init__ = lambda self: None
 
 
-        ansi = stransi.Ansi(text)
+        ansi = stransi.Ansi(ansi_private_sequence_pattern.sub("", text))
 
         default_style = Style(color=default_fg, bgcolor=default_bg)
         document = AnsiArtDocument(0, 0, default_bg, default_fg)
@@ -494,6 +503,8 @@ class AnsiArtDocument:
 
         x = 0
         y = 0
+        color = default_fg
+        bgcolor = default_bg
         current_style = default_style
         instruction: Instruction[Any] | str
         for instruction in ansi.instructions():
@@ -538,19 +549,25 @@ class AnsiArtDocument:
                         if x > max_width - 1:
                             x = 0
                             y += 1
-            elif isinstance(instruction, stransi.SetColor) and instruction.color is not None:
-                # Color (I'm not sure why instruction.color would be None, but it's typed as Optional[Color])
-                # (maybe just for initial state?)
+            elif isinstance(instruction, stransi.SetColor):
+                # Color (instruction.color is None for the default color, set with ESC[39m / ESC[49m)
                 if instruction.role == stransi.color.ColorRole.FOREGROUND:
-                    rgb = instruction.color.rgb
-                    # fg_color = "rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"
-                    current_style += Style.from_color(color=RichColor.parse("rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"))
-                    # current_style += Style.from_color(color=RichColor.from_rgb(rgb.red * 255, rgb.green * 255, rgb.blue * 255))
+                    if instruction.color is None:
+                        color = default_fg
+                    else:
+                        rgb = instruction.color.rgb
+                        # fg_color = "rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"
+                        color = "rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"
+                        # color = RichColor.from_rgb(rgb.red * 255, rgb.green * 255, rgb.blue * 255)
                 elif instruction.role == stransi.color.ColorRole.BACKGROUND:
-                    rgb = instruction.color.rgb
-                    # bg_color = "rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"
-                    current_style += Style.from_color(bgcolor=RichColor.parse("rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"))
-                    # current_style += Style.from_color(bgcolor=RichColor.from_rgb(rgb.red * 255, rgb.green * 255, rgb.blue * 255))
+                    if instruction.color is None:
+                        bgcolor = default_bg
+                    else:
+                        rgb = instruction.color.rgb
+                        # bgcolor = "rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"
+                        bgcolor = "rgb(" + str(int(rgb.red * 255)) + "," + str(int(rgb.green * 255)) + "," + str(int(rgb.blue * 255)) + ")"
+                        # bgcolor = RichColor.from_rgb(rgb.red * 255, rgb.green * 255, rgb.blue * 255)
+                current_style = Style(color=color, bgcolor=bgcolor)
             elif isinstance(instruction, stransi.SetCursor):
                 # Cursor position is encoded as y;x, so stransi understandably gets this backwards.
                 # TODO: fix stransi to interpret ESC[<y>;<x>H correctly
@@ -605,10 +622,18 @@ class AnsiArtDocument:
                         for row_to_clear in range(y):
                             clear_line(row_to_clear, True, row_to_clear < y)
             elif isinstance(instruction, stransi.SetAttribute):
-                # Attribute
-                pass
+                # Attributes like bold and underline aren't part of the document model.
+                # A reset (ESC[0m) does still need to reset the colors, however.
+                if instruction.attribute == Attribute.NORMAL:
+                    color = default_fg
+                    bgcolor = default_bg
+                    current_style = default_style
             elif isinstance(instruction, stransi.Unsupported):
-                raise ValueError("Unknown instruction " + repr(instruction.token))
+                # Ignore sequences that stransi doesn't model, such as strikethrough (ESC[9m),
+                # rather than refusing to open the file. (Attributes aren't represented in the
+                # document model anyway, and sequences that move or scroll the screen would
+                # require a more sophisticated terminal emulation.)
+                pass
             else:
                 raise ValueError("Unknown instruction type " + str(type(instruction)))
         document.width = width
